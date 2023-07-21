@@ -29,5 +29,9 @@
         ///  error while running the message handler. 
         /// </summary>
         ErrErr = 5,
+        /// <summary>
+        ///  extra error code for luaL_loadfilex.
+        /// </summary>
+        ErrFile = 6
     }
 }
