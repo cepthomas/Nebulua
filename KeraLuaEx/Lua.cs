@@ -8,7 +8,7 @@ namespace KeraLua
     /// <summary>
     /// Lua state class, main interface to use Lua library.
     /// </summary>
-    public class Lua : IDisposable
+    public partial class Lua : IDisposable
     {
         private IntPtr _luaState;
         private readonly Lua _mainState;
@@ -604,20 +604,6 @@ namespace KeraLua
         public bool IsNil(int index) => Type(index) == LuaType.Nil;
 
         /// <summary>
-        /// Returns  if the value at the given index is none
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public bool IsNone(int index) => Type(index) == LuaType.None;
-
-        /// <summary>
-        /// Check if the value at the index is none or nil
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public bool IsNoneOrNil(int index) => IsNone(index) || IsNil(index);
-
-        /// <summary>
         /// Returns  if the value at the given index is a number
         /// </summary>
         /// <param name="index"></param>
@@ -683,17 +669,9 @@ namespace KeraLua
         /// <param name="chunkName"></param>
         /// <param name="mode"></param>
         /// <returns></returns>
-        public LuaStatus Load
-            (LuaReader reader,
-             IntPtr data,
-             string chunkName,
-             string mode)
+        public LuaStatus Load(LuaReader reader, IntPtr data, string chunkName, string mode)
         {
-            return (LuaStatus)NativeMethods.lua_load(_luaState,
-                                                     reader.ToFunctionPointer(),
-                                                     data,
-                                                     chunkName,
-                                                     mode);
+            return (LuaStatus)NativeMethods.lua_load(_luaState, reader.ToFunctionPointer(), data, chunkName, mode);
         }
 
         /// <summary>
@@ -1648,7 +1626,7 @@ namespace KeraLua
         /// <returns></returns>
         public int ArgumentError(int argument, string message)
         {
-            // TODO: Use C# exception for errors?
+            // TODOE: Use C# exception for errors?
             return NativeMethods.luaL_argerror(_luaState, argument, message);
         }
 
@@ -2031,7 +2009,7 @@ namespace KeraLua
         /// <returns></returns>
         public byte[] OptBuffer(int index, byte[] def)
         {
-            if (IsNoneOrNil(index))
+            if (IsNil(index))
                 return def;
 
             return CheckBuffer(index);
@@ -2045,7 +2023,7 @@ namespace KeraLua
         /// <returns></returns>
         public string OptString(int index, string def)
         {
-            if (IsNoneOrNil(index))
+            if (IsNil(index))
                 return def;
 
             return CheckString(index);

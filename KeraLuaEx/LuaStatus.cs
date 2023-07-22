@@ -6,7 +6,7 @@
     public enum LuaStatus
     {
         /// <summary>
-        ///  success
+        /// success
         /// </summary>
         OK = 0,
         /// <summary>
@@ -22,15 +22,15 @@
         /// </summary>
         ErrSyntax = 3,
         /// <summary>
-        ///  memory allocation error. For such errors, Lua does not call the message handler. 
+        /// memory allocation error. For such errors, Lua does not call the message handler. 
         /// </summary>
         ErrMem = 4,
         /// <summary>
-        ///  error while running the message handler. 
+        /// error while running the message handler. 
         /// </summary>
         ErrErr = 5,
         /// <summary>
-        ///  extra error code for luaL_loadfilex.
+        /// extra error code for luaL_loadfilex.
         /// </summary>
         ErrFile = 6
     }
