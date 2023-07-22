@@ -155,6 +155,24 @@ namespace KeraLuaEx
         // end
 
 
+
+            //// Now load the script/file we are going to run.
+            //// lua_load() pushes the compiled chunk as a Lua function on top of the stack.
+            //lua_stat = luaL_loadfile(p_lscript, fn);
+            //// Give it some data. 
+            //lua_pushstring(p_lscript, "Hey diddle diddle");
+            //lua_setglobal(p_lscript, "script_string");
+            //lua_pushinteger(p_lscript, 90309);
+            //lua_setglobal(p_lscript, "script_int");
+            //// Priming run of the loaded Lua script to create the script's global variables
+            //lua_stat = lua_pcall(p_lscript, 0, 0, 0);
+            //if (lua_stat != LUA_OK)
+            //{
+            //    LOG_ERROR("lua_pcall() error code %i: %s", lua_stat, lua_tostring(p_lscript, -1));
+            //}
+
+
+
         /// <summary>
         /// 
         /// </summary>

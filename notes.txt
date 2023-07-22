@@ -1,0 +1,68 @@
+
+
+
+======================================================================
+
+C:\DEV\REPOS\NEBULATOR
+|   Nebulator.sln
+|   README.md
+|   
++---App
+|   |   App.csproj
+|   |   App.csproj.user
+|   |   Compiler.cs
+|   |   MainForm.cs
+|   |   MainForm.Designer.cs
+|   |   MainForm.resx
+|   |   Program.cs
+|   |   UserSettings.cs
+|   |                   
+|   +---Properties
+|   |       launchSettings.json
+|   |       Resources.Designer.cs
+|   |       Resources.resx
+|   |       
+|   \---Resources
+|           
++---DocFiles
+|       Internals.md
+|       ScriptApi.md
+|       ScriptSyntax.md
+|       
++---Examples
+|       airport.mp3
+|       airport.neb
+|       airport.nebp
+|       example-new.neb
+|       example.mp3
+|       example.neb
+|       example.nebp
+|       scale.neb
+|       utils.neb
+|
++---lib
+|       Ephemera.*.dll/xml
+|       C:\DEV\NEB_NEW\3RD\KERALUA\external\lua\win-x64\bin64\lua.exe  lua54.dll  luac.exe
+|       lua libs
+|       
+\---Script
+        Script.csproj
+        ScriptApi.cs
+        ScriptCore.cs
+        Section.cs
+        Sequence.cs
+
+
+===================================================================================
+
+OO . and : https://www.lua.org/pil/16.html
+
+The rather cool aspect of the 'LuaInterface' part is that reflection makes the C# binding almost trivial.
+
+Debug is used during debugging. Trace is writing to the log file. It is kind of like logging. Both are very similar, but do tracing for long term retention, debugging for real time debugging.
+
+https://github.com/dotnet/samples/tree/main/core/interop/cpp-cli
+
+
+===================================================================================
+
