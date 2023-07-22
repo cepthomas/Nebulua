@@ -1,4 +1,4 @@
-﻿namespace KeraLua
+﻿namespace KeraLuaEx
 {
     /// <summary>
     /// Enum for pseudo-index used by registry table

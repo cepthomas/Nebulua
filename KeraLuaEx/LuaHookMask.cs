@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     /// <summary>
     /// Lua Hook Event Masks

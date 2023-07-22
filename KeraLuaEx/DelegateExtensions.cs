@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     static class DelegateExtensions
     {

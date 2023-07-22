@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     /// <summary>
     /// LuaRegister store the name and the delegate to register a native function

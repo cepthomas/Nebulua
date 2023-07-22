@@ -1,4 +1,4 @@
-﻿namespace KeraLua
+﻿namespace KeraLuaEx
 {
     /// <summary>
     /// Lua Load/Call status return

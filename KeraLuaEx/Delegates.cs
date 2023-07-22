@@ -11,7 +11,7 @@ using voidptr_t = System.IntPtr;
     using ObjCRuntime;
 #endif
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     /// <summary>
     /// Type for C# callbacks

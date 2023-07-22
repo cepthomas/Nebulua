@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     /// <summary>
     /// Structure for lua debug information

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     /// <summary>
     /// Used by Compare

@@ -1,4 +1,4 @@
-﻿namespace KeraLua
+﻿namespace KeraLuaEx
 {
     /// <summary>
     /// Whenever a hook is called, its ar argument has its field event set to the specific event that triggered the hook

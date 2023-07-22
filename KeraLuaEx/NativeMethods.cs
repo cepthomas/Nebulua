@@ -18,7 +18,7 @@ using lua_Writer = System.IntPtr;
 using size_t = System.UIntPtr;
 using voidptr_t = System.IntPtr;
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     [SuppressUnmanagedCodeSecurity]
     internal static class NativeMethods

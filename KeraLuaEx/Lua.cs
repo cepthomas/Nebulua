@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace KeraLua
+namespace KeraLuaEx
 {
     /// <summary>
     /// Lua state class, main interface to use Lua library.
