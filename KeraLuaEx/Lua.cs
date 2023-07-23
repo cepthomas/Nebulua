@@ -1785,7 +1785,9 @@ namespace KeraLuaEx
         /// <returns>It returns false if there are no errors or true in case of errors. </returns>
         public bool DoFile(string file)
         {
-            bool hasError = LoadFile(file) != LuaStatus.OK || PCall(0, -1, 0) != LuaStatus.OK;
+            bool hasError = LoadFile(file) != LuaStatus.OK;
+            hasError |= PCall(0, -1, 0) != LuaStatus.OK;
+            string s = DumpStack();
             return hasError;
         }
 

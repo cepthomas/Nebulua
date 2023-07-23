@@ -15,7 +15,7 @@ namespace KeraLuaEx.Test
     {
         public static void ExecuteLuaFile(Lua l, string name)
         {
-            string path = Path.Combine("Test", "scripts", $"{name}.lua");
+            string path = Path.Combine("scripts", $"{name}.lua");
             LuaStatus result = l.LoadFile(path);
             Assert.AreEqual(result, LuaStatus.OK, l.ToString(1));
             result = l.PCall(0, -1, 0);
@@ -95,7 +95,6 @@ namespace KeraLuaEx.Test
             TestCommon.ExecuteLuaFile(_lMain, "printf");
         }
 
-
         [Test]
         public void Sieve()
         {
@@ -122,9 +121,9 @@ namespace KeraLuaEx.Test
         [SetUp]
         public void SetUp()
         {
-            string path = new Uri(GetType().Assembly.Location).AbsolutePath;
-            path = Path.GetDirectoryName(path);
-            Environment.CurrentDirectory = path;
+            //string path = new Uri(GetType().Assembly.Location).AbsolutePath;
+            //path = Path.GetDirectoryName(path);
+            //Environment.CurrentDirectory = path;
         }
 
         #region PushCFunction
@@ -251,32 +250,34 @@ namespace KeraLuaEx.Test
             var l = new Lua();
             hookLog = new StringBuilder();
             l.SetHook(funcHookCallback, LuaHookMask.Line, 0);
-            l.DoFile("main.l");
+            l.DoFile(Path.Combine("scripts", $"main.lua"));
+
             string output = hookLog.ToString();
+
             string expected =
-@"main.l-main.l:2 (main)
-foo.l-foo.l:2 (main)
-module1.l-module1.l:3 (main)
-module1.l-module1.l:9 (main)
-module1.l-module1.l:5 (main)
-module1.l-module1.l:11 (main)
-foo.l-foo.l:8 (main)
-foo.l-foo.l:4 (main)
-foo.l-foo.l:14 (main)
-foo.l-foo.l:10 (main)
-foo.l-foo.l:14 (main)
-main.l-main.l:4 (main)
-main.l-main.l:5 (main)
-main.l-main.l:7 (main)
-main.l-main.l:8 (main)
-foo.l-foo.l:5 (Lua)
-foo.l-foo.l:6 (Lua)
-foo.l-foo.l:7 (Lua)
-module1.l-module1.l:6 (Lua)
-module1.l-module1.l:7 (Lua)
-module1.l-module1.l:8 (Lua)
-foo.l-foo.l:8 (Lua)
-main.l-main.l:11 (main)
+@"main.lua-main.lua:2 (main)
+foo.lua-foo.lua:2 (main)
+module1.lua-module1.lua:3 (main)
+module1.lua-module1.lua:9 (main)
+module1.lua-module1.lua:5 (main)
+module1.lua-module1.lua:11 (main)
+foo.lua-foo.lua:8 (main)
+foo.lua-foo.lua:4 (main)
+foo.lua-foo.lua:14 (main)
+foo.lua-foo.lua:10 (main)
+foo.lua-foo.lua:14 (main)
+main.lua-main.lua:4 (main)
+main.lua-main.lua:5 (main)
+main.lua-main.lua:7 (main)
+main.lua-main.lua:8 (main)
+foo.lua-foo.lua:5 (Lua)
+foo.lua-foo.lua:6 (Lua)
+foo.lua-foo.lua:7 (Lua)
+module1.lua-module1.lua:6 (Lua)
+module1.lua-module1.lua:7 (Lua)
+module1.lua-module1.lua:8 (Lua)
+foo.lua-foo.lua:8 (Lua)
+main.lua-main.lua:11 (main)
 ";
             expected = expected.Replace("\r", "");
             expected = expected.Replace('/', Path.DirectorySeparatorChar);
@@ -294,6 +295,8 @@ main.l-main.l:11 (main)
 
             if (debug.Event != LuaHookEvent.Line)
                 return;
+
+            l.GetStack(0, ar);
 
             if (!l.GetInfo("Snlu", ar))
                 return;
@@ -319,32 +322,33 @@ main.l-main.l:11 (main)
 
             Assert.AreEqual(funcHookCallback, l.Hook, "#1");
 
-            l.DoFile("main.l");
+            l.DoFile(Path.Combine("scripts", $"main.lua"));
             string output = hookLog.ToString();
+
             string expected =
-@"main.l-main.l:2 (main)
-foo.l-foo.l:2 (main)
-module1.l-module1.l:3 (main)
-module1.l-module1.l:9 (main)
-module1.l-module1.l:5 (main)
-module1.l-module1.l:11 (main)
-foo.l-foo.l:8 (main)
-foo.l-foo.l:4 (main)
-foo.l-foo.l:14 (main)
-foo.l-foo.l:10 (main)
-foo.l-foo.l:14 (main)
-main.l-main.l:4 (main)
-main.l-main.l:5 (main)
-main.l-main.l:7 (main)
-main.l-main.l:8 (main)
-foo.l-foo.l:5 (Lua)
-foo.l-foo.l:6 (Lua)
-foo.l-foo.l:7 (Lua)
-module1.l-module1.l:6 (Lua)
-module1.l-module1.l:7 (Lua)
-module1.l-module1.l:8 (Lua)
-foo.l-foo.l:8 (Lua)
-main.l-main.l:11 (main)
+@"main.lua-main.lua:2 (main)
+foo.lua-foo.lua:2 (main)
+module1.lua-module1.lua:3 (main)
+module1.lua-module1.lua:9 (main)
+module1.lua-module1.lua:5 (main)
+module1.lua-module1.lua:11 (main)
+foo.lua-foo.lua:8 (main)
+foo.lua-foo.lua:4 (main)
+foo.lua-foo.lua:14 (main)
+foo.lua-foo.lua:10 (main)
+foo.lua-foo.lua:14 (main)
+main.lua-main.lua:4 (main)
+main.lua-main.lua:5 (main)
+main.lua-main.lua:7 (main)
+main.lua-main.lua:8 (main)
+foo.lua-foo.lua:5 (Lua)
+foo.lua-foo.lua:6 (Lua)
+foo.lua-foo.lua:7 (Lua)
+module1.lua-module1.lua:6 (Lua)
+module1.lua-module1.lua:7 (Lua)
+module1.lua-module1.lua:8 (Lua)
+foo.lua-foo.lua:8 (Lua)
+main.lua-main.lua:11 (main)
 ";
             expected = expected.Replace('/', Path.DirectorySeparatorChar);
             expected = expected.Replace("\r", "");
