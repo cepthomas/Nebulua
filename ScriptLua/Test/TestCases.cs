@@ -93,7 +93,7 @@ namespace Ephemera.Nebulua.ScriptLua.Test
         public static int Print(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
-            Console.WriteLine(l.DumpStack());
+            Console.WriteLine(l!.DumpStack());
             return 0;
         }
     }

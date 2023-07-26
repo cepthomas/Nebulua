@@ -90,12 +90,12 @@ namespace KeraLuaEx
                 case LuaType.Number:
                     if (IsInteger(-1))
                     {
-                        val = (int)ToInteger(-1);
+                        val = (int)ToInteger(-1)!;
                         type = typeof(int);
                     }
                     else
                     {
-                        val = ToNumber(-1);
+                        val = ToNumber(-1)!;
                         type = typeof(double);
                     }
                     break;
@@ -178,11 +178,11 @@ namespace KeraLuaEx
             while (Next(-2))// != 0)
             {
                 // Get key(-2) name.
-                string name = ToString(-2);
+                string name = ToString(-2)!;
                 // Get type of value(-1).
-                string type = TypeName(-1);
+                string type = TypeName(-1)!;
                 // Get value. TODOA process table
-                string sval = ToString(-1);
+                string sval = ToString(-1)!;
 
                 ls.Add($"{name}:{type}:{sval}");
 
@@ -204,7 +204,7 @@ namespace KeraLuaEx
 
             NewTable();
 
-            for (int i = 0; i < ints.Count(); i++)
+            for (int i = 0; i < ints.Count; i++)
             {
                 NewTable();
                 PushInteger(i + 1);
@@ -220,18 +220,16 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="lstat"></param>
         /// <param name="info"></param>
-        /// <param name="file">Ignore - compiler use.</param>
-        /// <param name="line">Ignore - compiler use.</param>
-        public bool CheckLuaStatus(LuaStatus lstat, string info, [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
+        ///// <param name="file">Ignore - compiler use.</param>
+        ///// <param name="line">Ignore - compiler use.</param>
+        public bool CheckLuaStatus(LuaStatus lstat, string info) // TODOE? , [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
         {
             bool hasError = false;
 
             if (lstat >= LuaStatus.ErrRun)
             {
-                hasError = true;
-
                 string stack = string.Join(" ", DumpStack());
-                string tb = string.Join(" ", DumpTraceback());
+                //string tb = string.Join(" ", DumpTraceback());
 
                 //TODOE exceptions or error code return?
                 //_logger.Error($"Lua status:{lstat} in {file}({line}) {info}");
@@ -296,7 +294,7 @@ namespace KeraLuaEx
                     case LuaType.Boolean:   sval = ToBoolean(i) ? "true" : "false";    break;
                     case LuaType.Number:    sval = "{(IsInteger(i) ? ToInteger(i) : ToNumber(i))}";  break;
                     case LuaType.Nil:       sval = "nil";   break;
-                    case LuaType.Table:     sval = ToString(i); break;
+                    case LuaType.Table:     sval = ToString(i) ?? "null"; break;
                     //case LuaType.Function:
                     //case LuaType.Table:
                     //case LuaType.Thread:
@@ -340,7 +338,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="callerPath"></param>
         /// <returns>Caller source dir.</returns>
-        public string GetSourcePath([CallerFilePath] string callerPath = "") // from NBOT
+        public static string GetSourcePath([CallerFilePath] string callerPath = "") // from NBOT
         {
             var dir = Path.GetDirectoryName(callerPath)!;
             return dir;

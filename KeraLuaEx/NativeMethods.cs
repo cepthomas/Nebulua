@@ -366,7 +366,7 @@ namespace KeraLuaEx
         internal static extern lua_Integer luaL_len(lua_State luaState, int index);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        internal static extern int luaL_loadbufferx(lua_State luaState, byte[] buff, size_t sz, string name, string? mode);
+        internal static extern int luaL_loadbufferx(lua_State luaState, byte[] buff, size_t sz, string? name, string? mode);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         internal static extern int luaL_loadfilex(lua_State luaState, string name, string? mode);

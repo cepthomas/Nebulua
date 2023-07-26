@@ -332,7 +332,7 @@ namespace Ephemera.Nebulua.Script
             ///// Get function arguments.
             string chanName = l.ToString(1);
             string controller = l.ToString(2);
-            long val = l.ToInteger(3); // TODOE handle fail
+            long? val = l.ToInteger(3); // TODOE handle fail
 
             ///// Do the work.
             var ch = _channels[chanName]; // TODOE handle fail
@@ -350,8 +350,8 @@ namespace Ephemera.Nebulua.Script
             int numRes = 0;
 
             ///// Get function arguments.
-            string chanName = l.ToString(1);
-            string patch = l.ToString(2);
+            string chanName = l.ToString(1)!;
+            string patch = l.ToString(2)!;
 
             ///// Do the work.
             var ch = _channels[chanName]; // TODOE handle fail

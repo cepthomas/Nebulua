@@ -48,7 +48,9 @@ namespace KeraLuaEx
             _luaState = NativeMethods.luaL_newstate();
 
             if (openLibs)
+            {
                 OpenLibs();
+            }
 
             SetExtraObject(this, true);
         }
@@ -76,7 +78,7 @@ namespace KeraLuaEx
             Encoding = mainState.Encoding;
 
             SetExtraObject(this, false);
-            GC.SuppressFinalize(this);
+            //TODO why? GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -134,7 +136,7 @@ namespace KeraLuaEx
 
             NativeMethods.lua_close(_luaState);
             _luaState = IntPtr.Zero;
-            GC.SuppressFinalize(this);
+            //TODO why? GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -143,6 +145,7 @@ namespace KeraLuaEx
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private void SetExtraObject<T>(T obj, bool weak) where T : class
@@ -189,7 +192,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="panicFunction"></param>
         /// <returns></returns>
-        public LuaFunction AtPanic(LuaFunction panicFunction)
+        public LuaFunction? AtPanic(LuaFunction panicFunction)
         {
             IntPtr newPanicPtr = panicFunction.ToFunctionPointer();
             return NativeMethods.lua_atpanic(_luaState, newPanicPtr).ToLuaFunction();
@@ -323,7 +326,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="ud"></param>
         /// <returns></returns>
-        public LuaAlloc GetAllocFunction(ref IntPtr ud)
+        public LuaAlloc? GetAllocFunction(ref IntPtr ud)
         {
             return NativeMethods.lua_getallocf(_luaState, ref ud).ToLuaAlloc();
         }
@@ -550,11 +553,10 @@ namespace KeraLuaEx
             return Marshal.PtrToStringAnsi(ptr);
         }
 
-
         /// <summary>
         /// Returns the current hook function. 
         /// </summary>
-        public LuaHookFunction Hook => NativeMethods.lua_gethook(_luaState).ToLuaHookFunction();
+        public LuaHookFunction? Hook => NativeMethods.lua_gethook(_luaState).ToLuaHookFunction();
 
         /// <summary>
         /// Returns the current hook count. 
@@ -795,7 +797,7 @@ namespace KeraLuaEx
         /// </summary>
         public void PushGlobalTable()
         {
-            NativeMethods.lua_rawgeti(_luaState, (int)LuaRegistry.Index, (int)LuaRegistryIndex.Globals);
+            _ = NativeMethods.lua_rawgeti(_luaState, (int)LuaRegistry.Index, (int)LuaRegistryIndex.Globals);
         }
         /// <summary>
         /// Pushes an integer with value n onto the stack. 
@@ -1091,7 +1093,7 @@ namespace KeraLuaEx
         /// <param name="from"></param>
         /// <param name="arguments"></param>
         /// <returns></returns>
-        public LuaStatus Resume(Lua from, int arguments)
+        public LuaStatus Resume(Lua? from, int arguments)
         {
             return (LuaStatus)NativeMethods.lua_resume(_luaState, from?._luaState ?? IntPtr.Zero, arguments, out _);
         }
@@ -1298,7 +1300,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public LuaFunction ToCFunction(int index)
+        public LuaFunction? ToCFunction(int index)
         {
             return NativeMethods.lua_tocfunction(_luaState, index).ToLuaFunction();
         }
@@ -1314,25 +1316,24 @@ namespace KeraLuaEx
             NativeMethods.lua_toclose(_luaState, index);
         }
 
-        /// <summary>
-        /// Converts the Lua value at the given index to the signed integral type lua_Integer. The Lua value must be an integer, or a number or string convertible to an integer (see §3.4.3); otherwise, lua_tointegerx returns 0. 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public long ToInteger(int index)
-        {
-            return NativeMethods.lua_tointegerx(_luaState, index, out int isNum);
-        }
+        ///// <summary>
+        ///// Converts the Lua value at the given index to the signed integral type lua_Integer. The Lua value must be an integer, or a number or string convertible to an integer (see §3.4.3); otherwise, lua_tointegerx returns 0. 
+        ///// </summary>
+        ///// <param name="index"></param>
+        ///// <returns></returns>
+        //public long ToInteger(int index)
+        //{
+        //    return NativeMethods.lua_tointegerx(_luaState, index, out int isNum);
+        //}
 
         /// <summary>
         /// Converts the Lua value at the given index to the signed integral type lua_Integer. The Lua value must be an integer, or a number or string convertible to an integer (see §3.4.3); otherwise, lua_tointegerx returns 0. 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public long? ToIntegerX(int index)
+        public long? ToInteger(int index)
         {
-            int isInteger;
-            long value = NativeMethods.lua_tointegerx(_luaState, index, out isInteger);
+            long value = NativeMethods.lua_tointegerx(_luaState, index, out int isInteger);
             if (isInteger != 0)
                 return value;
             return null;
@@ -1404,22 +1405,22 @@ namespace KeraLuaEx
             return Encoding.GetString(buffer);
         }
 
-        /// <summary>
-        /// Converts the Lua value at the given index to a C# double.
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public double ToNumber(int index)
-        {
-            return NativeMethods.lua_tonumberx(_luaState, index, out int isNum);
-        }
+        ///// <summary>
+        ///// Converts the Lua value at the given index to a C# double.
+        ///// </summary>
+        ///// <param name="index"></param>
+        ///// <returns></returns>
+        //public double ToNumber(int index)
+        //{
+        //    return NativeMethods.lua_tonumberx(_luaState, index, out int isNum);
+        //}
 
         /// <summary>
         /// Converts the Lua value at the given index to a C# double?.TODOC combine these.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public double? ToNumberX(int index)
+        public double? ToNumber(int index)
         {
             double value = NativeMethods.lua_tonumberx(_luaState, index, out int isNumber);
             if (isNumber != 0)
@@ -1492,7 +1493,6 @@ namespace KeraLuaEx
         {
             return NativeMethods.lua_touserdata(_luaState, index);
         }
-
 
         /// <summary>
         /// </summary>
@@ -1658,8 +1658,7 @@ namespace KeraLuaEx
         /// <returns></returns>
         public byte[]? CheckBuffer(int argument)
         {
-            UIntPtr len;
-            IntPtr buff = NativeMethods.luaL_checklstring(_luaState, argument, out len);
+            IntPtr buff = NativeMethods.luaL_checklstring(_luaState, argument, out UIntPtr len);
             if (buff == IntPtr.Zero)
                 return null;
 

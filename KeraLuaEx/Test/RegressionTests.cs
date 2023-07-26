@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using KeraLuaEx;
-
+using System.Runtime.InteropServices;
 
 namespace KeraLuaEx.Test
 {
@@ -18,7 +18,7 @@ namespace KeraLuaEx.Test
     {
         static LuaHookFunction _funcHookCallback = HookCallback;
 
-        static StringBuilder _hookLog = new();
+        static readonly StringBuilder _hookLog = new();
 
         [SetUp]
         public void SetUp()
@@ -29,43 +29,40 @@ namespace KeraLuaEx.Test
         [Test]
         public void CF()
         {
-            using (var l = new Lua())
-            {
-                string srcPath = l.GetSourcePath();
-                string scriptsPath = Path.Combine(srcPath, "scripts");
-                l.SetLuaPath(new() { scriptsPath });
-                LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "cf.lua"));
-                Assert.AreEqual(LuaStatus.OK, lstat);
-                lstat = l.PCall(0, -1, 0);
-                Assert.AreEqual(LuaStatus.OK, lstat);
-            }
+            using Lua l = new();
+
+            string srcPath = Lua.GetSourcePath();
+            string scriptsPath = Path.Combine(srcPath, "scripts");
+            l.SetLuaPath(new() { scriptsPath });
+            LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "cf.lua"));
+            Assert.AreEqual(LuaStatus.OK, lstat);
+            lstat = l.PCall(0, -1, 0);
+            Assert.AreEqual(LuaStatus.OK, lstat);
         }
         #endregion
 
         #region PushCFunction
         static readonly char UNICODE_CHAR = '\uE007';
         static string UnicodeString => Convert.ToString(UNICODE_CHAR, System.Globalization.CultureInfo.InvariantCulture);
-        static LuaFunction _funcTestUnicodeString = TestUnicodeString;
-        static LuaFunction _funcTestReferenceData = TestReferenceData;
-        static LuaFunction _funcTestValueData = TestValueData;
-        static XDocument _tempDocument;
+        static readonly LuaFunction _funcTestUnicodeString = TestUnicodeString;
+        static readonly LuaFunction _funcTestReferenceData = TestReferenceData;
+        static readonly LuaFunction _funcTestValueData = TestValueData;
+        static XDocument _tempDocument = new();
 
         [Test]
         public void TestUnicodeString()
         {
-            using (var l = new Lua { Encoding = Encoding.UTF8 })
-            {
-                l.PushCFunction(_funcTestUnicodeString);
-                l.SetGlobal("TestUnicodeString");
-                l.PushString(UnicodeString);
-                l.SetGlobal("unicodeString");
-                AssertString("TestUnicodeString(unicodeString)", l);
-            }
+            using var l = new Lua { Encoding = Encoding.UTF8 };
+            l.PushCFunction(_funcTestUnicodeString);
+            l.SetGlobal("TestUnicodeString");
+            l.PushString(UnicodeString);
+            l.SetGlobal("unicodeString");
+            AssertString("TestUnicodeString(unicodeString)", l);
         }
         private static int TestUnicodeString(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
-            string param = l.ToString(1, false);
+            string param = l!.ToString(1, false)!;
 
             Assert.AreEqual(UnicodeString, param, "#1 ToString()");
 
@@ -77,27 +74,27 @@ namespace KeraLuaEx.Test
         {
             var document = XDocument.Parse(@"<users><user name=""John Doe"" age=""42"" /><user name=""Jane Doe"" age=""39"" /></users>");
 
-            using (var l = new Lua())
-            {
-                l.PushObject<XDocument>(null);
-                l.SetGlobal("foo");
+            using Lua l = new();
 
-                l.PushObject(document);
-                l.SetGlobal("bar");
+            //l.PushObject<XDocument>(null);
+            l.PushNil();
+            l.SetGlobal("foo");
 
-                l.PushCFunction(_funcTestReferenceData);
-                l.SetGlobal("TestReferenceData");
+            l.PushObject(document);
+            l.SetGlobal("bar");
 
-                _tempDocument = document;
-                AssertString("TestReferenceData(foo, bar)", l);
-            }
+            l.PushCFunction(_funcTestReferenceData);
+            l.SetGlobal("TestReferenceData");
+
+            _tempDocument = document;
+            AssertString("TestReferenceData(foo, bar)", l);
         }
         private static int TestReferenceData(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
 
-            XDocument param1 = l.ToObject<XDocument>(1);
-            XDocument param2 = l.ToObject<XDocument>(2);
+            XDocument param1 = l!.ToObject<XDocument>(1)!;
+            XDocument param2 = l!.ToObject<XDocument>(2)!;
 
             Assert.IsNull(param1, "#1");
             Assert.AreEqual(param2, _tempDocument, "#2");
@@ -108,22 +105,21 @@ namespace KeraLuaEx.Test
         [Test]
         public void TestPushValueData()
         {
-            using (var l = new Lua())
-            {
-                l.PushObject<Rectangle?>(null);
-                l.SetGlobal("foo");
+            using var l = new Lua();
 
-                l.PushObject(new Rectangle(10, 10, 100, 100));
-                l.SetGlobal("bar");
+            l.PushObject<Rectangle?>(null);
+            l.SetGlobal("foo");
 
-                l.PushObject(new DateTime(2018, 10, 10, 0, 0, 0));
-                l.SetGlobal("date");
+            l.PushObject(new Rectangle(10, 10, 100, 100));
+            l.SetGlobal("bar");
 
-                l.PushCFunction(_funcTestValueData);
-                l.SetGlobal("TestValueData");
+            l.PushObject(new DateTime(2018, 10, 10, 0, 0, 0));
+            l.SetGlobal("date");
 
-                AssertString("TestValueData(foo, bar, date)", l);
-            }
+            l.PushCFunction(_funcTestValueData);
+            l.SetGlobal("TestValueData");
+
+            AssertString("TestValueData(foo, bar, date)", l);
         }
         #endregion
 
@@ -131,24 +127,24 @@ namespace KeraLuaEx.Test
         [Test]
         public void TestLuaHook()
         {
-            using (var l = new Lua())
-            {
-                _hookLog.Clear();
+            using var l = new Lua();
 
-                string srcPath = l.GetSourcePath();
-                string scriptsPath = Path.Combine(srcPath, "scripts");
-                l.SetLuaPath(new() { scriptsPath });
+            _hookLog.Clear();
 
-                l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
+            string srcPath = Lua.GetSourcePath();
+            string scriptsPath = Path.Combine(srcPath, "scripts");
+            l.SetLuaPath(new() { scriptsPath });
 
-                LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "main.lua"));
-                l.CheckLuaStatus(lstat, "???");
-                lstat = l.PCall(0, -1, 0);
-                l.CheckLuaStatus(lstat, "???");
+            l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
 
-                string output = _hookLog.ToString();
+            LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "main.lua"));
+            l.CheckLuaStatus(lstat, "???");
+            lstat = l.PCall(0, -1, 0);
+            l.CheckLuaStatus(lstat, "???");
 
-                string expected =
+            string output = _hookLog.ToString();
+
+            string expected =
 @"main.lua-main.lua:2 (main)
 foo.lua-foo.lua:2 (main)
 module1.lua-module1.lua:3 (main)
@@ -173,18 +169,20 @@ module1.lua-module1.lua:8 (Lua)
 foo.lua-foo.lua:8 (Lua)
 main.lua-main.lua:11 (main)
 ";
-                expected = expected.Replace("\r", "");
-                expected = expected.Replace('/', Path.DirectorySeparatorChar);
-                output = output.Replace("\r", "");
-                Assert.AreEqual(expected, output, "#1");
-                Assert.IsNotNull(l.Hook);
-            }
+            expected = expected.Replace("\r", "");
+            expected = expected.Replace('/', Path.DirectorySeparatorChar);
+            output = output.Replace("\r", "");
+            Assert.AreEqual(expected, output, "#1");
+
+            Assert.IsNotNull(l.Hook);
+
+            // disable
+            l.SetHook(_funcHookCallback, LuaHookMask.Disabled, 0);
+            //Assert.IsNull(l.Hook, "#3");
         }
 
         static void HookCallback(IntPtr p, IntPtr ar)
         {
-            var env = Environment.GetEnvironmentVariables();
-
             var l = Lua.FromIntPtr(p);
             var debug = LuaDebug.FromIntPtr(ar);
 
@@ -196,7 +194,7 @@ main.lua-main.lua:11 (main)
                 return;
             }
 
-            l.GetStack(0, ar);
+            l!.GetStack(0, ar);
 
             if (!l.GetInfo("Snlu", ar))
             {
@@ -205,7 +203,7 @@ main.lua-main.lua:11 (main)
 
             debug = LuaDebug.FromIntPtr(ar);
 
-            string source = debug.Source.Substring(1);
+            string source = debug.Source[1..];
             string shortSource = Path.GetFileName(debug.ShortSource);
 
             source = Path.GetFileName(source);
@@ -217,24 +215,24 @@ main.lua-main.lua:11 (main)
         {
             _funcHookCallback = HookCalbackStruct;
 
-            using (var l = new Lua())
-            {
-                _hookLog.Clear();
+            using var l = new Lua();
 
-                string srcPath = l.GetSourcePath();
-                string scriptsPath = Path.Combine(srcPath, "scripts");
-                l.SetLuaPath(new() { scriptsPath });
+            _hookLog.Clear();
 
-                l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
+            string srcPath = Lua.GetSourcePath();
+            string scriptsPath = Path.Combine(srcPath, "scripts");
+            l.SetLuaPath(new() { scriptsPath });
 
-                LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "main.lua"));
-                l.CheckLuaStatus(lstat, "???");
-                lstat = l.PCall(0, -1, 0);
-                l.CheckLuaStatus(lstat, "???");
+            l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
 
-                string output = _hookLog.ToString();
+            LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "main.lua"));
+            l.CheckLuaStatus(lstat, "???");
+            lstat = l.PCall(0, -1, 0);
+            l.CheckLuaStatus(lstat, "???");
 
-                string expected =
+            string output = _hookLog.ToString();
+
+            string expected =
 @"main.lua-main.lua:2 (main)
 foo.lua-foo.lua:2 (main)
 module1.lua-module1.lua:3 (main)
@@ -259,16 +257,16 @@ module1.lua-module1.lua:8 (Lua)
 foo.lua-foo.lua:8 (Lua)
 main.lua-main.lua:11 (main)
 ";
-                expected = expected.Replace('/', Path.DirectorySeparatorChar);
-                expected = expected.Replace("\r", "");
-                output = output.Replace("\r", "");
+            expected = expected.Replace('/', Path.DirectorySeparatorChar);
+            expected = expected.Replace("\r", "");
+            output = output.Replace("\r", "");
 
-                Assert.AreEqual(expected, output, "#2");
+            Assert.AreEqual(expected, output, "#2");
 
-                l.SetHook(_funcHookCallback, LuaHookMask.Disabled, 0);
+            // disable
+            l.SetHook(_funcHookCallback, LuaHookMask.Disabled, 0);
 
-                Assert.IsNull(l.Hook, "#3");
-            }
+            Assert.IsNull(l.Hook, "#3");
         }
 
         static void HookCalbackStruct(IntPtr p, IntPtr ar)
@@ -276,7 +274,7 @@ main.lua-main.lua:11 (main)
             var l = Lua.FromIntPtr(p);
             var debug = new LuaDebug();
 
-            l.GetStack(0, ref debug);
+            l!.GetStack(0, ref debug);
 
             if (!l.GetInfo("Snlu", ref debug))
             {
@@ -284,7 +282,7 @@ main.lua-main.lua:11 (main)
             }
 
             string shortSource = Path.GetFileName(debug.ShortSource);
-            string source = debug.Source.Substring(1);
+            string source = debug.Source[1..];
             source = Path.GetFileName(source);
             _hookLog.AppendLine($"{shortSource}-{source}:{debug.CurrentLine} ({debug.What})");
         }
@@ -294,65 +292,61 @@ main.lua-main.lua:11 (main)
         [Test]
         public void TypeNameReturn()
         {
-            using (var l = new Lua())
-            {
-                l.PushInteger(28);
-                string name = l.TypeName(-1);
+            using var l = new Lua();
 
-                Assert.AreEqual("number", name, "#1");
-            }
+            l.PushInteger(28);
+            string name = l.TypeName(-1)!;
+
+            Assert.AreEqual("number", name, "#1");
         }
 
         [Test]
         public void SettingUpValueDoesntCrash()
         {
-            using (var l = new Lua())
-            {
-                l.LoadString("hello = 1");
-                l.NewTable();
-                string result = l.SetUpValue(-2, 1);
+            using var l = new Lua();
 
-                Assert.AreEqual("_ENV", result, "#1");
-            }
+            l.LoadString("hello = 1");
+            l.NewTable();
+            string result = l!.SetUpValue(-2, 1)!;
+
+            Assert.AreEqual("_ENV", result, "#1");
         }
 
         [Test]
         public void TestUnref()
         {
-            using (var l = new Lua())
-            {
-                l.DoString("function f() end");
-                LuaType type = l.GetGlobal("f");
-                Assert.AreEqual(LuaType.Function, type, "#1");
+            using var l = new Lua();
 
-                l.PushCopy(-1);
-                l.Ref(LuaRegistry.Index);
-                l.Close();
-            }
+            l.DoString("function f() end");
+            LuaType type = l.GetGlobal("f");
+            Assert.AreEqual(LuaType.Function, type, "#1");
+
+            l.PushCopy(-1);
+            l.Ref(LuaRegistry.Index);
+            l.Close();
         }
 
         [Test]
         public void TestThreadFromToPtr()
         {
-            using (var l = new Lua())
-            {
-                l.Register("func1", Func);
+            using var l = new Lua();
 
-                Lua thread = l.NewThread();
+            l.Register("func1", Func);
 
-                thread.DoString("func1(10,10)");
-                thread.DoString("func1(10,10)");
-            }
+            Lua thread = l.NewThread();
+
+            thread.DoString("func1(10,10)");
+            thread.DoString("func1(10,10)");
         }
 
         [Test]
         public void TestCoroutineCallback()
         {
-            using (var l = new Lua())
-            {
-                l.Register("func1", Func);
+            using var l = new Lua();
 
-                string script = @"function yielder() 
+            l.Register("func1", Func);
+
+            string script = @"function yielder() 
                                 a=1; 
                                 coroutine.yield();
                                 a = func1(3,2);
@@ -363,92 +357,86 @@ main.lua-main.lua:11 (main)
                              end
                              co_routine = coroutine.create(yielder);
                              while coroutine.resume(co_routine) do end;";
-                l.DoString(script);
-                l.DoString(script);
+            l.DoString(script);
+            l.DoString(script);
 
-                l.GetGlobal("a");
-                long a = l.ToInteger(-1);
-                Assert.AreEqual(a, 2d);
-            }
+            l.GetGlobal("a");
+            long? a = l.ToInteger(-1);
+            Assert.AreEqual(a, 2d);
         }
 
         [Test]
         public void TestToStringStack()
         {
-            using (var l = new Lua())
-            {
-                l.PushNumber(3);
-                l.PushInteger(4);
+            using var l = new Lua();
 
-                int currentTop = l.GetTop();
+            l.PushNumber(3);
+            l.PushInteger(4);
 
-                string four = l.ToString(-1);
+            int currentTop = l.GetTop();
 
-                int newTop = l.GetTop();
+            string four = l.ToString(-1)!;
 
-                Assert.AreEqual("4", four, "#1.1");
-                Assert.AreEqual(currentTop, newTop, "#1.2");
-            }
+            int newTop = l.GetTop();
+
+            Assert.AreEqual("4", four, "#1.1");
+            Assert.AreEqual(currentTop, newTop, "#1.2");
         }
 
         [Test]
         public void GettingUpValueDoesntCrash()
         {
-            using (var l = new Lua())
-            {
-                l.LoadString("hello = 1");
-                string result = l.GetUpValue(-1, 1);
+            using var l = new Lua();
 
-                Assert.AreEqual("_ENV", result, "#1");
-            }
+            l.LoadString("hello = 1");
+            string result = l.GetUpValue(-1, 1)!;
+
+            Assert.AreEqual("_ENV", result, "#1");
         }
 
         [Test]
         public void ResumeAcceptsNull()
         {
-            using (var l = new Lua())
-            {
-                l.LoadString("hello = 1");
-                LuaStatus result = l.Resume(null, 0);
+            using var l = new Lua();
 
-                Assert.AreEqual(LuaStatus.OK, result);
-            }
+            l.LoadString("hello = 1");
+            LuaStatus result = l.Resume(null, 0);
+
+            Assert.AreEqual(LuaStatus.OK, result);
         }
 
         [Test]
         public void TestWarning()
         {
-            using (var l = new Lua())
-            {
-                LuaWarnFunction warnFunction = MyWarning;
-                var sb = new StringBuilder();
+            using var l = new Lua();
 
-                l.PushObject(sb);
-                l.SetWarningFunction(warnFunction, l.Handle);
+            LuaWarnFunction warnFunction = MyWarning;
+            var sb = new StringBuilder();
 
-                l.Warning("Ola um dois tres", false);
+            l.PushObject(sb);
+            l.SetWarningFunction(warnFunction, l.Handle);
 
-                Assert.AreEqual("Ola um dois tres", sb.ToString(), "#1");
-            }
+            l.Warning("Ola um dois tres", false);
+
+            Assert.AreEqual("Ola um dois tres", sb.ToString(), "#1");
         }
 
         [Test]
         public static void TestNewLib()
         {
-            using (var l = new Lua())
-            {
-                l.RequireF("foobar", OpenFoo, true);
+            using var l = new Lua();
 
-                l.DoString("s = foobar.foo()");
+            l.RequireF("foobar", OpenFoo, true);
 
-                l.GetGlobal("s");
+            l.DoString("s = foobar.foo()");
 
-                bool check = l.IsString(-1);
-                string s = l.ToString(-1, false);
+            l.GetGlobal("s");
 
-                Assert.IsTrue(check, "#1");
-                Assert.AreEqual("bar", s, "#2");
-            }
+            bool check = l.IsString(-1);
+            string s = l.ToString(-1, false)!;
+
+            Assert.IsTrue(check, "#1");
+            Assert.AreEqual("bar", s, "#2");
         }
 
 
@@ -461,8 +449,8 @@ main.lua-main.lua:11 (main)
         static int Func(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
-            long param1 = l.CheckInteger(1);
-            long param2 = l.CheckInteger(2);
+            long param1 = l!.CheckInteger(1)!;
+            long param2 = l!.CheckInteger(2)!;
 
             l.PushInteger(param1 + param2);
             return 1;
@@ -472,9 +460,9 @@ main.lua-main.lua:11 (main)
         {
             var l = Lua.FromIntPtr(p);
 
-            Rectangle? param1 = l.ToObject<Rectangle?>(1);
-            Rectangle param2 = l.ToObject<Rectangle>(2);
-            DateTime param3 = l.ToObject<DateTime>(3);
+            Rectangle? param1 = l!.ToObject<Rectangle?>(1)!;
+            Rectangle param2 = l!.ToObject<Rectangle>(2)!;
+            DateTime param3 = l!.ToObject<DateTime>(3)!;
 
             Assert.IsNull(param1, "#1");
             Assert.AreEqual(param2, new Rectangle(10, 10, 100, 100), "#2");
@@ -486,23 +474,22 @@ main.lua-main.lua:11 (main)
         static void MyWarning(IntPtr ud, IntPtr msg, int tocont)
         {
             var l = Lua.FromIntPtr(ud);
-            StringBuilder sb = l.ToObject<StringBuilder>(-1);
-            string message = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(msg);
-            sb.Append(message);
+            StringBuilder sb = l!.ToObject<StringBuilder>(-1)!;
+            string? message = Marshal.PtrToStringAnsi(msg);
+            sb.Append(message!);
         }
 
         static int OpenFoo(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
-            l.NewLib(fooReg);
+            l!.NewLib(fooReg);
             return 1;
         }
 
         static int Foo(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
-
-            l.PushString("bar");
+            l!.PushString("bar");
             return 1;
         }
 
@@ -513,14 +500,14 @@ main.lua-main.lua:11 (main)
             LuaStatus result = l.LoadString(chunk);
 
             if (result != LuaStatus.OK)
-                error = l.ToString(1, false);
+                error = l.ToString(1, false)!;
 
             Assert.True(result == LuaStatus.OK, "Fail loading string: " + chunk + "ERROR:" + error);
 
             result = l.PCall(0, -1, 0);
 
             if (result != 0)
-                error = l.ToString(1, false);
+                error = l.ToString(1, false)!;
 
             Assert.True(result == 0, "Fail calling chunk: " + chunk + " ERROR: " + error);
         }
