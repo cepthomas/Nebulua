@@ -1,5 +1,5 @@
 --
--- json.lua
+-- json.lua  https://github.com/rxi/json.lua#readme
 --
 -- Copyright (c) 2020 rxi
 --

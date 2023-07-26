@@ -40,7 +40,7 @@ namespace Ephemera.Nebulua.Script
         // #endregion
 
 
-        ///// From Nebulator.
+        ///// >>>>>>>>>> From Nebulator.
         static readonly Dictionary<string, Channel> _channels = new();
         /// <summary>All devices to use for send. Key is my id (not the system driver name).</summary>
         static readonly Dictionary<string, IOutputDevice> _outputDevices = new();
@@ -50,12 +50,11 @@ namespace Ephemera.Nebulua.Script
 
 
         #region Fields - private or internal
-
         /// <summary>Main logger.</summary>
         static readonly Logger _logger = LogManager.CreateLogger("Script");
 
         // Main execution lua state.
-        static Lua _lMain = new();
+        static readonly Lua _lMain = new();
 
         // Bound static functions.
         static readonly LuaFunction _fLog = Log;
@@ -70,57 +69,41 @@ namespace Ephemera.Nebulua.Script
         #endregion
 
         #region Lifecycle
-        /// <summary>Load file and init everything.</summary>
-        /// <param name="fn"></param>
-        public static void Load(string fn)
+        /// <summary>
+        /// Load file and init everything.
+        /// This may throw an exception - client needs to handle them.
+        /// </summary>
+        /// <param name="fn">Lua file to open.</param>
+// <param name="luaPaths">Optional lua paths.</param>
+        public static void Load(string fn)//, List<string> luaPaths)// = null)
         {
             // Load the script file.
             bool ok = true;
+
             string path = fn; //Path.Combine("Test", "scripts", $"{fn}.lua");
 
-            LuaStatus lstat = _lMain.LoadFile(path);
-
-            switch(lstat)
+            try
             {
-                case LuaStatus.ErrSyntax:
-                case LuaStatus.ErrFile:
-                    string s = _lMain.ToString(-1);
-                    //MessageBox.Show(s); //TODOE client should deal with these.
-                    ok = false;
-                    break;
+                LuaStatus lstat = _lMain.LoadFile(path);
 
-                case LuaStatus.ErrMem:
-                case LuaStatus.ErrErr:
-                    s = _lMain.DumpStack();
-                    //MessageBox.Show(s); //TODOE client should deal with these.
-                    ok = false;
-                    break;
+                // Bind lua functions to internal.
+                _lMain.Register("log", _fLog);
+                _lMain.Register("send_controller", _fSendController); //send_controller(chan, controller, val)
+                _lMain.Register("send_note", _fSendNote); //send_note(chan, note, vol, dur)
+                _lMain.Register("send_note_on", _fSendNoteOn); //send_note_on(chan, note, vol)
+                _lMain.Register("send_note_off", _fSendNoteOff); //send_note_off(chan, note)
+                _lMain.Register("send_patch", _fSendPatch); // send_patch(chan, patch)
+                _lMain.Register("get_notes", _fGetNotes); //get_notes("B4.MY_SCALE")
+                _lMain.Register("create_notes", _fCreateNotes); //create_notes("MY_SCALE", "1 3 4 b7")
 
-                case LuaStatus.OK:
-                case LuaStatus.Yield:
-                    // Everything is fine.
-                    break;
+                // TODOA get/init the inputs and outputs. And anything else....
+                _channels.Clear();
             }
-
-            if (ok)
+            catch (Exception ex)
             {
-                lstat = _lMain.PCall(0, -1, 0);
-                _lMain.CheckLuaStatus(lstat);
 
+                throw;
             }
-
-            // Bind lua functions to internal.
-            _lMain.Register("log", _fLog);
-            _lMain.Register("send_controller", _fSendController); //send_controller(chan, controller, val)
-            _lMain.Register("send_note", _fSendNote); //send_note(chan, note, vol, dur)
-            _lMain.Register("send_note_on", _fSendNoteOn); //send_note_on(chan, note, vol)
-            _lMain.Register("send_note_off", _fSendNoteOff); //send_note_off(chan, note)
-            _lMain.Register("send_patch", _fSendPatch); // send_patch(chan, patch)
-            _lMain.Register("get_notes", _fGetNotes); //get_notes("B4.MY_SCALE")
-            _lMain.Register("create_notes", _fCreateNotes); //create_notes("MY_SCALE", "1 3 4 b7")
-
-            // TODOA get/init the inputs and outputs. And anything else....
-            _channels.Clear();
         }
 
         /// <summary> </summary>
@@ -143,6 +126,7 @@ namespace Ephemera.Nebulua.Script
 
         #region C# calls lua functions
         /// <summary>Called to initialize Nebulator stuff.</summary>
+        //throws
         public static void Setup()
         {
             // Get the function to be called.
@@ -153,13 +137,15 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(0, 0, 0);
-            _lMain.CheckLuaStatus(lstat, "lua_pcall setup() failed");
+            _lMain.CheckLuaStatus(lstat, "PCall setup() failed");
 
             // Get the results from the stack.
             // None.
         }
 
         /// <summary>Called every mmtimer increment.</summary>
+                //throws
+
         public static void Step(int bar, int beat, int subdiv)
         {
             // Get the function to be called. Check return.
@@ -172,13 +158,15 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(3, 0, 0);
-            _lMain.CheckLuaStatus(lstat, "lua_pcall step() failed");
+            _lMain.CheckLuaStatus(lstat, "PCall step() failed");
 
             // Get the results from the stack.
             // None.
         }
 
         /// <summary>Called when input arrives. Optional.</summary>
+                //throws
+
         public static void InputNote(string dev, int channel, int note, int vel)
         {
             // Get the function to be called. Check return.
@@ -194,13 +182,15 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(4, 0, 0);
-            _lMain.CheckLuaStatus(lstat, "lua_pcall input_note() failed");
+            _lMain.CheckLuaStatus(lstat, "PCall input_note() failed");
 
             // Get the results from the stack.
             // None.
         }
 
         /// <summary>Called when input arrives. Optional.</summary>
+                //throws
+
         public static void InputController(string dev, int channel, int controller, int value)
         {
             // Get the function to be called. Check return.
@@ -216,8 +206,7 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(4, 0, 0);
-
-            _lMain.CheckLuaStatus(lstat, "lua_pcall input_controller() failed");
+            _lMain.CheckLuaStatus(lstat, "PCall input_controller() failed");
 
             // Get the results from the stack.
             // None.
@@ -226,7 +215,7 @@ namespace Ephemera.Nebulua.Script
 
         #region Lua calls C# functions
 
-        // TODOA impl??
+        // TODOA impl these??
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
         // CreateSection(int beats, string name, SectionElements elements) -- -> Section
 

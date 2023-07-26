@@ -27,31 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="scripts\bisect.lua" Link="scripts\bisect.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
         <None Include="scripts\cf.lua" Link="scripts\cf.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\factorial.lua" Link="scripts\factorial.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\fib.lua" Link="scripts\fib.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\fibfor.lua" Link="scripts\fibfor.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\life.lua" Link="scripts\life.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\printf.lua" Link="scripts\printf.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\sieve.lua" Link="scripts\sieve.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\sort.lua" Link="scripts\sort.lua">
             <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </None>
         <None Include="scripts\main.lua" Link="scripts\main.lua">

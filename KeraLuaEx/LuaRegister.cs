@@ -11,11 +11,11 @@ namespace KeraLuaEx
         /// <summary>
         /// Function name
         /// </summary>
-        public string name;
+        public string? name;
         /// <summary>
         /// Function delegate
         /// </summary>
         [MarshalAs(UnmanagedType.FunctionPtr)]
-        public LuaFunction function;
+        public LuaFunction? function;
     }
 }
