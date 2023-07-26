@@ -35,9 +35,6 @@ namespace KeraLuaEx
         private const string LuaLibraryName = "lua54";
 #endif
 
-#pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable CA2101 // Bug on CA + VS2017
-
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static extern int lua_absindex(lua_State luaState, int idx);
 
@@ -147,12 +144,7 @@ namespace KeraLuaEx
         internal static extern void lua_len(lua_State luaState, int index);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        internal static extern int lua_load
-           (lua_State luaState,
-            lua_Reader reader,
-            voidptr_t data,
-            string chunkName,
-            string mode);
+        internal static extern int lua_load(lua_State luaState, lua_Reader reader, voidptr_t data, string chunkName, string mode);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static extern lua_State lua_newstate(lua_Alloc allocFunction, voidptr_t ud);
@@ -167,13 +159,7 @@ namespace KeraLuaEx
         internal static extern int lua_next(lua_State luaState, int index);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int lua_pcallk
-            (lua_State luaState,
-            int nargs,
-            int nresults,
-            int errorfunc,
-            lua_KContext ctx,
-            lua_KFunction k);
+        internal static extern int lua_pcallk(lua_State luaState, int nargs, int nresults, int errorfunc, lua_KContext ctx, lua_KFunction k);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static extern void lua_pushboolean(lua_State luaState, int value);
@@ -326,10 +312,7 @@ namespace KeraLuaEx
         internal static extern void lua_xmove(lua_State from, lua_State to, int n);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int lua_yieldk(lua_State luaState,
-            int nresults,
-            lua_KContext ctx,
-            lua_KFunction k);
+        internal static extern int lua_yieldk(lua_State luaState, int nresults, lua_KContext ctx, lua_KFunction k);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         internal static extern int luaL_argerror(lua_State luaState, int arg, string message);
@@ -383,15 +366,10 @@ namespace KeraLuaEx
         internal static extern lua_Integer luaL_len(lua_State luaState, int index);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        internal static extern int luaL_loadbufferx
-            (lua_State luaState,
-            byte[] buff,
-            size_t sz,
-            string name,
-            string mode);
+        internal static extern int luaL_loadbufferx(lua_State luaState, byte[] buff, size_t sz, string name, string? mode);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        internal static extern int luaL_loadfilex(lua_State luaState, string name, string mode);
+        internal static extern int luaL_loadfilex(lua_State luaState, string name, string? mode);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         internal static extern int luaL_newmetatable(lua_State luaState, string name);
@@ -427,11 +405,7 @@ namespace KeraLuaEx
         internal static extern charptr_t luaL_tolstring(lua_State luaState, int index, out size_t len);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        internal static extern charptr_t luaL_traceback
-           (lua_State luaState,
-            lua_State luaState2,
-            string message,
-            int level);
+        internal static extern charptr_t luaL_traceback(lua_State luaState, lua_State luaState2, string? message, int level);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         internal static extern int luaL_typeerror(lua_State luaState, int arg, string typeName);
@@ -441,9 +415,5 @@ namespace KeraLuaEx
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static extern void luaL_where(lua_State luaState, int level);
-
-#pragma warning restore CA2101 // Bug on CA + VS2017
-#pragma warning restore IDE1006 // Naming Styles
-
     }
 }

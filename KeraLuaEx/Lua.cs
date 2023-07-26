@@ -12,7 +12,7 @@ namespace KeraLuaEx
     public partial class Lua : IDisposable
     {
         private IntPtr _luaState;
-        private readonly Lua _mainState;
+        private readonly Lua? _mainState;
 
         /// <summary>
         /// Internal Lua handle pointer.
@@ -85,16 +85,26 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="luaState"></param>
         /// <returns></returns>
-        public static Lua FromIntPtr(IntPtr luaState)
+        public static Lua? FromIntPtr(IntPtr luaState)
         {
             if (luaState == IntPtr.Zero)
                 return null;
 
-            Lua state = GetExtraObject<Lua>(luaState);
-            if (state != null && state._luaState == luaState)
-                return state;
+            // original:
+            //Lua? state = GetExtraObject<Lua>(luaState);
+            //if (state != null && state._luaState == luaState)
+            //    return state;
+            //return new Lua(luaState, state.MainThread);
 
-            return new Lua(luaState, state.MainThread);
+            Lua? state = GetExtraObject<Lua>(luaState);
+            if (state != null)
+            {
+                return state._luaState == luaState ? state: new Lua(luaState, state.MainThread);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -142,7 +152,7 @@ namespace KeraLuaEx
             Marshal.WriteIntPtr(extraSpace, GCHandle.ToIntPtr(handle));
         }
 
-        private static T GetExtraObject<T>(IntPtr luaState) where T : class
+        private static T? GetExtraObject<T>(IntPtr luaState) where T : class
         {
             IntPtr extraSpace = luaState - IntPtr.Size;
             IntPtr pointer = Marshal.ReadIntPtr(extraSpace);
@@ -150,7 +160,7 @@ namespace KeraLuaEx
             if (!handle.IsAllocated)
                 return null;
 
-            return (T)handle.Target;
+            return (T?)handle.Target;
         }
 
 
@@ -406,7 +416,7 @@ namespace KeraLuaEx
         /// <param name="ar"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public string GetLocal(IntPtr ar, int n)
+        public string? GetLocal(IntPtr ar, int n)
         {
             IntPtr ptr = NativeMethods.lua_getlocal(_luaState, ar, n);
             return Marshal.PtrToStringAnsi(ptr);
@@ -418,10 +428,10 @@ namespace KeraLuaEx
         /// <param name="ar"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public string GetLocal(LuaDebug ar, int n)
+        public string? GetLocal(LuaDebug ar, int n)
         {
             IntPtr pDebug = Marshal.AllocHGlobal(Marshal.SizeOf(ar));
-            string ret = string.Empty;
+            string? ret = string.Empty;
             try
             {
                 Marshal.StructureToPtr(ar, pDebug, false);
@@ -534,7 +544,7 @@ namespace KeraLuaEx
         /// <param name="functionIndex"></param>
         /// <param name="n"></param>
         /// <returns>Returns the type of the pushed value. </returns>
-        public string GetUpValue(int functionIndex, int n)
+        public string? GetUpValue(int functionIndex, int n)
         {
             IntPtr ptr = NativeMethods.lua_getupvalue(_luaState, functionIndex, n);
             return Marshal.PtrToStringAnsi(ptr);
@@ -1163,7 +1173,7 @@ namespace KeraLuaEx
         /// <param name="ar"></param>
         /// <param name="n"></param>
         /// <returns>Returns NULL (and pops nothing) when the index is greater than the number of active local variables. </returns>
-        public string SetLocal(IntPtr ar, int n)
+        public string? SetLocal(IntPtr ar, int n)
         {
             IntPtr ptr = NativeMethods.lua_setlocal(_luaState, ar, n);
             return Marshal.PtrToStringAnsi(ptr);
@@ -1175,17 +1185,15 @@ namespace KeraLuaEx
         /// <param name="ar"></param>
         /// <param name="n"></param>
         /// <returns>Returns NULL (and pops nothing) when the index is greater than the number of active local variables. </returns>
-        public string SetLocal(LuaDebug ar, int n)
+        public string? SetLocal(LuaDebug ar, int n)
         {
             IntPtr pDebug = Marshal.AllocHGlobal(Marshal.SizeOf(ar));
-            string ret = string.Empty;
+            string? ret = null;
             try
             {
                 Marshal.StructureToPtr(ar, pDebug, false);
-
                 ret = SetLocal(pDebug, n);
                 ar = LuaDebug.FromIntPtr(pDebug);
-
             }
             finally
             {
@@ -1227,7 +1235,7 @@ namespace KeraLuaEx
         /// <param name="functionIndex"></param>
         /// <param name="n"></param>
         /// <returns>Returns NULL (and pops nothing) when the index n is greater than the number of upvalues. </returns>
-        public string SetUpValue(int functionIndex, int n)
+        public string? SetUpValue(int functionIndex, int n)
         {
             IntPtr ptr = NativeMethods.lua_setupvalue(_luaState, functionIndex, n);
             return Marshal.PtrToStringAnsi(ptr);
@@ -1313,10 +1321,7 @@ namespace KeraLuaEx
         /// <returns></returns>
         public long ToInteger(int index)
         {
-#pragma warning disable IDE0018 // Inline variable declaration
-            int isNum;
-#pragma warning restore IDE0018 // Inline variable declaration
-            return NativeMethods.lua_tointegerx(_luaState, index, out isNum);
+            return NativeMethods.lua_tointegerx(_luaState, index, out int isNum);
         }
 
         /// <summary>
@@ -1338,7 +1343,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public byte[] ToBuffer(int index)
+        public byte[]? ToBuffer(int index)
         {
             return ToBuffer(index, true);
         }
@@ -1348,7 +1353,7 @@ namespace KeraLuaEx
         /// <param name="index"></param>
         /// <param name="callMetamethod">Calls __tostring field if present</param>
         /// <returns></returns>
-        public byte[] ToBuffer(int index, bool callMetamethod)
+        public byte[]? ToBuffer(int index, bool callMetamethod)
         {
             UIntPtr len;
             IntPtr buff;
@@ -1368,7 +1373,7 @@ namespace KeraLuaEx
 
             int length = (int)len;
             if (length == 0)
-                return new byte[0];
+                return Array.Empty<byte>();
 
             byte[] output = new byte[length];
             Marshal.Copy(buff, output, 0, length);
@@ -1380,44 +1385,43 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public string ToString(int index)
+        public string? ToString(int index)
         {
             return ToString(index, true);
         }
+
         /// <summary>
         /// Converts the Lua value at the given index to a C# string
         /// </summary>
         /// <param name="index"></param>
         /// <param name="callMetamethod">Calls __tostring field if present</param>
         /// <returns></returns>
-        public string ToString(int index, bool callMetamethod)
+        public string? ToString(int index, bool callMetamethod)
         {
-            byte[] buffer = ToBuffer(index, callMetamethod);
+            byte[]? buffer = ToBuffer(index, callMetamethod);
             if (buffer == null)
                 return null;
             return Encoding.GetString(buffer);
         }
 
         /// <summary>
-        /// Converts the Lua value at the given index to a C# double
+        /// Converts the Lua value at the given index to a C# double.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public double ToNumber(int index)
         {
-            int isNum;
-            return NativeMethods.lua_tonumberx(_luaState, index, out isNum);
+            return NativeMethods.lua_tonumberx(_luaState, index, out int isNum);
         }
 
         /// <summary>
-        /// Converts the Lua value at the given index to a C# double?
+        /// Converts the Lua value at the given index to a C# double?.TODOC combine these.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public double? ToNumberX(int index)
         {
-            int isNumber;
-            double value = NativeMethods.lua_tonumberx(_luaState, index, out isNumber);
+            double value = NativeMethods.lua_tonumberx(_luaState, index, out int isNumber);
             if (isNumber != 0)
                 return value;
             return null;
@@ -1434,14 +1438,13 @@ namespace KeraLuaEx
             return NativeMethods.lua_topointer(_luaState, index);
         }
 
-
         /// <summary>
         /// Converts the value at the given index to a Lua thread
         /// or return the self if is the main thread
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public Lua ToThread(int index)
+        public Lua? ToThread(int index)
         {
             IntPtr state = NativeMethods.lua_tothread(_luaState, index);
             if (state == _luaState)
@@ -1459,20 +1462,20 @@ namespace KeraLuaEx
         /// <param name="index"></param>
         /// <param name="freeGCHandle">True to free the GCHandle</param>
         /// <returns></returns>
-        public T ToObject<T>(int index, bool freeGCHandle = true)
+        public T? ToObject<T>(int index, bool freeGCHandle = true)
         {
             if (IsNil(index) || !IsLightUserData(index))
-                return default(T);
+                return default;
 
             IntPtr data = ToUserData(index);
             if (data == IntPtr.Zero)
-                return default(T);
+                return default;
 
             var handle = GCHandle.FromIntPtr(data);
             if (!handle.IsAllocated)
-                return default(T);
+                return default;
 
-            var reference = (T)handle.Target;
+            var reference = (T?)handle.Target;
 
             if (freeGCHandle)
                 handle.Free();
@@ -1505,7 +1508,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="type"></param>
         /// <returns>Name of the type of the value at the given index</returns>
-        public string TypeName(LuaType type)
+        public string? TypeName(LuaType type)
         {
             IntPtr ptr = NativeMethods.lua_typename(_luaState, (int)type);
             return Marshal.PtrToStringAnsi(ptr);
@@ -1653,7 +1656,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="argument"></param>
         /// <returns></returns>
-        public byte[] CheckBuffer(int argument)
+        public byte[]? CheckBuffer(int argument)
         {
             UIntPtr len;
             IntPtr buff = NativeMethods.luaL_checklstring(_luaState, argument, out len);
@@ -1662,7 +1665,7 @@ namespace KeraLuaEx
 
             int length = (int)len;
             if (length == 0)
-                return new byte[0];
+                return Array.Empty<byte>();
 
             byte[] output = new byte[length];
             Marshal.Copy(buff, output, 0, length);
@@ -1674,9 +1677,9 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="argument"></param>
         /// <returns></returns>
-        public string CheckString(int argument)
+        public string? CheckString(int argument)
         {
-            byte[] buffer = CheckBuffer(argument);
+            byte[]? buffer = CheckBuffer(argument);
             if (buffer == null)
                 return null;
             return Encoding.GetString(buffer);
@@ -1732,20 +1735,20 @@ namespace KeraLuaEx
         /// <param name="typeName"></param>
         /// <param name="freeGCHandle">True to release the GCHandle</param>
         /// <returns></returns>
-        public T CheckObject<T>(int argument, string typeName, bool freeGCHandle = true)
+        public T? CheckObject<T>(int argument, string typeName, bool freeGCHandle = true)
         {
             if (IsNil(argument) || !IsLightUserData(argument))
-                return default(T);
+                return default;
 
             IntPtr data = CheckUserData(argument, typeName);
             if (data == IntPtr.Zero)
-                return default(T);
+                return default;
 
             var handle = GCHandle.FromIntPtr(data);
             if (!handle.IsAllocated)
-                return default(T);
+                return default;
 
-            var reference = (T)handle.Target;
+            var reference = (T?)handle.Target;
 
             if (freeGCHandle)
                 handle.Free();
@@ -1880,7 +1883,7 @@ namespace KeraLuaEx
         /// <param name="name"></param>
         /// <param name="mode"></param>
         /// <returns></returns>
-        LuaStatus LoadBuffer(byte[] buffer, string name, string mode)
+        LuaStatus LoadBuffer(byte[] buffer, string? name, string? mode)//TODOA all these overloads?
         {
             if (buffer == null)
                 throw new ArgumentNullException(nameof(buffer), "buffer shouldn't be null");
@@ -1906,7 +1909,6 @@ namespace KeraLuaEx
         LuaStatus LoadBuffer(byte[] buffer)
         {
             return LoadBuffer(buffer, null, null);
-
         }
 
         /// <summary>
@@ -1915,10 +1917,10 @@ namespace KeraLuaEx
         /// <param name="chunk"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        LuaStatus LoadString(string chunk, string name)
+        LuaStatus LoadString(string chunk, string? name)//TODOA all these overloads?
         {
             byte[] buffer = Encoding.GetBytes(chunk);
-            return LoadBuffer(buffer, name);
+            return LoadBuffer(buffer, name, null);
         }
 
         /// <summary>
@@ -1937,7 +1939,7 @@ namespace KeraLuaEx
         /// <param name="file"></param>
         /// <param name="mode"></param>
         /// <returns>The status of operation</returns>
-        public LuaStatus LoadFile(string file, string mode)
+        public LuaStatus LoadFile(string file, string? mode)
         {
             LuaStatus lstat = (LuaStatus)NativeMethods.luaL_loadfilex(_luaState, file, mode);
             CheckLuaStatus(lstat, $"LoadFile({file}, {mode})");
@@ -1995,7 +1997,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// If the function argument arg is an integer (or convertible to an integer), returns this integer. If this argument is absent or is nil, returns d
+        /// If the function argument arg is an integer (or convertible to an integer), returns this integer.
+        /// If this argument is absent or is nil, returns d.
         /// </summary>
         /// <param name="argument"></param>
         /// <param name="d">default value</param>
@@ -2006,11 +2009,13 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// If the function argument arg is a string, returns this string. If this argument is absent or is nil, returns d        /// </summary>
+        /// If the function argument arg is a string, returns this string.
+        /// If this argument is absent or is nil, returns d.
+        /// </summary>
         /// <param name="index"></param>
         /// <param name="def"></param>
         /// <returns></returns>
-        public byte[] OptBuffer(int index, byte[] def)
+        public byte[]? OptBuffer(int index, byte[] def)
         {
             if (IsNil(index))
                 return def;
@@ -2019,12 +2024,13 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// If the function argument arg is a string, returns this string. If this argument is absent or is nil, returns d
+        /// If the function argument arg is a string, returns this string.
+        /// If this argument is absent or is nil, returns d.
         /// </summary>
         /// <param name="index"></param>
         /// <param name="def"></param>
         /// <returns></returns>
-        public string OptString(int index, string def)
+        public string? OptString(int index, string def)
         {
             if (IsNil(index))
                 return def;
@@ -2091,20 +2097,20 @@ namespace KeraLuaEx
         /// <param name="typeName"></param>
         /// <param name="freeGCHandle">True to release the GCHandle of object</param>
         /// <returns></returns>
-        public T TestObject<T>(int argument, string typeName, bool freeGCHandle = true)
+        public T? TestObject<T>(int argument, string typeName, bool freeGCHandle = true)
         {
             if (IsNil(argument) || !IsLightUserData(argument))
-                return default(T);
+                return default;
 
             IntPtr data = TestUserData(argument, typeName);
             if (data == IntPtr.Zero)
-                return default(T);
+                return default;
 
             var handle = GCHandle.FromIntPtr(data);
             if (!handle.IsAllocated)
-                return default(T);
+                return default;
 
-            var reference = (T)handle.Target;
+            var reference = (T?)handle.Target;
             if (freeGCHandle)
                 handle.Free();
 
@@ -2138,7 +2144,7 @@ namespace KeraLuaEx
         /// <param name="state"></param>
         /// <param name="message">appended at the beginning of the traceback</param>
         /// <param name="level"> Tells at which level to start the traceback</param>
-        public void Traceback(Lua state, string message, int level)
+        public void Traceback(Lua state, string? message, int level)
         {
             if (state == null)
                 throw new ArgumentNullException(nameof(state), "state shouldn't be null");
@@ -2151,7 +2157,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public string TypeName(int index)
+        public string? TypeName(int index)
         {
             LuaType type = Type(index);
             return TypeName(type);

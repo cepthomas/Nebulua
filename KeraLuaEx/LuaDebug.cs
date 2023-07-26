@@ -19,7 +19,7 @@ namespace KeraLuaEx
         /// </summary>
         /// <param name="ar"></param>
         /// <returns></returns>
-        public static LuaDebug? FromIntPtr(IntPtr ar)
+        public static LuaDebug FromIntPtr(IntPtr ar)
         {
             return Marshal.PtrToStructure<LuaDebug>(ar);
         }
@@ -32,32 +32,32 @@ namespace KeraLuaEx
         /// <summary>
         ///  a reasonable name for the given function. Because functions in Lua are first-class values, they do not have a fixed name: some functions can be the value of multiple global variables, while others can be stored only in a table field
         /// </summary>
-        public string? Name => Marshal.PtrToStringAnsi(name);
+        public readonly string Name => Marshal.PtrToStringAnsi(name) ?? "null";
         readonly IntPtr name;
 
         /// <summary>
         /// explains the name field. The value of namewhat can be "global", "local", "method", "field", "upvalue", or "" (the empty string)
         /// </summary>
-        public string? NameWhat => Marshal.PtrToStringAnsi(what);
+        public readonly string NameWhat => Marshal.PtrToStringAnsi(what) ?? "null";
         readonly IntPtr nameWhat;
 
         /// <summary>
         ///  the string "Lua" if the function is a Lua function, "C" if it is a C function, "main" if it is the main part of a chunk
         /// </summary>
-        public string? What => Marshal.PtrToStringAnsi(what);
+        public readonly string What => Marshal.PtrToStringAnsi(what) ?? "null";
         readonly IntPtr what;
 
         /// <summary>
         ///  the name of the chunk that created the function. If source starts with a '@', it means that the function was defined in a file where the file name follows the '@'.
         /// </summary>
         /// 
-        public string? Source => Marshal.PtrToStringAnsi(source, SourceLength);
+        public readonly string Source => Marshal.PtrToStringAnsi(source, SourceLength) ?? "null";
         readonly IntPtr source;
 
         /// <summary>
         /// The length of the string source
         /// </summary>
-        public int SourceLength => sourceLen.ToInt32();
+        public readonly int SourceLength => sourceLen.ToInt32();
         readonly IntPtr sourceLen;
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace KeraLuaEx
         /// <summary>
         /// a "printable" version of source, to be used in error messages
         /// </summary>
-        public string? ShortSource
+        public readonly string ShortSource
         {
             get
             {
