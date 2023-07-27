@@ -6,14 +6,12 @@ using System.Text;
 using System.Xml.Linq;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using NUnit.Framework;
 using KeraLuaEx;
 
 
-using System.Text.Json;
-
-
-using System.Text.Json.Serialization;
 
 
 namespace KeraLuaEx.Test

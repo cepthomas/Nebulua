@@ -138,9 +138,9 @@ namespace KeraLuaEx.Test
             l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
 
             LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "main.lua"));
-            l.CheckLuaStatus(lstat, "???");
+            l.CheckLuaStatus(lstat);
             lstat = l.PCall(0, -1, 0);
-            l.CheckLuaStatus(lstat, "???");
+            l.CheckLuaStatus(lstat);
 
             string output = _hookLog.ToString();
 
@@ -226,9 +226,9 @@ main.lua-main.lua:11 (main)
             l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
 
             LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "main.lua"));
-            l.CheckLuaStatus(lstat, "???");
+            l.CheckLuaStatus(lstat);
             lstat = l.PCall(0, -1, 0);
-            l.CheckLuaStatus(lstat, "???");
+            l.CheckLuaStatus(lstat);
 
             string output = _hookLog.ToString();
 

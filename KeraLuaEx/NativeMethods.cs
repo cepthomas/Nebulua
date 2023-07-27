@@ -32,7 +32,7 @@ namespace KeraLuaEx
 #elif WINDOWS_UWP
         private const string LuaLibraryName = "lua54.dll";
 #else
-        private const string LuaLibraryName = "lua54";
+        private const string LuaLibraryName = "lua54";//TODOE get correct version
 #endif
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]

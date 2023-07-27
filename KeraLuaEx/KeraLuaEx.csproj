@@ -23,5 +23,10 @@
       <EmbeddedResource Remove="Test\**" />
       <None Remove="Test\**" />
     </ItemGroup>
+    <ItemGroup>
+      <None Update="lua54.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
 
 </Project>

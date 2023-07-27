@@ -1,7 +1,7 @@
 
 json = require "json"
 
-print("Load luaex.lua")
+printex("Loading luaex.lua!")
 
 math.randomseed(os.time())
 
@@ -33,7 +33,7 @@ things_json = json.encode(things)
 local index = 1
 
 function g_func(s)
-  print(#s, index, _G[index])
+  printex(#s .. " " .. index)
   index = index + 1
   return #s
 end

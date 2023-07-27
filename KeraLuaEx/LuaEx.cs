@@ -14,62 +14,14 @@ using System.Text.Json;
 
 namespace KeraLuaEx
 {
-    #region Exceptions
-
-    // If new properties are added to the derived exception class, ToString() should be overridden to return the added information.
-    
-    /// <summary>Lua script syntax error.</summary>
-    [Serializable]
-    public class SyntaxException : Exception
-    {
-        public SyntaxException() : base() { }
-        public SyntaxException(string message) : base(message) { }
-        public SyntaxException(string message, Exception inner) : base(message, inner) { }
-    }
-
-    /// <summary>Internal error on lua side.</summary>
-    [Serializable]
-    public class LuaException : Exception
-    {
-        public LuaException() : base() { }
-        public LuaException(string message) : base(message) { }
-        public LuaException(string message, Exception inner) : base(message, inner) { }
-    }
-    #endregion
-
     partial class Lua
     {
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="paths"></param>
-        public void SetLuaPath(List<string> paths)
-        {
-            List<string> parts = new()
-            {
-                "?",
-                "?.lua"
-            };
-
-            // One way.
-            paths.ForEach(p => parts.Add(Path.Join(p, "?.lua").Replace('\\', '/')));
-            string luapath = string.Join(';', parts);
-            string s = $"package.path = \"{luapath}\"";
-            DoString(s);
-
-            // Other way.
-            //paths.ForEach(p => parts.Add(Path.Join(p, "?.lua")));
-            //parts.AddRange(paths);
-            //string luapath = string.Join(';', parts);
-            //Environment.SetEnvironmentVariable("LUA_PATH", luapath);
-        }
-
-        /// <summary>
-        /// 
+        /// Generic get a value. Restores stack.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public (object? val, Type? type) GetGlobalValue(string name) //TODOA used?
+        public (object? val, Type? type) GetGlobalValue(string name)
         {
             object? val = null;
             Type? type = null;
@@ -77,6 +29,10 @@ namespace KeraLuaEx
             LuaType t = GetGlobal(name); // st: global
             switch (t)
             {
+                case LuaType.Nil:
+                    // Return defaults.
+                    break;
+
                 case LuaType.String:
                     val = ToString(-1);
                     type = typeof(string);
@@ -100,12 +56,7 @@ namespace KeraLuaEx
                     }
                     break;
 
-                case LuaType.Nil:
-                    val = null;
-                    break;
-
                 case LuaType.Table://TODOA
-
 
                     break;
 
@@ -117,9 +68,9 @@ namespace KeraLuaEx
                     throw new ArgumentException($"Unsupported type:{t} for {name}");
             }
 
-            if (val == null)
+            if (val != null)
             {
-                Pop(1); // clean up stack ??
+                Pop(1);
             }
 
             return (val, type);
@@ -193,7 +144,6 @@ namespace KeraLuaEx
             return ls;
         }
 
-
         /// <summary>
         /// Push a list of ints onto the stack as function return.
         /// </summary>
@@ -213,40 +163,6 @@ namespace KeraLuaEx
                 RawSetInteger(-2, 2);
                 RawSetInteger(-2, i + 1);
             }
-        }
-
-        /// <summary>
-        /// Check lua status.
-        /// </summary>
-        /// <param name="lstat"></param>
-        /// <param name="info"></param>
-        ///// <param name="file">Ignore - compiler use.</param>
-        ///// <param name="line">Ignore - compiler use.</param>
-        public bool CheckLuaStatus(LuaStatus lstat, string info) // TODOE? , [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
-        {
-            bool hasError = false;
-
-            if (lstat >= LuaStatus.ErrRun)
-            {
-                string stack = string.Join(" ", DumpStack());
-                //string tb = string.Join(" ", DumpTraceback());
-
-                //TODOE exceptions or error code return?
-                //_logger.Error($"Lua status:{lstat} in {file}({line}) {info}");
-
-                if (lstat == LuaStatus.ErrFile)
-                {
-                    throw new FileNotFoundException(info);
-                }
-                else
-                {
-                    string serr = $"{lstat}: {stack}";
-                    //string serr = $"{lstat} tb:{tb} stack:{stack}";
-                    throw new LuaException(serr);
-                }
-            }
-
-            return hasError;
         }
 
         /// <summary>
@@ -292,7 +208,7 @@ namespace KeraLuaEx
                 {
                     case LuaType.String:    sval = $"\"{ToString(i)}\"";      break;
                     case LuaType.Boolean:   sval = ToBoolean(i) ? "true" : "false";    break;
-                    case LuaType.Number:    sval = "{(IsInteger(i) ? ToInteger(i) : ToNumber(i))}";  break;
+                    case LuaType.Number:    sval = $"{(IsInteger(i) ? ToInteger(i) : ToNumber(i))}";  break;
                     case LuaType.Nil:       sval = "nil";   break;
                     case LuaType.Table:     sval = ToString(i) ?? "null"; break;
                     //case LuaType.Function:
@@ -303,9 +219,8 @@ namespace KeraLuaEx
                     default:                sval = $"{ToPointer(i)}"; break;
                 }
 
-                string s = $"ind:{i} type:{t} val:{sval}";
+                string s = $"[{i}] type:{t} val:{sval}";
                 ls.Add(s);
-
             }
 
             return ls;
@@ -331,6 +246,33 @@ namespace KeraLuaEx
         //}
 
 
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="paths"></param>
+        public void SetLuaPath(List<string> paths)
+        {
+            List<string> parts = new()
+            {
+                "?",
+                "?.lua"
+            };
+
+            // One way.
+            paths.ForEach(p => parts.Add(Path.Join(p, "?.lua").Replace('\\', '/')));
+            string luapath = string.Join(';', parts);
+            string s = $"package.path = \"{luapath}\"";
+            DoString(s);
+
+            // Other way.
+            //paths.ForEach(p => parts.Add(Path.Join(p, "?.lua")));
+            //parts.AddRange(paths);
+            //string luapath = string.Join(';', parts);
+            //Environment.SetEnvironmentVariable("LUA_PATH", luapath);
+        }
 
 
         /// <summary>

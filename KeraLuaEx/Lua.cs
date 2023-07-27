@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,25 +21,29 @@ namespace KeraLuaEx
         public IntPtr Handle => _luaState;
 
         /// <summary>
-        /// Encoding for the string conversions
+        /// Encoding for the string conversions.
         /// ASCII by default.
         /// </summary>
         public Encoding Encoding { get; set; }
 
         /// <summary>
-        ///  Returns a pointer to a raw memory area associated with the given Lua state. The application can use this area for any purpose; Lua does not use it for anything.
-        ///  Each new thread has this area initialized with a copy of the area of the main thread. 
+        /// Returns a pointer to a raw memory area associated with the given Lua state.
+        /// The application can use this area for any purpose; Lua does not use it for anything.
+        /// Each new thread has this area initialized with a copy of the area of the main thread. 
         /// </summary>
         /// <returns></returns>
         public IntPtr ExtraSpace => _luaState - IntPtr.Size;
 
         /// <summary>
-        /// Get the main thread object, if the object is the main thread will be equal this
+        /// Get the main thread object, if the object is the main thread will be equal this.
         /// </summary>
         public Lua MainThread => _mainState ?? this;
 
+
+
+        #region Lifecycle
         /// <summary>
-        /// Initialize Lua state, and open the default libs
+        /// Initialize Lua state, and open the default libs.
         /// </summary>
         /// <param name="openLibs">flag to enable/disable opening the default libs</param>
         public Lua(bool openLibs = true)
@@ -56,9 +61,12 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Initialize Lua state with allocator function and user data value
+        /// Initialize Lua state with allocator function and user data value.
         /// This method will NOT open the default libs.
-        /// Creates a new thread running in a new, independent state. Returns NULL if it cannot create the thread or the state (due to lack of memory). The argument f is the allocator function; Lua does all memory allocation for this state through this function (see lua_Alloc). The second argument, ud, is an opaque pointer that Lua passes to the allocator in every call. 
+        /// Creates a new thread running in a new, independent state.
+        /// Returns NULL if it cannot create the thread or the state (due to lack of memory).
+        /// The argument f is the allocator function; Lua does all memory allocation for this state through this function (see lua_Alloc).
+        /// The second argument, ud, is an opaque pointer that Lua passes to the allocator in every call. 
         /// </summary>
         /// <param name="allocator">LuaAlloc allocator function called to alloc/free memory</param>
         /// <param name="ud">opaque pointer passed to allocator</param>
@@ -71,6 +79,11 @@ namespace KeraLuaEx
             SetExtraObject(this, true);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="luaThread"></param>
+        /// <param name="mainState"></param>
         private Lua(IntPtr luaThread, Lua mainState)
         {
             _mainState = mainState;
@@ -82,7 +95,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Get the Lua object from IntPtr
+        /// Get the Lua object from IntPtr.
         /// Useful for LuaFunction callbacks, if the Lua object was already collected will return null.
         /// </summary>
         /// <param name="luaState"></param>
@@ -110,7 +123,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Finalizer, will dispose the lua state if wasn't closed
+        /// Finalizer, will dispose the lua state if wasn't closed.
         /// </summary>
         ~Lua()
         {
@@ -118,7 +131,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Dispose lua state
+        /// Dispose lua state.
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
@@ -127,7 +140,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Destroys all objects in the given Lua state (calling the corresponding garbage-collection metamethods, if any) and frees all dynamic memory used by this state
+        /// Destroys all objects in the given Lua state (calling the corresponding garbage-collection metamethods, if any)
+        /// and frees all dynamic memory used by this state.
         /// </summary>
         public void Close()
         {
@@ -140,7 +154,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Dispose the lua context (calling Close)
+        /// Dispose the lua context (calling Close).
         /// </summary>
         public void Dispose()
         {
@@ -148,6 +162,12 @@ namespace KeraLuaEx
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="weak"></param>
         private void SetExtraObject<T>(T obj, bool weak) where T : class
         {
             var handle = GCHandle.Alloc(obj, weak ? GCHandleType.Weak : GCHandleType.Normal);
@@ -155,6 +175,12 @@ namespace KeraLuaEx
             Marshal.WriteIntPtr(extraSpace, GCHandle.ToIntPtr(handle));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="luaState"></param>
+        /// <returns></returns>
         private static T? GetExtraObject<T>(IntPtr luaState) where T : class
         {
             IntPtr extraSpace = luaState - IntPtr.Size;
@@ -165,10 +191,49 @@ namespace KeraLuaEx
 
             return (T?)handle.Target;
         }
+        #endregion
 
+        #region Load/Run
+        /// <summary>
+        /// Loads and runs the given file.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns>It returns false if there are no errors or true in case of errors. </returns>
+        public bool DoFile(string file)
+        {
+            bool hasError = false;
+
+            LuaStatus lstat = LoadFile(file);
+            CheckLuaStatus(lstat);
+
+            lstat = PCall(0, -1, 0);
+            CheckLuaStatus(lstat);
+
+            return hasError;
+        }
 
         /// <summary>
-        /// Converts the acceptable index idx into an equivalent absolute index (that is, one that does not depend on the stack top). 
+        /// Loads and runs the given string.
+        /// </summary>
+        /// <param name="chunk"></param>
+        /// <returns>It returns false if there are no errors or true in case of errors. </returns>
+        public bool DoString(string chunk)
+        {
+            bool hasError = false;
+
+            LuaStatus lstat = LoadString(chunk);
+            CheckLuaStatus(lstat);
+
+            lstat = PCall(0, -1, 0);
+            CheckLuaStatus(lstat);
+
+            return hasError;
+        }
+        #endregion
+
+        #region Lua functions - lua_xyz()
+        /// <summary>
+        /// Converts the acceptable index into an equivalent absolute index (that is, one that does not depend on the stack top). 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -176,6 +241,7 @@ namespace KeraLuaEx
         {
             return NativeMethods.lua_absindex(_luaState, index);
         }
+
         /// <summary>
         /// Performs an arithmetic or bitwise operation over the two values (or one, in the case of negations) at the top of the stack,
         /// with the value at the top being the second operand, pops these values, and pushes the result of the operation.
@@ -200,11 +266,16 @@ namespace KeraLuaEx
 
         /// <summary>
         ///  Calls a function. 
-        ///  To call a function you must use the following protocol: first, the function to be called is pushed onto the stack; then, the arguments to the function are pushed in direct order;
-        ///  that is, the first argument is pushed first. Finally you call lua_call; nargs is the number of arguments that you pushed onto the stack.
-        ///  All arguments and the function value are popped from the stack when the function is called. The function results are pushed onto the stack when the function returns.
-        ///  The number of results is adjusted to nresults, unless nresults is LUA_MULTRET. In this case, all results from the function are pushed;
-        ///  Lua takes care that the returned values fit into the stack space, but it does not ensure any extra space in the stack. The function results are pushed onto the stack in direct order (the first result is pushed first), so that after the call the last result is on the top of the stack. 
+        ///  To call a function you must use the following protocol: first, the function to be called is pushed onto the stack;
+        ///  then, the arguments to the function are pushed in direct order; that is, the first argument is pushed first.
+        ///  Finally you call lua_call; nargs is the number of arguments that you pushed onto the stack.
+        ///  All arguments and the function value are popped from the stack when the function is called.
+        ///  The function results are pushed onto the stack when the function returns.
+        ///  The number of results is adjusted to nresults, unless nresults is LUA_MULTRET. In this case, all results from
+        ///  the function are pushed.
+        ///  Lua takes care that the returned values fit into the stack space, but it does not ensure any extra space
+        ///  in the stack. The function results are pushed onto the stack in direct order (the first result is pushed first),
+        ///  so that after the call the last result is on the top of the stack. 
         /// </summary>
         /// <param name="arguments"></param>
         /// <param name="results"></param>
@@ -214,7 +285,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// This function behaves exactly like lua_call, but allows the called function to yield 
+        /// This function behaves exactly like lua_call, but allows the called function to yield.
         /// </summary>
         /// <param name="arguments"></param>
         /// <param name="results"></param>
@@ -227,7 +298,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Ensures that the stack has space for at least n extra slots (that is, that you can safely push up to n values into it). It returns false if it cannot fulfill the request,
+        /// Ensures that the stack has space for at least n extra slots (that is, that you can safely
+        /// push up to n values into it). It returns false if it cannot fulfill the request.
         /// </summary>
         /// <param name="nExtraSlots"></param>
         public bool CheckStack(int nExtraSlots)
@@ -236,7 +308,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Compares two Lua values. Returns 1 if the value at index index1 satisfies op when compared with the value at index index2
+        /// Compares two Lua values. Returns 1 if the value at index index1 satisfies op when compared with the value at index index2.
         /// </summary>
         /// <param name="index1"></param>
         /// <param name="index2"></param>
@@ -248,15 +320,17 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Concatenates the n values at the top of the stack, pops them, and leaves the result at the top. If n is 1, the result is the single value on the stack (that is, the function does nothing);
+        /// Concatenates the n values at the top of the stack, pops them, and leaves the result at the top.
+        /// If n is 1, the result is the single value on the stack (that is, the function does nothing).
         /// </summary>
         /// <param name="n"></param>
         public void Concat(int n)
         {
             NativeMethods.lua_concat(_luaState, n);
         }
+
         /// <summary>
-        /// Copies the element at index fromidx into the valid index toidx, replacing the value at that position
+        /// Copies the element at index fromidx into the valid index toidx, replacing the value at that position.
         /// </summary>
         /// <param name="fromIndex"></param>
         /// <param name="toIndex"></param>
@@ -266,7 +340,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Creates a new empty table and pushes it onto the stack. Parameter narr is a hint for how many elements the table will have as a sequence; parameter nrec is a hint for how many other elements the table will have
+        /// Creates a new empty table and pushes it onto the stack. Parameter narr is a hint for how many
+        /// elements the table will have as a sequence; parameter nrec is a hint for how many other elements the table will have.
         /// </summary>
         /// <param name="elements"></param>
         /// <param name="records"></param>
@@ -276,7 +351,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Dumps a function as a binary chunk. Receives a Lua function on the top of the stack and produces a binary chunk that, if loaded again, results in a function equivalent to the one dumped
+        /// Dumps a function as a binary chunk. Receives a Lua function on the top of the stack and produces a
+        /// binary chunk that, if loaded again, results in a function equivalent to the one dumped.
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="data"></param>
@@ -288,8 +364,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Generates a Lua error, using the value at the top of the stack as the error object. This function does a long jump
-        /// (We want it to be inlined to avoid issues with managed stack)
+        /// Generates a Lua error, using the value at the top of the stack as the error object.
+        /// This function does a long jump (We want it to be inlined to avoid issues with managed stack).
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -322,7 +398,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Returns the memory-allocation function of a given state. If ud is not NULL, Lua stores in *ud the opaque pointer given when the memory-allocator function was set. 
+        /// Returns the memory-allocation function of a given state. If ud is not NULL, Lua stores in *ud
+        /// the opaque pointer given when the memory-allocator function was set. 
         /// </summary>
         /// <param name="ud"></param>
         /// <returns></returns>
@@ -332,7 +409,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the value t[k], where t is the value at the given index. As in Lua, this function may trigger a metamethod for the "index" event (see §2.4).
+        /// Pushes onto the stack the value t[k], where t is the value at the given index.
+        /// As in Lua, this function may trigger a metamethod for the "index" event (see §2.4).
         /// Returns the type of the pushed value. 
         /// </summary>
         /// <param name="index"></param>
@@ -344,7 +422,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the value t[k], where t is the value at the given index. As in Lua, this function may trigger a metamethod for the "index" event (see §2.4).
+        /// Pushes onto the stack the value t[k], where t is the value at the given index.
+        /// As in Lua, this function may trigger a metamethod for the "index" event (see §2.4).
         /// Returns the type of the pushed value. 
         /// </summary>
         /// <param name="index"></param>
@@ -356,7 +435,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the value of the global name. Returns the type of that value
+        /// Pushes onto the stack the value of the global name. Returns the type of that value.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -366,7 +445,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the value t[i], where t is the value at the given index
+        /// Pushes onto the stack the value t[i], where t is the value at the given index.
         /// </summary>
         /// <param name="index"></param>
         /// <param name="i"></param>
@@ -375,7 +454,6 @@ namespace KeraLuaEx
         {
             return (LuaType)NativeMethods.lua_geti(_luaState, index, i);
         }
-
 
         /// <summary>
         /// Gets information about a specific function or function invocation. 
@@ -496,7 +574,6 @@ namespace KeraLuaEx
             return ret;
         }
 
-
         /// <summary>
         /// Pushes onto the stack the value t[k], where t is the value at the given index and k is the value at the top of the stack. 
         /// </summary>
@@ -516,7 +593,6 @@ namespace KeraLuaEx
         {
             return (LuaType)NativeMethods.lua_gettable(_luaState, (int)index);
         }
-
 
         /// <summary>
         /// Returns the index of the top element in the stack. 0 means an empty stack.
@@ -539,10 +615,15 @@ namespace KeraLuaEx
         /// <param name="index"></param>
         /// <returns></returns>
         public int GetUserValue(int index) => GetIndexedUserValue(index, 1);
+
         /// <summary>
-        ///  Gets information about the n-th upvalue of the closure at index funcindex. It pushes the upvalue's value onto the stack and returns its name. Returns NULL (and pushes nothing) when the index n is greater than the number of upvalues.
-        ///  For C functions, this function uses the empty string "" as a name for all upvalues. (For Lua functions, upvalues are the external local variables that the function uses, and that are consequently included in its closure.)
-        ///  Upvalues have no particular order, as they are active through the whole function. They are numbered in an arbitrary order. 
+        /// Gets information about the n-th upvalue of the closure at index funcindex.
+        /// It pushes the upvalue's value onto the stack and returns its name. Returns NULL (and pushes nothing) when
+        /// the index n is greater than the number of upvalues.
+        /// For C functions, this function uses the empty string "" as a name for all upvalues.
+        /// (For Lua functions, upvalues are the external local variables that the function uses, and that are consequently
+        /// included in its closure.)
+        /// Upvalues have no particular order, as they are active through the whole function. They are numbered in an arbitrary order. 
         /// </summary>
         /// <param name="functionIndex"></param>
         /// <param name="n"></param>
@@ -569,62 +650,63 @@ namespace KeraLuaEx
         public LuaHookMask HookMask => (LuaHookMask)NativeMethods.lua_gethookmask(_luaState);
 
         /// <summary>
-        /// Moves the top element into the given valid index, shifting up the elements above this index to open space. This function cannot be called with a pseudo-index, because a pseudo-index is not an actual stack position. 
+        /// Moves the top element into the given valid index, shifting up the elements above this index to open space.
+        /// This function cannot be called with a pseudo-index, because a pseudo-index is not an actual stack position. 
         /// </summary>
         /// <param name="index"></param>
         public void Insert(int index) => NativeMethods.lua_rotate(_luaState, index, 1);
 
         /// <summary>
-        /// Returns  if the value at the given index is a boolean
+        /// Returns  if the value at the given index is a boolean.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public bool IsBoolean(int index) => Type(index) == LuaType.Boolean;
 
         /// <summary>
-        /// Returns  if the value at the given index is a C(#) function
+        /// Returns  if the value at the given index is a C(#) function.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public bool IsCFunction(int index) => NativeMethods.lua_iscfunction(_luaState, index) != 0;
 
         /// <summary>
-        /// Returns  if the value at the given index is a function
+        /// Returns  if the value at the given index is a function.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public bool IsFunction(int index) => Type(index) == LuaType.Function;
 
         /// <summary>
-        /// Returns  if the value at the given index is an integer
+        /// Returns  if the value at the given index is an integer.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public bool IsInteger(int index) => NativeMethods.lua_isinteger(_luaState, index) != 0;
 
         /// <summary>
-        /// Returns  if the value at the given index is light user data
+        /// Returns  if the value at the given index is light user data.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public bool IsLightUserData(int index) => Type(index) == LuaType.LightUserData;
 
         /// <summary>
-        /// Returns  if the value at the given index is nil
+        /// Returns  if the value at the given index is nil.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public bool IsNil(int index) => Type(index) == LuaType.Nil;
 
         /// <summary>
-        /// Returns  if the value at the given index is a number
+        /// Returns  if the value at the given index is a number.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public bool IsNumber(int index) => NativeMethods.lua_isnumber(_luaState, index) != 0;
 
         /// <summary>
-        /// Returns  if the value at the given index is a string or a number (which is always convertible to a string)
+        /// Returns if the value at the given index is a string or a number (which is always convertible to a string).
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -634,8 +716,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Returns  if the value at the given index is a string
-        /// NOTE: This is different from the lua_isstring, which return true if the value is a number
+        /// Returns  if the value at the given index is a string.
+        /// NOTE: This is different from the lua_isstring, which return true if the value is a number.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -663,19 +745,23 @@ namespace KeraLuaEx
         public bool IsUserData(int index) => NativeMethods.lua_isuserdata(_luaState, index) != 0;
 
         /// <summary>
-        /// Returns  if the given coroutine can yield, and 0 otherwise
+        /// Returns  if the given coroutine can yield, and 0 otherwise.
         /// </summary>
         public bool IsYieldable => NativeMethods.lua_isyieldable(_luaState) != 0;
 
         /// <summary>
-        /// Push the length of the value at the given index on the stack. It is equivalent to the '#' operator in Lua (see §3.4.7) and may trigger a metamethod for the "length" event (see §2.4). The result is pushed on the stack. 
+        /// Push the length of the value at the given index on the stack.
+        /// It is equivalent to the '#' operator in Lua (see §3.4.7) and may trigger a metamethod for
+        /// the "length" event (see §2.4). The result is pushed on the stack. 
         /// </summary>
         /// <param name="index"></param>
         public void PushLength(int index) => NativeMethods.lua_len(_luaState, index);
 
         /// <summary>
-        /// Loads a Lua chunk without running it. If there are no errors, lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message. 
-        /// The lua_load function uses a user-supplied reader function to read the chunk (see lua_Reader). The data argument is an opaque value passed to the reader function. 
+        /// Loads a Lua chunk without running it. If there are no errors, lua_load pushes the compiled chunk as a
+        /// Lua function on top of the stack. Otherwise, it pushes an error message. 
+        /// The lua_load function uses a user-supplied reader function to read the chunk (see lua_Reader).
+        /// The data argument is an opaque value passed to the reader function. 
         /// </summary>
         /// <param name="reader"></param>
         /// <param name="data"></param>
@@ -688,12 +774,14 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Creates a new empty table and pushes it onto the stack
+        /// Creates a new empty table and pushes it onto the stack.
         /// </summary>
         public void NewTable() => NativeMethods.lua_createtable(_luaState, 0, 0);
 
         /// <summary>
-        /// Creates a new thread, pushes it on the stack, and returns a pointer to a lua_State that represents this new thread. The new thread returned by this function shares with the original thread its global environment, but has an independent execution stack. 
+        /// Creates a new thread, pushes it on the stack, and returns a pointer to a lua_State that represents
+        /// this new thread. The new thread returned by this function shares with the original thread its global environment,
+        /// but has an independent execution stack. 
         /// </summary>
         /// <returns></returns>
         public Lua NewThread()
@@ -703,8 +791,10 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  This function creates and pushes on the stack a new full userdata, with nuvalue associated Lua values, called user values, plus an associated block of raw memory with size bytes. (The user values can be set and read with the functions lua_setiuservalue and lua_getiuservalue.)
-        ///  The function returns the address of the block of memory.
+        /// This function creates and pushes on the stack a new full userdata, with nuvalue associated Lua values,
+        /// called user values, plus an associated block of raw memory with size bytes. (The user values can be set and read
+        /// with the functions lua_setiuservalue and lua_getiuservalue.)
+        /// The function returns the address of the block of memory.
         /// </summary>
         /// <param name="size"></param>
         /// <param name="uv"></param>
@@ -715,7 +805,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Compatibility NewIndexedUserData with constant parameter
+        /// Compatibility NewIndexedUserData with constant parameter.
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
@@ -725,7 +815,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pops a key from the stack, and pushes a key–value pair from the table at the given index (the "next" pair after the given key).
+        /// Pops a key from the stack, and pushes a key–value pair from the table at the given index
+        /// (the "next" pair after the given key).
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -743,7 +834,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// This function behaves exactly like lua_pcall, but allows the called function to yield
+        /// This function behaves exactly like lua_pcall, but allows the called function to yield.
         /// </summary>
         /// <param name="arguments"></param>
         /// <param name="results"></param>
@@ -768,13 +859,13 @@ namespace KeraLuaEx
         public void PushBoolean(bool b) => NativeMethods.lua_pushboolean(_luaState, b ? 1 : 0);
 
         /// <summary>
-        ///  Pushes a new C closure onto the stack. When a C function is created, it is possible to associate 
-        ///  some values with it, thus creating a C closure (see §4.4); these values are then accessible to the function 
-        ///  whenever it is called. To associate values with a C function, first these values must be pushed onto the 
-        ///  stack (when there are multiple values, the first value is pushed first). 
-        ///  Then lua_pushcclosure is called to create and push the C function onto the stack, 
-        ///  with the argument n telling how many values will be associated with the function. 
-        ///  lua_pushcclosure also pops these values from the stack. 
+        /// Pushes a new C closure onto the stack. When a C function is created, it is possible to associate 
+        /// some values with it, thus creating a C closure (see §4.4); these values are then accessible to the function 
+        /// whenever it is called. To associate values with a C function, first these values must be pushed onto the 
+        /// stack (when there are multiple values, the first value is pushed first). 
+        /// Then lua_pushcclosure is called to create and push the C function onto the stack, 
+        /// with the argument n telling how many values will be associated with the function. 
+        /// lua_pushcclosure also pops these values from the stack. 
         /// </summary>
         /// <param name="function"></param>
         /// <param name="n"></param>
@@ -784,7 +875,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes a C function onto the stack. This function receives a pointer to a C function and pushes onto the stack a Lua value of type function that, when called, invokes the corresponding C function. 
+        /// Pushes a C function onto the stack. This function receives a pointer to a C function and pushes onto
+        /// the stack a Lua value of type function that, when called, invokes the corresponding C function. 
         /// </summary>
         /// <param name="function"></param>
         public void PushCFunction(LuaFunction function)
@@ -799,6 +891,7 @@ namespace KeraLuaEx
         {
             _ = NativeMethods.lua_rawgeti(_luaState, (int)LuaRegistry.Index, (int)LuaRegistryIndex.Globals);
         }
+
         /// <summary>
         /// Pushes an integer with value n onto the stack. 
         /// </summary>
@@ -807,7 +900,9 @@ namespace KeraLuaEx
 
         /// <summary>
         /// Pushes a light userdata onto the stack.
-        /// Userdata represent C values in Lua. A light userdata represents a pointer, a void*. It is a value (like a number): you do not create it, it has no individual metatable, and it is not collected (as it was never created). A light userdata is equal to "any" light userdata with the same C address. 
+        /// Userdata represent C values in Lua. A light userdata represents a pointer, a void*.
+        /// It is a value (like a number): you do not create it, it has no individual metatable, and it is not
+        /// collected (as it was never created). A light userdata is equal to "any" light userdata with the same C address. 
         /// </summary>
         /// <param name="data"></param>
         public void PushLightUserData(IntPtr data)
@@ -818,7 +913,7 @@ namespace KeraLuaEx
         /// <summary>
         /// Pushes a reference data (C# object)  onto the stack. 
         /// This function uses lua_pushlightuserdata, but uses a GCHandle to store the reference inside the Lua side.
-        /// The CGHandle is create as Normal, and will be freed when the value is pop
+        /// The CGHandle is create as Normal, and will be freed when the value is pop.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
@@ -835,7 +930,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes binary buffer onto the stack (usually UTF encoded string) or any arbitraty binary data
+        /// Pushes binary buffer onto the stack (usually UTF encoded string) or any arbitraty binary data.
         /// </summary>
         /// <param name="buffer"></param>
         public void PushBuffer(byte[] buffer)
@@ -850,7 +945,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes a string onto the stack
+        /// Pushes a string onto the stack.
         /// </summary>
         /// <param name="value"></param>
         public void PushString(string value)
@@ -866,7 +961,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Push a instring using string.Format 
+        /// Push a instring using string.Format.
         /// PushString("Foo {0}", 10);
         /// </summary>
         /// <param name="value"></param>
@@ -887,7 +982,6 @@ namespace KeraLuaEx
         /// <param name="number"></param>
         public void PushNumber(double number) => NativeMethods.lua_pushnumber(_luaState, number);
 
-
         /// <summary>
         /// Pushes the thread represented by L onto the stack. Returns true if this thread is the main thread of its state. 
         /// </summary>
@@ -899,7 +993,7 @@ namespace KeraLuaEx
 
         /// <summary>
         /// Pushes a copy of the element at the given index onto the stack. (lua_pushvalue)
-        /// The method was renamed, since pushvalue is a bit vague
+        /// The method was renamed, since pushvalue is a bit vague.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -909,7 +1003,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Returns true if the two values in indices index1 and index2 are primitively equal (that is, without calling the __eq metamethod). Otherwise returns false. Also returns false if any of the indices are not valid. 
+        /// Returns true if the two values in indices index1 and index2 are primitively equal (that is,
+        /// without calling the __eq metamethod). Otherwise returns false. Also returns false if any of the indices are not valid. 
         /// </summary>
         /// <param name="index1"></param>
         /// <param name="index2"></param>
@@ -940,7 +1035,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the value t[n], where t is the table at the given index. The access is raw, that is, it does not invoke the __index metamethod. 
+        /// Pushes onto the stack the value t[n], where t is the table at the given index. The access is raw,
+        /// that is, it does not invoke the __index metamethod. 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="n"></param>
@@ -951,7 +1047,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the value t[n], where t is the table at the given index. The access is raw, that is, it does not invoke the __index metamethod. 
+        /// Pushes onto the stack the value t[n], where t is the table at the given index. The access is raw,
+        /// that is, it does not invoke the __index metamethod. 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="n"></param>
@@ -961,9 +1058,9 @@ namespace KeraLuaEx
             return (LuaType)NativeMethods.lua_rawgeti(_luaState, (int)index, n);
         }
 
-
         /// <summary>
-        /// Pushes onto the stack the value t[k], where t is the table at the given index and k is the pointer p represented as a light userdata. The access is raw; that is, it does not invoke the __index metamethod. 
+        /// Pushes onto the stack the value t[k], where t is the table at the given index and k is the pointer
+        /// p represented as a light userdata. The access is raw; that is, it does not invoke the __index metamethod. 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="obj"></param>
@@ -977,7 +1074,9 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Returns the raw "length" of the value at the given index: for strings, this is the string length; for tables, this is the result of the length operator ('#') with no metamethods; for userdata, this is the size of the block of memory allocated for the userdata; for other values, it is 0. 
+        /// Returns the raw "length" of the value at the given index: for strings, this is the string length.
+        /// for tables, this is the result of the length operator ('#') with no metamethods. for userdata, this
+        /// is the size of the block of memory allocated for the userdata. for other values, it is 0. 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1026,9 +1125,9 @@ namespace KeraLuaEx
             NativeMethods.lua_rawseti(_luaState, (int)index, i);
         }
 
-
         /// <summary>
-        /// Does the equivalent of t[p] = v, where t is the table at the given index, p is encoded as a light userdata, and v is the value at the top of the stack. 
+        /// Does the equivalent of t[p] = v, where t is the table at the given index, p is encoded as a light userdata,
+        /// and v is the value at the top of the stack. 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="obj"></param>
@@ -1041,7 +1140,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Sets the C# delegate f as the new value of global name
+        /// Sets the C# delegate f as the new value of global name.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="function"></param>
@@ -1051,9 +1150,9 @@ namespace KeraLuaEx
             SetGlobal(name);
         }
 
-
         /// <summary>
-        /// Removes the element at the given valid index, shifting down the elements above this index to fill the gap. This function cannot be called with a pseudo-index, because a pseudo-index is not an actual stack position. 
+        /// Removes the element at the given valid index, shifting down the elements above this index to fill the gap.
+        /// This function cannot be called with a pseudo-index, because a pseudo-index is not an actual stack position. 
         /// </summary>
         /// <param name="index"></param>
         public void Remove(int index)
@@ -1063,7 +1162,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Moves the top element into the given valid index without shifting any element (therefore replacing the value at that given index), and then pops the top element.
+        /// Moves the top element into the given valid index without shifting any element (therefore replacing the
+        /// value at that given index), and then pops the top element.
         /// </summary>
         /// <param name="index"></param>
         public void Replace(int index)
@@ -1074,8 +1174,14 @@ namespace KeraLuaEx
 
         /// <summary>
         /// Starts and resumes a coroutine in the given thread L.
-        /// To start a coroutine, you push onto the thread stack the main function plus any arguments; then you call lua_resume, with nargs being the number of arguments.This call returns when the coroutine suspends or finishes its execution. When it returns, * nresults is updated and the top of the stack contains the* nresults values passed to lua_yield or returned by the body function. lua_resume returns LUA_YIELD if the coroutine yields, LUA_OK if the coroutine finishes its execution without errors, or an error code in case of errors (see lua_pcall). In case of errors, the error object is on the top of the stack.
-        /// To resume a coroutine, you clear its stack, push only the values to be passed as results from yield, and then call lua_resume.
+        /// To start a coroutine, you push onto the thread stack the main function plus any arguments; then you call
+        /// lua_resume, with nargs being the number of arguments.This call returns when the coroutine suspends or
+        /// finishes its execution. When it returns, * nresults is updated and the top of the stack contains the* nresults
+        /// values passed to lua_yield or returned by the body function. lua_resume returns LUA_YIELD if the coroutine
+        /// yields, LUA_OK if the coroutine finishes its execution without errors, or an error code in case of errors
+        /// (see lua_pcall). In case of errors, the error object is on the top of the stack.
+        /// To resume a coroutine, you clear its stack, push only the values to be passed as results from yield, and then
+        /// call lua_resume.
         /// The parameter from represents the coroutine that is resuming L. If there is no such coroutine, this parameter can be NULL.  
         /// </summary>
         /// <param name="from"></param>
@@ -1099,7 +1205,9 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Resets a thread, cleaning its call stack and closing all pending to-be-closed variables. Returns a status code: LUA_OK for no errors in closing methods, or an error status otherwise. In case of error, leaves the error object on the top of the stack, 
+        /// Resets a thread, cleaning its call stack and closing all pending to-be-closed variables.
+        /// Returns a status code: LUA_OK for no errors in closing methods, or an error status otherwise.
+        /// In case of error, leaves the error object on the top of the stack.
         /// </summary>
         /// <returns></returns>
         public int ResetThread()
@@ -1108,7 +1216,11 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  Rotates the stack elements between the valid index idx and the top of the stack. The elements are rotated n positions in the direction of the top, for a positive n, or -n positions in the direction of the bottom, for a negative n. The absolute value of n must not be greater than the size of the slice being rotated. This function cannot be called with a pseudo-index, because a pseudo-index is not an actual stack position. 
+        /// Rotates the stack elements between the valid index idx and the top of the stack. The elements are
+        /// rotated n positions in the direction of the top, for a positive n, or -n positions in the direction
+        /// of the bottom, for a negative n. The absolute value of n must not be greater than the size of the
+        /// slice being rotated. This function cannot be called with a pseudo-index, because a pseudo-index is
+        /// not an actual stack position. 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="n"></param>
@@ -1139,8 +1251,8 @@ namespace KeraLuaEx
 
         /// <summary>
         /// Sets the debugging hook function. 
-        /// 
-        /// Argument f is the hook function. mask specifies on which events the hook will be called: it is formed by a bitwise OR of the constants
+        /// Argument f is the hook function. mask specifies on which events the hook will be called: it is formed by
+        /// a bitwise OR of the constants
         /// </summary>
         /// <param name="hookFunction">Hook function callback</param>
         /// <param name="mask">hook mask</param>
@@ -1170,7 +1282,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Sets the value of a local variable of a given activation record. It assigns the value at the top of the stack to the variable and returns its name. It also pops the value from the stack. 
+        /// Sets the value of a local variable of a given activation record. It assigns the value at the top of the stack
+        /// to the variable and returns its name. It also pops the value from the stack. 
         /// </summary>
         /// <param name="ar"></param>
         /// <param name="n"></param>
@@ -1182,7 +1295,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Sets the value of a local variable of a given activation record. It assigns the value at the top of the stack to the variable and returns its name. It also pops the value from the stack. 
+        /// Sets the value of a local variable of a given activation record. It assigns the value at the top of the stack
+        /// to the variable and returns its name. It also pops the value from the stack. 
         /// </summary>
         /// <param name="ar"></param>
         /// <param name="n"></param>
@@ -1214,7 +1328,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  Does the equivalent to t[k] = v, where t is the value at the given index, v is the value at the top of the stack, and k is the value just below the top
+        ///  Does the equivalent to t[k] = v, where t is the value at the given index, v is the value at the top of the
+        ///  stack, and k is the value just below the top.
         /// </summary>
         /// <param name="index"></param>
         public void SetTable(int index)
@@ -1223,7 +1338,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Accepts any index, or 0, and sets the stack top to this index. If the new top is larger than the old one, then the new elements are filled with nil. If index is 0, then all stack elements are removed. 
+        /// Accepts any index, or 0, and sets the stack top to this index. If the new top is larger than the old one,
+        /// then the new elements are filled with nil. If index is 0, then all stack elements are removed. 
         /// </summary>
         /// <param name="newTop"></param>
         public void SetTop(int newTop)
@@ -1232,7 +1348,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Sets the value of a closure's upvalue. It assigns the value at the top of the stack to the upvalue and returns its name. It also pops the value from the stack. 
+        /// Sets the value of a closure's upvalue. It assigns the value at the top of the stack to the upvalue and
+        /// returns its name. It also pops the value from the stack. 
         /// </summary>
         /// <param name="functionIndex"></param>
         /// <param name="n"></param>
@@ -1244,7 +1361,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Sets the warning function to be used by Lua to emit warnings (see lua_WarnFunction). The ud parameter sets the value ud passed to the warning function.
+        /// Sets the warning function to be used by Lua to emit warnings (see lua_WarnFunction). The ud parameter
+        /// sets the value ud passed to the warning function.
         /// </summary>
         /// <param name="function"></param>
         /// <param name="userData"></param>
@@ -1254,7 +1372,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  Pops a value from the stack and sets it as the new n-th user value associated to the full userdata at the given index. Returns 0 if the userdata does not have that value. 
+        ///  Pops a value from the stack and sets it as the new n-th user value associated to the full userdata at
+        ///  the given index. Returns 0 if the userdata does not have that value. 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="nth"></param>
@@ -1264,19 +1383,21 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Compatibility SetIndexedUserValue with constant 1
+        /// Compatibility SetIndexedUserValue with constant 1.
         /// </summary>
         /// <param name="index"></param>
         public void SetUserValue(int index) => SetIndexedUserValue(index, 1);
 
         /// <summary>
-        ///  The status can be 0 (LUA_OK) for a normal thread, an error code if the thread finished the execution of a lua_resume with an error, or LUA_YIELD if the thread is suspended. 
-        ///  You can only call functions in threads with status LUA_OK. You can resume threads with status LUA_OK (to start a new coroutine) or LUA_YIELD (to resume a coroutine). 
+        ///  The status can be 0 (LUA_OK) for a normal thread, an error code if the thread finished the execution of
+        ///  a lua_resume with an error, or LUA_YIELD if the thread is suspended. 
+        ///  You can only call functions in threads with status LUA_OK. You can resume threads with status LUA_OK
+        ///  (to start a new coroutine) or LUA_YIELD (to resume a coroutine). 
         /// </summary>
         public LuaStatus Status => (LuaStatus)NativeMethods.lua_status(_luaState);
 
         /// <summary>
-        /// Converts the zero-terminated string s to a number, pushes that number into the stack,
+        /// Converts the zero-terminated string s to a number, pushes that number into the stack.
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
@@ -1286,7 +1407,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Converts the Lua value at the given index to a C# boolean value
+        /// Converts the Lua value at the given index to a C# boolean value.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1296,7 +1417,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Converts a value at the given index to a C# function. That value must be a C# function; otherwise, returns NULL
+        /// Converts a value at the given index to a C# function. That value must be a C# function; otherwise, returns NULL.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1306,9 +1427,14 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  Marks the given index in the stack as a to-be-closed "variable" (see §3.3.8). Like a to-be-closed variable in Lua, the value at that index in the stack will be closed when it goes out of scope. Here, in the context of a C function, to go out of scope means that the running function returns to Lua, there is an error, or the index is removed from the stack through lua_settop or lua_pop. An index marked as to-be-closed should not be removed from the stack by any other function in the API except lua_settop or lua_pop.
+        /// Marks the given index in the stack as a to-be-closed "variable" (see §3.3.8). Like a to-be-closed variable in Lua,
+        /// the value at that index in the stack will be closed when it goes out of scope. Here, in the context of a C function,
+        /// to go out of scope means that the running function returns to Lua, there is an error, or the index is removed
+        /// from the stack through lua_settop or lua_pop. An index marked as to-be-closed should not be removed from the
+        /// stack by any other function in the API except lua_settop or lua_pop.
         /// This function should not be called for an index that is equal to or below an already marked to-be-closed index.
-        /// This function can raise an out-of-memory error. In that case, the value in the given index is immediately closed, as if it was already marked. 
+        /// This function can raise an out-of-memory error. In that case, the value in the given index is immediately closed,
+        /// as if it was already marked. 
         /// </summary>
         /// <param name="index"></param>
         public void ToClose(int index)
@@ -1316,18 +1442,9 @@ namespace KeraLuaEx
             NativeMethods.lua_toclose(_luaState, index);
         }
 
-        ///// <summary>
-        ///// Converts the Lua value at the given index to the signed integral type lua_Integer. The Lua value must be an integer, or a number or string convertible to an integer (see §3.4.3); otherwise, lua_tointegerx returns 0. 
-        ///// </summary>
-        ///// <param name="index"></param>
-        ///// <returns></returns>
-        //public long ToInteger(int index)
-        //{
-        //    return NativeMethods.lua_tointegerx(_luaState, index, out int isNum);
-        //}
-
         /// <summary>
-        /// Converts the Lua value at the given index to the signed integral type lua_Integer. The Lua value must be an integer, or a number or string convertible to an integer (see §3.4.3); otherwise, lua_tointegerx returns 0. 
+        /// Converts the Lua value at the given index to the signed integral type lua_Integer. The Lua value must
+        /// be an integer, or a number or string convertible to an integer (see §3.4.3); otherwise, lua_tointegerx returns 0. 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1340,7 +1457,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Converts the Lua value at the given as byte array
+        /// Converts the Lua value at the given as byte array.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1348,6 +1465,7 @@ namespace KeraLuaEx
         {
             return ToBuffer(index, true);
         }
+
         /// <summary>
         /// Converts the Lua value at the given index to a byte array.
         /// </summary>
@@ -1382,7 +1500,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Converts the Lua value at the given index to a C# string
+        /// Converts the Lua value at the given index to a C# string.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1392,7 +1510,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Converts the Lua value at the given index to a C# string
+        /// Converts the Lua value at the given index to a C# string.
         /// </summary>
         /// <param name="index"></param>
         /// <param name="callMetamethod">Calls __tostring field if present</param>
@@ -1405,18 +1523,8 @@ namespace KeraLuaEx
             return Encoding.GetString(buffer);
         }
 
-        ///// <summary>
-        ///// Converts the Lua value at the given index to a C# double.
-        ///// </summary>
-        ///// <param name="index"></param>
-        ///// <returns></returns>
-        //public double ToNumber(int index)
-        //{
-        //    return NativeMethods.lua_tonumberx(_luaState, index, out int isNum);
-        //}
-
         /// <summary>
-        /// Converts the Lua value at the given index to a C# double?.TODOC combine these.
+        /// Converts the Lua value at the given index to a C# double?.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1429,8 +1537,10 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  Converts the value at the given index to a generic C pointer (void*). The value can be a userdata, a table, a thread, or a function; otherwise, lua_topointer returns NULL. Different objects will give different pointers. There is no way to convert the pointer back to its original value.
-        ///  Typically this function is used only for hashing and debug information. 
+        /// Converts the value at the given index to a generic C pointer (void*). The value can be a userdata,
+        /// a table, a thread, or a function; otherwise, lua_topointer returns NULL. Different objects will give
+        /// different pointers. There is no way to convert the pointer back to its original value.
+        /// Typically this function is used only for hashing and debug information. 
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1440,8 +1550,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Converts the value at the given index to a Lua thread
-        /// or return the self if is the main thread
+        /// Converts the value at the given index to a Lua thread or return the self if is the main thread.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1455,9 +1564,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Return an object (refence) at the index
-        /// Important if a object was push the object need to fetched using
-        /// this method, otherwise the C# object will never be collected
+        /// Return an object (refence) at the index. Important if a object was push the object need to fetched using
+        /// this method, otherwise the C# object will never be collected.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="index"></param>
@@ -1485,7 +1593,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// If the value at the given index is a full userdata, returns its block address. If the value is a light userdata, returns its pointer. Otherwise, returns NULL
+        /// If the value at the given index is a full userdata, returns its block address. If the value is a
+        /// light userdata, returns its pointer. Otherwise, returns NULL.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -1526,7 +1635,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Returns the pseudo-index that represents the i-th upvalue of the running function 
+        /// Returns the pseudo-index that represents the i-th upvalue of the running function.
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
@@ -1536,7 +1645,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Make the n1-th upvalue of the Lua closure at index funcindex1 refer to the n2-th upvalue of the Lua closure at index funcindex2
+        /// Make the n1-th upvalue of the Lua closure at index funcindex1 refer to the n2-th upvalue of the
+        /// Lua closure at index funcindex2.
         /// </summary>
         /// <param name="functionIndex1"></param>
         /// <param name="n1"></param>
@@ -1548,7 +1658,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Return the version of Lua (e.g 504)
+        /// Return the version of Lua (e.g 504).
         /// </summary>
         /// <returns></returns>
         public double Version()
@@ -1557,8 +1667,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  Exchange values between different threads of the same state.
-        ///  This function pops n values from the current stack, and pushes them onto the stack to. 
+        /// Exchange values between different threads of the same state.
+        /// This function pops n values from the current stack, and pushes them onto the stack to. 
         /// </summary>
         /// <param name="to"></param>
         /// <param name="n"></param>
@@ -1572,7 +1682,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// This function is equivalent to lua_yieldk, but it has no continuation (see §4.7). Therefore, when the thread resumes, it continues the function that called the function calling lua_yield. 
+        /// This function is equivalent to lua_yieldk, but it has no continuation (see §4.7). Therefore, when the
+        /// thread resumes, it continues the function that called the function calling lua_yield. 
         /// </summary>
         /// <param name="results"></param>
         /// <returns></returns>
@@ -1582,7 +1693,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        ///  Yields a coroutine (thread). When a C function calls lua_yieldk, the running coroutine suspends its execution, and the call to lua_resume that started this coroutine returns
+        /// Yields a coroutine (thread). When a C function calls lua_yieldk, the running coroutine suspends its execution,
+        /// and the call to lua_resume that started this coroutine returns.
         /// </summary>
         /// <param name="results">Number of values from the stack that will be passed as results to lua_resume.</param>
         /// <param name="context"></param>
@@ -1593,11 +1705,11 @@ namespace KeraLuaEx
             IntPtr k = continuation.ToFunctionPointer();
             return NativeMethods.lua_yieldk(_luaState, results, (IntPtr)context, k);
         }
+        #endregion
 
-        /* Auxialiary Library Functions */
-
+        #region Auxialiary Library Functions - luaL_xyz()
         /// <summary>
-        /// Checks whether cond is true. If it is not, raises an error with a standard message
+        /// Checks whether cond is true. If it is not, raises an error with a standard message.
         /// </summary>
         /// <param name="condition"></param>
         /// <param name="argument"></param>
@@ -1610,7 +1722,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Raises an error reporting a problem with argument arg of the C function that called it, using a standard message that includes extramsg as a comment: 
+        /// Raises an error reporting a problem with argument arg of the C function that called it, using a standard
+        /// message that includes extramsg as a comment.
         /// </summary>
         /// <param name="argument"></param>
         /// <param name="message"></param>
@@ -1622,7 +1735,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// If the object at index obj has a metatable and this metatable has a field e, this function calls this field passing the object as its only argument.
+        /// If the object at index obj has a metatable and this metatable has a field e, this function calls this
+        /// field passing the object as its only argument.
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="field"></param>
@@ -1642,7 +1756,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Checks whether the function argument arg is an integer (or can be converted to an integer)
+        /// Checks whether the function argument arg is an integer (or can be converted to an integer).
         /// </summary>
         /// <param name="argument"></param>
         /// <returns></returns>
@@ -1652,7 +1766,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Checks whether the function argument arg is a string and returns this string;
+        /// Checks whether the function argument arg is a string and returns this string.
         /// </summary>
         /// <param name="argument"></param>
         /// <returns></returns>
@@ -1695,7 +1809,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Checks whether the function argument arg is a string and searches for this string in the array lst .
+        /// Checks whether the function argument arg is a string and searches for this string in the array lst.
         /// </summary>
         /// <param name="argument"></param>
         /// <param name="def"></param>
@@ -1707,7 +1821,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Grows the stack size to top + sz elements, raising an error if the stack cannot grow .
+        /// Grows the stack size to top + sz elements, raising an error if the stack cannot grow.
         /// </summary>
         /// <param name="newSize"></param>
         /// <param name="message"></param>
@@ -1717,7 +1831,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Checks whether the function argument arg has type type
+        /// Checks whether the function argument arg has type type.
         /// </summary>
         /// <param name="argument"></param>
         /// <param name="type"></param>
@@ -1756,7 +1870,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Checks whether the function argument arg is a userdata of the type tname (see luaL_newmetatable)
+        /// Checks whether the function argument arg is a userdata of the type tname (see luaL_newmetatable).
         /// and returns the userdata address.
         /// </summary>
         /// <param name="argument"></param>
@@ -1765,42 +1879,6 @@ namespace KeraLuaEx
         public IntPtr CheckUserData(int argument, string typeName)
         {
             return NativeMethods.luaL_checkudata(_luaState, argument, typeName);
-        }
-
-        /// <summary>
-        /// Loads and runs the given file.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns>It returns false if there are no errors or true in case of errors. </returns>
-        public bool DoFile(string file)
-        {
-            bool hasError = false;
-
-            LuaStatus lstat = LoadFile(file);
-            CheckLuaStatus(lstat, $"Call LoadFile({file})");
-
-            lstat = PCall(0, -1, 0);
-            CheckLuaStatus(lstat, $"Call PCall(...)");
-
-            return hasError;
-        }
-
-        /// <summary>
-        /// Loads and runs the given string.
-        /// </summary>
-        /// <param name="chunk"></param>
-        /// <returns>It returns false if there are no errors or true in case of errors. </returns>
-        public bool DoString(string chunk)
-        {
-            bool hasError = false;
-
-            LuaStatus lstat = LoadString(chunk);
-            CheckLuaStatus(lstat, $"Call LoadString({chunk})");
-
-            lstat = PCall(0, -1, 0);
-            CheckLuaStatus(lstat, $"Call PCall(...)");
-
-            return hasError;
         }
 
         /// <summary>
@@ -1826,7 +1904,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// This function produces the return values for file-related functions in the standard library
+        /// This function produces the return values for file-related functions in the standard library.
         /// </summary>
         /// <param name="stat"></param>
         /// <param name="fileName"></param>
@@ -1837,7 +1915,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the field e from the metatable of the object at index obj and returns the type of the pushed value
+        /// Pushes onto the stack the field e from the metatable of the object at index obj and returns
+        /// the type of the pushed value.
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="field"></param>
@@ -1848,7 +1927,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the metatable associated with name tname in the registry (see luaL_newmetatable) (nil if there is no metatable associated with that name)
+        /// Pushes onto the stack the metatable associated with name tname in the registry (see luaL_newmetatable)
+        /// (nil if there is no metatable associated with that name).
         /// </summary>
         /// <param name="tableName"></param>
         /// <returns>Returns the type of the pushed value. </returns>
@@ -1858,7 +1938,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Ensures that the value t[fname], where t is the value at index idx, is a table, and pushes that table onto the stack. Returns true if it finds a previous table there and false if it creates a new table
+        /// Ensures that the value t[fname], where t is the value at index idx, is a table, and pushes that table
+        /// onto the stack. Returns true if it finds a previous table there and false if it creates a new table.
         /// </summary>
         /// <param name="index"></param>
         /// <param name="name"></param>
@@ -1869,14 +1950,14 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Returns the "length" of the value at the given index as a number; it is equivalent to the '#' operator in Lua
+        /// Returns the "length" of the value at the given index as a number; it is equivalent to the '#' operator in Lua.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
         public long Length(int index) => NativeMethods.luaL_len(_luaState, index);
 
         /// <summary>
-        /// Loads a buffer as a Lua chunk
+        /// Loads a buffer as a Lua chunk.
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="name"></param>
@@ -1891,6 +1972,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
+        /// 
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="name"></param>
@@ -1901,7 +1983,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Loads a buffer as a Lua chunk
+        /// Loads a buffer as a Lua chunk.
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
@@ -1911,19 +1993,19 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Loads a string as a Lua chunk
+        /// Loads a string as a Lua chunk.
         /// </summary>
         /// <param name="chunk"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        LuaStatus LoadString(string chunk, string? name)//TODOA all these overloads?
+        LuaStatus LoadString(string chunk, string? name)//TODOA all these Load overloads?
         {
             byte[] buffer = Encoding.GetBytes(chunk);
             return LoadBuffer(buffer, name, null);
         }
 
         /// <summary>
-        /// Loads a string as a Lua chunk
+        /// Loads a string as a Lua chunk.
         /// </summary>
         /// <param name="chunk"></param>
         /// <returns></returns>
@@ -1933,7 +2015,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Loads a file as a Lua chunk. This function uses lua_load to load the chunk in the file named filename
+        /// Loads a file as a Lua chunk. This function uses lua_load to load the chunk in the file named filename.
         /// </summary>
         /// <param name="file"></param>
         /// <param name="mode"></param>
@@ -1941,7 +2023,7 @@ namespace KeraLuaEx
         public LuaStatus LoadFile(string file, string? mode)
         {
             LuaStatus lstat = (LuaStatus)NativeMethods.luaL_loadfilex(_luaState, file, mode);
-            CheckLuaStatus(lstat, $"LoadFile({file}, {mode})");
+            CheckLuaStatus(lstat);
             return lstat;
         }
 
@@ -1966,7 +2048,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Creates a new table with a size optimized to store all entries in the array l (but does not actually store them)
+        /// Creates a new table with a size optimized to store all entries in the array l (but does not actually store them).
         /// </summary>
         /// <param name="library"></param>
         public void NewLibTable(LuaRegister[] library)
@@ -1978,7 +2060,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Creates a new table to be used as a metatable for userdata
+        /// Creates a new table to be used as a metatable for userdata.
         /// </summary>
         /// <param name="name"></param>
         /// <returns>If the registry already has the key tname, returns false.,</returns>
@@ -2037,9 +2119,8 @@ namespace KeraLuaEx
             return CheckString(index);
         }
 
-
         /// <summary>
-        /// If the function argument arg is a number, returns this number. If this argument is absent or is nil, returns d
+        /// If the function argument arg is a number, returns this number. If this argument is absent or is nil, returns d.
         /// </summary>
         /// <param name="index"></param>
         /// <param name="def"></param>
@@ -2060,7 +2141,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// If modname is not already present in package.loaded, calls function openf with string modname as an argument and sets the call result in package.loaded[modname], as if that function has been called through require
+        /// If modname is not already present in package.loaded, calls function openf with string modname as an argument
+        /// and sets the call result in package.loaded[modname], as if that function has been called through require.
         /// </summary>
         /// <param name="moduleName"></param>
         /// <param name="openFunction"></param>
@@ -2071,7 +2153,9 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Registers all functions in the array l (see luaL_Reg) into the table on the top of the stack (below optional upvalues, see next).        /// </summary>
+        /// Registers all functions in the array l (see luaL_Reg) into the table on the top of the stack.
+        /// (below optional upvalues, see next).
+        /// </summary>
         /// <param name="library"></param>
         /// <param name="numberUpValues"></param>
         public void SetFuncs(LuaRegister[] library, int numberUpValues)
@@ -2080,7 +2164,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Sets the metatable of the object at the top of the stack as the metatable associated with name tname in the registry
+        /// Sets the metatable of the object at the top of the stack as the metatable associated with name tname in the registry.
         /// </summary>
         /// <param name="name"></param>
         public void SetMetaTable(string name)
@@ -2089,7 +2173,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Test if the value at index is a reference data
+        /// Test if the value at index is a reference data.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="argument"></param>
@@ -2128,7 +2212,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Creates and pushes a traceback of the stack L1
+        /// Creates and pushes a traceback of the stack L1.
         /// </summary>
         /// <param name="state"></param>
         /// <param name="level"> Tells at which level to start the traceback</param>
@@ -2138,7 +2222,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Creates and pushes a traceback of the stack L1
+        /// Creates and pushes a traceback of the stack L1.
         /// </summary>
         /// <param name="state"></param>
         /// <param name="message">appended at the beginning of the traceback</param>
@@ -2163,7 +2247,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Releases reference ref from the table at index t (see luaL_ref). The entry is removed from the table, so that the referred object can be collected. The reference ref is also freed to be used again
+        /// Releases reference ref from the table at index t (see luaL_ref). The entry is removed from the table,
+        /// so that the referred object can be collected. The reference ref is also freed to be used again.
         /// </summary>
         /// <param name="tableIndex"></param>
         /// <param name="reference"></param>
@@ -2173,7 +2258,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Emits a warning with the given message. A message in a call with tocont true should be continued in another call to this function. 
+        /// Emits a warning with the given message. A message in a call with tocont true should be continued in
+        /// another call to this function. 
         /// </summary>
         /// <param name="message"></param>
         /// <param name="toContinue"></param>
@@ -2182,15 +2268,73 @@ namespace KeraLuaEx
             NativeMethods.lua_warning(_luaState, message, toContinue ? 1 : 0);
         }
 
-
         /// <summary>
-        /// Pushes onto the stack a string identifying the current position of the control at level lvl in the call stack
+        /// Pushes onto the stack a string identifying the current position of the control at level lvl in the call stack.
         /// </summary>
         /// <param name="level"></param>
         public void Where(int level)
         {
             NativeMethods.luaL_where(_luaState, level);
         }
+        #endregion
+
+
+        /////////////////////////////////// TODOA new stuff ///////////////////////////
+
+        /// <summary>
+        /// Check lua status.
+        /// </summary>
+        /// <param name="lstat"></param>
+        /// <param name="file">Ignore - compiler use.</param>
+        /// <param name="line">Ignore - compiler use.</param>
+        /// <exception cref="FileNotFoundException"></exception>
+        /// <exception cref="LuaException"></exception>
+        public bool CheckLuaStatus(LuaStatus lstat, [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
+        {
+            bool hasError = false;
+
+            if (lstat >= LuaStatus.ErrRun)
+            {
+                hasError = true;
+
+                string stack = string.Join(" ", DumpStack());
+                string s = $"{Path.GetFileName(file)}({line}): {lstat}:{stack}";
+                //string tb = string.Join(" ", DumpTraceback());
+
+                if (lstat == LuaStatus.ErrFile)
+                {
+                    throw new FileNotFoundException(s);
+                }
+                else
+                {
+                    throw new LuaException(s);
+                }
+            }
+
+            return hasError;
+        }
     }
+
+    #region Exceptions
+
+    /// <summary>Lua script syntax error.</summary>
+    [Serializable]
+    public class SyntaxException : Exception
+    {
+        // If new properties are added to the derived exception class, ToString() should be overridden to return the added information.
+        public SyntaxException() : base() { }
+        public SyntaxException(string message) : base(message) { }
+        public SyntaxException(string message, Exception inner) : base(message, inner) { }
+    }
+
+    /// <summary>Internal error on lua side.</summary>
+    [Serializable]
+    public class LuaException : Exception
+    {
+        public LuaException() : base() { }
+        public LuaException(string message) : base(message) { }
+        public LuaException(string message, Exception inner) : base(message, inner) { }
+    }
+    #endregion
 }
 

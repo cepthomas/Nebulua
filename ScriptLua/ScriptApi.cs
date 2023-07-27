@@ -137,7 +137,7 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(0, 0, 0);
-            _lMain.CheckLuaStatus(lstat, "PCall setup() failed");
+            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -158,7 +158,7 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(3, 0, 0);
-            _lMain.CheckLuaStatus(lstat, "PCall step() failed");
+            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -182,7 +182,7 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(4, 0, 0);
-            _lMain.CheckLuaStatus(lstat, "PCall input_note() failed");
+            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -206,7 +206,7 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(4, 0, 0);
-            _lMain.CheckLuaStatus(lstat, "PCall input_controller() failed");
+            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -222,14 +222,16 @@ namespace Ephemera.Nebulua.Script
         /// <summary>Add a named chord or scale definition.</summary>
         static int CreateNotes(IntPtr p)
         {
-            var l = Lua.FromIntPtr(p);
+            var l = Lua.FromIntPtr(p)!;
+
+            // Get args.
             int numArgs = l.GetTop();
-            int numRes = 0;
 
             var name = l.ToString(1);
             var parts = l.ToString(2);
 
             // Do the work.
+            int numRes = 0;
             MusicDefinitions.AddChordScale(name, parts);
 
             return numRes;
@@ -238,13 +240,15 @@ namespace Ephemera.Nebulua.Script
         /// <summary> </summary>
         static int GetNotes(IntPtr p)
         {
-            var l = Lua.FromIntPtr(p);
+            var l = Lua.FromIntPtr(p)!;
+
+            // Get args.
             int numArgs = l.GetTop();
-            int numRes = 0;
 
             var noteString = l.ToString(1);
 
             // Do the work.
+            int numRes = 0;
             List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
             l.PushList(notes);
             numRes++;
@@ -255,9 +259,10 @@ namespace Ephemera.Nebulua.Script
         /// <summary> </summary>
         static int Log(IntPtr p)
         {
-            Lua l = Lua.FromIntPtr(p);
-            int numArgs = l.GetTop();
+            Lua l = Lua.FromIntPtr(p)!;
 
+            // Get args.
+            int numArgs = l.GetTop();
             var level = l.ToInteger(1);
             var msg = l.ToString(2);
 

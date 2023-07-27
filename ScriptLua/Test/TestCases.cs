@@ -132,14 +132,6 @@ namespace Ephemera.Nebulua.ScriptLua.Test
             ScriptApi.Step(4, 3, 11);
             ScriptApi.InputNote("doo", 5, 34, 100);
             ScriptApi.InputController("daa", 6, 33, 44);
-
-            // all these:
-            // public (object, Type) GetGlobalValue(string name)
-            // public string DumpGlobals()
-            // public string DumpTable(string tableName)
-            // public void CheckLuaStatus(LuaStatus lstat, string info = "", [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
-            // public void PushList(List<int> ints)
-            // public string DumpStack(string msg)
         }
     }
 

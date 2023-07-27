@@ -27,40 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="scripts\cf.lua" Link="scripts\cf.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\main.lua" Link="scripts\main.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\module1.lua" Link="scripts\module1.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-        <None Include="scripts\foo.lua" Link="scripts\foo.lua">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\KeraLuaEx.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="..\lualib\json.lua">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="..\lualib\json.md">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="..\lualib\lua.exe">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="..\lualib\lua54.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="..\lualib\luac.exe">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 
 </Project>
