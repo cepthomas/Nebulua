@@ -1,4 +1,55 @@
+luaL_dofile
+[-0, +?, m]
+int luaL_dofile (lua_State *L, const char *filename);
+Loads and runs the given file. It is defined as the following macro:
 
+(luaL_loadfile(L, filename) || lua_pcall(L, 0, LUA_MULTRET, 0))
+
+
+
+
+        public bool DoFile(string file)
+        {
+            bool hasError = false;
+
+            LuaStatus lstat = LoadFile(file); lua_load can return LUA_OK, LUA_ERRSYNTAX, or LUA_ERRMEM. 
+            CheckLuaStatus(lstat);
+
+            lstat = PCall(0, -1, 0);
+            CheckLuaStatus(lstat);
+
+It returns 0 (LUA_OK) if there are no errors, or 1 in case of errors.
+            return hasError;
+        }
+
+        public bool DoString(string chunk)
+        {
+            bool hasError = false;
+
+            LuaStatus lstat = LoadString(chunk); lua_load can return LUA_OK, LUA_ERRSYNTAX, or LUA_ERRMEM. 
+            CheckLuaStatus(lstat);
+
+            lstat = PCall(0, -1, 0);
+            CheckLuaStatus(lstat);
+            
+It returns 0 (LUA_OK) if there are no errors, or 1 in case of errors.
+            return hasError;
+        }
+
+
+        // these call native
+        LuaStatus Load(LuaReader reader, IntPtr data, string chunkName, string mode)
+        LuaStatus LoadBuffer(byte[] buffer, string? name, string? mode)
+        LuaStatus LoadFile(string file, string? mode = null)
+
+        LuaStatus PCall(int arguments, int results, int errorFunctionIndex)
+        LuaStatus PCallK(int arguments, int results, int errorFunctionIndex, int context, LuaKFunction k)
+
+        LuaStatus Resume(Lua from, int arguments, out int results)
+        LuaStatus Resume(Lua? from, int arguments)
+
+
+==============================================================================
 
 package.path = "?;?.lua;C:\Dev\repos\Nebulua\KeraLuaEx\Test\scripts\*.lua"
 

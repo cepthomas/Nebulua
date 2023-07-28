@@ -6,9 +6,10 @@ using System.Text;
 using System.Xml.Linq;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 using KeraLuaEx;
-using System.Runtime.InteropServices;
+
 
 namespace KeraLuaEx.Test
 {
@@ -31,9 +32,9 @@ namespace KeraLuaEx.Test
         {
             using Lua l = new();
 
-            string srcPath = Lua.GetSourcePath();
+            string srcPath = Utils.GetSourcePath();
             string scriptsPath = Path.Combine(srcPath, "scripts");
-            l.SetLuaPath(new() { scriptsPath });
+            Utils.SetLuaPath(l, new() { scriptsPath });
             LuaStatus lstat = l.LoadFile(Path.Combine(scriptsPath, "cf.lua"));
             Assert.AreEqual(LuaStatus.OK, lstat);
             lstat = l.PCall(0, -1, 0);
@@ -131,9 +132,9 @@ namespace KeraLuaEx.Test
 
             _hookLog.Clear();
 
-            string srcPath = Lua.GetSourcePath();
+            string srcPath = Utils.GetSourcePath();
             string scriptsPath = Path.Combine(srcPath, "scripts");
-            l.SetLuaPath(new() { scriptsPath });
+            Utils.SetLuaPath(l, new() { scriptsPath });
 
             l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
 
@@ -174,7 +175,7 @@ main.lua-main.lua:11 (main)
             output = output.Replace("\r", "");
             Assert.AreEqual(expected, output, "#1");
 
-            Assert.IsNotNull(l.Hook);
+            Assert.IsNotNull(l.Hook());
 
             // disable
             l.SetHook(_funcHookCallback, LuaHookMask.Disabled, 0);
@@ -219,9 +220,9 @@ main.lua-main.lua:11 (main)
 
             _hookLog.Clear();
 
-            string srcPath = Lua.GetSourcePath();
+            string srcPath = Utils.GetSourcePath();
             string scriptsPath = Path.Combine(srcPath, "scripts");
-            l.SetLuaPath(new() { scriptsPath });
+            Utils.SetLuaPath(l, new() { scriptsPath });
 
             l.SetHook(_funcHookCallback, LuaHookMask.Line, 0);
 
@@ -266,7 +267,7 @@ main.lua-main.lua:11 (main)
             // disable
             l.SetHook(_funcHookCallback, LuaHookMask.Disabled, 0);
 
-            Assert.IsNull(l.Hook, "#3");
+            Assert.IsNull(l.Hook(), "#3");
         }
 
         static void HookCalbackStruct(IntPtr p, IntPtr ar)

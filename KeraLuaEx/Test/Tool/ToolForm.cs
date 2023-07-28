@@ -9,14 +9,6 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using NAudio.Midi;
-using NAudio.Wave;
-using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.ScriptCompiler;
-using Ephemera.NBagOfTricks.Slog;
-using Ephemera.NBagOfUis;
-using Ephemera.MidiLib;
-using Ephemera.Nebulator.Script;
 using KeraLuaEx;
 
 
@@ -42,36 +34,36 @@ void Watcher_Changed(object sender, FileSystemEventArgs e)
 
 
 
-namespace Ephemera.Nebulua.App
+namespace KeraLuaEx.Tool
 {
-    public partial class MainForm : Form
+    public partial class ToolForm : Form
     {
         #region Fields
-        /// <summary>App logger.</summary>
-        //readonly Logger _logger = LogManager.CreateLogger("Main");
 
-        ///// <summary>App settings.</summary>
-        //UserSettings _settings;
+        enum Level { ERR, INF, DBG, SCR };
+
+        readonly Color _backColor = Color.Bisque;
+
+        Dictionary<Level, Color> _colors = new();
+
+        Lua? _lMain;
+
+        readonly LuaFunction _funcPrint = Print;
+
+        readonly string _defaultScriptsPath = @"C:\Dev\repos\Nebulua\KeraLuaEx\Test\scripts";
+
+        static ToolForm? _mf;
+
+        readonly int _maxText = 5000;
         #endregion
 
         #region Lifecycle
         /// <summary>
         /// Constructor.
         /// </summary>
-        public MainForm()
+        public ToolForm()
         {
-            // Must do this first before initializing.
-            //string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            // _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
-
             InitializeComponent();
-
-            // Init logging.
-            //string logFileName = Path.Combine(appDir, "log.txt");
-            //LogManager.MinLevelFile = _settings.FileLogLevel;
-            //LogManager.MinLevelNotif = _settings.NotifLogLevel;
-            //LogManager.LogMessage += LogManager_LogMessage;
-            //LogManager.Run(logFileName, 100000);
 
             _mf = this;
         }
@@ -83,14 +75,26 @@ namespace Ephemera.Nebulua.App
         protected override void OnLoad(EventArgs e)
         {
             rtbScript.Clear();
-            tvOutput.Clear();
-            rtbScript.Font = tvOutput.Font;
+            rtbOutput.Clear();
 
-            tvOutput.AppendLine("============================ Starting up ===========================");
+            _colors = new()
+            {
+                { Level.ERR, Color.Pink },
+                { Level.INF, _backColor },
+                { Level.DBG, Color.LightGreen },
+                { Level.SCR, Color.Magenta },
+            };
+
+            var font = new Font("Consolas", 10);
+            rtbScript.Font = font;
+            rtbOutput.Font = font;
+            rtbStack.Font = font;
+
+
+            Log(Level.INF, "============================ Starting up ===========================");
 
             // TODOA temp debug
             string sopen = OpenScriptFile(@"C:\Dev\repos\Nebulua\KeraLuaEx\Test\scripts\luaex.lua");
-            tvOutput.AppendLine(sopen);
 
             base.OnLoad(e);
         }
@@ -100,8 +104,6 @@ namespace Ephemera.Nebulua.App
         /// </summary>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            LogManager.Stop();
-
             base.OnFormClosing(e);
         }
 
@@ -136,7 +138,6 @@ namespace Ephemera.Nebulua.App
             if (openDlg.ShowDialog() == DialogResult.OK)
             {
                 string sopen = OpenScriptFile(openDlg.FileName);
-                tvOutput.AppendLine(sopen);
             }
         }
 
@@ -155,26 +156,19 @@ namespace Ephemera.Nebulua.App
 
                 rtbScript.AppendText(s);
 
-                Text = $"Nebulator {MiscUtils.GetVersionString()} - {fn}";
+                Text = $"Testing {fn}";
+
+                Log(Level.INF, $"Opening {fn}");
             }
             catch (Exception ex)
             {
-                ret = $"Couldn't open the script file: {fn} because: {ex.Message}";
-                tvOutput.AppendLine(ret);
+                ret = $"Couldn't open the script file {fn} because {ex.Message}";
+                Log(Level.ERR, ret);
             }
 
             return ret;
         }
         #endregion
-
-
-        Lua? _lMain;
-        LuaFunction _funcPrint = Print;
-        string _defaultScriptsPath = @"C:\Dev\repos\Nebulua\KeraLuaEx\Test\scripts";
-        static MainForm _mf;
-
-
-
 
         /// <summary>
         /// 
@@ -184,20 +178,18 @@ namespace Ephemera.Nebulua.App
         static int Print(IntPtr p)
         {
             var l = Lua.FromIntPtr(p)!;
-            _mf.tvOutput.AppendLine($"printex >>> {l.ToString(-1)!}");
+            _mf!.Log(Level.SCR, $"printex said: {l.ToString(-1)!}");
             return 0;
         }
-
 
         /// <summary>
         /// 
         /// </summary>
         void ShowStack()
         {
-            var ls = _lMain.DumpStack();
+            var ls = Utils.DumpStack(_lMain!);
             rtbStack.Text = ls.Count > 0 ? FormatDump("Stack", ls, true) : "Empty";
         }
-
 
         /// <summary>
         /// 
@@ -206,64 +198,64 @@ namespace Ephemera.Nebulua.App
         /// <param name="e"></param>
         void Go1_Click(object sender, EventArgs e)
         {
-            tvOutput.Clear();
-            tvOutput.AppendLine("============================ Here we go!!! ===========================");
+            rtbOutput.Clear();
+            Log(Level.INF, "============================ Here we go!!! ===========================");
 
             //Setup();
             _lMain?.Close();
             _lMain = new Lua();
             _lMain.Register("printex", _funcPrint);
 
-            _lMain.SetLuaPath(new() { _defaultScriptsPath });
+            Utils.SetLuaPath(_lMain, new() { _defaultScriptsPath });
             string s = rtbScript.Text;
             LuaStatus lstat = _lMain.LoadString(s);
             _lMain.CheckLuaStatus(lstat);
             lstat = _lMain.PCall(0, -1, 0);
             _lMain.CheckLuaStatus(lstat);
 
-            List<string>? ls = null;
+            List<string>? ls = new();
 
             ShowStack();
 
-            //ls = _lMain.DumpStack();
-            //tvOutput.AppendLine(FormatDump("Stack", ls, true));
+            //ls = Utils.DumpStack(_lMain);
+            //Log(Level.INF, FormatDump("Stack", ls, true));
 
-            //ls = _lMain.DumpGlobals();
-            //tvOutput.AppendLine(FormatDump("Globals", ls, true));
+            //ls = Utils.DumpGlobals(_lMain);
+            //Log(Level.INF, FormatDump("Globals", ls, true));
 
-            //ls = l.DumpStack();
-            //tvOutput.AppendLine(FormatDump("Stack", ls, true));
+            //ls = Utils.DumpStack(_lMain);
+            //Log(Level.INF, FormatDump("Stack", ls, true));
 
-            //ls = l.DumpTable("_G");
-            //tvOutput.AppendLine(FormatDump("_G", ls, true));
+            //ls = Utils.DumpTable(_lMain, "_G");
+            //Log(Level.INF, FormatDump("_G", ls, true));
 
-            ls = _lMain.DumpTable("g_table");
-            tvOutput.AppendLine(FormatDump("g_table", ls, true));
+            ls = Utils.DumpTable(_lMain, "g_table");
+            Log(Level.INF, FormatDump("g_table", ls, true));
 
-            //ls = _lMain.DumpTraceback();
-            //tvOutput.AppendLine(FormatDump("Traceback", ls, true));
+            //ls = Utils.DumpTraceback(_lMain);
+            //Log(Level.INF, FormatDump("Traceback", ls, true));
 
-            var x = _lMain.GetGlobalValue("g_number");
+            var x = Utils.GetGlobalValue(_lMain, "g_number");
             //Assert.AreEqual(typeof(double), x.type);
 
-            x = _lMain.GetGlobalValue("g_int");
+            x = Utils.GetGlobalValue(_lMain, "g_int");
             //Assert.AreEqual(typeof(int), x.type);
 
 
-            ls = _lMain.DumpTable("things");
-            tvOutput.AppendLine(FormatDump("things", ls, true));
+            ls = Utils.DumpTable(_lMain, "things");
+            Log(Level.INF, FormatDump("things", ls, true));
 
-            ShowStack(); 
+            ShowStack();
 
-            //x = l.GetGlobalValue("g_table");
+            //x = Utils.GetGlobalValue(_lMain, "g_table");
             //Assert.AreEqual(typeof(int), x.type);
 
-            //x = l.GetGlobalValue("g_list");
+            //x = Utils.GetGlobalValue(_lMain, "g_list");
             //Assert.AreEqual(typeof(int), x.type);
 
 
             ///// json stuff TODOA
-            x = _lMain.GetGlobalValue("things_json");//TODOA
+            x = Utils.GetGlobalValue(_lMain, "things_json");//TODOA
             //Assert.AreEqual(typeof(string), x.type);
             var jdoc = JsonDocument.Parse(x.val!.ToString()!);
             //var jrdr = new Utf8JsonReader();
@@ -292,30 +284,56 @@ namespace Ephemera.Nebulua.App
 
 
             ///// Execute a lua function.
-            LuaType gtype = _lMain.GetGlobal("g_func");
-            //Assert.AreEqual(LuaType.Function, gtype);
+            LuaType gtype = _lMain.GetGlobal("g_func"); //Function?
             // Push the arguments to the call.
             _lMain.PushString("az9011 birdie");
             // Do the actual call.
-            lstat = _lMain.PCall(1, 1, 0);
-            //Assert.AreEqual(LuaStatus.OK, lstat);
+            lstat = _lMain.PCall(1, 1, 0); // OK?
             // Get result.
             int res = (int)_lMain.ToInteger(-1)!;
-            //Assert.AreEqual(13, res);
-            tvOutput.AppendLine($"Function returned:{res}");
+            Log(Level.DBG, $"Function returned:{res} 13?");
 
             //TearDown();
             _lMain?.Close();
             _lMain = null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="lsin"></param>
+        /// <param name="indent"></param>
+        /// <returns></returns>
         string FormatDump(string name, List<string> lsin, bool indent)
         {
-            string sindent = indent ? "  " : "";
+            string sindent = indent ? "    " : "";
             var lines = new List<string> { $"{name}:" };
             lsin.ForEach(s => lines.Add($"{sindent}{s}"));
             var s = string.Join(Environment.NewLine, lines);
             return s;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="msg"></param>
+        void Log(Level level, string msg)
+        {
+            string text = $"> {msg}{Environment.NewLine}";
+
+            // Trim buffer.
+            if (_maxText > 0 && rtbOutput.TextLength > _maxText)
+            {
+                rtbOutput.Select(0, _maxText / 5);
+                rtbOutput.SelectedText = "";
+            }
+
+            rtbOutput.SelectionBackColor = _colors[level];
+
+            rtbOutput.AppendText(text);
+            rtbOutput.ScrollToCaret();
         }
     }
 }

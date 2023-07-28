@@ -12,8 +12,6 @@ using NUnit.Framework;
 using KeraLuaEx;
 
 
-
-
 namespace KeraLuaEx.Test
 {
     // Test my new stuff.
@@ -45,50 +43,50 @@ namespace KeraLuaEx.Test
 
             using Lua l = new();
 
-            string srcPath = Lua.GetSourcePath();
+            string srcPath = Utils.GetSourcePath();
             string scriptsPath = Path.Combine(srcPath, "scripts");
-            l.SetLuaPath(new() { scriptsPath });
+            Utils.SetLuaPath(l, new() { scriptsPath });
             string scriptFile = Path.Combine(scriptsPath, "luaex.lua");
             LuaStatus lstat = l.LoadFile(scriptFile);
             Assert.AreEqual(LuaStatus.OK, lstat);
             lstat = l.PCall(0, -1, 0);
 
-            var ls = l.DumpStack();
+            var ls = Utils.DumpStack(l);
             Debug.WriteLine(FormatDump("Stack", ls, true));
 
-            //ls = l.DumpGlobals();
+            //ls = Utils.DumpGlobals(l);
             //Debug.WriteLine(FormatDump("Globals", ls, true));
 
-            //ls = l.DumpStack();
+            //ls = Utils.DumpStack(l);
             //Debug.WriteLine(FormatDump("Stack", ls, true));
 
-            //ls = l.DumpTable("_G");
+            //ls = Utils.DumpTable(l, "_G");
             //Debug.WriteLine(FormatDump("_G", ls, true));
 
-            ls = l.DumpTable("g_table");
+            ls = Utils.DumpTable(l, "g_table");
             Debug.WriteLine(FormatDump("g_table", ls, true));
 
-            ls = l.DumpTraceback();
+            ls = Utils.DumpTraceback(l);
             Debug.WriteLine(FormatDump("Traceback", ls, true));
 
-            var x = l.GetGlobalValue("g_number");
+            var x = Utils.GetGlobalValue(l, "g_number");
             Assert.AreEqual(typeof(double), x.type);
 
-            x = l.GetGlobalValue("g_int");
+            x = Utils.GetGlobalValue(l, "g_int");
             Assert.AreEqual(typeof(int), x.type);
 
-            ls = l.DumpTable("things");
+            ls = Utils.DumpTable(l, "things");
             Debug.WriteLine(FormatDump("things", ls, true));
 
-            //x = l.GetGlobalValue("g_table");
+            //x = Utils.GetGlobalValue(l, "g_table");
             //Assert.AreEqual(typeof(int), x.type);
 
-            //x = l.GetGlobalValue("g_list");
+            //x = Utils.GetGlobalValue(l, "g_list");
             //Assert.AreEqual(typeof(int), x.type);
 
 
             ///// json stuff TODOA
-            x = l.GetGlobalValue("things_json");//TODOA
+            x = Utils.GetGlobalValue(l, "things_json");//TODOA
             Assert.AreEqual(typeof(string), x.type);
             var jdoc = JsonDocument.Parse(x.val.ToString());
             var jrdr = new Utf8JsonReader();

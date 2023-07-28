@@ -19,3 +19,6 @@ Explain... changes
     - LuaStatus LoadString(string chunk, string name)
 - ToNumberX() and ToIntegerX() are removed and plain ToNumber() and ToInteger() returns nullables.
 
+- API "State" changed to "L".
+
+
