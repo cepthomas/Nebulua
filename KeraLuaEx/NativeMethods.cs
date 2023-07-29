@@ -32,7 +32,7 @@ namespace KeraLuaEx
 #elif WINDOWS_UWP
         private const string LuaLibraryName = "lua54.dll";
 #else
-        private const string LuaLibraryName = "lua54";//TODOE get correct version
+        private const string LuaLibraryName = "lua54";
 #endif
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
@@ -52,6 +52,9 @@ namespace KeraLuaEx
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static extern void lua_close(lua_State luaState);
+
+        [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
+        internal static extern int lua_closethread(lua_State luaState, lua_State from);
 
         [DllImport(LuaLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static extern int lua_compare(lua_State luaState, int index1, int index2, int op);
