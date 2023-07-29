@@ -57,7 +57,7 @@ namespace KeraLuaEx
                     }
                     break;
 
-                case LuaType.Table://TODOA
+                case LuaType.Table://TODO1
 
                     break;
 
@@ -134,7 +134,7 @@ namespace KeraLuaEx
                 string name = l.ToString(-2)!;
                 // Get type of value(-1).
                 string type = l.TypeName(-1)!;
-                // Get value. TODOA process table
+                // Get value. TODO1 process table
                 string sval = l.ToString(-1)!;
 
                 ls.Add($"{name}:{type}:{sval}");
@@ -206,22 +206,20 @@ namespace KeraLuaEx
             for (int i = num; i >= 1; i--)
             {
                 LuaType t = l.Type(i);
-                string sval;
-                switch (t)
+                string sval = t switch
                 {
-                    case LuaType.String: sval = $"\"{l.ToString(i)}\""; break;
-                    case LuaType.Boolean: sval = l.ToBoolean(i) ? "true" : "false"; break;
-                    case LuaType.Number: sval = $"{(l.IsInteger(i) ? l.ToInteger(i) : l.ToNumber(i))}"; break;
-                    case LuaType.Nil: sval = "nil"; break;
-                    case LuaType.Table: sval = l.ToString(i) ?? "null"; break;
+                    LuaType.String => $"\"{l.ToString(i)}\"",
+                    LuaType.Boolean => l.ToBoolean(i) ? "true" : "false",
+                    LuaType.Number => $"{(l.IsInteger(i) ? l.ToInteger(i) : l.ToNumber(i))}",
+                    LuaType.Nil => "nil",
+                    LuaType.Table => l.ToString(i) ?? "null",
                     //case LuaType.Function:
                     //case LuaType.Table:
                     //case LuaType.Thread:
                     //case LuaType.UserData:
                     //case LuaType.LightUserData: ls.Add($"{t}:{l.l.ToPointer(i)}"); break;
-                    default: sval = $"{l.ToPointer(i)}"; break;
-                }
-
+                    _ => $"{l.ToPointer(i)}",
+                };
                 string s = $"[{i}] type:{t} val:{sval}";
                 ls.Add(s);
             }
@@ -290,7 +288,7 @@ namespace KeraLuaEx
         }
 
 
-        /////////////////////////////////// TODOA future? ///////////////////////////////////
+        /////////////////////////////////// TODO2 future? ///////////////////////////////////
         // Lua calls C# functions
         public object? LuaCallCsharp(IntPtr p, int numResults, params Type[] argTypes)
         {
@@ -357,19 +355,15 @@ namespace KeraLuaEx
                         l.PushNumber(x);
                         break;
 
-                    //case Bag x:
-                    //    //TODOA convert to table and push.
-                    //    break;
-
                     //case List<int> x:
                     //case List<double> d:
                     //case List<string> s:
                     //case List<Bag> b:
-                    //    //TODOA convert to table and push.
+                    //    // convert to table and push.
                     //    break;
 
                     default:
-                        throw new ArgumentException(string.Join("|", Utils.DumpStack(l)));// TODOA also "invalid func" or such
+                        throw new ArgumentException(string.Join("|", Utils.DumpStack(l)));// also "invalid func" or such
                 }
             }
 
@@ -388,7 +382,7 @@ namespace KeraLuaEx
             // IsTable(int index) => Type(index) == LuaType.Table;
 
 
-            // Get the results from the stack. TODOA make generic?
+            // Get the results from the stack. Make generic?
             if (retType is null)
             {
                 // Do nothing.
@@ -403,7 +397,7 @@ namespace KeraLuaEx
             }
             else if (l.IsNil(-1))
             {
-                ret = null;   // TODOA remove from stack?
+                ret = null;
             }
             else if (l.IsNumber(-1))
             {
@@ -415,15 +409,16 @@ namespace KeraLuaEx
             }
             else if (l.IsTable(-1))
             {
-                ret = null; //TODOA turn into Bag
+                ret = null; //turn into ?
             }
             else
             {
-                throw new SyntaxException("TODOA info");
+                throw new SyntaxException("info");
             }
+
+            l.Pop(1);
 
             return ret;
         }
-
     }
 }

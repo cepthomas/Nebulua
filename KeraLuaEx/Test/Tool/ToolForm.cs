@@ -12,7 +12,10 @@ using System.Text.Json.Serialization;
 using KeraLuaEx;
 
 
-/* TODOA monitor external script file, save editor to file.
+// TODO1 IsXXX() means convertible! whereas Type(index) is accurate.
+
+
+/* TODO2 monitor external script file, save editor to file.
 
 FileSystemWatcher watcher = new()
 {
@@ -93,7 +96,7 @@ namespace KeraLuaEx.Tool
 
             Log(Level.INF, "============================ Starting up ===========================");
 
-            // TODOA temp debug
+            // TODO2 temp debug
             string sopen = OpenScriptFile(@"C:\Dev\repos\Nebulua\KeraLuaEx\Test\scripts\luaex.lua");
 
             base.OnLoad(e);
@@ -253,9 +256,10 @@ namespace KeraLuaEx.Tool
             //x = Utils.GetGlobalValue(_lMain, "g_list");
             //Assert.AreEqual(typeof(int), x.type);
 
+            // Tables in/out TODO1
 
-            ///// json stuff TODOA
-            x = Utils.GetGlobalValue(_lMain, "things_json");//TODOA
+            ///// json stuff TODO3
+            x = Utils.GetGlobalValue(_lMain, "things_json");
             //Assert.AreEqual(typeof(string), x.type);
             var jdoc = JsonDocument.Parse(x.val!.ToString()!);
             //var jrdr = new Utf8JsonReader();

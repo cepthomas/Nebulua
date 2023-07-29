@@ -11,9 +11,7 @@ namespace KeraLuaEx
         /// <summary>
         /// Disabled hook
         /// </summary>
-#pragma warning disable CA1008 // Enums should have zero value
         Disabled = 0,
-#pragma warning restore CA1008 // Enums should have zero value
         /// <summary>
         /// The call hook: is called when the interpreter calls a function. The hook is called just after Lua enters the new function, before the function gets its arguments. 
         /// </summary>

@@ -20,27 +20,6 @@ using Ephemera.Nebulator.Script;
 using KeraLuaEx;
 
 
-/* TODOA monitor external script file, save editor to file.
-
-FileSystemWatcher watcher = new()
-{
-    Path = npath,
-    Filter = Path.GetFileName(path),
-    EnableRaisingEvents = true,
-    NotifyFilter = NotifyFilters.LastWrite
-};
-
-watcher.Changed += Watcher_Changed;
-
-void Watcher_Changed(object sender, FileSystemEventArgs e)
-{
-    _touchedFiles.Add(e.FullPath);
-    // Reset timer.
-    _timer.Interval = DELAY;
-}
-*/
-
-
 
 namespace Ephemera.Nebulua.App
 {
@@ -87,10 +66,6 @@ namespace Ephemera.Nebulua.App
             rtbScript.Font = tvOutput.Font;
 
             tvOutput.AppendLine("============================ Starting up ===========================");
-
-            // TODOA temp debug
-            string sopen = OpenScriptFile(@"C:\Dev\repos\Nebulua\KeraLuaEx\Test\scripts\luaex.lua");
-            tvOutput.AppendLine(sopen);
 
             base.OnLoad(e);
         }
@@ -262,8 +237,8 @@ namespace Ephemera.Nebulua.App
             //Assert.AreEqual(typeof(int), x.type);
 
 
-            ///// json stuff TODOA
-            x = _lMain.GetGlobalValue("things_json");//TODOA
+            ///// json stuff
+            x = _lMain.GetGlobalValue("things_json");
             //Assert.AreEqual(typeof(string), x.type);
             var jdoc = JsonDocument.Parse(x.val!.ToString()!);
             //var jrdr = new Utf8JsonReader();

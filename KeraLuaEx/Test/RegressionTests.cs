@@ -401,7 +401,7 @@ main.lua-main.lua:11 (main)
             using var l = new Lua();
 
             l.LoadString("hello = 1");
-            LuaStatus result = l.Resume(null, 0);
+            LuaStatus result = l.Resume(null, 0, out int _);
 
             Assert.AreEqual(LuaStatus.OK, result);
         }
@@ -415,7 +415,7 @@ main.lua-main.lua:11 (main)
             var sb = new StringBuilder();
 
             l.PushObject(sb);
-            l.SetWarningFunction(warnFunction, l.Handle);
+            l.SetWarningFunction(warnFunction, l.LuaState);
 
             l.Warning("Ola um dois tres", false);
 
