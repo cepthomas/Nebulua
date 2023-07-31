@@ -101,7 +101,6 @@ namespace Ephemera.Nebulua.Script
             }
             catch (Exception ex)
             {
-
                 throw;
             }
         }
@@ -130,7 +129,7 @@ namespace Ephemera.Nebulua.Script
         public static void Setup()
         {
             // Get the function to be called.
-            LuaType gtype = _lMain.GetGlobal("setup");
+            LuaType gtype = _lMain.GetGlobal("setup"); // TODOE check these.
 
             // Push the arguments to the call.
             // None.
@@ -171,7 +170,7 @@ namespace Ephemera.Nebulua.Script
         {
             // Get the function to be called. Check return.
             LuaType gtype = _lMain.GetGlobal("input_note");
-            if (gtype != LuaType.Function) // optional
+            if (gtype != LuaType.Function) // optional function
                 return;
 
             // Push the arguments to the call.
@@ -195,7 +194,7 @@ namespace Ephemera.Nebulua.Script
         {
             // Get the function to be called. Check return.
             LuaType gtype = _lMain.GetGlobal("input_controller");
-            if (gtype != LuaType.Function) // optional
+            if (gtype != LuaType.Function) // optional function
                 return;
 
             // Push the arguments to the call.

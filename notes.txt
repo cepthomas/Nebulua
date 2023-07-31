@@ -1,5 +1,38 @@
 
 
+
+            //////// json stuff TODO3 ////////
+            x = Utils.GetGlobalValue(_lMain, "things_json");
+            //Assert.AreEqual(typeof(string), x.type);
+            var jdoc = JsonDocument.Parse(x.val!.ToString()!);
+            //var jrdr = new Utf8JsonReader();
+            //{
+            //  TUNE = { type = "midi_in", channel = 1,  },
+            //  TRIG = { type = "virt_key", channel = 2, adouble = 1.234 },
+            //  WHIZ = { type = "bing_bong", channel = 10, abool = true }
+            //}
+            // >>>>>>>
+            //{
+            //    "TRIG": {
+            //        "channel": 2,
+            //        "type": "virt_key",
+            //        "adouble": 1.234
+            //    },
+            //    "WHIZ": {
+            //        "channel": 10,
+            //        "abool": true,
+            //        "type": "bing_bong"
+            //    },
+            //    "TUNE": {
+            //        "type": "midi_in",
+            //        "channel": 1
+            //    }
+            //}
+
+
+
+
+
 TODO2 All enum etc files. LuaType  LuaStatus  LuaRegistry  LuaOperation  LuaHookMask  LuaHookEvent LuaGC  LuaCompare.   LuaRegister? 
 
 

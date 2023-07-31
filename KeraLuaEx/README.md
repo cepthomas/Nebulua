@@ -2,7 +2,7 @@
 
 Explain... changes
 
--- Lua == 5.4.6
+- Lua == 5.4.6
 
 - .NET6 sdk project for windows.
 - Error handling:
@@ -39,4 +39,5 @@ Explain... changes
 - Removed some arg checking - should be all or none. Client will have to handle things like null argument exc.
 
 
+// TODO1 IsXXX() means convertible! whereas Type(index) is accurate.
 

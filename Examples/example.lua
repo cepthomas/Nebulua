@@ -31,7 +31,7 @@ local WHIZ  <const> = "whiz"
 
 
 
--- All the outputs. Also oscout (midi over osc?). Access outputs[index1-N].type etc...
+-- All the outputs. Also oscout (midi over osc). Access outputs[index1-N].type etc...
 outputs =
 {
   KEYS  = { type="midi_out", channel=1, patch="AcousticGrandPiano" },

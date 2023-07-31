@@ -139,7 +139,10 @@ namespace KeraLuaEx
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
-            Close();
+            if (disposing)
+            {  
+                Close();
+            }  
         }
 
         /// <summary>

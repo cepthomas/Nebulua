@@ -60,7 +60,7 @@ namespace KeraLuaEx.Test
             //ls = Utils.DumpTable(_lMain, "_G");
             //Debug.WriteLine(FormatDump("_G", ls, true));
 
-            ls = Utils.DumpTable(_lMain, "g_table");
+            ls = Utils.DumpGlobalTable(_lMain, "g_table");
             Debug.WriteLine(FormatDump("g_table", ls, true));
 
             ls = Utils.DumpTraceback(_lMain);
@@ -72,7 +72,7 @@ namespace KeraLuaEx.Test
             x = Utils.GetGlobalValue(_lMain, "g_int");
             Assert.AreEqual(typeof(int), x.type);
 
-            ls = Utils.DumpTable(_lMain, "things");
+            ls = Utils.DumpGlobalTable(_lMain, "things");
             Debug.WriteLine(FormatDump("things", ls, true));
 
             //x = Utils.GetGlobalValue(_lMain, "g_table");
