@@ -39,5 +39,5 @@ Explain... changes
 - Removed some arg checking - should be all or none. Client will have to handle things like null argument exc.
 
 
-// TODO1 IsXXX() means convertible! whereas Type(index) is accurate.
+// IsXXX() means convertible! whereas Type(index) is accurate.
 

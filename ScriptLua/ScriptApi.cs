@@ -96,7 +96,7 @@ namespace Ephemera.Nebulua.Script
                 _lMain.Register("get_notes", _fGetNotes); //get_notes("B4.MY_SCALE")
                 _lMain.Register("create_notes", _fCreateNotes); //create_notes("MY_SCALE", "1 3 4 b7")
 
-                // TODOA get/init the inputs and outputs. And anything else....
+                // TODOApp get/init the inputs and outputs. And anything else....
                 _channels.Clear();
             }
             catch (Exception ex)
@@ -129,7 +129,7 @@ namespace Ephemera.Nebulua.Script
         public static void Setup()
         {
             // Get the function to be called.
-            LuaType gtype = _lMain.GetGlobal("setup"); // TODOE check these.
+            LuaType gtype = _lMain.GetGlobal("setup"); // TODOApp check these.
 
             // Push the arguments to the call.
             // None.
@@ -148,7 +148,7 @@ namespace Ephemera.Nebulua.Script
         public static void Step(int bar, int beat, int subdiv)
         {
             // Get the function to be called. Check return.
-            LuaType gtype = _lMain.GetGlobal("step"); // TODOE check these.
+            LuaType gtype = _lMain.GetGlobal("step"); // TODOApp check these.
 
             // Push the arguments to the call.
             _lMain.PushInteger(bar);
@@ -214,7 +214,7 @@ namespace Ephemera.Nebulua.Script
 
         #region Lua calls C# functions
 
-        // TODOA impl these??
+        // TODOApp impl these??
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
         // CreateSection(int beats, string name, SectionElements elements) -- -> Section
 
@@ -275,7 +275,7 @@ namespace Ephemera.Nebulua.Script
         static int SendNote(IntPtr p)
         {
             int numRes = 0;
-            int notenum = 0; // TODOA also string!
+            int notenum = 0; // TODOApp also string!
 
             //string chanName, int notenum, double vol, double dur) //send_note(chan, note, vol, dur)
 
@@ -311,7 +311,7 @@ namespace Ephemera.Nebulua.Script
         {
             int numRes = 0;
             //SendNote(chanName, notenum, vol);
-            int notenum = 0; // TODOA also string!
+            int notenum = 0; // TODOApp also string!
 
             return numRes;
         }
@@ -321,7 +321,7 @@ namespace Ephemera.Nebulua.Script
         {
             int numRes = 0;
             //SendNote(chanName, notenum, 0);
-            int notenum = 0; // TODOA also string!
+            int notenum = 0; // TODOApp also string!
 
             return numRes;
         }
@@ -336,12 +336,12 @@ namespace Ephemera.Nebulua.Script
             ///// Get function arguments.
             string chanName = l.ToString(1);
             string controller = l.ToString(2);
-            long? val = l.ToInteger(3); // TODOE handle fail
+            long? val = l.ToInteger(3); // TODOApp handle fail
 
             ///// Do the work.
-            var ch = _channels[chanName]; // TODOE handle fail
+            var ch = _channels[chanName]; // TODOApp handle fail
             int ctlrid = MidiDefs.GetControllerNumber(controller);
-//TODOA            ch.SendController((MidiController)ctlrid, (int)val);
+//TODOApp            ch.SendController((MidiController)ctlrid, (int)val);
 
             return numRes;
         }
@@ -358,8 +358,8 @@ namespace Ephemera.Nebulua.Script
             string patch = l.ToString(2)!;
 
             ///// Do the work.
-            var ch = _channels[chanName]; // TODOE handle fail
-            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODOE handle fail
+            var ch = _channels[chanName]; // TODOApp handle fail
+            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODOApp handle fail
             ch.Patch = patchid;
             ch.SendPatch();
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -456,7 +457,7 @@ namespace KeraLuaEx
         /// <param name="what"></param>
         /// <param name="ar"></param>
         /// <returns>This function returns false on error (for instance, an invalid option in what). </returns>
-        public bool GetInfo(string what, ref LuaDebug ar) //TODO3?
+        public bool GetInfo(string what, ref LuaDebug ar) //TODO2
         {
             bool ret = false;
             IntPtr pDebug = Marshal.AllocHGlobal(Marshal.SizeOf(ar));
@@ -493,7 +494,7 @@ namespace KeraLuaEx
         /// <param name="ar"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public string? GetLocal(LuaDebug ar, int n) //TODO3?
+        public string? GetLocal(LuaDebug ar, int n) //TODO2 overloads?
         {
             string? ret = string.Empty;
             IntPtr pDebug = Marshal.AllocHGlobal(Marshal.SizeOf(ar));
@@ -513,7 +514,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// If the value at the given index has a metatable, the function pushes that metatable onto the stack and returns 1
+        /// If the value at the given index has a metatable, the function pushes that metatable onto the stack and returns 1.
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -539,7 +540,7 @@ namespace KeraLuaEx
         /// <param name="level"></param>
         /// <param name="ar"></param>
         /// <returns></returns>
-        public int GetStack(int level, ref LuaDebug ar) //TODO3?
+        public int GetStack(int level, ref LuaDebug ar) //TODO2 overloads?
         {
             int ret = 0;
             IntPtr pDebug = Marshal.AllocHGlobal(Marshal.SizeOf(ar));
@@ -944,7 +945,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes a reference data (C# object)  onto the stack. 
+        /// Pushes a reference data (C# object) onto the stack. 
         /// This function uses lua_pushlightuserdata, but uses a GCHandle to store the reference inside the Lua side.
         /// The CGHandle is create as Normal, and will be freed when the value is pop.
         /// </summary>
@@ -1014,7 +1015,7 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes a copy of the element at the given index onto the stack. (lua_pushvalue)
+        /// Pushes a copy of the element at the given index onto the stack. (lua_pushvalue).
         /// The method was renamed, since pushvalue is a bit vague.
         /// </summary>
         /// <param name="index"></param>
@@ -1025,8 +1026,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Returns true if the two values in indices index1 and index2 are primitively equal (that is,
-        /// without calling the __eq metamethod). Otherwise returns false. Also returns false if any of the indices are not valid. 
+        /// Returns true if the two values in indices index1 and index2 are primitively equal (that is, without calling the __eq metamethod).
+        /// Otherwise returns false. Also returns false if any of the indices are not valid. 
         /// </summary>
         /// <param name="index1"></param>
         /// <param name="index2"></param>
@@ -1047,8 +1048,8 @@ namespace KeraLuaEx
         }
 
         /// <summary>
-        /// Pushes onto the stack the value t[n], where t is the table at the given index. The access is raw,
-        /// that is, it does not invoke the __index metamethod. 
+        /// Pushes onto the stack the value t[n], where t is the table at the given index.
+        /// The access is raw, that is, it does not invoke the __index metamethod. 
         /// </summary>
         /// <param name="index"></param>
         /// <param name="n"></param>
@@ -1072,7 +1073,7 @@ namespace KeraLuaEx
 
         /// <summary>
         /// Returns the raw "length" of the value at the given index: for strings, this is the string length.
-        /// for tables, this is the result of the length operator ('#') with no metamethods. for userdata, this
+        /// for tables, this is the result of the length operator ('#') with no metamethods. For userdata, this
         /// is the size of the block of memory allocated for the userdata. for other values, it is 0. 
         /// </summary>
         /// <param name="index"></param>
@@ -1291,7 +1292,7 @@ namespace KeraLuaEx
         /// <param name="ar"></param>
         /// <param name="n"></param>
         /// <returns>Returns NULL (and pops nothing) when the index is greater than the number of active local variables. </returns>
-        public string? SetLocal(LuaDebug ar, int n) //TODO3?
+        public string? SetLocal(LuaDebug ar, int n) //TODO2 overloads?
         {
             string? ret = null;
             IntPtr pDebug = Marshal.AllocHGlobal(Marshal.SizeOf(ar));
@@ -2173,42 +2174,26 @@ namespace KeraLuaEx
             if (lstat >= LuaStatus.ErrRun)
             {
                 hasError = true;
-                var ls = Utils.DumpStack(this);
-                string stack = string.Join(" ", ls);
-                string s = $"{Path.GetFileName(file)}({line}): {lstat}:{stack}";
-                //string tb = string.Join(" ", Utils.DumpTraceback(this));
+                List<string> ls = new()
+                {
+                    $"Error:{lstat}",
+                    $"Caller:{Path.GetFileName(file)}({line})"
+                };
+
+                for (int i = GetTop(); i >= 1; i--)
+                {
+                    ls.Add(ToString(i)!);
+                }
+                _serror = string.Join(Environment.NewLine, ls);
 
                 if (_throwOnError)
                 {
-                    throw lstat == LuaStatus.ErrFile ? new FileNotFoundException(s) : new LuaException(s);
-                }
-                else
-                {
-                    _serror = s;
+                    throw lstat == LuaStatus.ErrFile ? new FileNotFoundException(_serror) : new LuaException(_serror);
                 }
             }
 
             return hasError;
         }
-    }
-
-    /// <summary>Lua script syntax error.</summary>
-    [Serializable]
-    public class SyntaxException : Exception
-    {
-        // If new properties are added to the derived exception class, ToString() should be overridden to return the added information.
-        public SyntaxException() : base() { }
-        public SyntaxException(string message) : base(message) { }
-        public SyntaxException(string message, Exception inner) : base(message, inner) { }
-    }
-
-    /// <summary>Internal error on lua side.</summary>
-    [Serializable]
-    public class LuaException : Exception
-    {
-        public LuaException() : base() { }
-        public LuaException(string message) : base(message) { }
-        public LuaException(string message, Exception inner) : base(message, inner) { }
     }
     #endregion
 }

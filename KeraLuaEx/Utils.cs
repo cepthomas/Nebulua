@@ -2,14 +2,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Xml.Linq;
-using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 
 
 namespace KeraLuaEx
@@ -17,7 +12,7 @@ namespace KeraLuaEx
     public class Utils
     {
         /// <summary>
-        /// Generic get a simple stack value. Restores stack. TODO also for function args?
+        /// Generic get a simple stack value. Restores stack. TODO1 also for function args?
         /// </summary>
         /// <param name="l"></param>
         /// <param name="name"></param>
@@ -33,42 +28,30 @@ namespace KeraLuaEx
                 case LuaType.Nil:
                     // Return defaults.
                     break;
-
                 case LuaType.String:
                     val = l.ToString(-1);
-                    type = typeof(string);
+                    type = val!.GetType();
                     break;
-
                 case LuaType.Boolean:
                     val = l.ToBoolean(-1);
-                    type = typeof(bool);
+                    type = val.GetType();
                     break;
-
                 case LuaType.Number:
                     if (l.IsInteger(-1))
                     {
-                        val = (int)l.ToInteger(-1)!;
-                        type = typeof(int);
+                        val = l.ToInteger(-1)!;
+                        type = val.GetType();
                     }
                     else
                     {
                         val = l.ToNumber(-1)!;
-                        type = typeof(double);
+                        type = val.GetType();
                     }
                     break;
-
                 case LuaType.Table:
-
-
-
-
-
-
-                //case LuaType.Function:
-                //case LuaType.Thread:
-                //case LuaType.UserData:
-                //case LuaType.LightUserData:
-
+                    val = Table.GetTable(l);
+                    type = val.GetType();
+                    break;
                 default:
                     throw new ArgumentException($"Unsupported type {t} for {name}");
             }
@@ -79,138 +62,11 @@ namespace KeraLuaEx
             return (val, type);
         }
 
-
-    
-//
-
-        public static Table GetTable(Lua l)
-        {
-            Dictionary<string, object> values = new();
-
-            List<string> ls = new();
-
-            // Put a nil key on stack.
-            l.PushNil();
-
-            // key(-1) is replaced by the next key(-1) in table(-2).
-            while (l.Next(-2))// != 0)
-            {
-                // Get key(-2) name.
-                string name = l.ToString(-2)!;
-
-                // Get type of value(-1).
-                LuaType type = l.Type(-1)!;
-
-                if (type == LuaType.Table)
-                {
-                    ls.Add($"{name}({type}):");
-                    ls.AddRange(DumpTable(l)); // recursion!
-                }
-                else
-                {
-                    // Get value.
-                    string sval = l.ToString(-1)!;
-                    ls.Add($"{name}({type}):{sval}");
-                }
-
-                // Remove value(-1), now key on top at(-1).
-                l.Pop(1);
-            }
-
-            return ls;
-        }
-
-
-
-
-        //////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// Dump a table at global scope into a readable list.
-        /// </summary>
-        /// <param name="l"></param>
-        /// <param name="tableName"></param>
-        /// <returns></returns>
-        public static List<string> DumpGlobalTable(Lua l, string tableName)
-        {
-            var ttype = l.GetGlobal(tableName);
-
-            if (ttype != LuaType.Table)
-            {
-                throw new ArgumentException($"Invalid table name:{tableName}");
-            }
-
-            var ls = DumpTable(l);
-
-            // Remove pushed table.
-            l.Pop(1);
-
-            return ls;
-        }
-
-        /// <summary>
-        /// Dump the table on the top of stack into a readable list.
-        /// </summary>
-        /// <returns></returns>
-        public static List<string> DumpTable(Lua l)
-        {
-            List<string> ls = new();
-
-            // Put a nil key on stack.
-            l.PushNil();
-
-            // key(-1) is replaced by the next key(-1) in table(-2).
-            while (l.Next(-2))// != 0)
-            {
-                // Get key(-2) name.
-                string name = l.ToString(-2)!;
-
-                // Get type of value(-1).
-                LuaType type = l.Type(-1)!;
-
-                if (type == LuaType.Table)
-                {
-                    ls.Add($"{name}({type}):");
-                    ls.AddRange(DumpTable(l)); // recursion!
-                }
-                else
-                {
-                    // Get value.
-                    string sval = l.ToString(-1)!;
-                    ls.Add($"{name}({type}):{sval}");
-                }
-
-                // Remove value(-1), now key on top at(-1).
-                l.Pop(1);
-            }
-
-            return ls;
-        }
-
-        /// <summary>
-        /// Dump the traceback as list.
-        /// </summary>
-        /// <returns></returns>
-        public static List<string> DumpTraceback(Lua l)
-        {
-            l.Traceback(l, null, 1); // (state, string message, int level)
-
-            return DumpStack(l);
-
-            //List<string> parts = new()
-            //{
-            //    $"-1:{l.ToString(-1)}",
-            //    $"-2:{l.ToString(-2)}",
-            //    $"-3:{l.ToString(-3)}"
-            //};
-            //return string.Join(Environment.NewLine, parts);
-        }
-
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static List<string> DumpStack(Lua l)
+        public static string DumpStack(Lua l)
         {
             List<string> ls = new();
             int num = l.GetTop();
@@ -220,21 +76,16 @@ namespace KeraLuaEx
                 for (int i = num; i >= 1; i--)
                 {
                     LuaType t = l.Type(i);
-                    string sval = t switch
+                    string tinfo = $"[{i}]({t}):";
+                    string s = t switch
                     {
-                        LuaType.String => $"({t}):{l.ToString(i)}",
-                        LuaType.Boolean => $"({t}):{l.ToBoolean(i)}",
-                        LuaType.Number => $"({t}):{(l.IsInteger(i) ? l.ToInteger(i) : l.ToNumber(i))}",
-                        LuaType.Nil => $"({t})",
-                        LuaType.Table => $"({t}){l.ToString(i) ?? "null"}",
-                        //case LuaType.Function:
-                        //case LuaType.Table:
-                        //case LuaType.Thread:
-                        //case LuaType.UserData:
-                        //case LuaType.LightUserData:
-                        _ => $"({t}):{l.ToPointer(i)}",
+                        LuaType.String => $"{tinfo}{l.ToString(i)}",
+                        LuaType.Boolean => $"{tinfo}{l.ToBoolean(i)}",
+                        LuaType.Number => $"{tinfo}{(l.IsInteger(i) ? l.ToInteger(i) : l.ToNumber(i))}",
+                        LuaType.Nil => $"{tinfo}nil",
+                        LuaType.Table => $"{tinfo}{l.ToString(i) ?? "null"}",
+                        _ => $"{tinfo}{l.ToPointer(i)}",
                     };
-                    string s = $"[{i}] type:{t} val:{sval}";
                     ls.Add(s);
                 }
             }
@@ -243,8 +94,37 @@ namespace KeraLuaEx
                 ls.Add("Empty");
             }
 
-            return ls;
+            return string.Join(Environment.NewLine, ls);
         }
+
+        /// <summary>
+        /// Format value for display.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        /// <exception cref="SyntaxException"></exception>
+        public static string FormatCsharpVal(string name, object? val)
+        {
+            string s = "???";
+            //as "val_name(type):12345
+
+            s = val switch
+            {
+                int _ => $"{name}(int):{val}",
+                long _ => $"{name}(long):{val}",
+                double _ => $"{name}(double):{val}",
+                bool _ => $"{name}(bool):{val}",
+                string _ => $"{name}(string):{val}",
+                null => $"{name}:null",
+                //case table: sval = $"{name}(table):{val}"; break; // TODO3?
+                _ => throw new SyntaxException($"Unsupported type:{val.GetType()} for {name}"),
+            };
+            ;
+
+            return s;
+        }
+
 
         /// <summary>
         /// 
@@ -284,7 +164,7 @@ namespace KeraLuaEx
         }
 
 
-        /////////////////////////////////// TODO2 future? ///////////////////////////////////
+        #region TODO3 future?
         // Lua calls C# functions
         public object? LuaCallCsharp(IntPtr p, int numResults, params Type[] argTypes)
         {
@@ -331,11 +211,11 @@ namespace KeraLuaEx
             {
                 switch (args[i])
                 {
-                    case string x:   l.PushString(x);  break;
-                    case bool x:     l.PushBoolean(x);   break;
-                    case int x:    l.PushInteger(x);    break;
-                    case double x:   l.PushNumber(x);   break;
-                    case float x:   l.PushNumber(x);   break;
+                    case string x:  l.PushString(x);    break;
+                    case bool x:    l.PushBoolean(x);   break;
+                    case int x:     l.PushInteger(x);   break;
+                    case double x:  l.PushNumber(x);    break;
+                    case float x:   l.PushNumber(x);    break;
 
                     //case List<int> x:
                     //case List<double> d:
@@ -361,7 +241,7 @@ namespace KeraLuaEx
             //    double => l.IsNumber(-1),
             //    string => l.ToString(-1),
             //    bool => l.ToBoolean(-1),
-            //    // TODO1 table
+            //    // ? table
             //    // ?? LuaType.Function:
             //    _ => throw new SyntaxException($"Invalid type:{retType}")
             //};
@@ -371,5 +251,6 @@ namespace KeraLuaEx
 
             return ret;
         }
+        #endregion
     }
 }

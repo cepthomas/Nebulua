@@ -1,39 +1,41 @@
 
 
+            for (int i = 0; i < numArgs; i++)
+            {
+                switch (args[i])
+                {
+                    case string x:  l.PushString(x);    break;
+                    case bool x:    l.PushBoolean(x);   break;
+                    case int x:     l.PushInteger(x);   break;
+                    case double x:  l.PushNumber(x);    break;
+                    case float x:   l.PushNumber(x);    break;
+                    //case List<int> x:
+                    default: throw new ArgumentException(string.Join("|", Utils.DumpStack(l)));// also "invalid func" or such
+                }
+            }
 
-            //////// json stuff TODO3 ////////
-            x = Utils.GetGlobalValue(_lMain, "things_json");
-            //Assert.AreEqual(typeof(string), x.type);
-            var jdoc = JsonDocument.Parse(x.val!.ToString()!);
-            //var jrdr = new Utf8JsonReader();
-            //{
-            //  TUNE = { type = "midi_in", channel = 1,  },
-            //  TRIG = { type = "virt_key", channel = 2, adouble = 1.234 },
-            //  WHIZ = { type = "bing_bong", channel = 10, abool = true }
-            //}
-            // >>>>>>>
-            //{
-            //    "TRIG": {
-            //        "channel": 2,
-            //        "type": "virt_key",
-            //        "adouble": 1.234
-            //    },
-            //    "WHIZ": {
-            //        "channel": 10,
-            //        "abool": true,
-            //        "type": "bing_bong"
-            //    },
-            //    "TUNE": {
-            //        "type": "midi_in",
-            //        "channel": 1
-            //    }
-            //}
+            // Get the results from the stack. Make generic???
+            object val = retType switch
+            {
+                null => null,
+                int => l.ToInteger(-1),
+                double => l.IsNumber(-1),
+                string => l.ToString(-1),
+                bool => l.ToBoolean(-1),
+                // ? table
+                // ?? LuaType.Function:
+                _ => throw new SyntaxException($"Invalid type:{retType}")
+            };
 
 
 
+string.pack (fmt, v1, v2, ···)
+Returns a binary string containing the values v1, v2, etc. serialized in binary form (packed) according to the format string fmt (see §6.4.2).
 
 
-TODO2 All enum etc files. LuaType  LuaStatus  LuaRegistry  LuaOperation  LuaHookMask  LuaHookEvent LuaGC  LuaCompare.   LuaRegister? 
+
+
+TODO2 All enum etc files? LuaType  LuaStatus  LuaRegistry  LuaOperation  LuaHookMask  LuaHookEvent LuaGC  LuaCompare.   LuaRegister? 
 
 
 ==============================================================================

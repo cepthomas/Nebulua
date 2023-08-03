@@ -6,21 +6,29 @@ printex("Loading luaex.lua!")
 math.randomseed(os.time())
 
 -- locals.
-local TUNE <const> = "tune" 
-local TRIG <const> = "trig" 
-local WHIZ <const> = "whiz" 
+-- local tune <const> = "tune" 
+-- local trig <const> = "trig" 
+-- local whiz <const> = "whiz" 
 
 
 -- table of tables
 things =
 {
-  TUNE = { dev_type="midi_in", channel=1 },
-  TRIG = { dev_type="virt_key", channel=2, adouble=1.234 },
-  WHIZ = { dev_type="bing_bong", channel=10, abool=true }
+  tune = { dev_type="midi_in", channel=1, long_list={ 44, 77, 101 } },
+  trig = { dev_type="virt_key", channel=2, adouble=1.234 },
+  whiz = { dev_type="bing_bong", double_table={ 145.89, 71.23, 909.555 }, channel=99 },
+  per = { dev_type="abra", string_table={ 1, 23, 88, 22 }, channel=111, abool=false },
+  --invalid_table = { atable={ 1, 2, 3, "ppp", 88.22 }, channel=10, abool=true }
 }
-things_json = json.encode(things)
-printex(things_json)
 
+invalid_table = { 1, 2, 3, "ppp", 88.22 }
+
+start_timer()
+things_json = json.encode(things)
+-- printex(things_json)
+msec = stop_timer()
+printex('things_json op took ' .. msec .. ' msec')
+-- 0.05 to 0.85(first only?)
 
 -- misc globals.
 g_string = "booga booga"
@@ -32,6 +40,12 @@ g_list_int = { 2, 56, 98, 2 }
 g_list_number = { 2.2, 56.3, 98.77, 2.303 }
 g_list_string = { "a", "string", "with" }
 
+start_timer()
+things_list = json.encode(g_list_int)
+-- printex(g_list_int)
+msec = stop_timer()
+printex('things_list op took ' .. msec .. ' msec')
+--lot faster
 
 
 --[[

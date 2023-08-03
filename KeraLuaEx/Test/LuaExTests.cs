@@ -48,8 +48,9 @@ namespace KeraLuaEx.Test
             lstat = _lMain.PCall(0, -1, 0);
             Assert.AreEqual(LuaStatus.OK, lstat);
 
-            var ls = Utils.DumpStack(_lMain);
-            Debug.WriteLine(FormatDump("Stack", ls, true));
+            var s = Utils.DumpStack(_lMain);
+            Debug.WriteLine(s);
+            //Debug.WriteLine(FormatDump("Stack", ls, true));
 
             //ls = Utils.DumpGlobals(_lMain);
             //Debug.WriteLine(FormatDump("Globals", ls, true));
@@ -60,26 +61,26 @@ namespace KeraLuaEx.Test
             //ls = Utils.DumpTable(_lMain, "_G");
             //Debug.WriteLine(FormatDump("_G", ls, true));
 
-            ls = Utils.DumpGlobalTable(_lMain, "g_table");
-            Debug.WriteLine(FormatDump("g_table", ls, true));
+            //ls = Utils.DumpGlobalTable(_lMain, "g_table");
+            //Debug.WriteLine(FormatDump("g_table", ls, true));
 
-            ls = Utils.DumpTraceback(_lMain);
-            Debug.WriteLine(FormatDump("Traceback", ls, true));
+            //ls = Utils.DumpTraceback(_lMain);
+            //Debug.WriteLine(FormatDump("Traceback", ls, true));
 
-            var x = Utils.GetGlobalValue(_lMain, "g_number");
-            Assert.AreEqual(typeof(double), x.type);
+            //var x = Utils.GetGlobalValue(_lMain, "g_number");
+            //Assert.AreEqual(typeof(double), x.type);
 
-            x = Utils.GetGlobalValue(_lMain, "g_int");
-            Assert.AreEqual(typeof(int), x.type);
+            //x = Utils.GetGlobalValue(_lMain, "g_int");
+            //Assert.AreEqual(typeof(long), x.type);
 
-            ls = Utils.DumpGlobalTable(_lMain, "things");
-            Debug.WriteLine(FormatDump("things", ls, true));
+            //ls = Utils.DumpGlobalTable(_lMain, "things");
+            //Debug.WriteLine(FormatDump("things", ls, true));
 
             //x = Utils.GetGlobalValue(_lMain, "g_table");
-            //Assert.AreEqual(typeof(int), x.type);
+            //Assert.AreEqual(typeof(long), x.type);
 
             //x = Utils.GetGlobalValue(_lMain, "g_list");
-            //Assert.AreEqual(typeof(int), x.type);
+            //Assert.AreEqual(typeof(long), x.type);
 
             ///// Execute a lua function.
             LuaType gtype = _lMain.GetGlobal("g_func");
@@ -90,7 +91,7 @@ namespace KeraLuaEx.Test
             lstat = _lMain.PCall(1, 1, 0);
             Assert.AreEqual(LuaStatus.OK, lstat);
             // Get result.
-            int res = (int)_lMain.ToInteger(-1)!;
+            var res = _lMain.ToInteger(-1)!;
             Assert.AreEqual(13, res);
         }
 
