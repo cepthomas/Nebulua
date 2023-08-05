@@ -143,7 +143,7 @@ namespace Ephemera.Nebulua.App
         #endregion
 
 
-        Lua? _lMain;
+        Lua _lMain;
         LuaFunction _funcPrint = Print;
         string _defaultScriptsPath = @"C:\Dev\repos\Nebulua\KeraLuaEx\Test\scripts";
         static MainForm _mf;
