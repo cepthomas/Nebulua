@@ -1,22 +1,16 @@
 --[[
--- Example Nebulator composition file with some UI demo.
--- Warning: this is not actual music! --------
+-- Example Nebulator composition file with some UI demo. This is not actual music.
 --]]
 
 api = require "neb_api"
-json = require "json"
-
--- These should come from a sys/util file
-function error(msg) api.log(4, msg) end
-function info(msg) api.log(2, msg) end
-function debug(msg) api.log(1, msg) end
-
-
--- li = require "luainterop" -- C module
--- Include(C:\Dev\repos\Nebulator\Examples\utils.neb)
 ut = require "utils"
--- Include(C:\Dev\repos\Nebulator\Examples\scale.neb)
 scale = require "scale"
+
+
+-- -- These should come from a sys/util file
+-- function error(msg) api.log(4, msg) end
+-- function info(msg) api.log(2, msg) end
+-- function debug(msg) api.log(1, msg) end
 
 math.randomseed(os.time())
 
@@ -30,53 +24,22 @@ local TRIG  <const> = "trig"
 local WHIZ  <const> = "whiz" 
 
 
-
--- All the outputs. Also oscout (midi over osc). Access outputs[index1-N].type etc...
-outputs =
+-- All the devices. Also oscout (midi over osc).
+devices =
 {
-  KEYS  = { type="midi_out", channel=1, patch="AcousticGrandPiano" },
-  BASS  = { type="midi_out", channel=2, patch="AcousticBass" },
-  SYNTH = { type="midi_out", channel=3, patch="Lead1Square" },
-  DRUMS = { type="midi_out", channel=10, patch="Jazz" } -- for drums = kit
+  keys  = { type="midi_out", channel=1, patch="AcousticGrandPiano" },
+  bass  = { type="midi_out", channel=2, patch="AcousticBass" },
+  synth = { type="midi_out", channel=3, patch="Lead1Square" },
+  drums = { type="midi_out", channel=10, patch="Jazz" }, -- for drums = kit
+  tune  = { type="midi_in", channel=1 },
+  trig  = { type="virt_key", channel=2 },  -- opt props: shownotenames, keysize
+  whiz  = { type="bing_bong", channel=10 } -- opt props: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
 }
-outputs_json = json.encode(outputs)
-
-
--- All the inputs.
-inputs =
-{
-  TUNE = { type="midi_in", channel=1 },
-  TRIG = { type="virt_key", channel=2 },  -- opt props: shownotenames, keysize
-  WHIZ = { type="bing_bong", channel=10 } -- opt props: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
-}
-inputs_json = json.encode(inputs)
-
---[[
-{
-    "outputs":
-    [
-        { "name":"keys", "type":"midi_out", "channel":1, "patch":"AcousticGrandPiano" },
-        { "name":"bass", "type":"midi_out", "channel":2, "patch":"AcousticBass" },
-        { "name":"synth", "type":"midi_out", "channel":3, "patch":"Lead1Square" },
-        { "name":"drums", "type":"midi_out", "channel":10, "patch":"Jazz" } // for drums = kit
-    ],
-    "inputs":
-    [
-        { "name":"tune", "type":"midi_in", "channel":1 },
-        { "name":"trig", "type":"virt_key", "channel":2 },  // opt props: shownotenames, keysize
-        { "name":"whiz", "type":"bing_bong", "channel":10 }  // opt props: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
-    ],
-}
---]]
 
 
 -- local vars - Volumes. 
 local KEYS_VOL = 0.8
 local DRUM_VOL = 0.8
-
-
--- Sequences
--- Sequence seqDynamic                       
 
 -- Create sets of notes.
 local scaleNotes = api.create_notes("MY_SCALE", "1 3 4 b7")
@@ -152,7 +115,7 @@ function input_controller(dev, channel, ctlid, value)
     api.log("Input controller", dev, channel, ctlid, value)
 end
 
------------------------ functions -------------------------
+----------------------- Lua functions -------------------------
 
 function algo_func()
   notenum = math.random(0, #scaleNotes)
