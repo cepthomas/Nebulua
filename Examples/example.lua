@@ -27,13 +27,13 @@ local WHIZ  <const> = "whiz"
 -- All the devices. Also oscout (midi over osc).
 devices =
 {
-  keys  = { type="midi_out", channel=1, patch="AcousticGrandPiano" },
-  bass  = { type="midi_out", channel=2, patch="AcousticBass" },
-  synth = { type="midi_out", channel=3, patch="Lead1Square" },
-  drums = { type="midi_out", channel=10, patch="Jazz" }, -- for drums = kit
-  tune  = { type="midi_in", channel=1 },
-  trig  = { type="virt_key", channel=2 },  -- opt props: shownotenames, keysize
-  whiz  = { type="bing_bong", channel=10 } -- opt props: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
+  keys  = { dev_type="midi_out", channel=1, patch="AcousticGrandPiano" },
+  bass  = { dev_type="midi_out", channel=2, patch="AcousticBass" },
+  synth = { dev_type="midi_out", channel=3, patch="Lead1Square" },
+  drums = { dev_type="midi_out", channel=10, patch="Jazz" }, -- for drums = kit
+  tune  = { dev_type="midi_in", channel=1 },
+  trig  = { dev_type="virt_key", channel=2 },  -- opt props: shownotenames, keysize
+  whiz  = { dev_type="bing_bong", channel=10 } -- opt props: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
 }
 
 
