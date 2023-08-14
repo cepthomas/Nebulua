@@ -136,7 +136,6 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(0, 0, 0);
-            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -157,7 +156,6 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(3, 0, 0);
-            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -181,7 +179,6 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(4, 0, 0);
-            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -205,7 +202,6 @@ namespace Ephemera.Nebulua.Script
 
             // Do the actual call.
             LuaStatus lstat = _lMain.PCall(4, 0, 0);
-            _lMain.CheckLuaStatus(lstat);
 
             // Get the results from the stack.
             // None.
@@ -226,8 +222,8 @@ namespace Ephemera.Nebulua.Script
             // Get args.
             int numArgs = l.GetTop();
 
-            var name = l.ToString(1);
-            var parts = l.ToString(2);
+            var name = l.ToStringL(1);
+            var parts = l.ToStringL(2);
 
             // Do the work.
             int numRes = 0;
@@ -244,12 +240,12 @@ namespace Ephemera.Nebulua.Script
             // Get args.
             int numArgs = l.GetTop();
 
-            var noteString = l.ToString(1);
+            var noteString = l.ToStringL(1);
 
             // Do the work.
             int numRes = 0;
             List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
-            l.PushList(notes);
+//            l.PushList(notes);
             numRes++;
 
             return numRes;
@@ -263,7 +259,7 @@ namespace Ephemera.Nebulua.Script
             // Get args.
             int numArgs = l.GetTop();
             var level = l.ToInteger(1);
-            var msg = l.ToString(2);
+            var msg = l.ToStringL(2);
 
             // Do the work.
             _logger.Log((LogLevel)level, msg);
@@ -334,8 +330,8 @@ namespace Ephemera.Nebulua.Script
             int numRes = 0;
 
             ///// Get function arguments.
-            string chanName = l.ToString(1);
-            string controller = l.ToString(2);
+            string chanName = l.ToStringL(1);
+            string controller = l.ToStringL(2);
             long? val = l.ToInteger(3); // TODOApp handle fail
 
             ///// Do the work.
@@ -354,8 +350,8 @@ namespace Ephemera.Nebulua.Script
             int numRes = 0;
 
             ///// Get function arguments.
-            string chanName = l.ToString(1)!;
-            string patch = l.ToString(2)!;
+            string chanName = l.ToStringL(1)!;
+            string patch = l.ToStringL(2)!;
 
             ///// Do the work.
             var ch = _channels[chanName]; // TODOApp handle fail

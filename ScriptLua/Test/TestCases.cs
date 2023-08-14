@@ -75,53 +75,14 @@ namespace Ephemera.Nebulua.ScriptLua.Test
         }
     }
 
-
-
-
-    #region Helpers etc.
-    class TestCommon
-    {
-        public static void ExecuteLuaFile(Lua l, string name)
-        {
-            string path = Path.Combine("Test", "scripts", $"{name}.lua");
-            LuaStatus result = l.LoadFile(path);
-//            UT_EQUAL(result, LuaStatus.OK, l.ToString(1));
-            result = l.PCall(0, -1, 0);
-//            UT_EQUAL.AreEqual(result, LuaStatus.OK, l.ToString(1));
-        }
-
-        public static int Print(IntPtr p)
-        {
-            var l = Lua.FromIntPtr(p);
-            Console.WriteLine(l!.DumpStack());
-            return 0;
-        }
-    }
-    #endregion
-
-    #region Test my new stuff.
     public class TestCases
     {
-        Lua _lMain;
-        static LuaFunction _func_print = TestCommon.Print;
-
-        // [SetUp]
-        public void Setup()
-        {
-            _lMain = new Lua();
-            _lMain.Register("print", _func_print);
-        }
-
-        // [TearDown]
-        public void TearDown()
-        {
-            _lMain.Close();
-            _lMain = null;
-        }
-
-        // [Test]
         public void Test1()
         {
+            Lua _lMain = new Lua();
+            //_lMain.Register("print", _func_print);
+
+
             //TestCommon.ExecuteLuaFile(_lMain, "interop");
 
             ScriptApi.Load(@"C:\Dev\repos\Nebulua\example_files\example.lua");
@@ -132,8 +93,10 @@ namespace Ephemera.Nebulua.ScriptLua.Test
             ScriptApi.Step(4, 3, 11);
             ScriptApi.InputNote("doo", 5, 34, 100);
             ScriptApi.InputController("daa", 6, 33, 44);
+
+            _lMain.Close();
+            _lMain = null;
+
         }
     }
-
-    #endregion
 }
