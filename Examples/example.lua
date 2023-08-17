@@ -2,15 +2,16 @@
 -- Example Nebulator composition file with some UI demo. This is not actual music.
 --]]
 
-api = require "neb_api"
-ut = require "utils"
-scale = require "scale"
+local api = require("neb_api_sim") -- TODO do better
+local ut = require("utils")
+local scale = require("scale")
+local md = require("mididefs")
+local inst = md.instruments
+
+print("=============== go go go =======================")
+-- print(api)
 
 
--- -- These should come from a sys/util file
--- function error(msg) api.log(4, msg) end
--- function info(msg) api.log(2, msg) end
--- function debug(msg) api.log(1, msg) end
 
 math.randomseed(os.time())
 
@@ -27,13 +28,13 @@ local WHIZ  <const> = "whiz"
 -- All the devices. Also oscout (midi over osc).
 devices =
 {
-  keys  = { dev_type="midi_out", channel=1, patch="AcousticGrandPiano" },
-  bass  = { dev_type="midi_out", channel=2, patch="AcousticBass" },
-  synth = { dev_type="midi_out", channel=3, patch="Lead1Square" },
-  drums = { dev_type="midi_out", channel=10, patch="Jazz" }, -- for drums = kit
-  tune  = { dev_type="midi_in", channel=1 },
-  trig  = { dev_type="virt_key", channel=2 },  -- opt props: shownotenames, keysize
-  whiz  = { dev_type="bing_bong", channel=10 } -- opt props: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
+    keys  = { dev_type="midi_out", channel=1, patch=inst.AcousticGrandPiano },
+    bass  = { dev_type="midi_out", channel=2, patch=inst.AcousticBass },
+    synth = { dev_type="midi_out", channel=3, patch=inst.Lead1Square },
+    drums = { dev_type="midi_out", channel=10, patch="Jazz" }, -- for drums = kit
+    tune  = { dev_type="midi_in", channel=1 },
+    trig  = { dev_type="virt_key", channel=2 },  -- opt props: shownotenames, keysize
+    whiz  = { dev_type="bing_bong", channel=10 } -- opt props: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
 }
 
 
@@ -41,24 +42,19 @@ devices =
 local KEYS_VOL = 0.8
 local DRUM_VOL = 0.8
 
--- Create sets of notes.
-local scaleNotes = api.create_notes("MY_SCALE", "1 3 4 b7")
-local myScaleNotes = api.get_notes("B4.MY_SCALE")
+-- Create custom scale.
+api.create_notes("MY_SCALE", "1 3 4 b7")
+local my_scale_notes = api.get_notes("B4.MY_SCALE")
+-- print(my_scale_notes)
 -- Get some stock chords and scales.
-local scaleNotes = api.get_notes("G3.Algerian")
-local chordNotes = api.get_notes("C4.o7")
-
-
-
-
--- Print something.
-for n in pairs(_G) do api.log(n) end
+local alg_scale = api.get_notes("G3.Algerian")
+local chord_notes = api.get_notes("C4.o7")
 
 
 ------------------------- Init ----------------------------------------------------
 -- Called to initialize Nebulator stuff.
 function setup()
-  api.log("module initialization")
+    info("example initialization")
 end
 
 
@@ -66,39 +62,13 @@ end
 
 -- Called every mmtimer increment.
 function step(bar, beat, subdiv)
+    ut.boing(60)
 
-  u.Boing(60)
-
-  if beat == 0 and subdiv == 0 then
-    api.send_controller(SYNTH, "Pan", 90)
-    api.send_controller(KEYS,  "Pan", 30)
-  end
-
-
-  -- dump
-  for n in pairs(_G) do api.log(n) end
-
-  -- Process the data passed from C. my_static_data contains the equivalent of my_static_data_t.
-  slog = string.format ("script_string:%s script_int:%s", script_string, script_int)
-  api.log(slog)
-
-  -- Start working.
-  api.log("do some pretend script work then yield")
-
-  for i = 1, 5 do
-    api.log("doing loop number " .. i)
-
-    -- Do pretend work.
-    counter = 0
-    while counter < 1000 do
-      counter = counter + 1
+    -- Periodic work.
+    if beat == 0 and subdiv == 0 then
+        api.send_controller(SYNTH, "Pan", 90)
+        api.send_controller(KEYS,  "Pan", 30)
     end
-    -- ut.sleep(200)
-
-    -- Plays well with others.
-    coroutine.yield()
-  end
-  api.log("done loop")
 end
 
 
@@ -106,99 +76,82 @@ end
 
 -- Override handler.
 function input_note(dev, channel, note, vel)
-    api.log("Input note", dev, channel, note, vel)
+    info("input_note") -- string.format("%s", variable_name), dev, channel, note, vel)
     api.send_note("synth", note, vel, 0.5)
 end
 
 -- Override handler.
 function input_controller(dev, channel, ctlid, value)
-    api.log("Input controller", dev, channel, ctlid, value)
+    info("input_controller") --, dev, channel, ctlid, value)
 end
 
 ----------------------- Lua functions -------------------------
 
 function algo_func()
-  notenum = math.random(0, #scaleNotes)
-  api.send_note(SYNTH, scaleNotes[notenum], 0.7, 0.5)
+    notenum = math.random(0, #alg_scale)
+    api.send_note(SYNTH, alg_scale[notenum], 0.7, 0.5)
 end
 
+-- User functions.
 
+function boing(notenum)
+    boinged = false;
+
+    info("boing")
+    if notenum == 0 then
+        notenum = Random(30, 80)
+        boinged = true
+        api.send_note("synth", notenum, VEL, 1.0)
+    end
+    return boinged
+end
 ------------------------- Build composition ----------------------------------------------------
 
-
-
--- --------------------------------------------
-
 ---- sequences ----
--- when, named chords, volume, duration(def=0.1)
-seq_KeysChorus = [[
-0.0     F4      0.7     0.2
-2.0     F5      0.7      0.2
-5.4     B3.m7   KEYS_VOL     0.2
+seq_KeysChorusX = [[
+0.0     F4      0.7         0.2
+2.0     F5      0.7         0.2
+5.4     B3.m7   KEYS_VOL    0.2
 -- etc...
-7.4     B2.m7   0.7     0.2
-8.0 end?]]
+7.4     B2.m7   0.7         0.2
+-- end
+8.0 ]]
+
+seq_KeysChorus = {
+{0.0,     "F4",      0.7,       0.2},
+{2.0,     "F5",      0.7,       0.2},
+{5.4,     "B3.m7",   KEYS_VOL,  0.2},
+-- etc...
+{7.4,     "B2.m7",   0.7,       0.2},
+{8.0 }} -- end marker, specifies total length
 
 
 -- This is probably the better way to do drums and rhythmic instruments. But could be notes too.
 -- |........|........|........|........|........|........|........|........|
-seq_DrumsVerse = [[
-|8       |        |8       |        |8       |        |8       |        | AcousticBassDrum  DRUM_VOL
-|    8   |        |    8   |    8   |    8   |        |    8   |    8   | AcousticSnare     DRUM_VOL*0.9
-|        |     8 8|        |     8 8|        |     8 8|        |     8 8| ClosedHiHat       DRUM_VOL*1.1
+seq_DrumsVerseX = [[
+|8       |        |8       |        |8       |        |8       |        |   AcousticBassDrum  DRUM_VOL
+|    8   |        |    8   |    8   |    8   |        |    8   |    8   |   AcousticSnare     DRUM_VOL*0.9
+|        |     8 8|        |     8 8|        |     8 8|        |     8 8|   ClosedHiHat       DRUM_VOL*1.1
 ]]
 
+seq_DrumsVerse = {
+--|........|........|........|........|........|........|........|........|
+{"|8       |        |8       |        |8       |        |8       |        |", AcousticBassDrum,  DRUM_VOL},
+{"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", AcousticSnare,     DRUM_VOL*0.9},
+{"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", ClosedHiHat,       DRUM_VOL*1.1},
+}
+
 ---- sections ----
-sect_Middle = [[
+sect_MiddleX = [[
 keys    seq_KeysChorus  seq_KeysChorus  seq_KeysChorus  seq_KeysChorus
 drums   seq_DrumsChorus seq_DrumsChorus seq_DrumsChorus seq_DrumsChorus
 bass    seq_BassChorus  seq_BassChorus  seq_BassChorus  seq_BassChorus
 synth   algo_func       nil             algo_func       seq_Dynamic
-end
 ]]
 
-
-
---[[
-
----- sequences ----
-
-
--- This is probably the better way to do chordal instruments.
--- when, named chords, volume, duration(def=0.1)
--- seq_name total-beats
-seq_KeysChorus 8
-0.0     F4      0.7     0.2
--- more steps...
-7.4     B2.m7   0.7     0.2
-
-
--- This is probably the better way to do drums and rhythmic instruments. But could be notes too.
---|........|........|........|........|........|........|........|........|
-seq_DrumsVerse 8
-|8       |        |8       |        |8       |        |8       |        | AcousticBassDrum  DRUM_VOL
-|    8   |        |    8   |    8   |    8   |        |    8   |    8   | AcousticSnare     DRUM_VOL*0.9
-|        |     8 8|        |     8 8|        |     8 8|        |     8 8| ClosedHiHat       DRUM_VOL*1.1
-
-
-
-
-seq_Algo = algo_func
-
-
----- sections ----
-
--- sect_name  length???
-
-sect_Beginning
-keys    seq_KeysVerse   seq_KeysVerse   seq_KeysVerse   seq_KeysVerse
-drums   seq_DrumsVerse  seq_DrumsVerse  seq_DrumsVerse  seq_DrumsVerse
-bass    seq_BassVerse   seq_BassVerse   seq_BassVerse   seq_BassVerse
-
-sect_Middle
-keys    seq_KeysChorus  seq_KeysChorus  seq_KeysChorus  seq_KeysChorus
-drums   seq_DrumsChorus seq_DrumsChorus seq_DrumsChorus seq_DrumsChorus
-bass    seq_BassChorus  seq_BassChorus  seq_BassChorus  seq_BassChorus
-synth   seq_Algo        nil             seq_Algo        seq_Dynamic     nil
-
---]]
+sect_Middle = {
+{keys,    seq_KeysChorus,  seq_KeysChorus,  seq_KeysChorus,  seq_KeysChorus },
+{drums,   seq_DrumsChorus, seq_DrumsChorus, seq_DrumsChorus, seq_DrumsChorus },
+{bass,    seq_BassChorus,  seq_BassChorus,  seq_BassChorus,  seq_BassChorus },
+{synth,   algo_func,       nil,             algo_func,       seq_Dynamic },
+}

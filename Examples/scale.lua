@@ -1,66 +1,53 @@
 
-///// Scale helper class and utilities /////
+local api = require("neb_api_sim") -- TODO do better
+ut = require("utils")
 
-public class Scale : ScriptBase
-{
-    int _count = 0;
-    List<int> _scaleNotes;
-    int[] _noteWeights;
-    int _totalWeight = 100;
-    int _down = 0;
-    int _up = 0;
+-- Seed the randomizer.
+local seed = os.time()
+math.randomseed(seed)
 
-    public Scale(string scale, string root, int octDown, int octUp)
-    {
-        _scaleNotes = GetNotesFromString($"{root}.{scale}");
-        _count = _scaleNotes.Count();
-        _noteWeights = new int[_count];
-        _down = octDown;
-        _up = octUp;
 
-        // Set default weights.
-        for(int i = 0; i < _count; i++)
-        {
-           _noteWeights[i] = 100 / _count;
-        }        
-    }
+function create_scale(scale, root, octDown, octUp)
+    sc = {}
+    sc.scale_notes = api.GetNotesFromString("{sroot}.{sscale}") --array of int
+    sc.note_weights = {} --array of int
+    sc.total_weight = 0
+    sc.down = octDown --int
+    sc.up = octUp --int
 
-    public void setWeight(int index, int weight)
-    {
-        if(index < _count)
-        {
-            _noteWeights[index] = weight;
-        }
+    -- Set default weights.
+    for i = 1, #sc.note_weights do
+        sc.note_weights[i] = 100 / #sc.scaleNotes
+    end
 
-        // Recalc total weight.
-        _totalWeight = 0;
-        for(int i = 0; i < _count; i++)
-        {
-            _totalWeight += _noteWeights[i];
-        }        
-    }
+    function sc.set_weight(index, weight)
+        if(index < #sc.scaleNotes) then
+            sc.note_weights[index] = weight
+        end
 
-    public int randomNote()
-    {
-        int note = 0;
-        int r = Random(_totalWeight);
+        -- Recalc total weight.
+        sc.total_weight = 0
+        for i = 1, #sc.scaleNotes do
+            sc.total_weight = sc.total_weight + sc.note_weights[i];
+        end
+    end
 
-        int offset = 0;
+    function sc.random_note()
+        note = 0
+        offset = 0
 
-        for(int i = 0; i < _count; i++)
-        {
-            offset += _noteWeights[i];
-            if(r < offset)
-            {
-                note = _scaleNotes[i];
-                break;
-            }
-        }
-
-        // Which octave?
-        int oct = Random(0, 3) - 1;
-        note += oct * 12;
+        for i = 1, #sc.scaleNotes do
+            offset = offset + sc.note_weights[i]
+            if r < offset then
+                note = sc.scale_notes[i]
+            end
+            -- Which octave?
+            oct = math.random(0, 3) - 1
+            note = note + oct * 12
+        end
 
         return note;
-    }
-}
+    end
+
+    return sc
+end

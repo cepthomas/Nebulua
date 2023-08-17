@@ -15,179 +15,317 @@
         /// </summary>
         private void InitializeComponent()
         {
-            toolStrip1 = new System.Windows.Forms.ToolStrip();
-            btnOpen = new System.Windows.Forms.ToolStripButton();
-            btnGo1 = new System.Windows.Forms.ToolStripButton();
-            rtbScript = new System.Windows.Forms.RichTextBox();
-            tvOutput = new NBagOfUis.TextViewer();
-            splitContainer1 = new System.Windows.Forms.SplitContainer();
-            splitContainer3 = new System.Windows.Forms.SplitContainer();
-            rtbStack = new System.Windows.Forms.RichTextBox();
-            splitContainer2 = new System.Windows.Forms.SplitContainer();
-            toolStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
-            splitContainer1.Panel1.SuspendLayout();
-            splitContainer1.Panel2.SuspendLayout();
-            splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer3).BeginInit();
-            splitContainer3.Panel2.SuspendLayout();
-            splitContainer3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
-            splitContainer2.Panel1.SuspendLayout();
-            splitContainer2.Panel2.SuspendLayout();
-            splitContainer2.SuspendLayout();
-            SuspendLayout();
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            this.sldVolume = new NBagOfUis.Slider();
+            this.sldTempo = new NBagOfUis.Slider();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.btnCompile = new System.Windows.Forms.Button();
+            this.btnRewind = new System.Windows.Forms.Button();
+            this.chkPlay = new System.Windows.Forms.CheckBox();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.fileDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
+            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportMidiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportCsvToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showDefinitionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnMonIn = new System.Windows.Forms.ToolStripButton();
+            this.btnMonOut = new System.Windows.Forms.ToolStripButton();
+            this.btnKillComm = new System.Windows.Forms.ToolStripButton();
+            this.btnAbout = new System.Windows.Forms.ToolStripButton();
+            this.btnSettings = new System.Windows.Forms.ToolStripButton();
+            this.textViewer = new NBagOfUis.TextViewer();
+            this.barBar = new MidiLib.BarBar();
+            this.toolStrip1.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // sldVolume
+            // 
+            this.sldVolume.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldVolume.DrawColor = System.Drawing.Color.Orange;
+            this.sldVolume.Label = "vol";
+            this.sldVolume.Location = new System.Drawing.Point(267, 49);
+            this.sldVolume.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.sldVolume.Maximum = 1D;
+            this.sldVolume.Minimum = 0D;
+            this.sldVolume.Name = "sldVolume";
+            this.sldVolume.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldVolume.Resolution = 0.05D;
+            this.sldVolume.Size = new System.Drawing.Size(88, 52);
+            this.sldVolume.TabIndex = 36;
+            this.toolTip.SetToolTip(this.sldVolume, "Master volume");
+            this.sldVolume.Value = 1D;
+            this.sldVolume.ValueChanged += new System.EventHandler(this.Volume_ValueChanged);
+            // 
+            // sldTempo
+            // 
+            this.sldTempo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldTempo.DrawColor = System.Drawing.Color.LightGray;
+            this.sldTempo.Label = "bpm";
+            this.sldTempo.Location = new System.Drawing.Point(170, 49);
+            this.sldTempo.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
+            this.sldTempo.Maximum = 200D;
+            this.sldTempo.Minimum = 30D;
+            this.sldTempo.Name = "sldTempo";
+            this.sldTempo.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldTempo.Resolution = 5D;
+            this.sldTempo.Size = new System.Drawing.Size(88, 52);
+            this.sldTempo.TabIndex = 33;
+            this.toolTip.SetToolTip(this.sldTempo, "Speed in BPM");
+            this.sldTempo.Value = 100D;
+            this.sldTempo.ValueChanged += new System.EventHandler(this.Speed_ValueChanged);
+            // 
+            // toolTip
+            // 
+            this.toolTip.AutomaticDelay = 0;
+            this.toolTip.AutoPopDelay = 0;
+            this.toolTip.InitialDelay = 300;
+            this.toolTip.ReshowDelay = 0;
+            this.toolTip.UseAnimation = false;
+            this.toolTip.UseFading = false;
+            // 
+            // btnCompile
+            // 
+            this.btnCompile.FlatAppearance.BorderSize = 0;
+            this.btnCompile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCompile.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_366_restart;
+            this.btnCompile.Location = new System.Drawing.Point(116, 49);
+            this.btnCompile.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnCompile.Name = "btnCompile";
+            this.btnCompile.Size = new System.Drawing.Size(45, 49);
+            this.btnCompile.TabIndex = 38;
+            this.toolTip.SetToolTip(this.btnCompile, "Compile script file - lit indicates file changed externally");
+            this.btnCompile.UseVisualStyleBackColor = false;
+            this.btnCompile.Click += new System.EventHandler(this.Compile_Click);
+            // 
+            // btnRewind
+            // 
+            this.btnRewind.FlatAppearance.BorderSize = 0;
+            this.btnRewind.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRewind.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_173_rewind;
+            this.btnRewind.Location = new System.Drawing.Point(13, 49);
+            this.btnRewind.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnRewind.Name = "btnRewind";
+            this.btnRewind.Size = new System.Drawing.Size(45, 49);
+            this.btnRewind.TabIndex = 31;
+            this.toolTip.SetToolTip(this.btnRewind, "Reset to start");
+            this.btnRewind.UseVisualStyleBackColor = false;
+            this.btnRewind.Click += new System.EventHandler(this.Rewind_Click);
+            // 
+            // chkPlay
+            // 
+            this.chkPlay.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkPlay.BackColor = System.Drawing.SystemColors.Control;
+            this.chkPlay.FlatAppearance.BorderSize = 0;
+            this.chkPlay.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
+            this.chkPlay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkPlay.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_174_play;
+            this.chkPlay.Location = new System.Drawing.Point(65, 49);
+            this.chkPlay.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkPlay.MaximumSize = new System.Drawing.Size(43, 49);
+            this.chkPlay.MinimumSize = new System.Drawing.Size(43, 49);
+            this.chkPlay.Name = "chkPlay";
+            this.chkPlay.Size = new System.Drawing.Size(43, 49);
+            this.chkPlay.TabIndex = 35;
+            this.toolTip.SetToolTip(this.chkPlay, "Play project");
+            this.chkPlay.UseVisualStyleBackColor = false;
+            this.chkPlay.Click += new System.EventHandler(this.Play_Click);
             // 
             // toolStrip1
             // 
-            toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnOpen, btnGo1 });
-            toolStrip1.Location = new System.Drawing.Point(0, 0);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new System.Drawing.Size(1286, 27);
-            toolStrip1.TabIndex = 0;
-            toolStrip1.Text = "toolStrip1";
+            this.toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileDropDownButton,
+            this.btnMonIn,
+            this.btnMonOut,
+            this.btnKillComm,
+            this.btnAbout,
+            this.btnSettings});
+            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(813, 27);
+            this.toolStrip1.TabIndex = 39;
+            this.toolStrip1.Text = "toolStrip1";
             // 
-            // btnOpen
+            // fileDropDownButton
             // 
-            btnOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnOpen.Name = "btnOpen";
-            btnOpen.Size = new System.Drawing.Size(49, 24);
-            btnOpen.Text = "Open";
-            btnOpen.Click += Open_Click;
+            this.fileDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.fileDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openToolStripMenuItem,
+            this.recentToolStripMenuItem,
+            this.exportMidiToolStripMenuItem,
+            this.exportCsvToolStripMenuItem,
+            this.showDefinitionsToolStripMenuItem});
+            this.fileDropDownButton.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_37_file;
+            this.fileDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.fileDropDownButton.Name = "fileDropDownButton";
+            this.fileDropDownButton.Size = new System.Drawing.Size(34, 24);
+            this.fileDropDownButton.Text = "fileDropDownButton";
+            this.fileDropDownButton.ToolTipText = "File operations";
             // 
-            // btnGo1
+            // openToolStripMenuItem
             // 
-            btnGo1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnGo1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnGo1.Name = "btnGo1";
-            btnGo1.Size = new System.Drawing.Size(40, 24);
-            btnGo1.Text = "Go1";
-            btnGo1.Click += Go1_Click;
+            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.Open_Click);
             // 
-            // rtbScript
+            // recentToolStripMenuItem
             // 
-            rtbScript.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            rtbScript.Dock = System.Windows.Forms.DockStyle.Fill;
-            rtbScript.Location = new System.Drawing.Point(0, 0);
-            rtbScript.Name = "rtbScript";
-            rtbScript.Size = new System.Drawing.Size(960, 385);
-            rtbScript.TabIndex = 1;
-            rtbScript.Text = "";
+            this.recentToolStripMenuItem.Name = "recentToolStripMenuItem";
+            this.recentToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.recentToolStripMenuItem.Text = "Recent";
             // 
-            // tvOutput
+            // exportMidiToolStripMenuItem
             // 
-            tvOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            tvOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            tvOutput.Location = new System.Drawing.Point(0, 0);
-            tvOutput.MaxText = 50000;
-            tvOutput.Name = "tvOutput";
-            tvOutput.Prompt = "";
-            tvOutput.Size = new System.Drawing.Size(960, 422);
-            tvOutput.TabIndex = 2;
-            tvOutput.WordWrap = true;
+            this.exportMidiToolStripMenuItem.Name = "exportMidiToolStripMenuItem";
+            this.exportMidiToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.exportMidiToolStripMenuItem.Text = "Export Midi";
+            this.exportMidiToolStripMenuItem.Click += new System.EventHandler(this.ExportMidi_Click);
             // 
-            // splitContainer1
+            // exportCsvToolStripMenuItem
             // 
-            splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            splitContainer1.Location = new System.Drawing.Point(0, 27);
-            splitContainer1.Name = "splitContainer1";
+            this.exportCsvToolStripMenuItem.Name = "exportCsvToolStripMenuItem";
+            this.exportCsvToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.exportCsvToolStripMenuItem.Text = "Dump midi";
+            this.exportCsvToolStripMenuItem.Click += new System.EventHandler(this.ExportCsv_Click);
             // 
-            // splitContainer1.Panel1
+            // showDefinitionsToolStripMenuItem
             // 
-            splitContainer1.Panel1.Controls.Add(splitContainer3);
+            this.showDefinitionsToolStripMenuItem.Name = "showDefinitionsToolStripMenuItem";
+            this.showDefinitionsToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.showDefinitionsToolStripMenuItem.Text = "Show Definitions";
+            this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
             // 
-            // splitContainer1.Panel2
+            // btnMonIn
             // 
-            splitContainer1.Panel2.Controls.Add(splitContainer2);
-            splitContainer1.Size = new System.Drawing.Size(1286, 811);
-            splitContainer1.SplitterDistance = 322;
-            splitContainer1.TabIndex = 3;
+            this.btnMonIn.CheckOnClick = true;
+            this.btnMonIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnMonIn.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_213_arrow_down;
+            this.btnMonIn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnMonIn.Name = "btnMonIn";
+            this.btnMonIn.Size = new System.Drawing.Size(29, 24);
+            this.btnMonIn.Text = "toolStripButton1";
+            this.btnMonIn.ToolTipText = "Monitor messages in";
+            this.btnMonIn.Click += new System.EventHandler(this.Monitor_Click);
             // 
-            // splitContainer3
+            // btnMonOut
             // 
-            splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
-            splitContainer3.Location = new System.Drawing.Point(0, 0);
-            splitContainer3.Name = "splitContainer3";
-            splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.btnMonOut.CheckOnClick = true;
+            this.btnMonOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnMonOut.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_214_arrow_up;
+            this.btnMonOut.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnMonOut.Name = "btnMonOut";
+            this.btnMonOut.Size = new System.Drawing.Size(29, 24);
+            this.btnMonOut.Text = "toolStripButton1";
+            this.btnMonOut.ToolTipText = "Monitor messages out";
+            this.btnMonOut.Click += new System.EventHandler(this.Monitor_Click);
             // 
-            // splitContainer3.Panel2
+            // btnKillComm
             // 
-            splitContainer3.Panel2.Controls.Add(rtbStack);
-            splitContainer3.Size = new System.Drawing.Size(322, 811);
-            splitContainer3.SplitterDistance = 346;
-            splitContainer3.TabIndex = 0;
+            this.btnKillComm.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnKillComm.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_206_electricity;
+            this.btnKillComm.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnKillComm.Name = "btnKillComm";
+            this.btnKillComm.Size = new System.Drawing.Size(29, 24);
+            this.btnKillComm.Text = "toolStripButton1";
+            this.btnKillComm.ToolTipText = "Kill all devices";
             // 
-            // rtbStack
+            // btnAbout
             // 
-            rtbStack.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            rtbStack.Dock = System.Windows.Forms.DockStyle.Fill;
-            rtbStack.Location = new System.Drawing.Point(0, 0);
-            rtbStack.Name = "rtbStack";
-            rtbStack.ReadOnly = true;
-            rtbStack.Size = new System.Drawing.Size(322, 461);
-            rtbStack.TabIndex = 0;
-            rtbStack.Text = "";
+            this.btnAbout.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnAbout.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_195_question_sign;
+            this.btnAbout.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnAbout.Name = "btnAbout";
+            this.btnAbout.Size = new System.Drawing.Size(29, 24);
+            this.btnAbout.Text = "toolStripButton1";
+            this.btnAbout.Click += new System.EventHandler(this.About_Click);
             // 
-            // splitContainer2
+            // btnSettings
             // 
-            splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            splitContainer2.Location = new System.Drawing.Point(0, 0);
-            splitContainer2.Name = "splitContainer2";
-            splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.btnSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnSettings.Image = global::Ephemera.Nebulua.App.Properties.Resources.glyphicons_137_cogwheel;
+            this.btnSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSettings.Name = "btnSettings";
+            this.btnSettings.Size = new System.Drawing.Size(29, 24);
+            this.btnSettings.Text = "toolStripButton1";
+            this.btnSettings.Click += new System.EventHandler(this.Settings_Click);
             // 
-            // splitContainer2.Panel1
+            // textViewer
             // 
-            splitContainer2.Panel1.Controls.Add(rtbScript);
+            this.textViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textViewer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textViewer.Location = new System.Drawing.Point(13, 610);
+            this.textViewer.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.textViewer.MaxText = 5000;
+            this.textViewer.Name = "textViewer";
+            this.textViewer.Prompt = "";
+            this.textViewer.Size = new System.Drawing.Size(789, 217);
+            this.textViewer.TabIndex = 41;
+            this.textViewer.WordWrap = true;
             // 
-            // splitContainer2.Panel2
+            // barBar
             // 
-            splitContainer2.Panel2.Controls.Add(tvOutput);
-            splitContainer2.Size = new System.Drawing.Size(960, 811);
-            splitContainer2.SplitterDistance = 385;
-            splitContainer2.TabIndex = 0;
+            this.barBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.barBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.barBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.barBar.Location = new System.Drawing.Point(12, 123);
+            this.barBar.MarkerColor = System.Drawing.Color.Black;
+            this.barBar.Name = "barBar";
+            this.barBar.ProgressColor = System.Drawing.Color.White;
+            this.barBar.Size = new System.Drawing.Size(790, 55);
+            this.barBar.TabIndex = 44;
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            BackColor = System.Drawing.SystemColors.Control;
-            BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            ClientSize = new System.Drawing.Size(1286, 838);
-            Controls.Add(splitContainer1);
-            Controls.Add(toolStrip1);
-            Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            Name = "MainForm";
-            Text = "Nebulua";
-            toolStrip1.ResumeLayout(false);
-            toolStrip1.PerformLayout();
-            splitContainer1.Panel1.ResumeLayout(false);
-            splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
-            splitContainer1.ResumeLayout(false);
-            splitContainer3.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)splitContainer3).EndInit();
-            splitContainer3.ResumeLayout(false);
-            splitContainer2.Panel1.ResumeLayout(false);
-            splitContainer2.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
-            splitContainer2.ResumeLayout(false);
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.ClientSize = new System.Drawing.Size(813, 838);
+            this.Controls.Add(this.barBar);
+            this.Controls.Add(this.textViewer);
+            this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.btnCompile);
+            this.Controls.Add(this.sldVolume);
+            this.Controls.Add(this.sldTempo);
+            this.Controls.Add(this.btnRewind);
+            this.Controls.Add(this.chkPlay);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Name = "MainForm";
+            this.Text = "Nebulua";
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion
-
+        private NBagOfUis.Slider sldVolume;
+        private System.Windows.Forms.CheckBox chkPlay;
+        private NBagOfUis.Slider sldTempo;
+        private System.Windows.Forms.Button btnRewind;
+        private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.Button btnCompile;
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.RichTextBox rtbScript;
-        private NBagOfUis.TextViewer tvOutput;
-        private System.Windows.Forms.ToolStripButton btnOpen;
-        private System.Windows.Forms.ToolStripButton btnGo1;
-        private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.SplitContainer splitContainer3;
-        private System.Windows.Forms.RichTextBox rtbStack;
-        private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.ToolStripButton btnMonIn;
+        private System.Windows.Forms.ToolStripButton btnMonOut;
+        private System.Windows.Forms.ToolStripDropDownButton fileDropDownButton;
+        private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem recentToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportMidiToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton btnKillComm;
+        private NBagOfUis.TextViewer textViewer;
+        private MidiLib.BarBar barBar;
+        private System.Windows.Forms.ToolStripMenuItem exportCsvToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showDefinitionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton btnAbout;
+        private System.Windows.Forms.ToolStripButton btnSettings;
     }
 }
 

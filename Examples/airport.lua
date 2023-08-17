@@ -1,61 +1,57 @@
 
-// A take on Eno's "algorithmic" Music for Airports - ported from github.com/teropa/musicforairports.js
+-- A take on Eno's "algorithmic" Music for Airports - ported from github.com/teropa/musicforairports.js
 
-Channel("sound",  midiout, 1,  Pad2Warm);
+api = require "neb_api"
+ut = require "utils"
 
-class TapeLoop
+devices =
 {
-    public string snote;
-    public BarTime duration;
-    public BarTime delay;
-    public BarTime nextStart;
-    public TapeLoop(string nt, double dur, double del)
-    {
-        snote = nt;
-        duration = new BarTime(dur);
-        delay = new BarTime(del);
-        nextStart = new BarTime(del);
-    }
+    sound = { dev_type="midi_out", channel=1, patch="Pad2Warm" },
 }
 
-public class airport : ScriptBase
-{
-    const double SOUND_VOL = 0.8;
 
-    // Possible loops.
-    List<TapeLoop> _loops = new List<TapeLoop>();
+SOUND_VOL = 0.8
 
-    public override void Setup()
-    {
-        Tempo = 70;
-        
-        // Set up the _loops.
-        _loops.Clear();
-        // Key is Ab.
-        _loops.Add(new TapeLoop("Ab4", 17.3,  8.1));
-        _loops.Add(new TapeLoop("Ab5", 17.2,  3.1));
-        // 3rd
-        _loops.Add(new TapeLoop("C5",  21.1,  5.3));
-        // 4th
-        _loops.Add(new TapeLoop("Db5", 18.2,  12.3));
-        // 5th
-        _loops.Add(new TapeLoop("Eb5", 20.0,  9.2));
-        // 6th
-        _loops.Add(new TapeLoop("F4",  19.3,  4.2));
-        _loops.Add(new TapeLoop("F5",  20.0,  14.1));
-    }
+-- Possible loops.
+local loops = {}
 
-    public override void Step()
-    {
-        foreach(TapeLoop l in _loops)
-        {
-            if(StepTime >= l.nextStart)
-            {
-                Print("Starting note", l.snote);
-                SendNote("sound", l.snote, SOUND_VOL, l.duration);
-                // Calc next time.
-                l.nextStart = StepTime + l.delay + l.duration;
-            }
-        }
-    }
-}
+
+------------------------- Init ----------------------------------------------------
+-- Called to initialize stuff.
+function setup()
+    api.log("airport initialization")
+
+    -- The tape loops. Values all BarTime.
+    loops = {
+        -- Key is Ab.
+        { snote="Ab4", duration=17.3, delay=8.1,  next_start = 0.0 },
+        -- octave
+        { snote="Ab5", duration=17.2, delay=3.1,  next_start = 0.0 },
+        -- 3rd
+        { snote="C5",  duration=21.1, delay=5.3,  next_start = 0.0 },
+        -- 4th
+        { snote="Db5", duration=18.2, delay=12.3, next_start = 0.0 },
+        -- 5th
+        { snote="Eb5", duration=20.0, delay=9.2,  next_start = 0.0 },
+        -- 6th
+        { snote="F4",  duration=19.3, delay=4.2,  next_start = 0.0 },
+        -- octave
+        { snote="F5",  duration=20.0, delay=14.1, next_start = 0.0 },
+    }}
+end
+
+------------------------- Main loop -------------------------------------------
+
+-- Called every mmtimer increment.
+function step(bar, beat, subdiv)
+    step_time = 1.0 -- TODO use something like BarTime??
+
+    for i = 1, #loops do
+        if step_time >= loops[i].next_start then
+            ut.info("Starting note", loops[i].snote);
+            api.send_note("sound", loops[i].snote, SOUND_VOL, loops[i].duration);
+            // Calc next time.
+            loops[i].next_start = step_time + loops[i].delay + loops[i].duration;
+        end
+    end
+end
