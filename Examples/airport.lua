@@ -1,8 +1,8 @@
 
 -- A take on Eno's "algorithmic" Music for Airports - ported from github.com/teropa/musicforairports.js
 
-api = require "neb_api"
-ut = require "utils"
+api = require("neb_api")
+ut = require("utils")
 
 devices =
 {

@@ -1,5 +1,5 @@
 --[[
--- Example Nebulator composition file with some UI demo. This is not actual music.
+Example Nebulator composition file with some UI demo. This is not actual music.
 --]]
 
 local api = require("neb_api_sim") -- TODO do better
