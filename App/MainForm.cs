@@ -154,6 +154,8 @@ namespace Ephemera.Nebulua.App
         {
             _logger.Info("============================ Starting up ===========================");
 
+            CompileScriptX();
+
             PopulateRecentMenu();
 
             bool ok = CreateDevices();
@@ -266,6 +268,29 @@ namespace Ephemera.Nebulua.App
             _nppVals.Save();
         }
         #endregion
+
+
+        bool CompileScriptX()
+        {
+            bool ok = true;
+
+
+            var fn = @"C:\Dev\repos\Nebulua\Examples\example.lua";
+            var luaPaths = new List<string>() { @"C:\Dev\repos\Nebulua\Examples", @"C:\Dev\repos\Nebulua\lualib" };
+            ScriptApi script = new();
+            script.LoadScript(fn, luaPaths);
+
+
+
+
+
+
+
+
+
+            return ok;
+        }
+
 
         #region Compile
         /// <summary>

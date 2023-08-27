@@ -9,6 +9,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "App\App.csproj", "{5
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeraLuaEx", "..\KeraLuaEx\KeraLuaEx\KeraLuaEx.csproj", "{DE8DBDA0-EC8C-4F45-B3EA-3BA39A30B7C3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{AEE8C1A5-1E72-4BA3-9749-0CED640442B7}"
+	ProjectSection(SolutionItems) = preProject
+		Examples\airport.lua = Examples\airport.lua
+		Examples\example.lua = Examples\example.lua
+		Examples\scale.lua = Examples\scale.lua
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lualib", "lualib", "{394C1DC8-68D1-4F34-8EDB-DC9E229233D6}"
+	ProjectSection(SolutionItems) = preProject
+		lualib\mididefs.lua = lualib\mididefs.lua
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

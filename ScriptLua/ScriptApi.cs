@@ -67,8 +67,6 @@ namespace Ephemera.Nebulua.Script
         /// <summary>Metrics.</summary>
         static readonly Stopwatch _sw = new();
         static long _startTicks = 0;
-        /// <summary>Bound lua function.</summary>
-        readonly static LuaFunction _fTimer = Timer;
 
 
 
@@ -89,6 +87,7 @@ namespace Ephemera.Nebulua.Script
         static readonly LuaFunction _fSendPatch = SendPatch;
         static readonly LuaFunction _fGetNotes = GetNotes;
         static readonly LuaFunction _fCreateNotes = CreateNotes;
+        readonly static LuaFunction _fTimer = Timer;
 
 
         /// <summary>All the channels - key is user assigned name.</summary>
@@ -158,6 +157,7 @@ namespace Ephemera.Nebulua.Script
             new LuaRegister("send_patch", _fSendPatch), // send_patch(chan, patch)
             new LuaRegister("get_notes", _fGetNotes), //get_notes("B4.MY_SCALE")
             new LuaRegister("create_notes", _fCreateNotes), //create_notes("MY_SCALE", "1 3 4 b7")
+            new LuaRegister("timer", _fTimer),
             new LuaRegister(null, null)
         };
 
@@ -171,30 +171,30 @@ namespace Ephemera.Nebulua.Script
         /// </summary>
         /// <param name="fn">Lua file to open.</param>
         /// <param name="luaPaths">Optional additional lua paths.</param>
-        public void LoadScript(string fn, List<string> luaPaths = null)  // TODO1 see luaex
+        public void LoadScript(string fn, List<string>? luaPaths = null)
         {
             // Load the script file.
-            bool ok = true;
-
             string? path = Path.GetDirectoryName(fn);
-
             luaPaths ??= new();
-            luaPaths.Add(path);
+            luaPaths.Add(path!);
 
             try
             {
                 _lMain.SetLuaPath(luaPaths);
-                //_lMain!.LoadFile(scriptFile);
                 _lMain.LoadFile(fn);
+
+                Load(_lMain);
 
                 // PCall loads the file.
                 var res = _lMain.PCall(0, Lua.LUA_MULTRET, 0);
 
 
                 // TODO1 Get and init the devices.
+                GetDevices();
                 _channels.Clear();
 
                 // Get the sequences and sections.
+                GetComposition();
 
             }
             catch (Exception ex)
@@ -229,6 +229,66 @@ namespace Ephemera.Nebulua.Script
             }
         }
         #endregion
+
+
+
+        // Get and init the devices.
+        void GetDevices()
+        {
+
+            // Get the globals.
+            _lMain.GetGlobal("_G");
+            var g = _lMain.ToDataTable().AsDict();
+            _lMain.Pop(1); // clean up GetGlobal("").
+
+
+            
+            _channels.Clear();
+        }
+
+
+    //for k, v in pairs(mut) do
+    //    if type(v) == "function" and k:match("suite_") then
+    //        -- Found something to do. Run it in between optional test boilerplate.
+    //        pn.start_suite(k.. " in " .. mfn)
+
+    //        local ok, result = pcall(mut["setup"], pn)-- optional
+    //        if not ok then
+    //            internal_error(result)
+    //            script_fail = true
+    //            goto done
+    //        end
+
+    //        ok, result = pcall(v, pn)
+    //        if not ok then
+    //            internal_error(result)
+    //            script_fail = true
+    //            goto done
+    //        end
+
+    //        ok, result = pcall(mut["teardown"], pn) -- optional
+    //        if not ok then
+    //            internal_error(result)
+    //            script_fail = true
+    //            goto done
+    //        end
+    //    end
+    //end
+
+
+
+        // Get the sequences and sections.
+        void GetComposition()
+        {
+
+        }
+
+
+
+
+
+
+
 
         #region C# calls lua functions  // TODO1 check all- see luaex
         /// <summary>

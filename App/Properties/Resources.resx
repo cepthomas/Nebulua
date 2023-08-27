@@ -117,4 +117,71 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="glyphicons-114-justify" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-114-justify.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-137-cogwheel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-137-cogwheel.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-171-step-backward" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-171-step-backward.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-172-fast-backward" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-172-fast-backward.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-173-rewind" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-173-rewind.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-174-play" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-174-play.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-175-pause" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-175-pause.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-176-stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-176-stop.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-177-forward" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-177-forward.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-178-fast-forward" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-178-fast-forward.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-179-step-forward" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-179-step-forward.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-195-question-sign" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-195-question-sign.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-206-electricity" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-206-electricity.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-213-arrow-down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-213-arrow-down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-214-arrow-up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-214-arrow-up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-327-piano" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-327-piano.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-366-restart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-366-restart.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-37-file" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-37-file.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-551-erase" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-551-erase.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-82-refresh" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-82-refresh.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="glyphicons-86-repeat" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\glyphicons-86-repeat.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="medusa" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\medusa.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

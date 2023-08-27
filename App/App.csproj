@@ -21,6 +21,7 @@
         <!-- en none -->
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="BarTime_X.cs" />
       <Compile Remove="MainForm.Designer_not.cs" />
       <Compile Remove="MainForm_not.cs" />
     </ItemGroup>

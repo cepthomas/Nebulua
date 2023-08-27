@@ -59,5 +59,225 @@ namespace Ephemera.Nebulua.App.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_114_justify {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-114-justify", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_137_cogwheel {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-137-cogwheel", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_171_step_backward {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-171-step-backward", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_172_fast_backward {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-172-fast-backward", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_173_rewind {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-173-rewind", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_174_play {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-174-play", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_175_pause {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-175-pause", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_176_stop {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-176-stop", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_177_forward {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-177-forward", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_178_fast_forward {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-178-fast-forward", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_179_step_forward {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-179-step-forward", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_195_question_sign {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-195-question-sign", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_206_electricity {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-206-electricity", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_213_arrow_down {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-213-arrow-down", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_214_arrow_up {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-214-arrow-up", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_327_piano {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-327-piano", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_366_restart {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-366-restart", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_37_file {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-37-file", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_551_erase {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-551-erase", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_82_refresh {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-82-refresh", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_86_repeat {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-86-repeat", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon medusa {
+            get {
+                object obj = ResourceManager.GetObject("medusa", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }
