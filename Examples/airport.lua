@@ -44,7 +44,7 @@ end
 
 -- Called every mmtimer increment.
 function step(bar, beat, subdiv)
-    step_time = 1.0 -- TODO use something like BarTime??
+    step_time = 1.0 -- TODO1 use something like BarTime??
 
     for i = 1, #loops do
         if step_time >= loops[i].next_start then

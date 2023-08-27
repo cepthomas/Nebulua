@@ -296,7 +296,7 @@ namespace Ephemera.Nebulua.App
                 _totalSubdivs = 0;
                 barBar.Reset();
 
-                // Compile script. TODO something like...
+                // Compile script. TODOapp something like...
 /*
                 Compiler compiler = new(_settings.ScriptPath);
                 compiler.CompileScript(_scriptFileName);
@@ -320,7 +320,7 @@ namespace Ephemera.Nebulua.App
                         _script!.Setup();
 
                         // Script may have altered shared values.
-                        //TODO ProcessRuntime();
+                        //TODOapp ProcessRuntime();
                     }
                     catch (Exception ex)
                     {
@@ -377,7 +377,7 @@ namespace Ephemera.Nebulua.App
                 ///// Script is sane - build the events.
                 if (ok)
                 {
-                    //TODO_script!.Init(_channels);
+                    //TODOapp_script!.Init(_channels);
                     _script.BuildSteps();
 
                     // Store the steps in the channel objects.
@@ -423,7 +423,7 @@ namespace Ephemera.Nebulua.App
                 }
 
                 // Update file watcher.
-//TODO                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
+//TODOapp                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
 
                 SetCompileStatus(ok);
 
@@ -432,7 +432,7 @@ namespace Ephemera.Nebulua.App
                     _logger.Error("Compile failed.");
                 }
 
-                // Log compiler results. TODO
+                // Log compiler results. TODOapp
 /*
                 compiler.Results.ForEach(r =>
                 {
@@ -728,7 +728,7 @@ namespace Ephemera.Nebulua.App
                 ProcessPlay(PlayCommand.UpdateUiTime);
 
                 //// Process whatever the script did.
-                //TODO ProcessRuntime();
+                //TODOapp ProcessRuntime();
             }
         }
 
@@ -776,7 +776,7 @@ namespace Ephemera.Nebulua.App
         ///// <summary>
         ///// Process whatever the script may have done.
         ///// </summary>
-        //void ProcessRuntime() TODO
+        //void ProcessRuntime() TODOapp
         //{
         //    if (_script is not null)
         //    {
@@ -928,6 +928,12 @@ namespace Ephemera.Nebulua.App
                     AddToRecentDefs(fn);
                     bool ok = CompileScript();
                     SetCompileStatus(ok);
+                    
+// string srcPath = GetSourcePath();
+// string scriptsPath = Path.Combine(srcPath, "scripts");
+// _l.SetLuaPath(new() { scriptsPath });
+// string scriptFile = Path.Combine(scriptsPath, fn);
+// _l!.LoadFile(scriptFile);
 
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {fn}";
                 }

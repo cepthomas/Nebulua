@@ -64,6 +64,11 @@ namespace Ephemera.Nebulua.Script
 
 
 
+        /// <summary>Metrics.</summary>
+        static readonly Stopwatch _sw = new();
+        static long _startTicks = 0;
+        /// <summary>Bound lua function.</summary>
+        readonly static LuaFunction _fTimer = Timer;
 
 
 
@@ -109,8 +114,55 @@ namespace Ephemera.Nebulua.Script
 
         /// <summary>Resource clean up.</summary>
         internal bool _disposed = false;
-
         #endregion
+
+
+        /// <summary>
+        /// Load the lua libs implemented in C#.
+        /// </summary>
+        /// <param name="l">Lua context</param>
+        public /*static*/ void Load(Lua l)
+        {
+            // Load app stuff. This table gets pushed on the stack and into globals.
+            l.RequireF("neb_api", OpenLib, true);
+
+            // Other inits.
+            _startTicks = 0;
+            _sw.Start();
+        }
+
+        /// <summary>
+        /// Internal callback to actually load the libs.
+        /// </summary>
+        /// <param name="p">Pointer to context.</param>
+        /// <returns></returns>
+        /*static*/ int OpenLib(IntPtr p)
+        {
+            // Open lib into global table.
+            var l = Lua.FromIntPtr(p)!;
+            l.NewLib(_libFuncs);
+
+            return 1;
+        }
+
+        /// <summary>
+        /// Bind the C# functions to lua.
+        /// </summary>
+        /*static*/ readonly LuaRegister[] _libFuncs = new LuaRegister[]
+        {
+            new LuaRegister("log", _fLog),
+            new LuaRegister("send_controller", _fSendController), //send_controller(chan, controller, val)
+            new LuaRegister("send_note", _fSendNote), //send_note(chan, note, vol, dur)
+            new LuaRegister("send_note_on", _fSendNoteOn), //send_note_on(chan, note, vol)
+            new LuaRegister("send_note_off", _fSendNoteOff), //send_note_off(chan, note)
+            new LuaRegister("send_patch", _fSendPatch), // send_patch(chan, patch)
+            new LuaRegister("get_notes", _fGetNotes), //get_notes("B4.MY_SCALE")
+            new LuaRegister("create_notes", _fCreateNotes), //create_notes("MY_SCALE", "1 3 4 b7")
+            new LuaRegister(null, null)
+        };
+
+
+
 
         #region Lifecycle
         /// <summary>
@@ -118,30 +170,32 @@ namespace Ephemera.Nebulua.Script
         /// This may throw an exception - client needs to handle them.
         /// </summary>
         /// <param name="fn">Lua file to open.</param>
-        // <param name="luaPaths">Optional lua paths.</param>
-        public void Load(string fn)//, List<string> luaPaths)// = null)  // TODO see luaex
+        /// <param name="luaPaths">Optional additional lua paths.</param>
+        public void LoadScript(string fn, List<string> luaPaths = null)  // TODO1 see luaex
         {
             // Load the script file.
             bool ok = true;
 
-            string path = fn; //Path.Combine("Test", "scripts", $"{fn}.lua");
+            string? path = Path.GetDirectoryName(fn);
+
+            luaPaths ??= new();
+            luaPaths.Add(path);
 
             try
             {
-                LuaStatus lstat = _lMain.LoadFile(path);
+                _lMain.SetLuaPath(luaPaths);
+                //_lMain!.LoadFile(scriptFile);
+                _lMain.LoadFile(fn);
 
-                // Bind lua functions to internal.
-                _lMain.Register("log", _fLog);
-                _lMain.Register("send_controller", _fSendController); //send_controller(chan, controller, val)
-                _lMain.Register("send_note", _fSendNote); //send_note(chan, note, vol, dur)
-                _lMain.Register("send_note_on", _fSendNoteOn); //send_note_on(chan, note, vol)
-                _lMain.Register("send_note_off", _fSendNoteOff); //send_note_off(chan, note)
-                _lMain.Register("send_patch", _fSendPatch); // send_patch(chan, patch)
-                _lMain.Register("get_notes", _fGetNotes); //get_notes("B4.MY_SCALE")
-                _lMain.Register("create_notes", _fCreateNotes); //create_notes("MY_SCALE", "1 3 4 b7")
+                // PCall loads the file.
+                var res = _lMain.PCall(0, Lua.LUA_MULTRET, 0);
 
-                // TODO get/init the inputs and outputs. And anything else....
+
+                // TODO1 Get and init the devices.
                 _channels.Clear();
+
+                // Get the sequences and sections.
+
             }
             catch (Exception ex)
             {
@@ -149,14 +203,14 @@ namespace Ephemera.Nebulua.Script
             }
         }
 
-        /// <summary>
-        /// Set up runtime stuff.
-        /// </summary>
-        /// <param name="channels">All output channels.</param>
-        public void Init(Dictionary<string, Channel> channels)//TODO??
-        {
-           _channels = channels;
-        }
+        // /// <summary>
+        // /// Set up runtime stuff.
+        // /// </summary>
+        // /// <param name="channels">All output channels.</param>
+        // public void Init(Dictionary<string, Channel> channels)//TODO1??
+        // {
+        //    _channels = channels;
+        // }
 
         /// <summary> </summary>
         public void Dispose()
@@ -176,7 +230,7 @@ namespace Ephemera.Nebulua.Script
         }
         #endregion
 
-        #region C# calls lua functions  // TODO check all- see luaex
+        #region C# calls lua functions  // TODO1 check all- see luaex
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -212,7 +266,7 @@ namespace Ephemera.Nebulua.Script
             _lMain.PushInteger(subdiv);
 
             // Do the actual call.
-            LuaStatus lstat = _lMain.PCall(3, 0, 0);
+            _lMain.PCall(3, 0, 0);
 
             // Get the results from the stack.
             // None.
@@ -241,7 +295,7 @@ namespace Ephemera.Nebulua.Script
             _lMain.PushInteger(vel);
 
             // Do the actual call.
-            LuaStatus lstat = _lMain.PCall(4, 0, 0);
+            _lMain.PCall(4, 0, 0);
 
             // Get the results from the stack.
             // None.
@@ -296,7 +350,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary> </summary>
-        static int SendNote(IntPtr p) // TODO also string?
+        static int SendNote(IntPtr p) // TODO1 also string?
         {
             int numRes = 0;
             int notenum = 0;
@@ -331,7 +385,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
-        static int SendNoteOn(IntPtr p) // TODO also string?
+        static int SendNoteOn(IntPtr p) // TODO1 also string?
         {
             int numRes = 0;
             //SendNote(chanName, notenum, vol);
@@ -341,7 +395,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note off immediately.</summary>
-        static int SendNoteOff(IntPtr p) // TODO also string?
+        static int SendNoteOff(IntPtr p) // TODO1 also string?
         {
             int numRes = 0;
             //SendNote(chanName, notenum, 0);
@@ -365,7 +419,7 @@ namespace Ephemera.Nebulua.Script
             ///// Do the work.
             var ch = _channels[chanName];
             int ctlrid = MidiDefs.GetControllerNumber(controller);
-            //TODO ch.SendController((MidiController)ctlrid, (int)val);
+            //TODO1 ch.SendController((MidiController)ctlrid, (int)val);
 
             return numRes;
         }
@@ -383,7 +437,7 @@ namespace Ephemera.Nebulua.Script
 
             ///// Do the work.
             var ch = _channels[chanName];
-            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODO handle fail
+            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODO1 handle fail
             ch.Patch = patchid;
             ch.SendPatch();
 
@@ -395,7 +449,7 @@ namespace Ephemera.Nebulua.Script
         #endregion
 
 
-        #region TODO these could be in the script
+        #region TODO1 these could be in the script
 
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
 
@@ -432,8 +486,8 @@ namespace Ephemera.Nebulua.Script
             // Do the work.
             int numRes = 0;
             List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
-            var dt = DataTable(notes);
-            l.PushTable(dt);
+            var dt = new DataTable(notes);
+            l.PushDataTable(dt);
 
             numRes++;
 
@@ -445,7 +499,43 @@ namespace Ephemera.Nebulua.Script
 
 
 
-        ///////////// TODO sequences etc from ScriptBase //////////////////////////
+        /// <summary>
+        /// Lua script requires a high res timestamp - msec as double.
+        /// </summary>
+        /// <param name="p">Pointer to context.</param>
+        /// <returns></returns>
+        static int Timer(IntPtr p)
+        {
+            var l = Lua.FromIntPtr(p)!;
+
+            // Get arguments.
+            bool on = l.ToBoolean(-1);
+
+            // Do the work.
+            double totalMsec = 0;
+            if (on)
+            {
+                _startTicks = _sw.ElapsedTicks; // snap
+            }
+            else if (_startTicks > 0)
+            {
+                long t = _sw.ElapsedTicks; // snap
+                totalMsec = (t - _startTicks) * 1000D / Stopwatch.Frequency;
+            }
+
+            // Return results.
+            l.PushNumber(totalMsec);
+            return 1;
+        }
+
+
+
+
+
+        ////////////////////////////////////////////////////////////////////////////
+        ///////////// TODO1 sequences etc from ScriptBase //////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+
 
         /// <summary>
         /// Convert script sequences etc to internal events.
