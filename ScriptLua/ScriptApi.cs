@@ -65,18 +65,18 @@ namespace Ephemera.Nebulua.Script
 
 
         /// <summary>Metrics.</summary>
-        static readonly Stopwatch _sw = new();
-        static long _startTicks = 0;
+        /*static*/ readonly Stopwatch _sw = new();
+        /*static*/ long _startTicks = 0;
 
 
 
 
         #region Fields
         /// <summary>Main logger.</summary>
-        static readonly Logger _logger = LogManager.CreateLogger("Script");
+        static readonly Logger _logger = LogManager.CreateLogger("ScriptApi");
 
         // Main execution lua state.
-        static readonly Lua _lMain = new();
+        /*static*/ readonly Lua _lMain = new();
 
         // Bound static functions.
         static readonly LuaFunction _fLog = Log;
@@ -90,14 +90,17 @@ namespace Ephemera.Nebulua.Script
         readonly static LuaFunction _fTimer = Timer;
 
 
+        static ScriptApi _instance;
+
+
         /// <summary>All the channels - key is user assigned name.</summary>
-        static readonly Dictionary<string, Channel> _channels = new();
+        /*static*/ readonly Dictionary<string, Channel> _channels = new();
 
         /// <summary>All devices to use for send. Key is my id (not the system driver name).</summary>
-        static readonly Dictionary<string, IOutputDevice> _outputDevices = new();
+        /*static*/ readonly Dictionary<string, IOutputDevice> _outputDevices = new();
 
         /// <summary>All devices to use for receive. Key is name/id, not the system name.</summary>
-        static readonly Dictionary<string, IInputDevice> _inputDevices = new();
+        /*static*/ readonly Dictionary<string, IInputDevice> _inputDevices = new();
 
         /// <summary>Channel info collected from the script.</summary>
         public List<ChannelSpec> ChannelSpecs { get; init; } = new();
@@ -109,26 +112,26 @@ namespace Ephemera.Nebulua.Script
         internal List<MidiEventDesc> _scriptEvents = new();
 
         /// <summary>Script randomizer.</summary>
-        static readonly Random _rand = new();
+        /*static*/ readonly Random _rand = new();
 
         /// <summary>Resource clean up.</summary>
         internal bool _disposed = false;
         #endregion
 
 
-        /// <summary>
-        /// Load the lua libs implemented in C#.
-        /// </summary>
-        /// <param name="l">Lua context</param>
-        public /*static*/ void Load(Lua l)
-        {
-            // Load app stuff. This table gets pushed on the stack and into globals.
-            l.RequireF("neb_api", OpenLib, true);
+        // /// <summary>
+        // /// Load the lua libs implemented in C#.
+        // /// </summary>
+        // /// <param name="l">Lua context</param>
+        // public /*static*/ void Load(Lua l)
+        // {
+        //     // Load app stuff. This table gets pushed on the stack and into globals.
+        //     l.RequireF("neb_api", OpenLib, true);
 
-            // Other inits.
-            _startTicks = 0;
-            _sw.Start();
-        }
+        //     // Other inits.
+        //     _startTicks = 0;
+        //     _sw.Start();
+        // }
 
         /// <summary>
         /// Internal callback to actually load the libs.
@@ -165,6 +168,21 @@ namespace Ephemera.Nebulua.Script
 
 
         #region Lifecycle
+
+        public ScriptApi()
+        {
+            // Load C# impl functions. This table gets pushed on the stack and into globals.
+            _lMain.RequireF("neb_api", OpenLib, true);
+
+            // Other inits.
+            _startTicks = 0;
+            _sw.Start();
+
+            _instance = this;
+        }
+
+
+
         /// <summary>
         /// Load file and init everything.
         /// This may throw an exception - client needs to handle them.
@@ -183,15 +201,30 @@ namespace Ephemera.Nebulua.Script
                 _lMain.SetLuaPath(luaPaths);
                 _lMain.LoadFile(fn);
 
-                Load(_lMain);
+                // Load(_lMain);
 
-                // PCall loads the file.
+                // /// <summary>
+                // /// Load the lua libs implemented in C#.
+                // /// </summary>
+                // /// <param name="l">Lua context</param>
+                // public /*static*/ void Load(Lua l)
+                // {
+                    // // Load C# impl functions. This table gets pushed on the stack and into globals.
+                    // _lMain.RequireF("neb_api", OpenLib, true);
+
+                    // // Other inits.
+                    // _startTicks = 0;
+                    // _sw.Start();
+                // }
+
+
+
+                // PCall executes (loads) the file.
                 var res = _lMain.PCall(0, Lua.LUA_MULTRET, 0);
 
 
                 // TODO1 Get and init the devices.
                 GetDevices();
-                _channels.Clear();
 
                 // Get the sequences and sections.
                 GetComposition();
@@ -235,15 +268,25 @@ namespace Ephemera.Nebulua.Script
         // Get and init the devices.
         void GetDevices()
         {
+            _channels.Clear();
 
             // Get the globals.
-            _lMain.GetGlobal("_G");
-            var g = _lMain.ToDataTable().AsDict();
-            _lMain.Pop(1); // clean up GetGlobal("").
+            _lMain.PushGlobalTable();
 
 
-            
-            _channels.Clear();
+            var g = _lMain.ToDataTable(2, true).AsDict();
+
+            var devs = (g["devices"] as DataTable).AsDict();
+
+            foreach(var dev in devs)
+            {
+
+
+
+            }
+
+            _lMain.Pop(1); // from PushGlobalTable()
+
         }
 
 
@@ -477,7 +520,7 @@ namespace Ephemera.Nebulua.Script
             long? val = l.ToInteger(3);
 
             ///// Do the work.
-            var ch = _channels[chanName];
+            var ch = _instance._channels[chanName];
             int ctlrid = MidiDefs.GetControllerNumber(controller);
             //TODO1 ch.SendController((MidiController)ctlrid, (int)val);
 
@@ -496,7 +539,7 @@ namespace Ephemera.Nebulua.Script
             string patch = l.ToStringL(2)!;
 
             ///// Do the work.
-            var ch = _channels[chanName];
+            var ch = _instance._channels[chanName];
             int patchid = MidiDefs.GetInstrumentNumber(patch); // TODO1 handle fail
             ch.Patch = patchid;
             ch.SendPatch();
@@ -575,12 +618,12 @@ namespace Ephemera.Nebulua.Script
             double totalMsec = 0;
             if (on)
             {
-                _startTicks = _sw.ElapsedTicks; // snap
+                _instance._startTicks = _instance._sw.ElapsedTicks; // snap
             }
-            else if (_startTicks > 0)
+            else if (_instance._startTicks > 0)
             {
-                long t = _sw.ElapsedTicks; // snap
-                totalMsec = (t - _startTicks) * 1000D / Stopwatch.Frequency;
+                long t = _instance._sw.ElapsedTicks; // snap
+                totalMsec = (t - _instance._startTicks) * 1000D / Stopwatch.Frequency;
             }
 
             // Return results.

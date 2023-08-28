@@ -2,8 +2,9 @@
 Example Nebulator composition file with some UI demo. This is not actual music.
 --]]
 
-local api = require("neb_api_sim") -- TODO1 do better
-local ut = require("utils")
+local api = require("neb_api")
+-- local api = require("neb_api_sim") -- TODO1 do better
+-- local ut = require("utils")
 local scale = require("scale")
 local md = require("mididefs")
 local inst = md.instruments
@@ -33,8 +34,8 @@ devices =
     synth = { dev_type="midi_out", channel=3, patch=inst.Lead1Square },
     drums = { dev_type="midi_out", channel=10, patch="Jazz" }, -- for drums = kit
     tune  = { dev_type="midi_in", channel=1 },
-    trig  = { dev_type="virt_key", channel=2 },  -- optional: shownotenames, keysize
-    whiz  = { dev_type="bing_bong", channel=10 } -- optional: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
+    trig  = { dev_type="virt_key", channel=2, shownotenames=true },  -- optional: shownotenames, keysize
+    whiz  = { dev_type="bing_bong", channel=10, drawnotegrid=true } -- optional: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
 }
 
 

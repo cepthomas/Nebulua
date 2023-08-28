@@ -275,13 +275,20 @@ namespace Ephemera.Nebulua.App
             bool ok = true;
 
 
-            var fn = @"C:\Dev\repos\Nebulua\Examples\example.lua";
-            var luaPaths = new List<string>() { @"C:\Dev\repos\Nebulua\Examples", @"C:\Dev\repos\Nebulua\lualib" };
-            ScriptApi script = new();
-            script.LoadScript(fn, luaPaths);
+            try
+            {
+                var fn = @"C:\Dev\repos\Nebulua\Examples\example.lua";
+                var luaPaths = new List<string>() { @"C:\Dev\repos\Nebulua\Examples", @"C:\Dev\repos\Nebulua\lualib" };
+                ScriptApi script = new();
+                script.LoadScript(fn, luaPaths);
 
 
 
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Fail:{ex.Message}");
+            }
 
 
 
