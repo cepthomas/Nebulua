@@ -3,7 +3,6 @@ Example Nebulator composition file with some UI demo. This is not actual music.
 --]]
 
 local api = require("neb_api")
--- local api = require("neb_api_sim") -- TODO1 do better
 -- local ut = require("utils")
 local scale = require("scale")
 local md = require("mididefs")
