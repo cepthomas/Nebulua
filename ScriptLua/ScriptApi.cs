@@ -223,7 +223,7 @@ namespace Ephemera.Nebulua.Script
                 var res = _lMain.PCall(0, Lua.LUA_MULTRET, 0);
 
 
-                // TODO1 Get and init the devices.
+                // TODOapp Get and init the devices.
                 GetDevices();
 
                 // Get the sequences and sections.
@@ -240,7 +240,7 @@ namespace Ephemera.Nebulua.Script
         // /// Set up runtime stuff.
         // /// </summary>
         // /// <param name="channels">All output channels.</param>
-        // public void Init(Dictionary<string, Channel> channels)//TODO1??
+        // public void Init(Dictionary<string, Channel> channels)//TODOapp??
         // {
         //    _channels = channels;
         // }
@@ -333,7 +333,7 @@ namespace Ephemera.Nebulua.Script
 
 
 
-        #region C# calls lua functions  // TODO1 check all- see luaex
+        #region C# calls lua functions  // TODOapp check all- see luaex
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -453,7 +453,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary> </summary>
-        static int SendNote(IntPtr p) // TODO1 also string?
+        static int SendNote(IntPtr p) // TODOapp also string?
         {
             int numRes = 0;
             int notenum = 0;
@@ -462,7 +462,7 @@ namespace Ephemera.Nebulua.Script
 
             //if (!_channels.ContainsKey(chanName))
             //{
-            //    throw new ArgumentException($"Invalid channel: {chanName}");
+            //    throw new ArgumentException($"Invalid channel [{chanName}]");
             //}
 
             //var ch = _channels[chanName];
@@ -488,7 +488,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
-        static int SendNoteOn(IntPtr p) // TODO1 also string?
+        static int SendNoteOn(IntPtr p) // TODOapp also string?
         {
             int numRes = 0;
             //SendNote(chanName, notenum, vol);
@@ -498,7 +498,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note off immediately.</summary>
-        static int SendNoteOff(IntPtr p) // TODO1 also string?
+        static int SendNoteOff(IntPtr p) // TODOapp also string?
         {
             int numRes = 0;
             //SendNote(chanName, notenum, 0);
@@ -522,7 +522,7 @@ namespace Ephemera.Nebulua.Script
             ///// Do the work.
             var ch = _instance._channels[chanName];
             int ctlrid = MidiDefs.GetControllerNumber(controller);
-            //TODO1 ch.SendController((MidiController)ctlrid, (int)val);
+            //TODOapp ch.SendController((MidiController)ctlrid, (int)val);
 
             return numRes;
         }
@@ -540,7 +540,7 @@ namespace Ephemera.Nebulua.Script
 
             ///// Do the work.
             var ch = _instance._channels[chanName];
-            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODO1 handle fail
+            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODOapp handle fail
             ch.Patch = patchid;
             ch.SendPatch();
 
@@ -552,7 +552,7 @@ namespace Ephemera.Nebulua.Script
         #endregion
 
 
-        #region TODO1 these could be in the script
+        #region TODOapp these could be in the script
 
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
 
@@ -636,7 +636,7 @@ namespace Ephemera.Nebulua.Script
 
 
         ////////////////////////////////////////////////////////////////////////////
-        ///////////// TODO1 sequences etc from ScriptBase //////////////////////////
+        ///////////// TODOapp sequences etc from ScriptBase //////////////////////////
         ////////////////////////////////////////////////////////////////////////////
 
 

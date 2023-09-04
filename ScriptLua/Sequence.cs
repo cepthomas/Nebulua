@@ -163,7 +163,7 @@ namespace Ephemera.Nebulua.Script
 
                         default:
                             ///// Invalid char.
-                            throw new InvalidOperationException($"Invalid char in pattern string:{pattern[patternIndex]}");
+                            throw new InvalidOperationException($"Invalid char in pattern string [{pattern[patternIndex]}]");
                     }
                 }
 
