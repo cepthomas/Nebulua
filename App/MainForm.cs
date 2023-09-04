@@ -328,7 +328,7 @@ namespace Ephemera.Nebulua.App
                 _totalSubdivs = 0;
                 barBar.Reset();
 
-                // Compile script. TODOapp something like...
+                // Compile script. TODO1 something like...
 /*
                 Compiler compiler = new(_settings.ScriptPath);
                 compiler.CompileScript(_scriptFileName);
@@ -352,7 +352,7 @@ namespace Ephemera.Nebulua.App
                         _script!.Setup();
 
                         // Script may have altered shared values.
-                        //TODOapp ProcessRuntime();
+                        //TODO1 ProcessRuntime();
                     }
                     catch (Exception ex)
                     {
@@ -409,7 +409,7 @@ namespace Ephemera.Nebulua.App
                 ///// Script is sane - build the events.
                 if (ok)
                 {
-                    //TODOapp_script!.Init(_channels);
+                    //TODO1_script!.Init(_channels);
                     _script.BuildSteps();
 
                     // Store the steps in the channel objects.
@@ -455,7 +455,7 @@ namespace Ephemera.Nebulua.App
                 }
 
                 // Update file watcher.
-//TODOapp                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
+//TODO1                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
 
                 SetCompileStatus(ok);
 
@@ -464,7 +464,7 @@ namespace Ephemera.Nebulua.App
                     _logger.Error("Compile failed.");
                 }
 
-                // Log compiler results. TODOapp
+                // Log compiler results. TODO1
 /*
                 compiler.Results.ForEach(r =>
                 {
@@ -760,7 +760,7 @@ namespace Ephemera.Nebulua.App
                 ProcessPlay(PlayCommand.UpdateUiTime);
 
                 //// Process whatever the script did.
-                //TODOapp ProcessRuntime();
+                //TODO1 ProcessRuntime();
             }
         }
 
@@ -808,7 +808,7 @@ namespace Ephemera.Nebulua.App
         ///// <summary>
         ///// Process whatever the script may have done.
         ///// </summary>
-        //void ProcessRuntime() TODOapp
+        //void ProcessRuntime() TODO1
         //{
         //    if (_script is not null)
         //    {

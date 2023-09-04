@@ -201,29 +201,11 @@ namespace Ephemera.Nebulua.Script
                 _lMain.SetLuaPath(luaPaths);
                 _lMain.LoadFile(fn);
 
-                // Load(_lMain);
-
-                // /// <summary>
-                // /// Load the lua libs implemented in C#.
-                // /// </summary>
-                // /// <param name="l">Lua context</param>
-                // public /*static*/ void Load(Lua l)
-                // {
-                    // // Load C# impl functions. This table gets pushed on the stack and into globals.
-                    // _lMain.RequireF("neb_api", OpenLib, true);
-
-                    // // Other inits.
-                    // _startTicks = 0;
-                    // _sw.Start();
-                // }
-
-
-
                 // PCall executes (loads) the file.
                 var res = _lMain.PCall(0, Lua.LUA_MULTRET, 0);
 
 
-                // TODOapp Get and init the devices.
+                // TODO1 Get and init the devices.
                 GetDevices();
 
                 // Get the sequences and sections.
@@ -240,7 +222,7 @@ namespace Ephemera.Nebulua.Script
         // /// Set up runtime stuff.
         // /// </summary>
         // /// <param name="channels">All output channels.</param>
-        // public void Init(Dictionary<string, Channel> channels)//TODOapp??
+        // public void Init(Dictionary<string, Channel> channels)//TODO1??
         // {
         //    _channels = channels;
         // }
@@ -270,20 +252,21 @@ namespace Ephemera.Nebulua.Script
         {
             _channels.Clear();
 
-            // Get the globals.
-            _lMain.PushGlobalTable();
+            _lMain.GetGlobal("devices"); //TODO ignores bad types like: dev_type=midi_out
+            var devs = _lMain.ToTableEx();
+            _lMain.Pop(1);
 
 
-            var g = _lMain.ToDataTable(2, true).AsDict();
-
-            var devs = (g["devices"] as DataTable).AsDict();
-
-            foreach(var dev in devs)
-            {
+            //_lMain.PushGlobalTable();
+            //var g = _lMain.ToTableEx();
+            //var d = g["devices"];// as DataTable//.AsDict();
 
 
 
-            }
+            //var devs = 
+            //foreach(var dev in devs)
+            //{
+            //}
 
             _lMain.Pop(1); // from PushGlobalTable()
 
@@ -333,7 +316,7 @@ namespace Ephemera.Nebulua.Script
 
 
 
-        #region C# calls lua functions  // TODOapp check all- see luaex
+        #region C# calls lua functions  // TODO1 check all- see luaex
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -453,7 +436,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary> </summary>
-        static int SendNote(IntPtr p) // TODOapp also string?
+        static int SendNote(IntPtr p) // TODO1 also string?
         {
             int numRes = 0;
             int notenum = 0;
@@ -488,7 +471,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
-        static int SendNoteOn(IntPtr p) // TODOapp also string?
+        static int SendNoteOn(IntPtr p) // TODO1 also string?
         {
             int numRes = 0;
             //SendNote(chanName, notenum, vol);
@@ -498,7 +481,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note off immediately.</summary>
-        static int SendNoteOff(IntPtr p) // TODOapp also string?
+        static int SendNoteOff(IntPtr p) // TODO1 also string?
         {
             int numRes = 0;
             //SendNote(chanName, notenum, 0);
@@ -522,7 +505,7 @@ namespace Ephemera.Nebulua.Script
             ///// Do the work.
             var ch = _instance._channels[chanName];
             int ctlrid = MidiDefs.GetControllerNumber(controller);
-            //TODOapp ch.SendController((MidiController)ctlrid, (int)val);
+            //TODO1 ch.SendController((MidiController)ctlrid, (int)val);
 
             return numRes;
         }
@@ -540,7 +523,7 @@ namespace Ephemera.Nebulua.Script
 
             ///// Do the work.
             var ch = _instance._channels[chanName];
-            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODOapp handle fail
+            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODO1 handle fail
             ch.Patch = patchid;
             ch.SendPatch();
 
@@ -552,7 +535,7 @@ namespace Ephemera.Nebulua.Script
         #endregion
 
 
-        #region TODOapp these could be in the script
+        #region TODO1 these could be in the script
 
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
 
@@ -589,8 +572,7 @@ namespace Ephemera.Nebulua.Script
             // Do the work.
             int numRes = 0;
             List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
-            var dt = new DataTable(notes);
-            l.PushDataTable(dt);
+            l.PushList(notes);
 
             numRes++;
 
@@ -636,7 +618,7 @@ namespace Ephemera.Nebulua.Script
 
 
         ////////////////////////////////////////////////////////////////////////////
-        ///////////// TODOapp sequences etc from ScriptBase //////////////////////////
+        ///////////// TODO1 sequences etc from ScriptBase //////////////////////////
         ////////////////////////////////////////////////////////////////////////////
 
 

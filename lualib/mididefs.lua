@@ -47,7 +47,7 @@ M.drums =
 }
 
 -- The midi controller definitions.
-controllers =
+M.controllers =
 {
     BankSelect = 000, Modulation = 001, BreathController = 002, FootController = 004, PortamentoTime = 005, Volume = 007,
     Balance = 008, Pan = 010, Expression = 011, BankSelectLSB = 032, ModulationLSB = 033, BreathControllerLSB = 034,
