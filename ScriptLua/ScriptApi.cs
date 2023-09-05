@@ -20,13 +20,13 @@ namespace Ephemera.Nebulua.Script
     {
         #region Properties that can be read in the user script.
         /// <summary>Sound is playing. Lua: "playing".</summary>
-        public bool Playing { set { _lMain.PushBoolean(value); _lMain.SetGlobal("playing"); } }
+        public bool Playing { set { _l.PushBoolean(value); _l.SetGlobal("playing"); } }
 
         /// <summary>Current Nebulator step time.</summary>
         // public double StepTime { set { _lMain.PushNumber(value); _lMain.SetGlobal("step_time"); } }
 
         /// <summary>Actual time since start pressed. Lua: "real_time".</summary>
-        public double RealTime { set { _lMain.PushNumber(value); _lMain.SetGlobal("real_time"); } }
+        public double RealTime { set { _l.PushNumber(value); _l.SetGlobal("real_time"); } }
 
         /// <summary>Nebulator Speed in bpm. Lua: "tempo".</summary>
         public int Tempo
@@ -38,8 +38,8 @@ namespace Ephemera.Nebulua.Script
             set
             {
                 _tempo = value;
-                _lMain.PushInteger(value);
-                _lMain.SetGlobal("tempo");
+                _l.PushInteger(value);
+                _l.SetGlobal("tempo");
             }
         }
         int _tempo;
@@ -54,8 +54,8 @@ namespace Ephemera.Nebulua.Script
             set
             {
                 _masterVolume = value;
-                _lMain.PushNumber(value);
-                _lMain.SetGlobal("master_volume");
+                _l.PushNumber(value);
+                _l.SetGlobal("master_volume");
             }
         }
         double _masterVolume;
@@ -76,7 +76,7 @@ namespace Ephemera.Nebulua.Script
         static readonly Logger _logger = LogManager.CreateLogger("ScriptApi");
 
         // Main execution lua state.
-        /*static*/ readonly Lua _lMain = new();
+        /*static*/ readonly Lua _l = new();
 
         // Bound static functions.
         static readonly LuaFunction _fLog = Log;
@@ -172,7 +172,7 @@ namespace Ephemera.Nebulua.Script
         public ScriptApi()
         {
             // Load C# impl functions. This table gets pushed on the stack and into globals.
-            _lMain.RequireF("neb_api", OpenLib, true);
+            _l.RequireF("neb_api", OpenLib, true);
 
             // Other inits.
             _startTicks = 0;
@@ -181,6 +181,21 @@ namespace Ephemera.Nebulua.Script
             _instance = this;
         }
 
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _l.Close();
+            }
+        }
+        #endregion
 
 
         /// <summary>
@@ -198,18 +213,48 @@ namespace Ephemera.Nebulua.Script
 
             try
             {
-                _lMain.SetLuaPath(luaPaths);
-                _lMain.LoadFile(fn);
+                _l.SetLuaPath(luaPaths);
 
-                // PCall executes (loads) the file.
-                var res = _lMain.PCall(0, Lua.LUA_MULTRET, 0);
+                // Load/parse the file.
+                _l.LoadFile(fn);
 
+                // Execute/init the script.
+                var lstat = _l.PCall(0, Lua.LUA_MULTRET, 0);
 
                 // TODO1 Get and init the devices.
                 GetDevices();
 
                 // Get the sequences and sections.
                 GetComposition();
+
+
+                //for k, v in pairs(mut) do
+                //    if type(v) == "function" and k:match("suite_") then
+                //        -- Found something to do. Run it in between optional test boilerplate.
+                //        pn.start_suite(k.. " in " .. mfn)
+
+                //        local ok, result = pcall(mut["setup"], pn)-- optional
+                //        if not ok then
+                //            internal_error(result)
+                //            script_fail = true
+                //            goto done
+                //        end
+
+                //        ok, result = pcall(v, pn)
+                //        if not ok then
+                //            internal_error(result)
+                //            script_fail = true
+                //            goto done
+                //        end
+
+                //        ok, result = pcall(mut["teardown"], pn) -- optional
+                //        if not ok then
+                //            internal_error(result)
+                //            script_fail = true
+                //            goto done
+                //        end
+                //    end
+                //end
 
             }
             catch (Exception ex)
@@ -218,103 +263,27 @@ namespace Ephemera.Nebulua.Script
             }
         }
 
-        // /// <summary>
-        // /// Set up runtime stuff.
-        // /// </summary>
-        // /// <param name="channels">All output channels.</param>
-        // public void Init(Dictionary<string, Channel> channels)//TODO1??
-        // {
-        //    _channels = channels;
-        // }
-
-        /// <summary> </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary> </summary>
-        /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _lMain.Close();
-            }
-        }
-        #endregion
-
-
 
         // Get and init the devices.
         void GetDevices()
         {
             _channels.Clear();
 
-            _lMain.GetGlobal("devices"); //TODO ignores bad types like: dev_type=midi_out
-            var devs = _lMain.ToTableEx();
-            _lMain.Pop(1);
-
-
-            //_lMain.PushGlobalTable();
-            //var g = _lMain.ToTableEx();
-            //var d = g["devices"];// as DataTable//.AsDict();
-
-
+            _l.GetGlobal("devices"); //TODO1 ignores bad types like: dev_type=midi_out
+            var devs = _l.ToTableEx(-1);
+            _l.Pop(1);
 
             //var devs = 
             //foreach(var dev in devs)
             //{
             //}
-
-            _lMain.Pop(1); // from PushGlobalTable()
-
         }
-
-
-    //for k, v in pairs(mut) do
-    //    if type(v) == "function" and k:match("suite_") then
-    //        -- Found something to do. Run it in between optional test boilerplate.
-    //        pn.start_suite(k.. " in " .. mfn)
-
-    //        local ok, result = pcall(mut["setup"], pn)-- optional
-    //        if not ok then
-    //            internal_error(result)
-    //            script_fail = true
-    //            goto done
-    //        end
-
-    //        ok, result = pcall(v, pn)
-    //        if not ok then
-    //            internal_error(result)
-    //            script_fail = true
-    //            goto done
-    //        end
-
-    //        ok, result = pcall(mut["teardown"], pn) -- optional
-    //        if not ok then
-    //            internal_error(result)
-    //            script_fail = true
-    //            goto done
-    //        end
-    //    end
-    //end
-
-
 
         // Get the sequences and sections.
         void GetComposition()
         {
 
         }
-
-
-
-
-
-
-
 
         #region C# calls lua functions  // TODO1 check all- see luaex
         /// <summary>
@@ -323,13 +292,13 @@ namespace Ephemera.Nebulua.Script
         public void Setup()
         {
             // Get the function to be called.
-            _lMain.GetGlobal("setup");
+            _l.GetGlobal("setup");
 
             // Push the arguments to the call.
             // None.
 
             // Do the actual call.
-            _lMain.PCall(0, 0, 0);
+            _l.PCall(0, 0, 0);
 
             // Get the results from the stack.
             // None.
@@ -344,15 +313,15 @@ namespace Ephemera.Nebulua.Script
         public void Step(int bar, int beat, int subdiv)
         {
             // Get the function to be called. Check return.
-            _lMain.GetGlobal("step");
+            _l.GetGlobal("step");
 
             // Push the arguments to the call.
-            _lMain.PushInteger(bar);
-            _lMain.PushInteger(beat);
-            _lMain.PushInteger(subdiv);
+            _l.PushInteger(bar);
+            _l.PushInteger(beat);
+            _l.PushInteger(subdiv);
 
             // Do the actual call.
-            _lMain.PCall(3, 0, 0);
+            _l.PCall(3, 0, 0);
 
             // Get the results from the stack.
             // None.
@@ -368,20 +337,20 @@ namespace Ephemera.Nebulua.Script
         public void InputNote(string dev, int channel, int note, int vel)
         {
             // Get the function to be called. Check return.
-            if (_lMain.GetGlobal("input_note") != LuaType.Function) // optional function
+            if (_l.GetGlobal("input_note") != LuaType.Function) // optional function
             {
-                _lMain.Pop(1);
+                _l.Pop(1);
                 return;
             }
 
             // Push the arguments to the call.
-            _lMain.PushString(dev);
-            _lMain.PushInteger(channel);
-            _lMain.PushInteger(note);
-            _lMain.PushInteger(vel);
+            _l.PushString(dev);
+            _l.PushInteger(channel);
+            _l.PushInteger(note);
+            _l.PushInteger(vel);
 
             // Do the actual call.
-            _lMain.PCall(4, 0, 0);
+            _l.PCall(4, 0, 0);
 
             // Get the results from the stack.
             // None.
@@ -397,20 +366,20 @@ namespace Ephemera.Nebulua.Script
         public void InputController(string dev, int channel, int controller, int value)
         {
             // Get the function to be called. Check return.
-            if (_lMain.GetGlobal("input_controller") != LuaType.Function) // optional function
+            if (_l.GetGlobal("input_controller") != LuaType.Function) // optional function
             {
-                _lMain.Pop(1);
+                _l.Pop(1);
                 return;
             }
 
             // Push the arguments to the call.
-            _lMain.PushString(dev);
-            _lMain.PushInteger(channel);
-            _lMain.PushInteger(controller);
-            _lMain.PushInteger(value);
+            _l.PushString(dev);
+            _l.PushInteger(channel);
+            _l.PushInteger(controller);
+            _l.PushInteger(value);
 
             // Do the actual call.
-            _lMain.PCall(4, 0, 0);
+            _l.PCall(4, 0, 0);
 
             // Get the results from the stack.
             // None.
@@ -534,7 +503,6 @@ namespace Ephemera.Nebulua.Script
 
         #endregion
 
-
         #region TODO1 these could be in the script
 
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
@@ -581,9 +549,6 @@ namespace Ephemera.Nebulua.Script
 
         #endregion
 
-
-
-
         /// <summary>
         /// Lua script requires a high res timestamp - msec as double.
         /// </summary>
@@ -612,9 +577,6 @@ namespace Ephemera.Nebulua.Script
             l.PushNumber(totalMsec);
             return 1;
         }
-
-
-
 
 
         ////////////////////////////////////////////////////////////////////////////
