@@ -154,7 +154,7 @@ namespace Ephemera.Nebulua.App
         {
             _logger.Info("============================ Starting up ===========================");
 
-            CompileScriptX();
+            CompileScript_lua();
 
             PopulateRecentMenu();
 
@@ -270,15 +270,21 @@ namespace Ephemera.Nebulua.App
         #endregion
 
 
-        bool CompileScriptX()
+        bool CompileScript_lua()
         {
             bool ok = true;
 
 
             try
             {
-                var fn = @"C:\Dev\repos\Nebulua\Examples\example.lua";
-                var luaPaths = new List<string>() { @"C:\Dev\repos\Nebulua\Examples", @"C:\Dev\repos\Nebulua\lualib" };
+                var fn = @"C:\Dev\repos\Nebulua\Examples\example.lua"; // from clarg or file menu.
+                var luaPaths = new List<string>() // from user settings
+                {
+                    @"C:\Dev\repos\Nebulua\Examples",
+                    @"C:\Dev\repos\Nebulua\lualib",
+                    @"C:\Dev\repos\LuaBagOfTricks"
+                };
+                
                 ScriptApi script = new();
                 script.LoadScript(fn, luaPaths);
 

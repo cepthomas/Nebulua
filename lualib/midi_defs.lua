@@ -27,12 +27,6 @@ M.instruments = {
     SynthDrum = 118, ReverseCymbal = 119, GuitarFretNoise = 120, BreathNoise = 121, Seashore = 122, BirdTweet = 123,
 TelephoneRing = 124, Helicopter = 125, Applause = 126, Gunshot = 127}
 
--- The GM midi drum kit definitions.
-M.drumkits =
-{
-    Standard = 0, Room = 8, Power = 16, Electronic = 24, TR808 = 25, Jazz = 32, Brush = 40, Orchestra = 48, SFX = 56
-}
-
 -- The GM midi drum definitions.
 M.drums =
 {
@@ -44,6 +38,12 @@ M.drums =
     HighTimbale = 065, LowTimbale = 066, HighAgogo = 067, LowAgogo = 068, Cabasa = 069, Maracas = 070, ShortWhistle = 071,
     LongWhistle = 072, ShortGuiro = 073, LongGuiro = 074, Claves = 075, HiWoodBlock = 076, LowWoodBlock = 077,
     MuteCuica = 078, OpenCuica = 079, MuteTriangle = 080, OpenTriangle = 081,
+}
+
+-- The GM midi drum kit definitions.
+M.drum_kits =
+{
+    Standard = 0, Room = 8, Power = 16, Electronic = 24, TR808 = 25, Jazz = 32, Brush = 40, Orchestra = 48, SFX = 56
 }
 
 -- The midi controller definitions.

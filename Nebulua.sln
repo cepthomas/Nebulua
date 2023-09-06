@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{AE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lualib", "lualib", "{394C1DC8-68D1-4F34-8EDB-DC9E229233D6}"
 	ProjectSection(SolutionItems) = preProject
-		lualib\mididefs.lua = lualib\mididefs.lua
+		lualib\midi_defs.lua = lualib\midi_defs.lua
 	EndProjectSection
 EndProject
 Global

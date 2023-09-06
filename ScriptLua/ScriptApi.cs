@@ -148,7 +148,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>
-        /// Bind the C# functions to lua.
+        /// Bind the C# functions lua can call.
         /// </summary>
         /*static*/ readonly LuaRegister[] _libFuncs = new LuaRegister[]
         {
@@ -168,7 +168,9 @@ namespace Ephemera.Nebulua.Script
 
 
         #region Lifecycle
-
+        /// <summary>
+        /// 
+        /// </summary>
         public ScriptApi()
         {
             // Load C# impl functions. This table gets pushed on the stack and into globals.
@@ -181,13 +183,19 @@ namespace Ephemera.Nebulua.Script
             _instance = this;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -222,39 +230,10 @@ namespace Ephemera.Nebulua.Script
                 var lstat = _l.PCall(0, Lua.LUA_MULTRET, 0);
 
                 // TODO1 Get and init the devices.
-                GetDevices();
+                GetChannels();
 
                 // Get the sequences and sections.
                 GetComposition();
-
-
-                //for k, v in pairs(mut) do
-                //    if type(v) == "function" and k:match("suite_") then
-                //        -- Found something to do. Run it in between optional test boilerplate.
-                //        pn.start_suite(k.. " in " .. mfn)
-
-                //        local ok, result = pcall(mut["setup"], pn)-- optional
-                //        if not ok then
-                //            internal_error(result)
-                //            script_fail = true
-                //            goto done
-                //        end
-
-                //        ok, result = pcall(v, pn)
-                //        if not ok then
-                //            internal_error(result)
-                //            script_fail = true
-                //            goto done
-                //        end
-
-                //        ok, result = pcall(mut["teardown"], pn) -- optional
-                //        if not ok then
-                //            internal_error(result)
-                //            script_fail = true
-                //            goto done
-                //        end
-                //    end
-                //end
 
             }
             catch (Exception ex)
@@ -264,19 +243,54 @@ namespace Ephemera.Nebulua.Script
         }
 
 
-        // Get and init the devices.
-        void GetDevices()
+        // Get and init the channels.
+        void GetChannels()
         {
             _channels.Clear();
 
-            _l.GetGlobal("devices"); //TODO1 ignores bad types like: dev_type=midi_out
-            var devs = _l.ToTableEx(-1);
+            _l.GetGlobal("channels");
+            var channels = _l.ToTableEx(-1);
             _l.Pop(1);
+            //var s = channels.Dump("channels");
 
-            //var devs = 
-            //foreach(var dev in devs)
-            //{
-            //}
+            if (channels is null)
+            {
+                // TODO1 error -> user
+            }
+            else
+            {
+                foreach (var chname in channels.Names)
+                {
+                    var props = channels[chname] as TableEx;
+
+                    // TODO1 refactor this mess.
+                    string? device_id = props.Names.Contains("device_id") ? props["device_id"].ToString() : null;
+                    int? channel = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
+                    int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : null;
+                    bool show_note_names = props.Names.Contains("show_note_names") ? bool.Parse(props["show_note_names"].ToString()) : false;
+                    bool draw_note_grid = props.Names.Contains("draw_note_grid") ? bool.Parse(props["draw_note_grid"].ToString()) : false;
+
+                    // required
+                    var valid = device_id is not null && channel is not null;
+
+                    if (valid)
+                    {
+                        Channel chan = new()
+                        {
+                            ChannelName = chname,
+                            ChannelNumber = (int)channel!,
+                            DeviceId = device_id!,
+                            Patch = patch ?? 0,
+                            //IsDrums = number == MidiDefs.DEFAULT_DRUM_CHANNEL,
+                            // Volume { get; set; }
+                        };
+                    }
+                    else
+                    {
+                        // TODO1 error -> user
+                    }
+                }
+            }
         }
 
         // Get the sequences and sections.
@@ -285,7 +299,7 @@ namespace Ephemera.Nebulua.Script
 
         }
 
-        #region C# calls lua functions  // TODO1 check all- see luaex
+        #region C# calls lua functions
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -334,7 +348,7 @@ namespace Ephemera.Nebulua.Script
         /// <param name="channel"></param>
         /// <param name="note"></param>
         /// <param name="vel"></param>
-        public void InputNote(string dev, int channel, int note, int vel)
+        public void InputNote(string dev, int channel, int note, int vel)//TODO1 string or??? also ctrlr.
         {
             // Get the function to be called. Check return.
             if (_l.GetGlobal("input_note") != LuaType.Function) // optional function
@@ -387,7 +401,6 @@ namespace Ephemera.Nebulua.Script
         #endregion
 
         #region Lua calls C# functions
-
         /// <summary> </summary>
         static int Log(IntPtr p)
         {
@@ -405,7 +418,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary> </summary>
-        static int SendNote(IntPtr p) // TODO1 also string?
+        static int SendNote(IntPtr p) // TODO1 int/string?  API: dev is string, channel is int, note is int, vel is int. Also others below.
         {
             int numRes = 0;
             int notenum = 0;
@@ -440,7 +453,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
-        static int SendNoteOn(IntPtr p) // TODO1 also string?
+        static int SendNoteOn(IntPtr p)
         {
             int numRes = 0;
             //SendNote(chanName, notenum, vol);
@@ -469,7 +482,7 @@ namespace Ephemera.Nebulua.Script
             ///// Get function arguments.
             string chanName = l.ToStringL(1);
             string controller = l.ToStringL(2);
-            long? val = l.ToInteger(3);
+            int? val = l.ToInteger(3);
 
             ///// Do the work.
             var ch = _instance._channels[chanName];
@@ -500,7 +513,6 @@ namespace Ephemera.Nebulua.Script
             //numRes++;
             return numRes;
         }
-
         #endregion
 
         #region TODO1 these could be in the script

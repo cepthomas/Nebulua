@@ -5,11 +5,15 @@ Example Nebulator composition file with some UI demo. This is not actual music.
 local api = require("neb_api")
 -- local ut = require("utils")
 local scale = require("scale")
-local md = require("mididefs")
+
+local md = require("midi_defs")
 local inst = md.instruments
 local drum = md.drums
-local kit = md.drumkits
+local kit = md.drum_kits
 local ctrl = md.controllers
+
+local ad = require("app_defs")
+local dt = ad.device_types
 
 
 print("=============== go go go =======================")
@@ -20,25 +24,45 @@ print("=============== go go go =======================")
 math.randomseed(os.time())
 
 -- Identifiers.
-local KEYS  <const> = "keys" 
-local BASS  <const> = "bass" 
-local SYNTH <const> = "synth"
-local DRUMS <const> = "drums"
-local TUNE  <const> = "tune" 
-local TRIG  <const> = "trig" 
-local WHIZ  <const> = "whiz" 
+-- local KEYS  <const> = "keys" 
+-- local BASS  <const> = "bass" 
+-- local SYNTH <const> = "synth"
+-- local DRUMS <const> = "drums"
+-- local TUNE  <const> = "tune" 
+-- local TRIG  <const> = "trig" 
+-- local WHIZ  <const> = "whiz" 
 
 
--- All the devices. Also oscout (midi over osc).
-devices =
+-- All the devices. TODOF Also oscout (midi over osc).
+-- devices =
+-- {
+--     { name="keys", type=dt.midi_out, channel=1, patch=inst.AcousticGrandPiano },
+--     { name="bass", type=dt.midi_out, channel=2, patch=inst.AcousticBass },
+--     { name="synth", type=dt.midi_out, channel=3, patch=inst.Lead1Square },
+--     { name="drums", type=dt.midi_out, channel=10, patch=kit.Jazz }, -- for drums = kit
+--     { name="tune", type=dt.midi_in, channel=1 },
+--     { name="trig", type=dt.virt_key, channel=2, show_note_names=true },  -- optional: show_note_names
+--     { name="whiz", type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: min_note, max_note, min_control, max_control, draw_note_grid
+-- }
+-- devices =
+-- {
+--     keys  = { type=dt.midi_out, channel=1, patch=inst.AcousticGrandPiano },
+--     bass  = { type=dt.midi_out, channel=2, patch=inst.AcousticBass },
+--     synth = { type=dt.midi_out, channel=3, patch=inst.Lead1Square },
+--     drums = { type=dt.midi_out, channel=10, patch=kit.Jazz }, -- for drums = kit
+--     tune  = { type=dt.midi_in, channel=1 },
+--     trig  = { type=dt.virt_key, channel=2, show_note_names=true },  -- optional: show_note_names
+--     whiz  = { type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: min_note, max_note, min_control, max_control, draw_note_grid
+-- }
+channels =
 {
-    keys  = { dev_type="midi_out", channel=1, patch=inst.AcousticGrandPiano },
-    bass  = { dev_type="midi_out", channel=2, patch=inst.AcousticBass },
-    synth = { dev_type="midi_out", channel=3, patch=inst.Lead1Square },
-    drums = { dev_type="midi_out", channel=10, patch=kit.Jazz }, -- for drums = kit
-    tune  = { dev_type="midi_in", channel=1 },
-    trig  = { dev_type="virt_key", channel=2, show_note_names=true },  -- optional: shownotenames, keysize
-    whiz  = { dev_type="bing_bong", channel=10, draw_note_grid=true } -- optional: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
+    keys  = { device_id="midi_out",  channel=1,  patch=inst.AcousticGrandPiano },
+    bass  = { device_id="midi_out",  channel=2,  patch=inst.AcousticBass },
+    synth = { device_id="midi_out",  channel=3,  patch=inst.Lead1Square },
+    drums = { device_id="midi_out",  channel=10, patch=kit.Jazz }, -- for drums = kit
+    tune  = { device_id="midi_in",   channel=1   },
+    trig  = { device_id="virt_key",  channel=2,  }, --show_note_names=true },  -- optional: show_note_names
+    whiz  = { device_id="bing_bong", channel=10, }, --draw_note_grid=true } -- optional: draw_note_grid, min_note, max_note, min_control, max_control
 }
 
 
@@ -46,68 +70,77 @@ devices =
 local KEYS_VOL = 0.8
 local DRUM_VOL = 0.8
 
--- Create custom scale.
-api.create_notes("MY_SCALE", "1 3 4 b7")
-local my_scale_notes = api.get_notes("B4.MY_SCALE")
--- print(my_scale_notes)
+
 -- Get some stock chords and scales.
 local alg_scale = api.get_notes("G3.Algerian")
 local chord_notes = api.get_notes("C4.o7")
+print(chord_notes)
+
+-- Create custom scale.
+api.create_notes("MY_SCALE", "1 3 4 b7")
+local my_scale_notes = api.get_notes("B4.MY_SCALE")
+print(my_scale_notes)
 
 
-------------------------- Init ----------------------------------------------------
--- Called to initialize Nebulator stuff.
+------------------------- Called from core ----------------------------------------
+
+-- Init - called to initialize Nebulator stuff.
 function setup()
     info("example initialization")
 end
 
-
-------------------------- Main loop ----------------------------------------------------
--- Called every mmtimer increment.
+-- Main loop - called every mmtimer increment.
 function step(bar, beat, subdiv)
     boing(60)
 
     -- Periodic work.
     if beat == 0 and subdiv == 0 then
-        api.send_controller(SYNTH, "Pan", 90)
-        api.send_controller(KEYS,  "Pan", 30)
+        api.send_controller(devices.synth, ctrl.Pan, 90) -- table, int, int
+        api.send_controller(devices.keys,  ctrl.Pan, 30)
     end
 end
 
+-- Handlers for input events.
+function input_note(device, channel, note, vel) -- devices.key?, int, int, int
 
--------------- Handlers for input events --------------------------
--- Override handler.
-function input_note(dev, channel, note, vel)
-    info("input_note") -- string.format("%s", variable_name), dev, channel, note, vel)
-    api.send_note("synth", note, vel, 0.5)
+    local dev = devices[device]
+
+    if device == devices.bing_bong then
+        -- whiz  = { type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
+
+    end
+
+    info("input_note") -- string.format("%s", variable_name), device, channel, note, vel)
+    api.send_note(devices.synth, note, vel, 0.5)
 end
 
--- Override handler.
-function input_controller(dev, channel, ctlid, value)
-    info("input_controller") --, dev, channel, ctlid, value)
+-- Handlers for input events.
+function input_controller(device, channel, ctlid, value) -- ditto
+    info("input_controller") --, device, channel, ctlid, value)
 end
 
------------------------ Lua functions -------------------------
+----------------------- User lua functions -------------------------
+
+-- Calc something and play it.
 function algo_func()
-    notenum = math.random(0, #alg_scale)
-    api.send_note(SYNTH, alg_scale[notenum], 0.7, 0.5)
+    note_num = math.random(0, #alg_scale)
+    api.send_note(devices.synth.channel, alg_scale[note_num], 0.7, 0.5)
 end
 
--- User functions.
-
-function boing(notenum)
+-- Make a noise.
+function boing(note_num)
     boinged = false;
 
     info("boing")
-    if notenum == 0 then
-        notenum = Random(30, 80)
+    if note_num == 0 then
+        note_num = Random(30, 80)
         boinged = true
-        api.send_note("synth", notenum, VEL, 1.0)
+        api.send_note(devices.synth.channel, note_num, VEL, 1.0)
     end
     return boinged
 end
 
-------------------------- Build composition ----------------------------------------------------
+------------------------- Build composition ---------------------------------------
 
 ---- sequences ---- times are beat.subdiv: beat=0-N subdiv=0-7
 sequences = {
@@ -200,7 +233,7 @@ sections = {
         { keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
         { drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
         { bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-        { synth,   algo_func,   nil,         algo_func,   dynamic },
+        { synth,   algo_func,    nil,          algo_func,    dynamic },
     },
 
     ending = {
