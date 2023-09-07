@@ -3,14 +3,15 @@
 
 api = require("neb_api")
 ut = require("utils")
+local md = require("midi_defs")
+local inst = md.instruments
 
-devices =
+channels =
 {
-    sound = { dev_type="midi_out", channel=1, patch="Pad2Warm" },
+    sound = { device_id="midi_out", channel=1, patch=inst.Pad2Warm },
 }
 
-
-SOUND_VOL = 0.8
+local sound_vol = 0.8
 
 -- Possible loops.
 local loops = {}
@@ -19,7 +20,7 @@ local loops = {}
 ------------------------- Init ----------------------------------------------------
 -- Called to initialize stuff.
 function setup()
-    api.log("airport initialization")
+    info("airport initialization")
 
     -- The tape loops. Values all BarTime.
     loops = {
@@ -44,12 +45,12 @@ end
 
 -- Called every mmtimer increment.
 function step(bar, beat, subdiv)
-    step_time = 1.0 -- TODO1 use something like BarTime??
+    local step_time = 1.0
 
     for i = 1, #loops do
         if step_time >= loops[i].next_start then
             ut.info("Starting note", loops[i].snote);
-            api.send_note("sound", loops[i].snote, SOUND_VOL, loops[i].duration);
+            api.send_note("sound", loops[i].snote, sound_vol, loops[i].duration);
             // Calc next time.
             loops[i].next_start = step_time + loops[i].delay + loops[i].duration;
         end

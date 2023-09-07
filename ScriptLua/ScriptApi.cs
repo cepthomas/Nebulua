@@ -61,22 +61,12 @@ namespace Ephemera.Nebulua.Script
         double _masterVolume;
         #endregion
 
-
-
-
-        /// <summary>Metrics.</summary>
-        /*static*/ readonly Stopwatch _sw = new();
-        /*static*/ long _startTicks = 0;
-
-
-
-
         #region Fields
         /// <summary>Main logger.</summary>
         static readonly Logger _logger = LogManager.CreateLogger("ScriptApi");
 
         // Main execution lua state.
-        /*static*/ readonly Lua _l = new();
+        readonly Lua _l = new();
 
         // Bound static functions.
         static readonly LuaFunction _fLog = Log;
@@ -89,18 +79,20 @@ namespace Ephemera.Nebulua.Script
         static readonly LuaFunction _fCreateNotes = CreateNotes;
         readonly static LuaFunction _fTimer = Timer;
 
-
         static ScriptApi _instance;
 
+        /// <summary>Metrics.</summary>
+        readonly Stopwatch _sw = new();
+        long _startTicks = 0;
 
         /// <summary>All the channels - key is user assigned name.</summary>
-        /*static*/ readonly Dictionary<string, Channel> _channels = new();
+        readonly Dictionary<string, Channel> _channels = new();
 
         /// <summary>All devices to use for send. Key is my id (not the system driver name).</summary>
-        /*static*/ readonly Dictionary<string, IOutputDevice> _outputDevices = new();
+        readonly Dictionary<string, IOutputDevice> _outputDevices = new();
 
         /// <summary>All devices to use for receive. Key is name/id, not the system name.</summary>
-        /*static*/ readonly Dictionary<string, IInputDevice> _inputDevices = new();
+        readonly Dictionary<string, IInputDevice> _inputDevices = new();
 
         /// <summary>Channel info collected from the script.</summary>
         public List<ChannelSpec> ChannelSpecs { get; init; } = new();
@@ -112,33 +104,18 @@ namespace Ephemera.Nebulua.Script
         internal List<MidiEventDesc> _scriptEvents = new();
 
         /// <summary>Script randomizer.</summary>
-        /*static*/ readonly Random _rand = new();
+        readonly Random _rand = new();
 
         /// <summary>Resource clean up.</summary>
         internal bool _disposed = false;
         #endregion
-
-
-        // /// <summary>
-        // /// Load the lua libs implemented in C#.
-        // /// </summary>
-        // /// <param name="l">Lua context</param>
-        // public /*static*/ void Load(Lua l)
-        // {
-        //     // Load app stuff. This table gets pushed on the stack and into globals.
-        //     l.RequireF("neb_api", OpenLib, true);
-
-        //     // Other inits.
-        //     _startTicks = 0;
-        //     _sw.Start();
-        // }
 
         /// <summary>
         /// Internal callback to actually load the libs.
         /// </summary>
         /// <param name="p">Pointer to context.</param>
         /// <returns></returns>
-        /*static*/ int OpenLib(IntPtr p)
+        int OpenLib(IntPtr p)
         {
             // Open lib into global table.
             var l = Lua.FromIntPtr(p)!;
@@ -150,7 +127,7 @@ namespace Ephemera.Nebulua.Script
         /// <summary>
         /// Bind the C# functions lua can call.
         /// </summary>
-        /*static*/ readonly LuaRegister[] _libFuncs = new LuaRegister[]
+        readonly LuaRegister[] _libFuncs = new LuaRegister[]
         {
             new LuaRegister("log", _fLog),
             new LuaRegister("send_controller", _fSendController), //send_controller(chan, controller, val)
@@ -163,9 +140,6 @@ namespace Ephemera.Nebulua.Script
             new LuaRegister("timer", _fTimer),
             new LuaRegister(null, null)
         };
-
-
-
 
         #region Lifecycle
         /// <summary>
@@ -229,12 +203,11 @@ namespace Ephemera.Nebulua.Script
                 // Execute/init the script.
                 var lstat = _l.PCall(0, Lua.LUA_MULTRET, 0);
 
-                // TODO1 Get and init the devices.
+                // Get and init the devices.
                 GetChannels();
 
                 // Get the sequences and sections.
                 GetComposition();
-
             }
             catch (Exception ex)
             {
@@ -255,7 +228,7 @@ namespace Ephemera.Nebulua.Script
 
             if (channels is null)
             {
-                // TODO1 error -> user
+                throw new InvalidOperationException($"No channels specified")
             }
             else
             {
@@ -263,7 +236,7 @@ namespace Ephemera.Nebulua.Script
                 {
                     var props = channels[chname] as TableEx;
 
-                    // TODO1 refactor this mess.
+                    // TODO refactor this mess.
                     string? device_id = props.Names.Contains("device_id") ? props["device_id"].ToString() : null;
                     int? channel = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
                     int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : null;
@@ -287,7 +260,7 @@ namespace Ephemera.Nebulua.Script
                     }
                     else
                     {
-                        // TODO1 error -> user
+                        throw new InvalidOperationException($"Invalid channel spec for {chname}")
                     }
                 }
             }
@@ -348,7 +321,7 @@ namespace Ephemera.Nebulua.Script
         /// <param name="channel"></param>
         /// <param name="note"></param>
         /// <param name="vel"></param>
-        public void InputNote(string dev, int channel, int note, int vel)//TODO1 string or??? also ctrlr.
+        public void InputNote(string dev, int channel, int note, int vel) // TODO string or??? also ctrlr.
         {
             // Get the function to be called. Check return.
             if (_l.GetGlobal("input_note") != LuaType.Function) // optional function
@@ -400,7 +373,7 @@ namespace Ephemera.Nebulua.Script
         }
         #endregion
 
-        #region Lua calls C# functions
+        #region Lua calls C# functions TODO all these need implementation and arg int/string handling
         /// <summary> </summary>
         static int Log(IntPtr p)
         {
@@ -418,11 +391,19 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary> </summary>
-        static int SendNote(IntPtr p) // TODO1 int/string?  API: dev is string, channel is int, note is int, vel is int. Also others below.
+        static int SendNote(IntPtr p)
         {
             int numRes = 0;
             int notenum = 0;
 
+            Lua l = Lua.FromIntPtr(p)!;
+
+            // Get args.
+            int numArgs = l.GetTop();
+            // var level = l.ToInteger(1);
+            // var msg = l.ToStringL(2);
+
+            // Do the work.
             //string chanName, int notenum, double vol, double dur) //send_note(chan, note, vol, dur)
 
             //if (!_channels.ContainsKey(chanName))
@@ -463,7 +444,7 @@ namespace Ephemera.Nebulua.Script
         }
 
         /// <summary>Send an explicit note off immediately.</summary>
-        static int SendNoteOff(IntPtr p) // TODO1 also string?
+        static int SendNoteOff(IntPtr p)
         {
             int numRes = 0;
             //SendNote(chanName, notenum, 0);
@@ -487,7 +468,7 @@ namespace Ephemera.Nebulua.Script
             ///// Do the work.
             var ch = _instance._channels[chanName];
             int ctlrid = MidiDefs.GetControllerNumber(controller);
-            //TODO1 ch.SendController((MidiController)ctlrid, (int)val);
+            //ch.SendController((MidiController)ctlrid, (int)val);
 
             return numRes;
         }
@@ -505,7 +486,7 @@ namespace Ephemera.Nebulua.Script
 
             ///// Do the work.
             var ch = _instance._channels[chanName];
-            int patchid = MidiDefs.GetInstrumentNumber(patch); // TODO1 handle fail
+            int patchid = MidiDefs.GetInstrumentNumber(patch); // handle fail?
             ch.Patch = patchid;
             ch.SendPatch();
 
@@ -513,12 +494,10 @@ namespace Ephemera.Nebulua.Script
             //numRes++;
             return numRes;
         }
-        #endregion
 
-        #region TODO1 these could be in the script
+        // TODO these following could be in the script
 
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
-
         // CreateSection(int beats, string name, SectionElements elements) -- -> Section
 
         /// <summary>Add a named chord or scale definition.</summary>
@@ -559,8 +538,6 @@ namespace Ephemera.Nebulua.Script
             return numRes;
         }
 
-        #endregion
-
         /// <summary>
         /// Lua script requires a high res timestamp - msec as double.
         /// </summary>
@@ -589,12 +566,7 @@ namespace Ephemera.Nebulua.Script
             l.PushNumber(totalMsec);
             return 1;
         }
-
-
-        ////////////////////////////////////////////////////////////////////////////
-        ///////////// TODO1 sequences etc from ScriptBase //////////////////////////
-        ////////////////////////////////////////////////////////////////////////////
-
+        #endregion
 
         /// <summary>
         /// Convert script sequences etc to internal events.

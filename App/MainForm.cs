@@ -37,7 +37,7 @@ namespace Ephemera.Nebulua.App
         string _scriptFileName = "";
 
         /// <summary>The current script.</summary>
-        ScriptApi? _script = new();
+        ScriptApi? _script = null;
 
         /// <summary>All the channels - key is user assigned name.</summary>
         readonly Dictionary<string, Channel> _channels = new();
@@ -285,7 +285,7 @@ namespace Ephemera.Nebulua.App
                     @"C:\Dev\repos\LuaBagOfTricks"
                 };
                 
-                ScriptApi script = new();
+                ScriptApi script = new(); // throws
                 script.LoadScript(fn, luaPaths);
 
 
@@ -322,6 +322,7 @@ namespace Ephemera.Nebulua.App
             {
                 // Clean up old script stuff.
                 ProcessPlay(PlayCommand.StopRewind);
+
                 // Clean out our current elements.
                 _channelControls.ForEach(c =>
                 {
@@ -334,7 +335,7 @@ namespace Ephemera.Nebulua.App
                 _totalSubdivs = 0;
                 barBar.Reset();
 
-                // Compile script. TODO1 something like...
+                // Compile script. TODO something like...
 /*
                 Compiler compiler = new(_settings.ScriptPath);
                 compiler.CompileScript(_scriptFileName);
@@ -355,10 +356,10 @@ namespace Ephemera.Nebulua.App
                         InitRuntime();
 
                         // Setup script. This builds the sequences and sections.
-                        _script!.Setup();
+                        _script!.Setup(); // throws
 
                         // Script may have altered shared values.
-                        //TODO1 ProcessRuntime();
+                        ProcessRuntime();
                     }
                     catch (Exception ex)
                     {
@@ -415,7 +416,7 @@ namespace Ephemera.Nebulua.App
                 ///// Script is sane - build the events.
                 if (ok)
                 {
-                    //TODO1_script!.Init(_channels);
+                    _script!.Init(_channels); // throws
                     _script.BuildSteps();
 
                     // Store the steps in the channel objects.
@@ -460,8 +461,8 @@ namespace Ephemera.Nebulua.App
                     SetFastTimerPeriod();
                 }
 
-                // Update file watcher.
-//TODO1                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
+                // Update file watcher. TODO needs require(fn) also.
+                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
 
                 SetCompileStatus(ok);
 
@@ -470,7 +471,7 @@ namespace Ephemera.Nebulua.App
                     _logger.Error("Compile failed.");
                 }
 
-                // Log compiler results. TODO1
+                // Log compiler results. TODO
 /*
                 compiler.Results.ForEach(r =>
                 {
@@ -713,7 +714,7 @@ namespace Ephemera.Nebulua.App
                 // Kick the script. Note: Need exception handling here to protect from user script errors.
                 try
                 {
-                    _script.Step(_stepTime.Bar, _stepTime.Beat, _stepTime.Subdiv);
+                    _script.Step(_stepTime.Bar, _stepTime.Beat, _stepTime.Subdiv); // throws
                 }
                 catch (Exception ex)
                 {
@@ -766,7 +767,7 @@ namespace Ephemera.Nebulua.App
                 ProcessPlay(PlayCommand.UpdateUiTime);
 
                 //// Process whatever the script did.
-                //TODO1 ProcessRuntime();
+                ProcessRuntime();
             }
         }
 
@@ -784,11 +785,11 @@ namespace Ephemera.Nebulua.App
                     // Hand over to the script.
                     if (e.Note != -1)
                     {
-                        _script.InputNote(dev.DeviceName, e.Channel, e.Note, e.Value);
+                        _script.InputNote(dev.DeviceName, e.Channel, e.Note, e.Value); // throws
                     }
                     else if (e.Controller != -1)
                     {
-                        _script.InputController(dev.DeviceName, e.Channel, e.Controller, e.Value);
+                        _script.InputController(dev.DeviceName, e.Channel, e.Controller, e.Value); // throws
                     }
                 }
             });
@@ -811,25 +812,25 @@ namespace Ephemera.Nebulua.App
             }
         }
 
-        ///// <summary>
-        ///// Process whatever the script may have done.
-        ///// </summary>
-        //void ProcessRuntime() TODO1
-        //{
-        //    if (_script is not null)
-        //    {
-        //        if (_script.Tempo != (int)sldTempo.Value)
-        //        {
-        //            sldTempo.Value = _script.Tempo;
-        //            SetFastTimerPeriod();
-        //        }
+        /// <summary>
+        /// Process whatever the script may have done.
+        /// </summary>
+        void ProcessRuntime()
+        {
+           if (_script is not null)
+           {
+               if (_script.Tempo != (int)sldTempo.Value)
+               {
+                   sldTempo.Value = _script.Tempo;
+                   SetFastTimerPeriod();
+               }
 
-        //        if (Math.Abs(_script.MasterVolume - sldVolume.Value) > 0.001)
-        //        {
-        //            sldVolume.Value = _script.MasterVolume;
-        //        }
-        //    }
-        //}
+               if (Math.Abs(_script.MasterVolume - sldVolume.Value) > 0.001)
+               {
+                   sldVolume.Value = _script.MasterVolume;
+               }
+           }
+        }
 
         /// <summary>
         /// Runtime error. Look for ones generated by our script - normal occurrence which the user should know about.
@@ -922,7 +923,7 @@ namespace Ephemera.Nebulua.App
 
             using OpenFileDialog openDlg = new()
             {
-                Filter = "Nebulua files | *.neb",
+                Filter = "Nebulua files | *.lua",
                 Title = "Select a Nebulua file",
                 InitialDirectory = dir,
             };
@@ -958,7 +959,7 @@ namespace Ephemera.Nebulua.App
                     _scriptFileName = fn;
 
                     // Get the persisted properties.
-                    _nppVals = Bag.Load(fn.Replace(".neb", ".nebp"));
+                    _nppVals = Bag.Load(fn.Replace(".lua", ".luap"));
                     sldTempo.Value = _nppVals.GetDouble("master", "speed", 100.0);
                     sldVolume.Value = _nppVals.GetDouble("master", "volume", MidiLibDefs.VOLUME_DEFAULT);
 
@@ -967,12 +968,6 @@ namespace Ephemera.Nebulua.App
                     bool ok = CompileScript();
                     SetCompileStatus(ok);
                     
-// string srcPath = GetSourcePath();
-// string scriptsPath = Path.Combine(srcPath, "scripts");
-// _l.SetLuaPath(new() { scriptsPath });
-// string scriptFile = Path.Combine(scriptsPath, fn);
-// _l!.LoadFile(scriptFile);
-
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {fn}";
                 }
                 else
@@ -1268,7 +1263,7 @@ namespace Ephemera.Nebulua.App
                 {
                     Filter = "Midi files (*.mid)|*.mid",
                     Title = "Export to midi file",
-                    FileName = Path.GetFileName(_scriptFileName.Replace(".neb", ".mid"))
+                    FileName = Path.GetFileName(_scriptFileName.Replace(".lua", ".mid"))
                 };
 
                 if (saveDlg.ShowDialog() == DialogResult.OK)
@@ -1303,7 +1298,7 @@ namespace Ephemera.Nebulua.App
                 // Make a Pattern object and call the formatter.
                 IEnumerable<Channel> channels = _channels.Values.Where(ch => ch.NumEvents > 0);
 
-                var fn = Path.GetFileName(_scriptFileName.Replace(".neb", ".csv"));
+                var fn = Path.GetFileName(_scriptFileName.Replace(".lua", ".csv"));
 
                 PatternInfo pattern = new("export", _settings.MidiSettings.SubdivsPerBeat, _script.GetEvents(), channels, _script.Tempo);
 

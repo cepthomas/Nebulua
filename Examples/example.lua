@@ -15,45 +15,10 @@ local ctrl = md.controllers
 local ad = require("app_defs")
 local dt = ad.device_types
 
-
-print("=============== go go go =======================")
--- print(api)
-
-
+info("=============== go go go =======================")
 
 math.randomseed(os.time())
 
--- Identifiers.
--- local KEYS  <const> = "keys" 
--- local BASS  <const> = "bass" 
--- local SYNTH <const> = "synth"
--- local DRUMS <const> = "drums"
--- local TUNE  <const> = "tune" 
--- local TRIG  <const> = "trig" 
--- local WHIZ  <const> = "whiz" 
-
-
--- All the devices. TODOF Also oscout (midi over osc).
--- devices =
--- {
---     { name="keys", type=dt.midi_out, channel=1, patch=inst.AcousticGrandPiano },
---     { name="bass", type=dt.midi_out, channel=2, patch=inst.AcousticBass },
---     { name="synth", type=dt.midi_out, channel=3, patch=inst.Lead1Square },
---     { name="drums", type=dt.midi_out, channel=10, patch=kit.Jazz }, -- for drums = kit
---     { name="tune", type=dt.midi_in, channel=1 },
---     { name="trig", type=dt.virt_key, channel=2, show_note_names=true },  -- optional: show_note_names
---     { name="whiz", type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: min_note, max_note, min_control, max_control, draw_note_grid
--- }
--- devices =
--- {
---     keys  = { type=dt.midi_out, channel=1, patch=inst.AcousticGrandPiano },
---     bass  = { type=dt.midi_out, channel=2, patch=inst.AcousticBass },
---     synth = { type=dt.midi_out, channel=3, patch=inst.Lead1Square },
---     drums = { type=dt.midi_out, channel=10, patch=kit.Jazz }, -- for drums = kit
---     tune  = { type=dt.midi_in, channel=1 },
---     trig  = { type=dt.virt_key, channel=2, show_note_names=true },  -- optional: show_note_names
---     whiz  = { type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: min_note, max_note, min_control, max_control, draw_note_grid
--- }
 channels =
 {
     keys  = { device_id="midi_out",  channel=1,  patch=inst.AcousticGrandPiano },
@@ -65,21 +30,20 @@ channels =
     whiz  = { device_id="bing_bong", channel=10, }, --draw_note_grid=true } -- optional: draw_note_grid, min_note, max_note, min_control, max_control
 }
 
-
 -- local vars - Volumes. 
-local KEYS_VOL = 0.8
-local DRUM_VOL = 0.8
+local keys_vol = 0.8
+local drum_vol = 0.8
 
 
 -- Get some stock chords and scales.
 local alg_scale = api.get_notes("G3.Algerian")
 local chord_notes = api.get_notes("C4.o7")
-print(chord_notes)
+info(chord_notes)
 
 -- Create custom scale.
 api.create_notes("MY_SCALE", "1 3 4 b7")
 local my_scale_notes = api.get_notes("B4.MY_SCALE")
-print(my_scale_notes)
+info(my_scale_notes)
 
 
 ------------------------- Called from core ----------------------------------------
@@ -145,25 +109,25 @@ end
 ---- sequences ---- times are beat.subdiv: beat=0-N subdiv=0-7
 sequences = {
     keys_verse = {
-        { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7", KEYS_VOL },
-        { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6", KEYS_VOL * 0.9 }
+        { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7", keys_vol },
+        { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6", keys_vol * 0.9 }
     },
 
     keys_chorus = {
         { 0.0, "F4",    0.7,      0.2 },
-        { 0.4, "D#4",   KEYS_VOL, 0.2 },
+        { 0.4, "D#4",   keys_vol, 0.2 },
         { 1.0, "C4",    0.7,      0.2 },
         { 1.4, "B4.m7", 0.7,      0.2 },
         { 2.0, "F5",    0.7,      0.2 },
-        { 2.4, "D#5",   KEYS_VOL, 0.2 },
+        { 2.4, "D#5",   keys_vol, 0.2 },
         { 3.0, "C5",    0.7,      0.2 },
         { 3.4, "B5.m7", 0.7,      0.2 },
         { 4.0, "F3",    0.7,      0.2 },
-        { 4.4, "D#3",   KEYS_VOL, 0.2 },
+        { 4.4, "D#3",   keys_vol, 0.2 },
         { 5.0, "C3",    0.7,      0.2 },
         { 5.4, "B3.m7", 0.7,      0.2 },
         { 6.0, "F2",    0.7,      0.2 },
-        { 6.4, "D#2",   KEYS_VOL, 0.2 },
+        { 6.4, "D#2",   keys_vol, 0.2 },
         { 7.0, "C2",    0.7,      0.2 },
         { 7.4, "B2.m7", 0.7,      0.2 },
     },
@@ -189,26 +153,26 @@ sequences = {
 
     drums_verse = {
         --|........|........|........|........|........|........|........|........|
-        {"|8       |        |8       |        |8       |        |8       |        |", AcousticBassDrum,  DRUM_VOL},
-        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", AcousticSnare,     DRUM_VOL * 0.9},
-        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", ClosedHiHat,       DRUM_VOL * 1.1},
+        {"|8       |        |8       |        |8       |        |8       |        |", AcousticBassDrum,  drum_vol},
+        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", AcousticSnare,     drum_vol * 0.9},
+        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", ClosedHiHat,       drum_vol * 1.1},
     },
 
     drums_chorus = {
-        { 0.0, AcousticBassDrum,  DRUM_VOL },
-        { 0.0, AcousticBassDrum,  DRUM_VOL },
-        { 1.0, RideCymbal1,       DRUM_VOL },
-        { 1.2, RideCymbal1,       DRUM_VOL },
-        { 1.4, HiMidTom,          DRUM_VOL },
-        { 2.0, AcousticBassDrum,  DRUM_VOL },
-        { 3.0, RideCymbal1,       DRUM_VOL },
-        { 3.2, RideCymbal1,       DRUM_VOL },
-        { 4.0, AcousticBassDrum,  DRUM_VOL },
-        { 5.0, RideCymbal1,       DRUM_VOL },
-        { 5.2, RideCymbal1,       DRUM_VOL },
-        { 5.4, HiMidTom,          DRUM_VOL },
-        { 6.0, AcousticBassDrum,  DRUM_VOL },
-        { 7.0, CrashCymbal2,      DRUM_VOL },
+        { 0.0, AcousticBassDrum,  drum_vol },
+        { 0.0, AcousticBassDrum,  drum_vol },
+        { 1.0, RideCymbal1,       drum_vol },
+        { 1.2, RideCymbal1,       drum_vol },
+        { 1.4, HiMidTom,          drum_vol },
+        { 2.0, AcousticBassDrum,  drum_vol },
+        { 3.0, RideCymbal1,       drum_vol },
+        { 3.2, RideCymbal1,       drum_vol },
+        { 4.0, AcousticBassDrum,  drum_vol },
+        { 5.0, RideCymbal1,       drum_vol },
+        { 5.2, RideCymbal1,       drum_vol },
+        { 5.4, HiMidTom,          drum_vol },
+        { 6.0, AcousticBassDrum,  drum_vol },
+        { 7.0, CrashCymbal2,      drum_vol },
     },
 
     dynamic = {
