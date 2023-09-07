@@ -21,7 +21,7 @@
         <!-- en none -->
     </PropertyGroup>
     <ItemGroup>
-        <!-- <PackageReference Include="NAudio" Version="2.1.0" /> -->
+        <PackageReference Include="NAudio" Version="2.1.0" />
         <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     </ItemGroup>
     <ItemGroup>
@@ -29,16 +29,16 @@
     </ItemGroup>
     <ItemGroup>
         <Reference Include="Ephemera.MidiLib">
-            <HintPath>..\lib\Ephemera.MidiLib.dll</HintPath>
+            <HintPath>lib\Ephemera.MidiLib.dll</HintPath>
         </Reference>
         <Reference Include="Ephemera.NBagOfTricks">
-            <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
+            <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
         </Reference>
         <Reference Include="Ephemera.NBagOfUis">
-            <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
+            <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
         </Reference>
         <Reference Include="Ephemera.NebOsc">
-            <HintPath>..\lib\Ephemera.NebOsc.dll</HintPath>
+            <HintPath>lib\Ephemera.NebOsc.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>

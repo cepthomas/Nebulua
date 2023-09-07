@@ -16,7 +16,7 @@ namespace Ephemera.Nebulua
     /// <summary>One channel definition.</summary>
     public record ChannelSpec(string ChannelName, string DeviceId, int ChannelNumber, int Patch, bool IsDrums);
 
-    public class ScriptApi : IDisposable
+    public class Script : IDisposable
     {
         #region Properties that can be read in the user script.
         /// <summary>Sound is playing. Lua: "playing".</summary>
@@ -63,7 +63,7 @@ namespace Ephemera.Nebulua
 
         #region Fields
         /// <summary>Main logger.</summary>
-        static readonly Logger _logger = LogManager.CreateLogger("ScriptApi");
+        static readonly Logger _logger = LogManager.CreateLogger("Script");
 
         // Main execution lua state.
         readonly Lua _l = new();
@@ -79,7 +79,7 @@ namespace Ephemera.Nebulua
         static readonly LuaFunction _fCreateNotes = CreateNotes;
         readonly static LuaFunction _fTimer = Timer;
 
-        static ScriptApi _instance;
+        static Script _instance;
 
         /// <summary>Metrics.</summary>
         readonly Stopwatch _sw = new();
@@ -145,7 +145,7 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// 
         /// </summary>
-        public ScriptApi()
+        public Script()
         {
             // Load C# impl functions. This table gets pushed on the stack and into globals.
             _l.RequireF("neb_api", OpenLib, true);
@@ -228,7 +228,7 @@ namespace Ephemera.Nebulua
 
             if (channels is null)
             {
-                throw new InvalidOperationException($"No channels specified")
+                throw new InvalidOperationException($"No channels specified");
             }
             else
             {
@@ -260,7 +260,7 @@ namespace Ephemera.Nebulua
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Invalid channel spec for {chname}")
+                        throw new InvalidOperationException($"Invalid channel spec for {chname}");
                     }
                 }
             }

@@ -6,12 +6,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using NAudio.Midi;
-using NAudio.Wave;
+//using NAudio.Wave;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
-using Ephemera.Nebulua.Script;
+//using Ephemera.Nebulua.Script;
 
 
 namespace Ephemera.Nebulua
@@ -37,7 +37,7 @@ namespace Ephemera.Nebulua
         string _scriptFileName = "";
 
         /// <summary>The current script.</summary>
-        ScriptApi? _script = null;
+        Script? _script = null;
 
         /// <summary>All the channels - key is user assigned name.</summary>
         readonly Dictionary<string, Channel> _channels = new();
@@ -269,11 +269,10 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-
+        #region Compile
         bool CompileScript_lua()
         {
             bool ok = true;
-
 
             try
             {
@@ -285,31 +284,22 @@ namespace Ephemera.Nebulua
                     @"C:\Dev\repos\LuaBagOfTricks"
                 };
                 
-                ScriptApi script = new(); // throws
-                script.LoadScript(fn, luaPaths);
-
-
-
+                Script script = new(); // throws
+                script.LoadScript(fn, luaPaths);  // throws
             }
             catch (Exception ex)
             {
                 _logger.Error($"Fail:{ex.Message}");
             }
 
-
-
-
-
-
             return ok;
         }
 
 
-        #region Compile
         /// <summary>
         /// Compile the neb script itself.
         /// </summary>
-        bool CompileScript()
+        bool CompileScript_orig()
         {
             bool ok = true;
 
@@ -338,7 +328,7 @@ namespace Ephemera.Nebulua
                 // Compile script. TODO something like...
 /*
                 Compiler compiler = new(_settings.ScriptPath);
-                compiler.CompileScript(_scriptFileName);
+                compiler.CompileScript_orig(_scriptFileName);
                 _script = compiler.Script as ScriptBase;
 
                 // Process errors. Some may only be warnings.
@@ -416,7 +406,7 @@ namespace Ephemera.Nebulua
                 ///// Script is sane - build the events.
                 if (ok)
                 {
-                    _script!.Init(_channels); // throws
+//                    _script!.Init(_channels); // throws
                     _script.BuildSteps();
 
                     // Store the steps in the channel objects.
@@ -462,7 +452,7 @@ namespace Ephemera.Nebulua
                 }
 
                 // Update file watcher. TODO needs require(fn) also.
-                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
+//                compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
 
                 SetCompileStatus(ok);
 
@@ -965,7 +955,7 @@ namespace Ephemera.Nebulua
 
                     SetCompileStatus(true);
                     AddToRecentDefs(fn);
-                    bool ok = CompileScript();
+                    bool ok = CompileScript_orig();
                     SetCompileStatus(ok);
                     
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {fn}";
@@ -1031,7 +1021,7 @@ namespace Ephemera.Nebulua
             {
                 if (_settings.AutoCompile)
                 {
-                    CompileScript();
+                    CompileScript_orig();
                 }
                 else
                 {
@@ -1078,7 +1068,7 @@ namespace Ephemera.Nebulua
         /// </summary>
         void Compile_Click(object? sender, EventArgs e)
         {
-            CompileScript();
+            CompileScript_orig();
             ProcessPlay(PlayCommand.StopRewind);
         }
 
@@ -1164,7 +1154,7 @@ namespace Ephemera.Nebulua
             switch (cmd)
             {
                 case PlayCommand.Start:
-                    bool ok = !_needCompile || CompileScript();
+                    bool ok = !_needCompile || CompileScript_orig();
                     if (ok)
                     {
                         _startTime = DateTime.Now;
