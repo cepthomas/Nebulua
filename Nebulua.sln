@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScriptLua", "ScriptLua\ScriptLua.csproj", "{F4EF17C6-69C3-4F1D-B3D7-BEB3BE3EB6CB}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "App\App.csproj", "{548731B4-3E91-448D-AAF4-009B642CB6C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nebulua", "Nebulua.csproj", "{548731B4-3E91-448D-AAF4-009B642CB6C2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeraLuaEx", "..\KeraLuaEx\KeraLuaEx.csproj", "{DE8DBDA0-EC8C-4F45-B3EA-3BA39A30B7C3}"
 EndProject
@@ -27,10 +25,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F4EF17C6-69C3-4F1D-B3D7-BEB3BE3EB6CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4EF17C6-69C3-4F1D-B3D7-BEB3BE3EB6CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4EF17C6-69C3-4F1D-B3D7-BEB3BE3EB6CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4EF17C6-69C3-4F1D-B3D7-BEB3BE3EB6CB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{548731B4-3E91-448D-AAF4-009B642CB6C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{548731B4-3E91-448D-AAF4-009B642CB6C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{548731B4-3E91-448D-AAF4-009B642CB6C2}.Release|Any CPU.ActiveCfg = Release|Any CPU

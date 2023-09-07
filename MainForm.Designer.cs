@@ -1,4 +1,4 @@
-﻿namespace Ephemera.Nebulua.App
+﻿namespace Ephemera.Nebulua
 {
     partial class MainForm
     {

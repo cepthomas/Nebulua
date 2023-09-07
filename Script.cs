@@ -11,7 +11,7 @@ using Ephemera.MidiLib;
 using KeraLuaEx;
 
 
-namespace Ephemera.Nebulua.Script
+namespace Ephemera.Nebulua
 {
     /// <summary>One channel definition.</summary>
     public record ChannelSpec(string ChannelName, string DeviceId, int ChannelNumber, int Patch, bool IsDrums);

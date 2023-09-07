@@ -2,8 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <AssemblyName>Ephemera.Nebulua.App</AssemblyName>
-        <RootNamespace>Ephemera.Nebulua.App</RootNamespace>
+        <AssemblyName>Ephemera.Nebulua</AssemblyName>
+        <RootNamespace>Ephemera.Nebulua</RootNamespace>
         <TargetFramework>net6.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
         <Deterministic>False</Deterministic>
@@ -21,17 +21,11 @@
         <!-- en none -->
     </PropertyGroup>
     <ItemGroup>
-      <Compile Remove="BarTime_X.cs" />
-      <Compile Remove="MainForm.Designer_not.cs" />
-      <Compile Remove="MainForm_not.cs" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="NAudio" Version="2.1.0" />
+        <!-- <PackageReference Include="NAudio" Version="2.1.0" /> -->
         <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\KeraLuaEx\KeraLuaEx.csproj" />
-        <ProjectReference Include="..\ScriptLua\ScriptLua.csproj" />
+        <ProjectReference Include="..\KeraLuaEx\KeraLuaEx.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="Ephemera.MidiLib">

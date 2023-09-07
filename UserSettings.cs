@@ -14,7 +14,7 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 
 
-namespace Ephemera.Nebulua.App
+namespace Ephemera.Nebulua
 {
     [Serializable]
     public sealed class UserSettings : SettingsCore

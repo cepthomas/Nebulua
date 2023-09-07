@@ -14,7 +14,7 @@ using Ephemera.MidiLib;
 using Ephemera.Nebulua.Script;
 
 
-namespace Ephemera.Nebulua.App
+namespace Ephemera.Nebulua
 {
     public partial class MainForm : Form
     {
