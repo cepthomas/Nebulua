@@ -33,8 +33,8 @@ function create_scale(scale, root, octDown, octUp)
     end
 
     function sc.random_note()
-        note = 0
-        offset = 0
+        local note = 0
+        local offset = 0
 
         for i = 1, #sc.scaleNotes do
             offset = offset + sc.note_weights[i]

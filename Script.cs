@@ -9,6 +9,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfTricks;
 using Ephemera.MidiLib;
 using KeraLuaEx;
+using static Ephemera.Nebulua.Common;
 
 
 namespace Ephemera.Nebulua
@@ -22,7 +23,7 @@ namespace Ephemera.Nebulua
         /// <summary>Sound is playing. Lua: "playing".</summary>
         public bool Playing { set { _l.PushBoolean(value); _l.SetGlobal("playing"); } }
 
-        /// <summary>Current Nebulator step time.</summary>
+        ///// <summary>Current Nebulator step time.</summary>
         // public double StepTime { set { _lMain.PushNumber(value); _lMain.SetGlobal("step_time"); } }
 
         /// <summary>Actual time since start pressed. Lua: "real_time".</summary>
@@ -85,17 +86,18 @@ namespace Ephemera.Nebulua
         readonly Stopwatch _sw = new();
         long _startTicks = 0;
 
-        /// <summary>All the channels - key is user assigned name.</summary>
-        readonly Dictionary<string, Channel> _channels = new();
+        // /// <summary>All the channels - key is user assigned name.</summary>
+        // readonly Dictionary<string, Channel> _channels = new();
 
-        /// <summary>All devices to use for send. Key is my id (not the system driver name).</summary>
-        readonly Dictionary<string, IOutputDevice> _outputDevices = new();
+        ///// <summary>All devices to use for send. Key is my id (not the system driver name).</summary>
+        //readonly Dictionary<string, IOutputDevice> _outputDevices = new();
 
-        /// <summary>All devices to use for receive. Key is name/id, not the system name.</summary>
-        readonly Dictionary<string, IInputDevice> _inputDevices = new();
+        ///// <summary>All devices to use for receive. Key is name/id, not the system name.</summary>
+        //readonly Dictionary<string, IInputDevice> _inputDevices = new();
 
-        /// <summary>Channel info collected from the script.</summary>
-        public List<ChannelSpec> ChannelSpecs { get; init; } = new();
+        ///// <summary>Channel info collected from the script.</summary>
+        //public List<ChannelSpec> ChannelSpecs { get; init; } = new();
+        //public Dictionary<string, ChannelSpec> ChannelSpecs { get; init; } = new();
 
         /// <summary>All sections.</summary>
         internal List<Section> _sections = new();
@@ -193,44 +195,48 @@ namespace Ephemera.Nebulua
             luaPaths ??= new();
             luaPaths.Add(path!);
 
-            try
-            {
-                _l.SetLuaPath(luaPaths);
+            _l.SetLuaPath(luaPaths);
 
-                // Load/parse the file.
-                _l.LoadFile(fn);
+            // Load/parse the file.
+            _l.LoadFile(fn);
 
-                // Execute/init the script.
-                var lstat = _l.PCall(0, Lua.LUA_MULTRET, 0);
+            // Execute/init the script.
+            _l.PCall(0, Lua.LUA_MULTRET, 0);
+            //_l.SetTop(0);
 
-                // Get and init the devices.
-                GetChannels();
+            // Get and init the channels.
+            GetChannels();
 
-                // Get the sequences and sections.
-                GetComposition();
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            // Get the sequences and sections.
+            GetComposition();
         }
 
 
         // Get and init the channels.
+        // Fill in the channel info with what this knows - main will fill in the blanks.
         void GetChannels()
         {
-            _channels.Clear();
+            Channels.Clear();
+//            ChannelSpecs.Clear();
 
             _l.GetGlobal("channels");
             var channels = _l.ToTableEx(-1);
             _l.Pop(1);
             //var s = channels.Dump("channels");
 
-            if (channels is null)
-            {
-                throw new InvalidOperationException($"No channels specified");
-            }
-            else
+
+// channels =
+// {
+//     keys  = { device_id="midi_out",  channel=1,  patch=inst.AcousticGrandPiano },
+//     bass  = { device_id="midi_out",  channel=2,  patch=inst.AcousticBass },
+//     synth = { device_id="midi_out",  channel=3,  patch=inst.Lead1Square },
+//     drums = { device_id="midi_out",  channel=10, patch=kit.Jazz },
+//     tune  = { device_id="midi_in",   channel=1   },
+//     trig  = { device_id="virt_key",  channel=2,  }, -- optional: show_note_names
+//     whiz  = { device_id="bing_bong", channel=10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
+// }
+
+            if (channels is not null)
             {
                 foreach (var chname in channels.Names)
                 {
@@ -238,25 +244,39 @@ namespace Ephemera.Nebulua
 
                     // TODO refactor this mess.
                     string? device_id = props.Names.Contains("device_id") ? props["device_id"].ToString() : null;
-                    int? channel = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
-                    int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : null;
-                    bool show_note_names = props.Names.Contains("show_note_names") ? bool.Parse(props["show_note_names"].ToString()) : false;
-                    bool draw_note_grid = props.Names.Contains("draw_note_grid") ? bool.Parse(props["draw_note_grid"].ToString()) : false;
+                    int? channel_num = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
+                    int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : 0;
+                    bool show_note_names = props.Names.Contains("show_note_names") && bool.Parse(props["show_note_names"].ToString());
+                    bool draw_note_grid = props.Names.Contains("draw_note_grid") && bool.Parse(props["draw_note_grid"].ToString());
 
                     // required
-                    var valid = device_id is not null && channel is not null;
+                    var valid = device_id is not null && channel_num is not null;
+
 
                     if (valid)
                     {
-                        Channel chan = new()
+                        Channel channel = new()
                         {
                             ChannelName = chname,
-                            ChannelNumber = (int)channel!,
-                            DeviceId = device_id!,
-                            Patch = patch ?? 0,
-                            //IsDrums = number == MidiDefs.DEFAULT_DRUM_CHANNEL,
-                            // Volume { get; set; }
+                            ChannelNumber = (int)channel_num,
+                            DeviceId = device_id,
+                    //        Volume = _nppVals.GetDouble(chspec.ChannelName, "volume", MidiLibDefs.VOLUME_DEFAULT),
+                    //        State = (ChannelState)_nppVals.GetInteger(chspec.ChannelName, "state", (int)ChannelState.Normal),
+                            Patch = (int)patch,
+                            IsDrums = (int)channel_num! == MidiDefs.DEFAULT_DRUM_CHANNEL,
+                    //        Selected = false,
+                    //        Device = _outputDevices[chspec.DeviceId],
+                    //        AddNoteOff = true
                         };
+                        Channels.Add(chname, channel);
+
+
+
+
+
+
+                        //ChannelSpec chan = new(chname, device_id!, (int)channel!, patch ?? 0, (int)channel! == MidiDefs.DEFAULT_DRUM_CHANNEL);
+                        //ChannelSpecs.Add(chname, chan);
                     }
                     else
                     {
@@ -266,11 +286,16 @@ namespace Ephemera.Nebulua
             }
         }
 
+
+
+
         // Get the sequences and sections.
         void GetComposition()
         {
 
         }
+
+
 
         #region C# calls lua functions
         /// <summary>
@@ -317,11 +342,10 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Called when input arrives. Optional.
         /// </summary>
-        /// <param name="dev"></param>
         /// <param name="channel"></param>
         /// <param name="note"></param>
         /// <param name="vel"></param>
-        public void InputNote(string dev, int channel, int note, int vel) // TODO string or??? also ctrlr.
+        public void InputNote(string channel, int note, int vel) // TODO string or??? also ctrlr.
         {
             // Get the function to be called. Check return.
             if (_l.GetGlobal("input_note") != LuaType.Function) // optional function
@@ -331,13 +355,12 @@ namespace Ephemera.Nebulua
             }
 
             // Push the arguments to the call.
-            _l.PushString(dev);
-            _l.PushInteger(channel);
+            _l.PushString(channel);
             _l.PushInteger(note);
             _l.PushInteger(vel);
 
             // Do the actual call.
-            _l.PCall(4, 0, 0);
+            _l.PCall(3, 0, 0);
 
             // Get the results from the stack.
             // None.
@@ -346,11 +369,10 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Called when input arrives. Optional.
         /// </summary>
-        /// <param name="dev"></param>
         /// <param name="channel"></param>
         /// <param name="controller"></param>
         /// <param name="value"></param>
-        public void InputController(string dev, int channel, int controller, int value)
+        public void InputController(string channel, int controller, int value)
         {
             // Get the function to be called. Check return.
             if (_l.GetGlobal("input_controller") != LuaType.Function) // optional function
@@ -360,8 +382,7 @@ namespace Ephemera.Nebulua
             }
 
             // Push the arguments to the call.
-            _l.PushString(dev);
-            _l.PushInteger(channel);
+            _l.PushString(channel);
             _l.PushInteger(controller);
             _l.PushInteger(value);
 
@@ -379,8 +400,9 @@ namespace Ephemera.Nebulua
         {
             Lua l = Lua.FromIntPtr(p)!;
 
+            var s = l.DumpStack();
+
             // Get args.
-            int numArgs = l.GetTop();
             var level = l.ToInteger(1);
             var msg = l.ToStringL(2);
 
@@ -393,12 +415,9 @@ namespace Ephemera.Nebulua
         /// <summary> </summary>
         static int SendNote(IntPtr p)
         {
-            int numRes = 0;
-            int notenum = 0;
-
             Lua l = Lua.FromIntPtr(p)!;
 
-            // Get args.
+            // Get args.         api.send_note("synth", note_num, VEL, 1.0) TODO
             int numArgs = l.GetTop();
             // var level = l.ToInteger(1);
             // var msg = l.ToStringL(2);
@@ -430,73 +449,70 @@ namespace Ephemera.Nebulua
             //    ch.SendEvent(evt);
             //}
 
-            return numRes;
+            // Return results.
+            return 0;
         }
 
         /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
         static int SendNoteOn(IntPtr p)
         {
-            int numRes = 0;
-            //SendNote(chanName, notenum, vol);
-            int notenum = 0;
+            //SendNote(chanName, notenum, vol); TODO
 
-            return numRes;
+            // Return results.
+            return 0;
         }
 
         /// <summary>Send an explicit note off immediately.</summary>
         static int SendNoteOff(IntPtr p)
         {
-            int numRes = 0;
-            //SendNote(chanName, notenum, 0);
-            int notenum = 0;
+            //SendNote(chanName, notenum, 0); TODO
 
-            return numRes;
+            // Return results.
+            return 0;
         }
 
         /// <summary>Send a controller immediately.</summary>
         static int SendController(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
-            int numArgs = l.GetTop();
-            int numRes = 0;
 
             ///// Get function arguments.
-            string chanName = l.ToStringL(1);
-            string controller = l.ToStringL(2);
+            string? chanName = l.ToStringL(1);
+            int? controller = l.ToInteger(2);
             int? val = l.ToInteger(3);
 
             ///// Do the work.
-            var ch = _instance._channels[chanName];
-            int ctlrid = MidiDefs.GetControllerNumber(controller);
+            var ch = Channels[chanName];
+            //int ctlrid = MidiDefs.GetControllerNumber(controller);
             //ch.SendController((MidiController)ctlrid, (int)val);
+            ch.SendController((MidiController)controller, (int)val);
 
-            return numRes;
+            // Return results.
+            return 0;
         }
 
         /// <summary>Send a midi patch immediately.</summary>
         static int SendPatch(IntPtr p)
         {
             var l = Lua.FromIntPtr(p);
-            int numArgs = l.GetTop();
-            int numRes = 0;
 
             ///// Get function arguments.
             string chanName = l.ToStringL(1)!;
             string patch = l.ToStringL(2)!;
 
             ///// Do the work.
-            var ch = _instance._channels[chanName];
+            var ch = Channels[chanName];
             int patchid = MidiDefs.GetInstrumentNumber(patch); // handle fail?
             ch.Patch = patchid;
             ch.SendPatch();
 
-            //l.PushBoolean(true);
-            //numRes++;
-            return numRes;
+            // Return results.
+            return 0;
         }
 
-        // TODO these following could be in the script
 
+
+        // TODO these could be in the script
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
         // CreateSection(int beats, string name, SectionElements elements) -- -> Section
 
@@ -506,16 +522,14 @@ namespace Ephemera.Nebulua
             var l = Lua.FromIntPtr(p)!;
 
             // Get args.
-            int numArgs = l.GetTop();
-
             var name = l.ToStringL(1);
             var parts = l.ToStringL(2);
 
             // Do the work.
-            int numRes = 0;
             MusicDefinitions.AddChordScale(name, parts);
 
-            return numRes;
+            // Return results.
+            return 0;
         }
 
         /// <summary> </summary>
@@ -524,25 +538,21 @@ namespace Ephemera.Nebulua
             var l = Lua.FromIntPtr(p)!;
 
             // Get args.
-            int numArgs = l.GetTop();
-
             var noteString = l.ToStringL(1);
 
             // Do the work.
-            int numRes = 0;
             List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
+
+            // Return results.
             l.PushList(notes);
-
-            numRes++;
-
-            return numRes;
+            return 1;
         }
 
         /// <summary>
         /// Lua script requires a high res timestamp - msec as double.
         /// </summary>
         /// <param name="p">Pointer to context.</param>
-        /// <returns></returns>
+        /// <returns>Number of results</returns>
         static int Timer(IntPtr p)
         {
             var l = Lua.FromIntPtr(p)!;
@@ -568,6 +578,10 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
+
+
+
+
         /// <summary>
         /// Convert script sequences etc to internal events.
         /// </summary>
@@ -592,7 +606,7 @@ namespace Ephemera.Nebulua
                         {
                             var seq = sectel.Sequences[seqIndex];
                             //was AddSequence(sectel.Channel, seq, sectionBeat + beatInSect);
-                            var ch = _channels[sectel.ChannelName];
+                            var ch = Channels[sectel.ChannelName];
                             int beat = sectionBeat + beatInSect;
                             var ecoll = ConvertToEvents(ch, seq, beat);
                             _scriptEvents.AddRange(ecoll);

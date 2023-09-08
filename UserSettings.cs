@@ -75,6 +75,12 @@ namespace Ephemera.Nebulua
         [Browsable(true)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public MidiSettings MidiSettings { get; set; } = new();
+
+        [DisplayName("Lua Paths")]
+        [Description("Where to find lua libs.")]
+        [Browsable(true)]
+        [Editor(typeof(StringListEditor), typeof(UITypeEditor))]
+        public List<string> LuaPaths { get; set; } = new();
         #endregion
 
         #region Properties - internal

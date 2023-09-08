@@ -2,8 +2,10 @@
 Example Nebulator composition file with some UI demo. This is not actual music.
 --]]
 
-local api = require("neb_api")
 -- local ut = require("utils")
+local log = require("logger")
+
+local api = require("neb_api")
 local scale = require("scale")
 
 local md = require("midi_defs")
@@ -15,7 +17,7 @@ local ctrl = md.controllers
 local ad = require("app_defs")
 local dt = ad.device_types
 
-info("=============== go go go =======================")
+log.info("=============== go go go =======================")
 
 math.randomseed(os.time())
 
@@ -26,8 +28,8 @@ channels =
     synth = { device_id="midi_out",  channel=3,  patch=inst.Lead1Square },
     drums = { device_id="midi_out",  channel=10, patch=kit.Jazz }, -- for drums = kit
     tune  = { device_id="midi_in",   channel=1   },
-    trig  = { device_id="virt_key",  channel=2,  }, --show_note_names=true },  -- optional: show_note_names
-    whiz  = { device_id="bing_bong", channel=10, }, --draw_note_grid=true } -- optional: draw_note_grid, min_note, max_note, min_control, max_control
+    trig  = { device_id="virt_key",  channel=2,  }, -- optional: show_note_names
+    whiz  = { device_id="bing_bong", channel=10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
 }
 
 -- local vars - Volumes. 
@@ -38,19 +40,19 @@ local drum_vol = 0.8
 -- Get some stock chords and scales.
 local alg_scale = api.get_notes("G3.Algerian")
 local chord_notes = api.get_notes("C4.o7")
-info(chord_notes)
+-- log.info(chord_notes)
 
 -- Create custom scale.
 api.create_notes("MY_SCALE", "1 3 4 b7")
 local my_scale_notes = api.get_notes("B4.MY_SCALE")
-info(my_scale_notes)
+-- log.info(my_scale_notes)
 
 
 ------------------------- Called from core ----------------------------------------
 
 -- Init - called to initialize Nebulator stuff.
 function setup()
-    info("example initialization")
+    log.info("example initialization")
 end
 
 -- Main loop - called every mmtimer increment.
@@ -59,47 +61,44 @@ function step(bar, beat, subdiv)
 
     -- Periodic work.
     if beat == 0 and subdiv == 0 then
-        api.send_controller(devices.synth, ctrl.Pan, 90) -- table, int, int
-        api.send_controller(devices.keys,  ctrl.Pan, 30)
+        api.send_controller("synth", ctrl.Pan, 90) -- string, int, int
+        api.send_controller("keys",  ctrl.Pan, 30)
     end
 end
 
 -- Handlers for input events.
-function input_note(device, channel, note, vel) -- devices.key?, int, int, int
+function input_note(channel, note, vel) -- string?, int, int
+    log.info("input_note") -- string.format("%s", variable_name), channel, note, vel)
 
-    local dev = devices[device]
-
-    if device == devices.bing_bong then
+    if channel == "bing_bong" then
         -- whiz  = { type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
-
     end
 
-    info("input_note") -- string.format("%s", variable_name), device, channel, note, vel)
-    api.send_note(devices.synth, note, vel, 0.5)
+    api.send_note("synth", note, vel, 0.5) -- table, int, int, dbl
 end
 
 -- Handlers for input events.
-function input_controller(device, channel, ctlid, value) -- ditto
-    info("input_controller") --, device, channel, ctlid, value)
+function input_controller(channel, ctlid, value) -- ditto
+    log.info("input_controller") --, channel, ctlid, value)
 end
 
 ----------------------- User lua functions -------------------------
 
 -- Calc something and play it.
 function algo_func()
-    note_num = math.random(0, #alg_scale)
-    api.send_note(devices.synth.channel, alg_scale[note_num], 0.7, 0.5)
+    local note_num = math.random(0, #alg_scale)
+    api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
 end
 
 -- Make a noise.
 function boing(note_num)
-    boinged = false;
+    local boinged = false;
 
-    info("boing")
+    log.info("boing")
     if note_num == 0 then
         note_num = Random(30, 80)
         boinged = true
-        api.send_note(devices.synth.channel, note_num, VEL, 1.0)
+        api.send_note("synth", note_num, VEL, 1.0)
     end
     return boinged
 end
