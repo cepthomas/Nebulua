@@ -2,9 +2,6 @@
 Example Nebulator composition file with some UI demo. This is not actual music.
 --]]
 
--- local ut = require("utils")
-local log = require("logger")
-
 local api = require("neb_api")
 local scale = require("scale")
 
@@ -17,11 +14,18 @@ local ctrl = md.controllers
 local ad = require("app_defs")
 local dt = ad.device_types
 
-log.info("=============== go go go =======================")
+-- Logging. Defs from the C# logger side.
+LOG_TRACE = 0
+LOG_DEBUG = 1
+LOG_INFO  = 2
+LOG_WARN  = 3
+LOG_ERROR = 4
+
+api.log(LOG_INFO, "=============== go go go =======================")
 
 math.randomseed(os.time())
 
-channels =
+channels = -- TODO probably separate into ins and outs
 {
     keys  = { device_id="midi_out",  channel=1,  patch=inst.AcousticGrandPiano },
     bass  = { device_id="midi_out",  channel=2,  patch=inst.AcousticBass },
@@ -40,19 +44,19 @@ local drum_vol = 0.8
 -- Get some stock chords and scales.
 local alg_scale = api.get_notes("G3.Algerian")
 local chord_notes = api.get_notes("C4.o7")
--- log.info(chord_notes)
+-- api.log(LOG_INFO, chord_notes)
 
 -- Create custom scale.
 api.create_notes("MY_SCALE", "1 3 4 b7")
 local my_scale_notes = api.get_notes("B4.MY_SCALE")
--- log.info(my_scale_notes)
+-- api.log(LOG_INFO, my_scale_notes)
 
 
 ------------------------- Called from core ----------------------------------------
 
 -- Init - called to initialize Nebulator stuff.
 function setup()
-    log.info("example initialization")
+    api.log(LOG_INFO, "example initialization")
 end
 
 -- Main loop - called every mmtimer increment.
@@ -68,7 +72,7 @@ end
 
 -- Handlers for input events.
 function input_note(channel, note, vel) -- string?, int, int
-    log.info("input_note") -- string.format("%s", variable_name), channel, note, vel)
+    api.log(LOG_INFO, "input_note") -- string.format("%s", variable_name), channel, note, vel)
 
     if channel == "bing_bong" then
         -- whiz  = { type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
@@ -79,7 +83,7 @@ end
 
 -- Handlers for input events.
 function input_controller(channel, ctlid, value) -- ditto
-    log.info("input_controller") --, channel, ctlid, value)
+    api.log(LOG_INFO, "input_controller") --, channel, ctlid, value)
 end
 
 ----------------------- User lua functions -------------------------
@@ -94,7 +98,7 @@ end
 function boing(note_num)
     local boinged = false;
 
-    log.info("boing")
+    api.log(LOG_INFO, "boing")
     if note_num == 0 then
         note_num = Random(30, 80)
         boinged = true

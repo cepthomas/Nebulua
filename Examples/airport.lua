@@ -49,7 +49,7 @@ function step(bar, beat, subdiv)
 
     for i = 1, #loops do
         if step_time >= loops[i].next_start then
-            ut.info("Starting note", loops[i].snote);
+            api.log(2, "Starting note", loops[i].snote);
             api.send_note("sound", loops[i].snote, sound_vol, loops[i].duration);
             // Calc next time.
             loops[i].next_start = step_time + loops[i].delay + loops[i].duration;

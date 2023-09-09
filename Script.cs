@@ -23,9 +23,6 @@ namespace Ephemera.Nebulua
         /// <summary>Sound is playing. Lua: "playing".</summary>
         public bool Playing { set { _l.PushBoolean(value); _l.SetGlobal("playing"); } }
 
-        ///// <summary>Current Nebulator step time.</summary>
-        // public double StepTime { set { _lMain.PushNumber(value); _lMain.SetGlobal("step_time"); } }
-
         /// <summary>Actual time since start pressed. Lua: "real_time".</summary>
         public double RealTime { set { _l.PushNumber(value); _l.SetGlobal("real_time"); } }
 
@@ -403,7 +400,7 @@ namespace Ephemera.Nebulua
             var s = l.DumpStack();
 
             // Get args.
-            var level = l.ToInteger(1);
+            var level = l.ToInteger(1); //TODO prob make cat into single char
             var msg = l.ToStringL(2);
 
             // Do the work.

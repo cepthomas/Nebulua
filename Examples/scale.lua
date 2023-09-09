@@ -1,6 +1,5 @@
 
 local api = require("neb_api")
--- ut = require("utils")
 
 -- Seed the randomizer.
 local seed = os.time()
