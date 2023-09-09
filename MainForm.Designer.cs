@@ -56,7 +56,6 @@
             this.sldVolume.TabIndex = 36;
             this.toolTip.SetToolTip(this.sldVolume, "Master volume");
             this.sldVolume.Value = 1D;
-            this.sldVolume.ValueChanged += new System.EventHandler(this.Volume_ValueChanged);
             // 
             // sldTempo
             // 

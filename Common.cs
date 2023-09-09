@@ -11,7 +11,10 @@ namespace Ephemera.Nebulua
     public class Common
     {
         /// <summary>All the channels - key is user assigned name.</summary>
-        public static Dictionary<string, Channel> Channels { get; } = new();
+        public static Dictionary<string, Channel> OutputChannels { get; } = new();
+
+        /// <summary>All the sources - key is user assigned name.</summary>
+        public static Dictionary<string, Channel> InputChannels { get; } = new();
 
         /// <summary>All devices to use for send. Key is my id (not the system driver name).</summary>
         public static Dictionary<string, IOutputDevice> OutputDevices { get; } = new();

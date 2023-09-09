@@ -14,8 +14,8 @@ using static Ephemera.Nebulua.Common;
 
 namespace Ephemera.Nebulua
 {
-    /// <summary>One channel definition.</summary>
-    public record ChannelSpec(string ChannelName, string DeviceId, int ChannelNumber, int Patch, bool IsDrums);
+    ///// <summary>One channel definition.</summary>
+    //public record ChannelSpec(string ChannelName, string DeviceId, int ChannelNumber, int Patch, bool IsDrums);
 
     public class Script : IDisposable
     {
@@ -29,10 +29,10 @@ namespace Ephemera.Nebulua
         /// <summary>Nebulator Speed in bpm. Lua: "tempo".</summary>
         public int Tempo
         {
-            get
-            {
-                return _tempo;
-            }
+            //get
+            //{
+            //    return _tempo;
+            //}
             set
             {
                 _tempo = value;
@@ -45,10 +45,10 @@ namespace Ephemera.Nebulua
         /// <summary>Nebulator master Volume. Lua: "master_volume".</summary>
         public double MasterVolume
         {
-            get
-            {
-                return _masterVolume;
-            }
+            //get
+            //{
+            //    return _masterVolume;
+            //}
             set
             {
                 _masterVolume = value;
@@ -83,62 +83,18 @@ namespace Ephemera.Nebulua
         readonly Stopwatch _sw = new();
         long _startTicks = 0;
 
-        // /// <summary>All the channels - key is user assigned name.</summary>
-        // readonly Dictionary<string, Channel> _channels = new();
-
-        ///// <summary>All devices to use for send. Key is my id (not the system driver name).</summary>
-        //readonly Dictionary<string, IOutputDevice> _outputDevices = new();
-
-        ///// <summary>All devices to use for receive. Key is name/id, not the system name.</summary>
-        //readonly Dictionary<string, IInputDevice> _inputDevices = new();
-
-        ///// <summary>Channel info collected from the script.</summary>
-        //public List<ChannelSpec> ChannelSpecs { get; init; } = new();
-        //public Dictionary<string, ChannelSpec> ChannelSpecs { get; init; } = new();
-
         /// <summary>All sections.</summary>
         internal List<Section> _sections = new();
 
         /// <summary>All the events defined in the script.</summary>
         internal List<MidiEventDesc> _scriptEvents = new();
 
-        /// <summary>Script randomizer.</summary>
-        readonly Random _rand = new();
+        ///// <summary>Script randomizer.</summary>
+        //readonly Random _rand = new();
 
         /// <summary>Resource clean up.</summary>
         internal bool _disposed = false;
         #endregion
-
-        /// <summary>
-        /// Internal callback to actually load the libs.
-        /// </summary>
-        /// <param name="p">Pointer to context.</param>
-        /// <returns></returns>
-        int OpenLib(IntPtr p)
-        {
-            // Open lib into global table.
-            var l = Lua.FromIntPtr(p)!;
-            l.NewLib(_libFuncs);
-
-            return 1;
-        }
-
-        /// <summary>
-        /// Bind the C# functions lua can call.
-        /// </summary>
-        readonly LuaRegister[] _libFuncs = new LuaRegister[]
-        {
-            new LuaRegister("log", _fLog),
-            new LuaRegister("send_controller", _fSendController), //send_controller(chan, controller, val)
-            new LuaRegister("send_note", _fSendNote), //send_note(chan, note, vol, dur)
-            new LuaRegister("send_note_on", _fSendNoteOn), //send_note_on(chan, note, vol)
-            new LuaRegister("send_note_off", _fSendNoteOff), //send_note_off(chan, note)
-            new LuaRegister("send_patch", _fSendPatch), // send_patch(chan, patch)
-            new LuaRegister("get_notes", _fGetNotes), //get_notes("B4.MY_SCALE")
-            new LuaRegister("create_notes", _fCreateNotes), //create_notes("MY_SCALE", "1 3 4 b7")
-            new LuaRegister("timer", _fTimer),
-            new LuaRegister(null, null)
-        };
 
         #region Lifecycle
         /// <summary>
@@ -178,6 +134,36 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
+        /// <summary>
+        /// Internal callback to actually load the libs.
+        /// </summary>
+        /// <param name="p">Pointer to context.</param>
+        /// <returns></returns>
+        int OpenLib(IntPtr p)
+        {
+            // Open lib into global table.
+            var l = Lua.FromIntPtr(p)!;
+            l.NewLib(_libFuncs);
+
+            return 1;
+        }
+
+        /// <summary>
+        /// Bind the C# functions lua can call.
+        /// </summary>
+        readonly LuaRegister[] _libFuncs = new LuaRegister[]
+        {
+            new LuaRegister("log", _fLog),
+            new LuaRegister("send_controller", _fSendController), //send_controller(chan, controller, val)
+            new LuaRegister("send_note", _fSendNote), //send_note(chan, note, vol, dur)
+            new LuaRegister("send_note_on", _fSendNoteOn), //send_note_on(chan, note, vol)
+            new LuaRegister("send_note_off", _fSendNoteOff), //send_note_off(chan, note)
+            new LuaRegister("send_patch", _fSendPatch), // send_patch(chan, patch)
+            new LuaRegister("get_notes", _fGetNotes), //get_notes("B4.MY_SCALE")
+            new LuaRegister("create_notes", _fCreateNotes), //create_notes("MY_SCALE", "1 3 4 b7")
+            new LuaRegister("timer", _fTimer),
+            new LuaRegister(null, null)
+        };
 
         /// <summary>
         /// Load file and init everything.
@@ -190,7 +176,6 @@ namespace Ephemera.Nebulua
             // Load the script file.
             string? path = Path.GetDirectoryName(fn);
             luaPaths ??= new();
-            luaPaths.Add(path!);
 
             _l.SetLuaPath(luaPaths);
 
@@ -198,7 +183,7 @@ namespace Ephemera.Nebulua
             _l.LoadFile(fn);
 
             // Execute/init the script.
-            _l.PCall(0, Lua.LUA_MULTRET, 0);
+            _l.DoCall(0, Lua.LUA_MULTRET);
             //_l.SetTop(0);
 
             // Get and init the channels.
@@ -208,30 +193,18 @@ namespace Ephemera.Nebulua
             GetComposition();
         }
 
-
-        // Get and init the channels.
-        // Fill in the channel info with what this knows - main will fill in the blanks.
+        /// <summary>
+        /// Get and init the channels.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
         void GetChannels()
         {
-            Channels.Clear();
-//            ChannelSpecs.Clear();
+            OutputChannels.Clear();
+            InputChannels.Clear();
 
             _l.GetGlobal("channels");
             var channels = _l.ToTableEx(-1);
             _l.Pop(1);
-            //var s = channels.Dump("channels");
-
-
-// channels =
-// {
-//     keys  = { device_id="midi_out",  channel=1,  patch=inst.AcousticGrandPiano },
-//     bass  = { device_id="midi_out",  channel=2,  patch=inst.AcousticBass },
-//     synth = { device_id="midi_out",  channel=3,  patch=inst.Lead1Square },
-//     drums = { device_id="midi_out",  channel=10, patch=kit.Jazz },
-//     tune  = { device_id="midi_in",   channel=1   },
-//     trig  = { device_id="virt_key",  channel=2,  }, -- optional: show_note_names
-//     whiz  = { device_id="bing_bong", channel=10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
-// }
 
             if (channels is not null)
             {
@@ -243,37 +216,36 @@ namespace Ephemera.Nebulua
                     string? device_id = props.Names.Contains("device_id") ? props["device_id"].ToString() : null;
                     int? channel_num = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
                     int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : 0;
-                    bool show_note_names = props.Names.Contains("show_note_names") && bool.Parse(props["show_note_names"].ToString());
-                    bool draw_note_grid = props.Names.Contains("draw_note_grid") && bool.Parse(props["draw_note_grid"].ToString());
+//                    bool show_note_names = props.Names.Contains("show_note_names") && bool.Parse(props["show_note_names"].ToString());
+//                    bool draw_note_grid = props.Names.Contains("draw_note_grid") && bool.Parse(props["draw_note_grid"].ToString());
 
                     // required
                     var valid = device_id is not null && channel_num is not null;
 
-
                     if (valid)
                     {
+                        // Fill in the channel info with what this knows - main will fill in the blanks.
                         Channel channel = new()
                         {
                             ChannelName = chname,
                             ChannelNumber = (int)channel_num,
                             DeviceId = device_id,
-                    //        Volume = _nppVals.GetDouble(chspec.ChannelName, "volume", MidiLibDefs.VOLUME_DEFAULT),
-                    //        State = (ChannelState)_nppVals.GetInteger(chspec.ChannelName, "state", (int)ChannelState.Normal),
                             Patch = (int)patch,
                             IsDrums = (int)channel_num! == MidiDefs.DEFAULT_DRUM_CHANNEL,
-                    //        Selected = false,
-                    //        Device = _outputDevices[chspec.DeviceId],
-                    //        AddNoteOff = true
                         };
-                        Channels.Add(chname, channel);
 
-
-
-
-
-
-                        //ChannelSpec chan = new(chname, device_id!, (int)channel!, patch ?? 0, (int)channel! == MidiDefs.DEFAULT_DRUM_CHANNEL);
-                        //ChannelSpecs.Add(chname, chan);
+                        if (OutputDevices.ContainsKey(device_id))
+                        {
+                            OutputChannels.Add(chname, channel);
+                        }
+                        else if (InputDevices.ContainsKey(device_id))
+                        {
+                            InputChannels.Add(chname, channel);
+                        }
+                        else
+                        {
+     //                       throw new InvalidOperationException($"Invalid device id {device_id} for {chname}");
+                        }
                     }
                     else
                     {
@@ -283,10 +255,9 @@ namespace Ephemera.Nebulua
             }
         }
 
-
-
-
-        // Get the sequences and sections.
+        /// <summary>
+        /// Get the sequences and sections. TODO
+        /// </summary>
         void GetComposition()
         {
 
@@ -307,7 +278,7 @@ namespace Ephemera.Nebulua
             // None.
 
             // Do the actual call.
-            _l.PCall(0, 0, 0);
+            _l.DoCall(0, 0);
 
             // Get the results from the stack.
             // None.
@@ -330,7 +301,7 @@ namespace Ephemera.Nebulua
             _l.PushInteger(subdiv);
 
             // Do the actual call.
-            _l.PCall(3, 0, 0);
+            _l.DoCall(3, 0);
 
             // Get the results from the stack.
             // None.
@@ -339,10 +310,10 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Called when input arrives. Optional.
         /// </summary>
-        /// <param name="channel"></param>
+        /// <param name="channelName"></param>
         /// <param name="note"></param>
         /// <param name="vel"></param>
-        public void InputNote(string channel, int note, int vel) // TODO string or??? also ctrlr.
+        public void InputNote(string channelName, int note, int vel)
         {
             // Get the function to be called. Check return.
             if (_l.GetGlobal("input_note") != LuaType.Function) // optional function
@@ -352,12 +323,12 @@ namespace Ephemera.Nebulua
             }
 
             // Push the arguments to the call.
-            _l.PushString(channel);
+            _l.PushString(channelName);
             _l.PushInteger(note);
             _l.PushInteger(vel);
 
             // Do the actual call.
-            _l.PCall(3, 0, 0);
+            _l.DoCall(3, 0);
 
             // Get the results from the stack.
             // None.
@@ -366,10 +337,10 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Called when input arrives. Optional.
         /// </summary>
-        /// <param name="channel"></param>
+        /// <param name="channelName"></param>
         /// <param name="controller"></param>
         /// <param name="value"></param>
-        public void InputController(string channel, int controller, int value)
+        public void InputController(string channelName, int controller, int value)
         {
             // Get the function to be called. Check return.
             if (_l.GetGlobal("input_controller") != LuaType.Function) // optional function
@@ -379,12 +350,12 @@ namespace Ephemera.Nebulua
             }
 
             // Push the arguments to the call.
-            _l.PushString(channel);
+            _l.PushString(channelName);
             _l.PushInteger(controller);
             _l.PushInteger(value);
 
             // Do the actual call.
-            _l.PCall(4, 0, 0);
+            _l.DoCall(4, 0);
 
             // Get the results from the stack.
             // None.
@@ -400,7 +371,7 @@ namespace Ephemera.Nebulua
             var s = l.DumpStack();
 
             // Get args.
-            var level = l.ToInteger(1); //TODO prob make cat into single char
+            var level = l.ToInteger(1);
             var msg = l.ToStringL(2);
 
             // Do the work.
@@ -414,20 +385,20 @@ namespace Ephemera.Nebulua
         {
             Lua l = Lua.FromIntPtr(p)!;
 
-            // Get args.         api.send_note("synth", note_num, VEL, 1.0) TODO
+            // Get args.         api.send_note("synth", note_num, VEL, 1.0)
             int numArgs = l.GetTop();
             // var level = l.ToInteger(1);
             // var msg = l.ToStringL(2);
 
             // Do the work.
-            //string chanName, int notenum, double vol, double dur) //send_note(chan, note, vol, dur)
+            //string channelName, int notenum, double vol, double dur) //send_note(chan, note, vol, dur)
 
-            //if (!_channels.ContainsKey(chanName))
+            //if (!_channels.ContainsKey(channelName))
             //{
-            //    throw new ArgumentException($"Invalid channel [{chanName}]");
+            //    throw new ArgumentException($"Invalid channel [{channelName}]");
             //}
 
-            //var ch = _channels[chanName];
+            //var ch = _channels[channelName];
             //int absnote = MathUtils.Constrain(Math.Abs(notenum), MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
 
             //// If vol is positive it's note on else note off.
@@ -453,7 +424,7 @@ namespace Ephemera.Nebulua
         /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
         static int SendNoteOn(IntPtr p)
         {
-            //SendNote(chanName, notenum, vol); TODO
+            //SendNote(channelName, notenum, vol);
 
             // Return results.
             return 0;
@@ -462,7 +433,7 @@ namespace Ephemera.Nebulua
         /// <summary>Send an explicit note off immediately.</summary>
         static int SendNoteOff(IntPtr p)
         {
-            //SendNote(chanName, notenum, 0); TODO
+            //SendNote(channelName, notenum, 0); TODO
 
             // Return results.
             return 0;
@@ -474,12 +445,12 @@ namespace Ephemera.Nebulua
             var l = Lua.FromIntPtr(p);
 
             ///// Get function arguments.
-            string? chanName = l.ToStringL(1);
+            string? channelName = l.ToStringL(1);
             int? controller = l.ToInteger(2);
             int? val = l.ToInteger(3);
 
             ///// Do the work.
-            var ch = Channels[chanName];
+            var ch = OutputChannels[channelName];
             //int ctlrid = MidiDefs.GetControllerNumber(controller);
             //ch.SendController((MidiController)ctlrid, (int)val);
             ch.SendController((MidiController)controller, (int)val);
@@ -494,11 +465,11 @@ namespace Ephemera.Nebulua
             var l = Lua.FromIntPtr(p);
 
             ///// Get function arguments.
-            string chanName = l.ToStringL(1)!;
+            string channelName = l.ToStringL(1)!;
             string patch = l.ToStringL(2)!;
 
             ///// Do the work.
-            var ch = Channels[chanName];
+            var ch = OutputChannels[channelName];
             int patchid = MidiDefs.GetInstrumentNumber(patch); // handle fail?
             ch.Patch = patchid;
             ch.SendPatch();
@@ -512,6 +483,8 @@ namespace Ephemera.Nebulua
         // TODO these could be in the script
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
         // CreateSection(int beats, string name, SectionElements elements) -- -> Section
+
+
 
         /// <summary>Add a named chord or scale definition.</summary>
         static int CreateNotes(IntPtr p)
@@ -582,7 +555,7 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Convert script sequences etc to internal events.
         /// </summary>
-        public void BuildSteps()
+        public void BuildSteps()//TODO put all these somewhere else?
         {
             // Build all the events.
             int sectionBeat = 0;
@@ -603,7 +576,7 @@ namespace Ephemera.Nebulua
                         {
                             var seq = sectel.Sequences[seqIndex];
                             //was AddSequence(sectel.Channel, seq, sectionBeat + beatInSect);
-                            var ch = Channels[sectel.ChannelName];
+                            var ch = OutputChannels[sectel.ChannelName];
                             int beat = sectionBeat + beatInSect;
                             var ecoll = ConvertToEvents(ch, seq, beat);
                             _scriptEvents.AddRange(ecoll);
@@ -680,7 +653,7 @@ namespace Ephemera.Nebulua
                     foreach (int noteNum in seqel.Notes)
                     {
                         ///// Note on.
-                        double vel = channel.NextVol(seqel.Volume) * MasterVolume;
+                        double vel = channel.NextVol(seqel.Volume) * _masterVolume;
                         int velPlay = (int)(vel * MidiDefs.MAX_MIDI);
                         velPlay = MathUtils.Constrain(velPlay, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
 

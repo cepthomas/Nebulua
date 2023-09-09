@@ -25,15 +25,17 @@ api.log(LOG_INFO, "=============== go go go =======================")
 
 math.randomseed(os.time())
 
-channels = -- TODO probably separate into ins and outs
+channels =
 {
-    keys  = { device_id="midi_out",  channel=1,  patch=inst.AcousticGrandPiano },
-    bass  = { device_id="midi_out",  channel=2,  patch=inst.AcousticBass },
-    synth = { device_id="midi_out",  channel=3,  patch=inst.Lead1Square },
-    drums = { device_id="midi_out",  channel=10, patch=kit.Jazz }, -- for drums = kit
-    tune  = { device_id="midi_in",   channel=1   },
-    trig  = { device_id="virt_key",  channel=2,  }, -- optional: show_note_names
-    whiz  = { device_id="bing_bong", channel=10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
+    -- outputs
+    keys  = { device_id = "midi_out",  channel = 1,  patch = inst.AcousticGrandPiano },
+    bass  = { device_id = "midi_out",  channel = 2,  patch = inst.AcousticBass },
+    synth = { device_id = "midi_out",  channel = 3,  patch = inst.Lead1Square },
+    drums = { device_id = "midi_out",  channel = 10, patch = kit.Jazz }, -- for drums = kit
+    -- inputs
+    tune  = { device_id = "midi_in",   channel = 1   },
+    trig  = { device_id = "virt_key",  channel = 2,  }, -- optional: show_note_names
+    whiz  = { device_id = "bing_bong", channel = 10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
 }
 
 -- local vars - Volumes. 
@@ -75,7 +77,7 @@ function input_note(channel, note, vel) -- string?, int, int
     api.log(LOG_INFO, "input_note") -- string.format("%s", variable_name), channel, note, vel)
 
     if channel == "bing_bong" then
-        -- whiz  = { type=dt.bing_bong, channel=10, draw_note_grid=true } -- optional: minnote, maxnote, mincontrol, maxcontrol, drawnotegrid
+        -- whiz = ...
     end
 
     api.send_note("synth", note, vel, 0.5) -- table, int, int, dbl
