@@ -1,6 +1,6 @@
---[[
+
 Example Nebulator composition file with some UI demo. This is not actual music.
---]]
+
 
 local api = require("neb_api")
 local scale = require("scale")
@@ -63,7 +63,7 @@ end
 
 -- Main loop - called every mmtimer increment.
 function step(bar, beat, subdiv)
-    boing(60)
+    -- boing(60)
 
     -- Periodic work.
     if beat == 0 and subdiv == 0 then

@@ -17,7 +17,7 @@ namespace Ephemera.Nebulua
 {
     public partial class MainForm : Form
     {
-        #region Enums
+        #region Types
         /// <summary>Internal status.</summary>
         enum PlayCommand { Start, Stop, Rewind, StopRewind, UpdateUiTime }
         #endregion
@@ -36,7 +36,7 @@ namespace Ephemera.Nebulua
         string _scriptFileName = "";
 
         /// <summary>The current script.</summary>
-        Script _script = new();
+        readonly Script _script = new();
 
         /// <summary>All the channel UI controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
@@ -47,24 +47,22 @@ namespace Ephemera.Nebulua
         /// <summary>Persisted internal values for current script file.</summary>
         Bag _nppVals = new();
 
-        /// <summary>Seconds since start pressed.</summary>
-        DateTime _startTime = DateTime.Now;
-
         /// <summary>Current step time clock.</summary>
         BarTime _stepTime = new();
 
-        ///// <summary>Detect changed script files.</summary>
-        //readonly MultiFileWatcher _watcher = new();
+        /// <summary>Real time.</summary>
+        readonly Stopwatch _sw = new();
 
-        ///// <summary>Files that have been changed externally or have runtime errors - requires a recompile.</summary>
-        //bool _needCompile = false;
-
-        ///// <summary>The temp dir for compile products.</summary>
-        //readonly string _compileTempDir = "";
+        /// <summary>Real time.</summary>
+        long _startTicks = 0;
 
         ///// <summary>Diagnostics for timing measurement.</summary>
         //TimingAnalyzer _tan = new TimingAnalyzer() { SampleSize = 100 };
         #endregion
+
+
+
+
 
         #region Lifecycle
         /// <summary>
@@ -154,22 +152,27 @@ namespace Ephemera.Nebulua
                 SetFastTimerPeriod();
                 _mmTimer.Start();
 
+                _startTicks = 0;
+                _sw.Start();
+            
                 KeyPreview = true; // for routing kbd strokes properly
 
-                //_watcher.FileChange += Watcher_Changed;
+                // Look for filename passed in. @"C:\Dev\repos\Nebulua\Examples\example.lua"
+                string? serr = "";
+                string[] args = Environment.GetCommandLineArgs();
+                if (args.Length > 1)
+                {
+                    serr = OpenScriptFile(args[1]);
+                }
 
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - No file loaded";
-
-                // Look for filename passed in.
-                var sopen = OpenScriptFile(@"C:\Dev\repos\Nebulua\Examples\example.lua");
-
-                if (sopen == "")
+                if (serr is null)
                 {
                     ProcessPlay(PlayCommand.Stop);
                 }
                 else
                 {
-                    _logger.Error($"Couldn't open script file: {sopen}");
+                    _logger.Error($"Couldn't open script file: {serr}");
+                    Text = $"Nebulua {MiscUtils.GetVersionString()} - No file loaded";
                 }
             }
 
@@ -227,32 +230,13 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Project persistence
-        /// <summary>
-        /// Save current values.
-        /// </summary>
-        void SaveProjectValues()
-        {
-            _nppVals.Clear();
-            _nppVals.SetValue("master", "speed", sldTempo.Value);
-            _nppVals.SetValue("master", "volume", sldVolume.Value);
 
-            OutputChannels.Values.ForEach(ch =>
-            {
-                if(ch.NumEvents > 0)
-                {
-                    _nppVals.SetValue(ch.ChannelName, "volume", ch.Volume);
-                    _nppVals.SetValue(ch.ChannelName, "state", ch.State);
-                }
-            });
 
-            _nppVals.Save();
-        }
-        #endregion
+
 
         #region Process script
         /// <summary>
-        /// What used to be Compile.
+        /// What used to be called Compile.
         /// </summary>
         /// <returns></returns>
         bool ProcessScript()
@@ -271,7 +255,6 @@ namespace Ephemera.Nebulua
             _channelControls.Clear();
             OutputChannels.Clear();
             InputChannels.Clear();
-            //_watcher.Clear();
             _totalSubdivs = 0;
             barBar.Reset();
 
@@ -288,9 +271,6 @@ namespace Ephemera.Nebulua
             ///// Script loaded ok.
             if (ok)
             {
-//                SetCompileStatus(true);
-//                _compileTempDir = compiler.TempDir;
-
                 // Need exception handling here to protect from user script errors.
                 try
                 {
@@ -299,31 +279,17 @@ namespace Ephemera.Nebulua
 
                     // Setup script. This builds the sequences and sections.
                     _script.Setup(); // throws
-
-                    //// Script may have altered shared values.
-                    //ProcessRuntime();
                 }
                 catch (Exception ex)
                 {
                     ok = false;
                     _logger.Error($"{ex.Message}");
                 }
-            }
 
-            ///// Script is sane - Fill in the channels and UI.
-            if (ok)
-            {
                 // Create channels and controls from event sets.
                 const int CONTROL_SPACING = 10;
                 int x = btnRewind.Left;
                 int y = barBar.Bottom + CONTROL_SPACING;
-
-
-                //var c = OutputDevices;
-                //var d = InputDevices;
-                //var f = Channels;
-
-
 
                 foreach (var ch in OutputChannels.Values)
                 {
@@ -354,12 +320,8 @@ namespace Ephemera.Nebulua
                     // Adjust positioning for next iteration.
                     y += control.Height + 5;
                 }
-            }
 
-            ///// Script is sane - build the events.
-            if (ok)
-            {
-//                    _script.Init(_channels); // throws
+                // Build the events.
                 _script.BuildSteps();
 
                 // Store the steps in the channel objects.
@@ -378,12 +340,8 @@ namespace Ephemera.Nebulua
                     bs.SetRounded(channel.MaxSubdiv, SnapType.Beat, true);
                     _totalSubdivs = Math.Max(_totalSubdivs, bs.TotalSubdivs);
                 }
-            }
 
-            ///// Everything is sane - prepare to run.
-            if (ok)
-            {
-                ///// Init the timeclock.
+                // Init the timeclock.
                 if (_totalSubdivs > 0) // sequences
                 {
                     barBar.TimeDefs = _script.GetSectionMarkers();
@@ -404,212 +362,16 @@ namespace Ephemera.Nebulua
                 SetFastTimerPeriod();
             }
 
-            // Update file watcher. TO DO needs require(fn) also.
-            // compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
-
-            //SetCompileStatus(ok);
-
             if(!ok)
             {
-                _logger.Error("Compile failed.");
-            }
-
-            // Log compiler results. TO DO
-
-
-            return ok;
-        }
-
-
-        /// <summary>
-        /// Compile the neb script itself.
-        /// </summary>
-        bool CompileScript_orig()
-        {
-            bool ok = true;
-
-            if (_scriptFileName == "")
-            {
-                _logger.Warn("No script file loaded.");
-                ok = false;
-            }
-            else
-            {
-                // Clean up old script stuff.
-                ProcessPlay(PlayCommand.StopRewind);
-
-                // Clean out our current elements.
-                _channelControls.ForEach(c =>
-                {
-                    Controls.Remove(c);
-                    c.Dispose();
-                });
-                _channelControls.Clear();
-                //Channels.Clear();
-                //_watcher.Clear();
-                _totalSubdivs = 0;
-                barBar.Reset();
-
-                // Compile script.
-/*
-                Compiler compiler = new(_settings.ScriptPath);
-                compiler.CompileScript_orig(_scriptFileName);
-                _script = compiler.Script as ScriptBase;
-
-                // Process errors. Some may only be warnings.
-                ok = !compiler.Results.Any(w => w.ResultType == CompileResultType.Error) && _script is not null;
-
-                if (ok)
-                {
-                    SetCompileStatus(true);
-                    _compileTempDir = compiler.TempDir;
-
-                    // Need exception handling here to protect from user script errors.
-                    try
-                    {
-                        // Init shared vars.
-                        InitRuntime();
-
-                        // Setup script. This builds the sequences and sections.
-                        _script.Setup(); // throws
-
-                        // Script may have altered shared values.
-                        ProcessRuntime();
-                    }
-                    catch (Exception ex)
-                    {
-                        ProcessScriptRuntimeError(ex);
-                        ok = false;
-                    }
-                }
-*/
-                ///// Script is sane - Fill in the channels and UI.
-                if (ok)
-                {
-                    // Create channels and controls from event sets.
-                    const int CONTROL_SPACING = 10;
-                    int x = btnRewind.Left;
-                    int y = barBar.Bottom + CONTROL_SPACING;
-
-                    foreach (var ch in OutputChannels.Values)
-                    {
-                        // Make new channel.
-                        Channel channel = new()
-                        {
-                            Volume = _nppVals.GetDouble(ch.ChannelName, "volume", MidiLibDefs.VOLUME_DEFAULT),
-                            State = (ChannelState)_nppVals.GetInteger(ch.ChannelName, "state", (int)ChannelState.Normal),
-                            Selected = false,
-                            Device = OutputDevices[ch.DeviceId],
-                            AddNoteOff = true
-                        };
-
-                        // Make new control and bind to channel.
-                        ChannelControl control = new()
-                        {
-                            Location = new(x, y),
-                            BorderStyle = BorderStyle.FixedSingle,
-                            BoundChannel = channel
-                        };
-                        control.ChannelChange += Control_ChannelChange;
-                        Controls.Add(control);
-                        _channelControls.Add(control);
-
-                        // Good time to send initial patch.
-                        channel.SendPatch();
-
-                        // Adjust positioning for next iteration.
-                        y += control.Height + 5;
-                    }
-                }
-
-                ///// Script is sane - build the events.
-                if (ok)
-                {
-//                    _script.Init(_channels); // throws
-                    _script.BuildSteps();
-
-                    // Store the steps in the channel objects.
-                    MidiTimeConverter _mt = new(BarTime.LOW_RES_PPQ, _settings.MidiSettings.DefaultTempo);
-                    foreach (var channel in OutputChannels.Values)
-                    {
-                        var chEvents = _script.GetEvents().Where(e => e.ChannelName == channel.ChannelName &&
-                            (e.RawEvent is NoteEvent || e.RawEvent is NoteOnEvent));
-
-                        // Scale time and give to channel.
-                        chEvents.ForEach(e => e.ScaledTime = _mt!.MidiToInternal(e.AbsoluteTime));
-                        channel.SetEvents(chEvents);
-
-                        // Round total up to next beat.
-                        BarTime bs = new();
-                        bs.SetRounded(channel.MaxSubdiv, SnapType.Beat, true);
-                        _totalSubdivs = Math.Max(_totalSubdivs, bs.TotalSubdivs);
-                    }
-                }
-
-                ///// Everything is sane - prepare to run.
-                if (ok)
-                {
-                    ///// Init the timeclock.
-                    if (_totalSubdivs > 0) // sequences
-                    {
-                        barBar.TimeDefs = _script.GetSectionMarkers();
-                        barBar.Length = new(_totalSubdivs);
-                        barBar.Start = new(0);
-                        barBar.End = new(_totalSubdivs - 1);
-                        barBar.Current = new(0);
-                    }
-                    else // free form
-                    {
-                        barBar.Length = new(0);
-                        barBar.Start = new(0);
-                        barBar.End = new(0);
-                        barBar.Current = new(0);
-                    }
-
-                    // Start the clock.
-                    SetFastTimerPeriod();
-                }
-
-                // Update file watcher. TO DO needs require(fn) also.
-                // compiler.SourceFiles.ForEach(f => { _watcher.Add(f); });
-
-                //SetCompileStatus(ok);
-
-                if(!ok)
-                {
-                    _logger.Error("Compile failed.");
-                }
-
-                // Log compiler results. TO DO
-/*
-                compiler.Results.ForEach(r =>
-                {
-                    string msg = r.SourceFile != "" ? $"{Path.GetFileName(r.SourceFile)}({r.LineNumber}): {r.Message}" : r.Message;
-                    switch (r.ResultType)
-                    {
-                        case CompileResultType.Error: _logger.Error(msg); break;
-                        case CompileResultType.Warning: _logger.Warn(msg); break;
-                        default: _logger.Info(msg); break;
-                    }
-                });
-*/
+                _logger.Error("Process script failed.");
             }
 
             return ok;
         }
-
-        ///// <summary>
-        ///// Update system statuses.
-        ///// </summary>
-        ///// <param name="compileStatus">True if compile is clean.</param>
-        //void SetCompileStatus(bool compileStatus)
-        //{
-        //    btnCompile.BackColor = compileStatus ? _settings.BackColor : Color.Red;
-        //    _needCompile = !compileStatus;
-        //}
         #endregion
 
-        #region Devices
+        #region Device management
         /// <summary>
         /// Create all I/O devices from user settings.
         /// </summary>
@@ -674,27 +436,26 @@ namespace Ephemera.Nebulua
                         break;
 
                     default:
-                        // Try midi.
-                        var min = new MidiInput(dev.DeviceName);
-                        if (min.Valid)
+                        // Try midi or OSC.
+                        try
                         {
-                            min.InputReceive += Device_InputReceive;
-                            InputDevices.Add(dev.DeviceId, min);
-                        }
-                        else
-                        {
-                            // Try osc.
-                            try
+                            var min = new MidiInput(dev.DeviceName);
+                            if (min.Valid)
+                            {
+                                min.InputReceive += Device_InputReceive;
+                                InputDevices.Add(dev.DeviceId, min);
+                            }
+                            else
                             {
                                 var mosc = new OscInput(dev.DeviceName);
                                 mosc.InputReceive += Device_InputReceive;
                                 InputDevices.Add(dev.DeviceId, mosc);
                             }
-                            catch
-                            {
-                                _logger.Error($"Something wrong with your input device:{dev.DeviceName} id:{dev.DeviceId}");
-                                ok = false;
-                            }
+                        }
+                        catch
+                        {
+                            _logger.Error($"Something wrong with your input device:{dev.DeviceName} id:{dev.DeviceId}");
+                            ok = false;
                         }
                         break;
                 }
@@ -705,25 +466,24 @@ namespace Ephemera.Nebulua
                 switch (dev.DeviceName)
                 {
                     default:
-                        // Try midi.
-                        var mout = new MidiOutput(dev.DeviceName);
-                        if (mout.Valid)
+                        // Try midi or OSC.
+                        try
                         {
-                            OutputDevices.Add(dev.DeviceId, mout);
-                        }
-                        else
-                        {
-                            // Try osc.
-                            try
+                            var mout = new MidiOutput(dev.DeviceName);
+                            if (mout.Valid)
+                            {
+                                OutputDevices.Add(dev.DeviceId, mout);
+                            }
+                            else
                             {
                                 var mosc = new OscOutput(dev.DeviceName);
                                 OutputDevices.Add(dev.DeviceId, mosc);
                             }
-                            catch
-                            {
-                                _logger.Error($"Something wrong with your output device:{dev.DeviceName} id:{dev.DeviceId}");
-                                ok = false;
-                            }
+                        }
+                        catch
+                        {
+                            _logger.Error($"Something wrong with your output device:{dev.DeviceName} id:{dev.DeviceId}");
+                            ok = false;
                         }
                         break;
                 }
@@ -787,7 +547,7 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Realtime handling
+        #region Real time
         /// <summary>
         /// Multimedia timer tick handler.
         /// </summary>
@@ -876,9 +636,6 @@ namespace Ephemera.Nebulua
                 // else keep going
 
                 ProcessPlay(PlayCommand.UpdateUiTime);
-
-                //// Process whatever the script did.
-                //ProcessRuntime();
             }
         }
 
@@ -927,88 +684,13 @@ namespace Ephemera.Nebulua
             if (_script is not null)
             {
                 _script.Playing = chkPlay.Checked;
-                //_script.StepTime = _stepTime;
-                _script.RealTime = (DateTime.Now - _startTime).TotalSeconds;
                 _script.Tempo = (int)sldTempo.Value;
                 _script.MasterVolume = sldVolume.Value;
+                // What time is it?
+                double totalMsec = _startTicks > 0 ? (_sw.ElapsedTicks - _startTicks) * 1000D / Stopwatch.Frequency : 0;
+                _script.RealTime = totalMsec;
             }
         }
-
-        ///// <summary>
-        ///// Process whatever the script may have done.
-        ///// </summary>
-        //void ProcessRuntime()
-        //{
-        //   if (_script is not null)
-        //   {
-        //       if (_script.Tempo != (int)sldTempo.Value)
-        //       {
-        //           sldTempo.Value = _script.Tempo;
-        //           SetFastTimerPeriod();
-        //       }
-
-        //       if (Math.Abs(_script.MasterVolume - sldVolume.Value) > 0.001)
-        //       {
-        //           sldVolume.Value = _script.MasterVolume;
-        //       }
-        //   }
-        //}
-
-        ///// <summary>
-        ///// Runtime error. Look for ones generated by our script - normal occurrence which the user should know about.
-        ///// </summary>
-        ///// <param name="ex"></param>
-        //void ProcessScriptRuntimeError(Exception ex)
-        //{
-        //    ProcessPlay(PlayCommand.Stop);
-        //    SetCompileStatus(false);
-
-        //    // Locate the offending frame by finding the file in the temp dir.
-        //    string srcFile = "???";
-        //    int srcLine = -1;
-        //    string msg = ex.Message;
-        //    StackTrace st = new(ex, true);
-        //    StackFrame? sf = null;
-
-        //    for (int i = 0; i < st.FrameCount; i++)
-        //    {
-        //        StackFrame? stf = st.GetFrame(i);
-        //        if (stf is not null)
-        //        {
-        //            var stfn = stf!.GetFileName();
-        //            if (stfn is not null)
-        //            {
-        //                if (stfn.ToUpper().Contains(_compileTempDir.ToUpper()))
-        //                {
-        //                    sf = stf;
-        //                    break;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    if (sf is not null)
-        //    {
-        //        // Dig out generated file parts.
-        //        string? genFile = sf!.GetFileName();
-        //        int genLine = sf.GetFileLineNumber() - 1;
-
-        //        // Open the generated file and dig out the source file and line.
-        //        string[] genLines = File.ReadAllLines(genFile!);
-
-        //        srcFile = genLines[0].Trim().Replace("//", "");
-
-        //        int ind = genLines[genLine].LastIndexOf("//");
-        //        if (ind != -1)
-        //        {
-        //            string sl = genLines[genLine][(ind + 2)..];
-        //            srcLine = int.Parse(sl);
-        //        }
-        //    }
-        //    // else // unknown?
-
-        //    _logger.Error(srcLine > 0 ? $"{srcFile}({srcLine}): {msg}" : $"{srcFile}: {msg}");
-        //}
         #endregion
 
         #region File handling
@@ -1018,10 +700,10 @@ namespace Ephemera.Nebulua
         void Recent_Click(object? sender, EventArgs e)
         {
             string? fn = sender!.ToString();
-            string sopen = OpenScriptFile(fn!);
-            if (sopen != "")
+            string? serr = OpenScriptFile(fn!);
+            if (serr is not null)
             {
-                _logger.Error(sopen);
+                _logger.Error(serr);
             }
         }
 
@@ -1052,10 +734,10 @@ namespace Ephemera.Nebulua
 
             if (openDlg.ShowDialog() == DialogResult.OK)
             {
-                string sopen = OpenScriptFile(openDlg.FileName);
-                if (sopen != "")
+                string? serr = OpenScriptFile(openDlg.FileName);
+                if (serr is not null)
                 {
-                    _logger.Error(sopen);
+                    _logger.Error(serr);
                 }
             }
         }
@@ -1064,10 +746,10 @@ namespace Ephemera.Nebulua
         /// Common script file opener.
         /// </summary>
         /// <param name="fn">The np file to open.</param>
-        /// <returns>Error string or empty if ok.</returns>
-        string OpenScriptFile(string fn)
+        /// <returns>Error string or null if ok.</returns>
+        string? OpenScriptFile(string fn)
         {
-            string ret = "";
+            string? ret = null;
 
             try
             {
@@ -1085,12 +767,8 @@ namespace Ephemera.Nebulua
                     sldTempo.Value = _nppVals.GetDouble("master", "speed", 100.0);
                     sldVolume.Value = _nppVals.GetDouble("master", "volume", MidiLibDefs.VOLUME_DEFAULT);
 
-                    //SetCompileStatus(true);
                     AddToRecentDefs(fn);
                     bool ok = ProcessScript();
-
-                    //SetCompileStatus(ok);
-                    
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {fn}";
                 }
                 else
@@ -1102,7 +780,6 @@ namespace Ephemera.Nebulua
             {
                 ret = $"Couldn't open the script file: {fn} because: {ex.Message}";
                 _logger.Error(ret);
-                //SetCompileStatus(false);
             }
 
             // Update bar.
@@ -1119,7 +796,6 @@ namespace Ephemera.Nebulua
         {
             ToolStripItemCollection menuItems = recentToolStripMenuItem.DropDownItems;
             menuItems.Clear();
-
             _settings.RecentFiles.ForEach(f =>
             {
                 ToolStripMenuItem menuItem = new(f, null, new EventHandler(Recent_Click));
@@ -1139,29 +815,6 @@ namespace Ephemera.Nebulua
                 PopulateRecentMenu();
             }
         }
-
-        ///// <summary>
-        ///// One or more np files have changed so reload/compile.
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //void Watcher_Changed(object? sender, MultiFileWatcher.FileChangeEventArgs e)
-        //{
-        //    e.FileNames.ForEach(fn => _logger.Debug($"Watcher_Changed {fn}"));
-
-        //    // Kick over to main UI thread.
-        //    this.InvokeIfRequired(_ =>
-        //    {
-        //        if (_settings.AutoCompile)
-        //        {
-        //            ProcessScript();
-        //        }
-        //        else
-        //        {
-        //            SetCompileStatus(false);
-        //        }
-        //    });
-        //}
         #endregion
 
         #region Main toolbar controls
@@ -1188,13 +841,6 @@ namespace Ephemera.Nebulua
         {
             ProcessPlay(PlayCommand.Rewind);
         }
-
-        ///// <summary>
-        ///// User updated volume.
-        ///// </summary>
-        //void Volume_ValueChanged(object? sender, EventArgs e)
-        //{
-        //}
 
         /// <summary>
         /// Manual recompile.
@@ -1223,25 +869,7 @@ namespace Ephemera.Nebulua
         {
             MiscUtils.ShowReadme("Nebulua");
         }
-        #endregion
 
-        #region Messages and logging
-        /// <summary>
-        /// Show log events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        {
-            // Usually come from a different thread.
-            if (IsHandleCreated)
-            {
-                this.InvokeIfRequired(_ => { textViewer.AppendLine($"{e.Message}"); });
-            }
-        }
-        #endregion
-
-        #region User settings
         /// <summary>
         /// Edit the common options in a property grid.
         /// </summary>
@@ -1287,16 +915,16 @@ namespace Ephemera.Nebulua
             switch (cmd)
             {
                 case PlayCommand.Start:
-                    //bool ok = !_needCompile || ProcessScript();
                     bool ok = ProcessScript();
                     if (ok)
                     {
-                        _startTime = DateTime.Now;
+                        _startTicks = _sw.ElapsedTicks;
                         chkPlay.Checked = true;
                         _mmTimer.Start();
                     }
                     else
                     {
+                        _startTicks = 0;
                         chkPlay.Checked = false;
                         ret = false;
                     }
@@ -1304,8 +932,8 @@ namespace Ephemera.Nebulua
 
                 case PlayCommand.Stop:
                     chkPlay.Checked = false;
+                    _startTicks = 0;
                     _mmTimer.Stop();
-
                     // Send midi stop all notes just in case.
                     KillAll();
                     break;
@@ -1343,7 +971,42 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Keyboard handling
+        #region Stuff
+        /// <summary>
+        /// Show log events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            // Usually come from a different thread.
+            //if (IsHandleCreated) ??
+            //{
+                this.InvokeIfRequired(_ => { textViewer.AppendLine($"{e.Message}"); });
+            //}
+        }
+
+        /// <summary>
+        /// Save current values.
+        /// </summary>
+        void SaveProjectValues()
+        {
+            _nppVals.Clear();
+            _nppVals.SetValue("master", "speed", sldTempo.Value);
+            _nppVals.SetValue("master", "volume", sldVolume.Value);
+
+            OutputChannels.Values.ForEach(ch =>
+            {
+                if(ch.NumEvents > 0)
+                {
+                    _nppVals.SetValue(ch.ChannelName, "volume", ch.Volume);
+                    _nppVals.SetValue(ch.ChannelName, "state", ch.State);
+                }
+            });
+
+            _nppVals.Save();
+        }
+
         /// <summary>
         /// Do some global key handling. Space bar is used for stop/start playing.
         /// </summary>
@@ -1358,9 +1021,8 @@ namespace Ephemera.Nebulua
             }
             base.OnKeyDown(e);
         }
-        #endregion
 
-        #region Timer
+
         /// <summary>
         /// Common func.
         /// </summary>
@@ -1370,6 +1032,16 @@ namespace Ephemera.Nebulua
             MidiTimeConverter mt = new(_settings.MidiSettings.SubdivsPerBeat, sldTempo.Value);
             var per = mt.RoundedInternalPeriod();
             _mmTimer.SetTimer(per, MmTimerCallback);
+        }
+
+
+        /// <summary>
+        /// Kill em all.
+        /// </summary>
+        void KillAll()
+        {
+            chkPlay.Checked = false;
+            OutputChannels.Values.ForEach(ch => ch.Kill());
         }
         #endregion
 
@@ -1436,15 +1108,6 @@ namespace Ephemera.Nebulua
                 MidiExport.ExportCsv(fn, new List<PatternInfo>() { pattern }, channels, meta);
                 _logger.Info($"Exported to {fn}");
             }
-        }
-
-        /// <summary>
-        /// Kill em all.
-        /// </summary>
-        void KillAll()
-        {
-            chkPlay.Checked = false;
-            Channels.Values.ForEach(ch => ch.Kill());
         }
 
         /// <summary>
