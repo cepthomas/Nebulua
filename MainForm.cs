@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
-using static Ephemera.Nebulua.Common;
+//using static Ephemera.Nebulua.Common;
 
 
 namespace Ephemera.Nebulua
@@ -56,13 +56,12 @@ namespace Ephemera.Nebulua
         /// <summary>Real time.</summary>
         long _startTicks = 0;
 
+        /// <summary>Hack for dirty shutdown issue.</summary>
+        bool _shuttingDown = false;
+
         ///// <summary>Diagnostics for timing measurement.</summary>
         //TimingAnalyzer _tan = new TimingAnalyzer() { SampleSize = 100 };
         #endregion
-
-
-
-
 
         #region Lifecycle
         /// <summary>
@@ -184,6 +183,9 @@ namespace Ephemera.Nebulua
         /// </summary>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
+            _shuttingDown = true;
+            Debug.WriteLine("closing");
+
             LogManager.Stop();
 
             ProcessPlay(PlayCommand.Stop);
@@ -230,10 +232,6 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-
-
-
-
         #region Process script
         /// <summary>
         /// What used to be called Compile.
@@ -253,8 +251,8 @@ namespace Ephemera.Nebulua
                 c.Dispose();
             });
             _channelControls.Clear();
-            OutputChannels.Clear();
-            InputChannels.Clear();
+            Common.OutputChannels.Clear();
+            Common.InputChannels.Clear();
             _totalSubbeats = 0;
             barBar.Reset();
 
@@ -291,31 +289,28 @@ namespace Ephemera.Nebulua
                 int x = btnRewind.Left;
                 int y = barBar.Bottom + CONTROL_SPACING;
 
-                foreach (var ch in OutputChannels.Values)
+                foreach (var ch in Common.OutputChannels.Values)
                 {
-                    // Make new channel.
-                    Channel channel = new()
-                    {
-                        Volume = _nppVals.GetDouble(ch.ChannelName, "volume", MidiLibDefs.VOLUME_DEFAULT),
-                        State = (ChannelState)_nppVals.GetInteger(ch.ChannelName, "state", (int)ChannelState.Normal),
-                        Selected = false,
-                        Device = OutputDevices[ch.DeviceId],
-                        AddNoteOff = true
-                    };
+                    // Fill in the blanks.
+                    ch.Volume = _nppVals.GetDouble(ch.ChannelName, "volume", MidiLibDefs.VOLUME_DEFAULT);
+                    ch.State = (ChannelState)_nppVals.GetInteger(ch.ChannelName, "state", (int)ChannelState.Normal);
+                    ch.Selected = false;
+                    ch.Device = Common.OutputDevices[ch.DeviceId];
+                    ch.AddNoteOff = true;
 
                     // Make new control and bind to channel.
                     ChannelControl control = new()
                     {
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
-                        BoundChannel = channel
+                        BoundChannel = ch
                     };
                     control.ChannelChange += Control_ChannelChange;
                     Controls.Add(control);
                     _channelControls.Add(control);
 
                     // Good time to send initial patch.
-                    channel.SendPatch();
+                    ch.SendPatch();
 
                     // Adjust positioning for next iteration.
                     y += control.Height + 5;
@@ -326,7 +321,7 @@ namespace Ephemera.Nebulua
 
                 // Store the steps in the channel objects.
                 MidiTimeConverter _mt = new(BarTime.LOW_RES_PPQ, _settings.MidiSettings.DefaultTempo);
-                foreach (var channel in OutputChannels.Values)
+                foreach (var channel in Common.OutputChannels.Values)
                 {
                     var chEvents = _script.GetEvents().Where(e => e.ChannelName == channel.ChannelName &&
                         (e.RawEvent is NoteEvent || e.RawEvent is NoteOnEvent));
@@ -394,7 +389,7 @@ namespace Ephemera.Nebulua
                                 Dock = DockStyle.Fill,
                             };
                             vkey.InputReceive += Device_InputReceive;
-                            InputDevices.Add(dev.DeviceId, vkey);
+                            Common.InputDevices.Add(dev.DeviceId, vkey);
 
                             using Form f = new()
                             {
@@ -416,7 +411,7 @@ namespace Ephemera.Nebulua
                                 Dock = DockStyle.Fill,
                             };
                             bb.InputReceive += Device_InputReceive;
-                            InputDevices.Add(dev.DeviceId, bb);
+                            Common.InputDevices.Add(dev.DeviceId, bb);
 
                             using Form f = new()
                             {
@@ -433,6 +428,7 @@ namespace Ephemera.Nebulua
 
                     case "":
                         // None specified.
+                        _logger.Warn($"Missing device for {dev.DeviceId}");
                         break;
 
                     default:
@@ -440,22 +436,30 @@ namespace Ephemera.Nebulua
                         try
                         {
                             var min = new MidiInput(dev.DeviceName);
+                            var mosc = new OscInput(dev.DeviceName);
                             if (min.Valid)
                             {
                                 min.InputReceive += Device_InputReceive;
-                                InputDevices.Add(dev.DeviceId, min);
+                                Common.InputDevices.Add(dev.DeviceId, min);
+                            }
+                            else if (mosc.Valid)
+                            {
+                                mosc.InputReceive += Device_InputReceive;
+                                Common.InputDevices.Add(dev.DeviceId, mosc);
                             }
                             else
                             {
-                                var mosc = new OscInput(dev.DeviceName);
-                                mosc.InputReceive += Device_InputReceive;
-                                InputDevices.Add(dev.DeviceId, mosc);
+                                ok = false;
                             }
                         }
                         catch
                         {
-                            _logger.Error($"Something wrong with your input device:{dev.DeviceName} id:{dev.DeviceId}");
                             ok = false;
+                        }
+
+                        if (!ok)
+                        {
+                            _logger.Error($"Something wrong with your input device:{dev.DeviceName} id:{dev.DeviceId}");
                         }
                         break;
                 }
@@ -470,26 +474,35 @@ namespace Ephemera.Nebulua
                         try
                         {
                             var mout = new MidiOutput(dev.DeviceName);
+                            var mosc = new OscOutput(dev.DeviceName);
                             if (mout.Valid)
                             {
-                                OutputDevices.Add(dev.DeviceId, mout);
+                                Common.OutputDevices.Add(dev.DeviceId, mout);
+                            }
+                            else if (mosc.Valid)
+                            {
+                                Common.OutputDevices.Add(dev.DeviceId, mosc);
                             }
                             else
                             {
-                                var mosc = new OscOutput(dev.DeviceName);
-                                OutputDevices.Add(dev.DeviceId, mosc);
+                                ok = false;
                             }
                         }
                         catch
                         {
-                            _logger.Error($"Something wrong with your output device:{dev.DeviceName} id:{dev.DeviceId}");
                             ok = false;
                         }
+
+                        if (!ok)
+                        {
+                            _logger.Error($"Something wrong with your output device:{dev.DeviceName} id:{dev.DeviceId}");
+                        }
+
                         break;
                 }
             }
 
-            OutputDevices.Values.ForEach(d => d.LogEnable = _settings.MonitorOutput);
+            Common.OutputDevices.Values.ForEach(d => d.LogEnable = _settings.MonitorOutput);
 
             return ok;
         }
@@ -499,10 +512,10 @@ namespace Ephemera.Nebulua
         /// </summary>
         void DestroyDevices()
         {
-            InputDevices.Values.ForEach(d => d.Dispose());
-            InputDevices.Clear();
-            OutputDevices.Values.ForEach(d => d.Dispose());
-            OutputDevices.Clear();
+            Common.InputDevices.Values.ForEach(d => d.Dispose());
+            Common.InputDevices.Clear();
+            Common.OutputDevices.Values.ForEach(d => d.Dispose());
+            Common.OutputDevices.Clear();
         }
         #endregion
 
@@ -525,7 +538,7 @@ namespace Ephemera.Nebulua
 
                     case ChannelState.Solo:
                         // Mute any other non-solo channels.
-                        OutputChannels.Values.ForEach(ch =>
+                        Common.OutputChannels.Values.ForEach(ch =>
                         {
                             if (ch.ChannelName != chc.BoundChannel.ChannelName && chc.State != ChannelState.Solo)
                             {
@@ -560,13 +573,18 @@ namespace Ephemera.Nebulua
             //}
 
             // Kick over to main UI thread.
-            this.InvokeIfRequired(_ =>
+            if (!_shuttingDown)
             {
-                if (_script is not null)
+                Debug.WriteLine("mmcb");
+
+                this.InvokeIfRequired(_ =>
                 {
-                    NextStep();
-                }
-            });
+                    if (_script is not null)
+                    {
+                        NextStep();
+                    }
+                });
+            }
         }
 
         /// <summary>
@@ -596,10 +614,10 @@ namespace Ephemera.Nebulua
                 //    _logger.Info($"NEB tan: {_tan.Mean}");
                 //}
 
-                bool anySolo = OutputChannels.AnySolo();
+                bool anySolo = Common.OutputChannels.AnySolo();
 
                 // Process any sequence steps.
-                foreach (var ch in OutputChannels.Values)
+                foreach (var ch in Common.OutputChannels.Values)
                 {
                     // Is it ok to play now?
                     bool play = ch.State == ChannelState.Solo || (ch.State == ChannelState.Normal && !anySolo);
@@ -628,7 +646,7 @@ namespace Ephemera.Nebulua
                     // Check for end.
                     if (done)
                     {
-                        OutputChannels.Values.ForEach(ch => ch.Flush(_stepTime.TotalSubbeats));
+                        Common.OutputChannels.Values.ForEach(ch => ch.Flush(_stepTime.TotalSubbeats));
                         ProcessPlay(PlayCommand.StopRewind);
                         KillAll(); // just in case
                     }
@@ -859,7 +877,7 @@ namespace Ephemera.Nebulua
             _settings.MonitorInput = btnMonIn.Checked;
             _settings.MonitorOutput = btnMonOut.Checked;
 
-            OutputDevices.Values.ForEach(d => d.LogEnable = _settings.MonitorOutput);
+            Common.OutputDevices.Values.ForEach(d => d.LogEnable = _settings.MonitorOutput);
         }
 
         /// <summary>
@@ -980,10 +998,11 @@ namespace Ephemera.Nebulua
         void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
         {
             // Usually come from a different thread.
-            //if (IsHandleCreated) ??
-            //{
+            if (!_shuttingDown)// IsHandleCreated) //TODO??
+            {
+                Debug.WriteLine("log");
                 this.InvokeIfRequired(_ => { textViewer.AppendLine($"{e.Message}"); });
-            //}
+            }
         }
 
         /// <summary>
@@ -995,7 +1014,7 @@ namespace Ephemera.Nebulua
             _nppVals.SetValue("master", "speed", sldTempo.Value);
             _nppVals.SetValue("master", "volume", sldVolume.Value);
 
-            OutputChannels.Values.ForEach(ch =>
+            Common.OutputChannels.Values.ForEach(ch =>
             {
                 if(ch.NumEvents > 0)
                 {
@@ -1022,7 +1041,6 @@ namespace Ephemera.Nebulua
             base.OnKeyDown(e);
         }
 
-
         /// <summary>
         /// Common func.
         /// </summary>
@@ -1034,14 +1052,13 @@ namespace Ephemera.Nebulua
             _mmTimer.SetTimer(per, MmTimerCallback);
         }
 
-
         /// <summary>
         /// Kill em all.
         /// </summary>
         void KillAll()
         {
             chkPlay.Checked = false;
-            OutputChannels.Values.ForEach(ch => ch.Kill());
+            Common.OutputChannels.Values.ForEach(ch => ch.Kill());
         }
         #endregion
 
@@ -1065,7 +1082,7 @@ namespace Ephemera.Nebulua
                 if (saveDlg.ShowDialog() == DialogResult.OK)
                 {
                     // Make a Pattern object and call the formatter.
-                    IEnumerable<Channel> channels = OutputChannels.Values.Where(ch => ch.NumEvents > 0);
+                    IEnumerable<Channel> channels = Common.OutputChannels.Values.Where(ch => ch.NumEvents > 0);
 
                     PatternInfo pattern = new("export", _settings.MidiSettings.SubbeatsPerBeat,
                         _script.GetEvents(), channels, (int)sldTempo.Value);// _script.Tempo);
@@ -1092,7 +1109,7 @@ namespace Ephemera.Nebulua
             if (_script is not null)
             {
                 // Make a Pattern object and call the formatter.
-                IEnumerable<Channel> channels = OutputChannels.Values.Where(ch => ch.NumEvents > 0);
+                IEnumerable<Channel> channels = Common.OutputChannels.Values.Where(ch => ch.NumEvents > 0);
 
                 var fn = Path.GetFileName(_scriptFileName.Replace(".lua", ".csv"));
 

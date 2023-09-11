@@ -132,10 +132,13 @@ sequences = {
 
     keys_verse_alt = {
         "G4.m7   |7-------|--      |        |        |7-------|--      |        |        |",
-        "G4.m6   |        |        |        |5---    |        |        |        |5-8---  |",
+        "G4.m6   |        |        |        |5---    |        |        |        |5-8---  |"
     },
 
-
+    keys_verse_alt2 = [[
+    G4.m7   |7-------|--      |        |        |7-------|--      |        |        |
+    G4.m6   |        |        |        |5---    |        |        |        |5-8---  |
+    ]],
 
 
 -- List format:
@@ -157,7 +160,7 @@ sequences = {
         { 6.0, "F2",    0.7,      0.2 },
         { 6.4, "D#2",   keys_vol, 0.2 },
         { 7.0, "C2",    0.7,      0.2 },
-        { 7.4, "B2.m7", 0.7,      0.2 },
+        { 7.4, "B2.m7", 0.7,      0.2 }
     },
 
     bass_verse = {
@@ -165,7 +168,7 @@ sequences = {
         { 0.4, "C2",  0.7, 0.1 },
         { 3.5, "E2",  0.7, 0.1 },
         { 4.0, "C2",  0.7, 1.0 },
-        { 7.4, "A#2", 0.7, 0.1 },
+        { 7.4, "A#2", 0.7, 0.1 }
     },
 
     bass_chorus = {
@@ -176,21 +179,21 @@ sequences = {
         { 4.0, "C2",  0.7, 0.1 },
         { 4.4, "C2",  0.7, 0.1 },
         { 6.0, "C2",  0.7, 0.1 },
-        { 6.4, "C2",  0.7, 0.1 },
+        { 6.4, "C2",  0.7, 0.1 }
     },
 
     drums_verse = {
         --|........|........|........|........|........|........|........|........|
         {"|8       |        |8       |        |8       |        |8       |        |", AcousticBassDrum,  drum_vol},
         {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", AcousticSnare,     drum_vol * 0.9},
-        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", ClosedHiHat,       drum_vol * 1.1},
+        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", ClosedHiHat,       drum_vol * 1.1}
     },
 
     drums_verse_alt = {
                           --|........|........|........|........|........|........|........|........|
-        {"AcousticBassDrum  |8       |        |8       |        |8       |        |8       |        |",
-        {"AcousticSnare     |    8   |        |    8   |    8   |    8   |        |    8   |    8   |",
-        {"ClosedHiHat       |        |     8 8|        |     8 8|        |     8 8|        |     8 8|",
+        {"AcousticBassDrum  |8       |        |8       |        |8       |        |8       |        |"},
+        {"AcousticSnare     |    8   |        |    8   |    8   |    8   |        |    8   |    8   |"},
+        {"ClosedHiHat       |        |     8 8|        |     8 8|        |     8 8|        |     8 8|"}
     },
 
     drums_chorus = {
@@ -207,22 +210,22 @@ sequences = {
         { 5.2, RideCymbal1,       drum_vol },
         { 5.4, HiMidTom,          drum_vol },
         { 6.0, AcousticBassDrum,  drum_vol },
-        { 7.0, CrashCymbal2,      drum_vol },
+        { 7.0, CrashCymbal2,      drum_vol }
     },
 
     dynamic = {
         { 0.0, "G3",  0.7, 0.5 },
         { 1.0, "A3",  0.7, 0.5 },
         { 2.0, "Bb3", 0.7, 0.5 },
-        { 6.0, "C4",  0.7, 0.5 },
-    }
+        { 6.0, "C4",  0.7, 0.5 }
+    },
+
     dynamic_alt = {
         "G3      |5-----  |        |        |        |        |        |        |        |",
         "A3      |        |5-----  |        |        |        |        |        |        |",
         "Bb3     |        |        |5----   |        |        |        |        |        |",
-        "C4      |        |        |        |        |        |        |5----   |        |",
+        "C4      |        |        |        |        |        |        |5----   |        |"
     },
-
 }
 
 
@@ -239,7 +242,7 @@ sections = {
         { keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
         { drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
         { bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-        { synth,   algo_func,    nil,          algo_func,    dynamic },
+        { synth,   algo_func,    nil,          algo_func,    dynamic }
     },
 
     ending = {

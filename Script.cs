@@ -9,7 +9,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfTricks;
 using Ephemera.MidiLib;
 using KeraLuaEx;
-using static Ephemera.Nebulua.Common;
+//using static Ephemera.Nebulua.Common;
 
 
 namespace Ephemera.Nebulua
@@ -175,8 +175,8 @@ namespace Ephemera.Nebulua
         /// <exception cref="InvalidOperationException"></exception>
         void GetChannels()
         {
-            OutputChannels.Clear();
-            InputChannels.Clear();
+            Common.OutputChannels.Clear();
+            Common.InputChannels.Clear();
 
             _l.GetGlobal("channels");
             var channels = _l.ToTableEx(-1);
@@ -213,13 +213,13 @@ namespace Ephemera.Nebulua
                                 IsDrums = (int)channel_num! == MidiDefs.DEFAULT_DRUM_CHANNEL,
                             };
 
-                            if (OutputDevices.ContainsKey(device_id))
+                            if (Common.OutputDevices.ContainsKey(device_id))
                             {
-                                OutputChannels.Add(chname, channel);
+                                Common.OutputChannels.Add(chname, channel);
                             }
-                            else if (InputDevices.ContainsKey(device_id))
+                            else if (Common.InputDevices.ContainsKey(device_id))
                             {
-                                InputChannels.Add(chname, channel);
+                                Common.InputChannels.Add(chname, channel);
                             }
                             else
                             {
@@ -241,9 +241,66 @@ namespace Ephemera.Nebulua
         /// </summary>
         void GetComposition()
         {
+            _l.GetGlobal("_G");
+            var keys = GetKeys();
+            _l.Pop(1); // GetGlobal
 
+            foreach(var k in keys)
+            {
+                if (k.StartsWith("seq_"))
+                {
+                    _l.GetGlobal(k);
+                    var s = _l.ToStringL(-1);
+                    var parts = s!.SplitByTokens(Environment.NewLine);
+
+
+                }
+            }
         }
         #endregion
+
+
+        /// <summary>
+        /// Get all keys for table on stack top.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        List<string> GetKeys()
+        {
+            // Check for valid value.
+            if (_l.Type(-1)! != LuaType.Table)
+            {
+                throw new InvalidOperationException($"Expected table at top of stack but is {_l.Type(-1)}");
+            }
+
+            List<string> keys = new();
+
+            // First key.
+            _l.PushNil();
+
+            // Key(-1) is replaced by the next key(-1) in table(-2).
+            while (_l.Next(-2))
+            {
+                // Get key info (-2).
+                //LuaType keyType = _l.Type(-2);
+                //string? skey = keyType == LuaType.String ? _l.ToStringL(-2) : null;
+                //int? ikey = keyType == LuaType.Number && _l.IsInteger(-2) ? _l.ToInteger(-2) : null;
+                // Get val info (-1).
+                //LuaType valType = _l.Type(-1);
+                //string? sval = _l.ToStringL(-1);
+
+                keys.Add(_l.ToStringL(-2)!);
+
+                // Remove value(-1), now key on top at(-1).
+                _l.Pop(1);
+            }
+
+            return keys;
+        }
+
+
+
+
 
         #region C# calls lua functions
         /// <summary>
@@ -430,7 +487,7 @@ namespace Ephemera.Nebulua
             int? val = l.ToInteger(3);
 
             ///// Do the work.
-            var ch = OutputChannels[channelName];
+            var ch = Common.OutputChannels[channelName];
             //int ctlrid = MidiDefs.GetControllerNumber(controller);
             //ch.SendController((MidiController)ctlrid, (int)val);
             ch.SendController((MidiController)controller, (int)val);
@@ -449,7 +506,7 @@ namespace Ephemera.Nebulua
             string patch = l.ToStringL(2)!;
 
             ///// Do the work.
-            var ch = OutputChannels[channelName];
+            var ch = Common.OutputChannels[channelName];
             int patchid = MidiDefs.GetInstrumentNumber(patch); // handle fail?
             ch.Patch = patchid;
             ch.SendPatch();
@@ -519,7 +576,7 @@ namespace Ephemera.Nebulua
                         {
                             var seq = sectel.Sequences[seqIndex];
                             //was AddSequence(sectel.Channel, seq, sectionBeat + beatInSect);
-                            var ch = OutputChannels[sectel.ChannelName];
+                            var ch = Common.OutputChannels[sectel.ChannelName];
                             int beat = sectionBeat + beatInSect;
                             var ecoll = ConvertToEvents(ch, seq, beat);
                             _scriptEvents.AddRange(ecoll);
