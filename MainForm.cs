@@ -41,8 +41,8 @@ namespace Ephemera.Nebulua
         /// <summary>All the channel UI controls.</summary>
         readonly List<ChannelControl> _channelControls = new();
 
-        /// <summary>Longest length of channels in subdivs.</summary>
-        int _totalSubdivs = 0;
+        /// <summary>Longest length of channels in subbeats.</summary>
+        int _totalSubbeats = 0;
 
         /// <summary>Persisted internal values for current script file.</summary>
         Bag _nppVals = new();
@@ -255,7 +255,7 @@ namespace Ephemera.Nebulua
             _channelControls.Clear();
             OutputChannels.Clear();
             InputChannels.Clear();
-            _totalSubdivs = 0;
+            _totalSubbeats = 0;
             barBar.Reset();
 
             try
@@ -337,17 +337,17 @@ namespace Ephemera.Nebulua
 
                     // Round total up to next beat.
                     BarTime bs = new();
-                    bs.SetRounded(channel.MaxSubdiv, SnapType.Beat, true);
-                    _totalSubdivs = Math.Max(_totalSubdivs, bs.TotalSubdivs);
+                    bs.SetRounded(channel.MaxSubbeat, SnapType.Beat, true);
+                    _totalSubbeats = Math.Max(_totalSubbeats, bs.TotalSubbeats);
                 }
 
                 // Init the timeclock.
-                if (_totalSubdivs > 0) // sequences
+                if (_totalSubbeats > 0) // sequences
                 {
                     barBar.TimeDefs = _script.GetSectionMarkers();
-                    barBar.Length = new(_totalSubdivs);
+                    barBar.Length = new(_totalSubbeats);
                     barBar.Start = new(0);
-                    barBar.End = new(_totalSubdivs - 1);
+                    barBar.End = new(_totalSubbeats - 1);
                     barBar.Current = new(0);
                 }
                 else // free form
@@ -583,7 +583,7 @@ namespace Ephemera.Nebulua
                 // Kick the script. Note: Need exception handling here to protect from user script errors.
                 try
                 {
-                    _script.Step(_stepTime.Bar, _stepTime.Beat, _stepTime.Subdiv); // throws
+                    _script.Step(_stepTime.Bar, _stepTime.Beat, _stepTime.Subbeat); // throws
                 }
                 catch (Exception ex)
                 {
@@ -609,7 +609,7 @@ namespace Ephemera.Nebulua
                         // Need exception handling here to protect from user script errors.
                         try
                         {
-                            ch.DoStep(_stepTime.TotalSubdivs);
+                            ch.DoStep(_stepTime.TotalSubbeats);
                         }
                         catch (Exception ex)
                         {
@@ -628,7 +628,7 @@ namespace Ephemera.Nebulua
                     // Check for end.
                     if (done)
                     {
-                        OutputChannels.Values.ForEach(ch => ch.Flush(_stepTime.TotalSubdivs));
+                        OutputChannels.Values.ForEach(ch => ch.Flush(_stepTime.TotalSubbeats));
                         ProcessPlay(PlayCommand.StopRewind);
                         KillAll(); // just in case
                     }
@@ -954,7 +954,7 @@ namespace Ephemera.Nebulua
             }
 
             // Always do this.
-            barBar.Current = new(_stepTime.TotalSubdivs);
+            barBar.Current = new(_stepTime.TotalSubbeats);
 
             return ret;
         }
@@ -966,7 +966,7 @@ namespace Ephemera.Nebulua
         /// <param name="e"></param>
         void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            _stepTime = new(barBar.Current.TotalSubdivs);
+            _stepTime = new(barBar.Current.TotalSubbeats);
             ProcessPlay(PlayCommand.UpdateUiTime);
         }
         #endregion
@@ -1029,7 +1029,7 @@ namespace Ephemera.Nebulua
         void SetFastTimerPeriod()
         {
             // Make a transformer.
-            MidiTimeConverter mt = new(_settings.MidiSettings.SubdivsPerBeat, sldTempo.Value);
+            MidiTimeConverter mt = new(_settings.MidiSettings.SubbeatsPerBeat, sldTempo.Value);
             var per = mt.RoundedInternalPeriod();
             _mmTimer.SetTimer(per, MmTimerCallback);
         }
@@ -1067,13 +1067,13 @@ namespace Ephemera.Nebulua
                     // Make a Pattern object and call the formatter.
                     IEnumerable<Channel> channels = OutputChannels.Values.Where(ch => ch.NumEvents > 0);
 
-                    PatternInfo pattern = new("export", _settings.MidiSettings.SubdivsPerBeat,
+                    PatternInfo pattern = new("export", _settings.MidiSettings.SubbeatsPerBeat,
                         _script.GetEvents(), channels, (int)sldTempo.Value);// _script.Tempo);
 
                     Dictionary<string, int> meta = new()
                     {
                         { "MidiFileType", 0 },
-                        { "DeltaTicksPerQuarterNote", _settings.MidiSettings.SubdivsPerBeat },
+                        { "DeltaTicksPerQuarterNote", _settings.MidiSettings.SubbeatsPerBeat },
                         { "NumTracks", 1 }
                     };
 
@@ -1096,12 +1096,12 @@ namespace Ephemera.Nebulua
 
                 var fn = Path.GetFileName(_scriptFileName.Replace(".lua", ".csv"));
 
-                PatternInfo pattern = new("export", _settings.MidiSettings.SubdivsPerBeat, _script.GetEvents(), channels, (int)sldTempo.Value);// _script.Tempo);
+                PatternInfo pattern = new("export", _settings.MidiSettings.SubbeatsPerBeat, _script.GetEvents(), channels, (int)sldTempo.Value);// _script.Tempo);
 
                 Dictionary<string, int> meta = new()
                 {
                     { "MidiFileType", 0 },
-                    { "DeltaTicksPerQuarterNote", _settings.MidiSettings.SubdivsPerBeat },
+                    { "DeltaTicksPerQuarterNote", _settings.MidiSettings.SubbeatsPerBeat },
                     { "NumTracks", 1 }
                 };
 

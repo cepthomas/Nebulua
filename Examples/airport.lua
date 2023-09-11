@@ -44,7 +44,7 @@ end
 ------------------------- Main loop -------------------------------------------
 
 -- Called every mmtimer increment.
-function step(bar, beat, subdiv)
+function step(bar, beat, subbeat)
     local step_time = 1.0
 
     for i = 1, #loops do

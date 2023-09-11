@@ -1,6 +1,5 @@
 
-Example Nebulator composition file with some UI demo. This is not actual music.
-
+-- Example Nebulator composition file with some UI demo. This is not actual music.
 
 local api = require("neb_api")
 local scale = require("scale")
@@ -31,7 +30,7 @@ channels =
     keys  = { device_id = "midi_out",  channel = 1,  patch = inst.AcousticGrandPiano },
     bass  = { device_id = "midi_out",  channel = 2,  patch = inst.AcousticBass },
     synth = { device_id = "midi_out",  channel = 3,  patch = inst.Lead1Square },
-    drums = { device_id = "midi_out",  channel = 10, patch = kit.Jazz }, -- for drums = kit
+    drums = { device_id = "midi_out",  channel = 10, patch = kit.Jazz }, -- for drums TODO identify somehow?
     -- inputs
     tune  = { device_id = "midi_in",   channel = 1   },
     trig  = { device_id = "virt_key",  channel = 2,  }, -- optional: show_note_names
@@ -62,11 +61,11 @@ function setup()
 end
 
 -- Main loop - called every mmtimer increment.
-function step(bar, beat, subdiv)
+function step(bar, beat, subbeat)
     -- boing(60)
 
     -- Periodic work.
-    if beat == 0 and subdiv == 0 then
+    if beat == 0 and subbeat == 0 then
         api.send_controller("synth", ctrl.Pan, 90) -- string, int, int
         api.send_controller("keys",  ctrl.Pan, 30)
     end
@@ -111,13 +110,37 @@ end
 
 ------------------------- Build composition ---------------------------------------
 
----- sequences ---- times are beat.subdiv: beat=0-N subdiv=0-7
+---- sequences
+
+
+seq_keys_verse_alt2 = [[
+G4.m7   |7-------|--      |        |        |7-------|--      |        |        |
+G4.m6   |        |        |        |5---    |        |        |        |5-8---  |
+]]
+
+
+
+-- Graphical format:
+-- "|7-------|" is one beat with 8 subbeats
+-- note velocity is 1-9 (relative) or - which is sustained
+-- note/chord, velocity/volume
 sequences = {
     keys_verse = {
         { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7", keys_vol },
         { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6", keys_vol * 0.9 }
     },
 
+    keys_verse_alt = {
+        "G4.m7   |7-------|--      |        |        |7-------|--      |        |        |",
+        "G4.m6   |        |        |        |5---    |        |        |        |5-8---  |",
+    },
+
+
+
+
+-- List format:
+-- times are beat.subbeat where beat is 0-N subbeat is 0-7
+-- note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
     keys_chorus = {
         { 0.0, "F4",    0.7,      0.2 },
         { 0.4, "D#4",   keys_vol, 0.2 },
@@ -163,6 +186,13 @@ sequences = {
         {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", ClosedHiHat,       drum_vol * 1.1},
     },
 
+    drums_verse_alt = {
+                          --|........|........|........|........|........|........|........|........|
+        {"AcousticBassDrum  |8       |        |8       |        |8       |        |8       |        |",
+        {"AcousticSnare     |    8   |        |    8   |    8   |    8   |        |    8   |    8   |",
+        {"ClosedHiHat       |        |     8 8|        |     8 8|        |     8 8|        |     8 8|",
+    },
+
     drums_chorus = {
         { 0.0, AcousticBassDrum,  drum_vol },
         { 0.0, AcousticBassDrum,  drum_vol },
@@ -186,6 +216,13 @@ sequences = {
         { 2.0, "Bb3", 0.7, 0.5 },
         { 6.0, "C4",  0.7, 0.5 },
     }
+    dynamic_alt = {
+        "G3      |5-----  |        |        |        |        |        |        |        |",
+        "A3      |        |5-----  |        |        |        |        |        |        |",
+        "Bb3     |        |        |5----   |        |        |        |        |        |",
+        "C4      |        |        |        |        |        |        |5----   |        |",
+    },
+
 }
 
 

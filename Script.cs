@@ -269,8 +269,8 @@ namespace Ephemera.Nebulua
         /// </summary>
         /// <param name="bar"></param>
         /// <param name="beat"></param>
-        /// <param name="subdiv"></param>
-        public void Step(int bar, int beat, int subdiv)
+        /// <param name="subbeat"></param>
+        public void Step(int bar, int beat, int subbeat)
         {
             // Get the function to be called. Check return.
             _l.GetGlobal("step");
@@ -278,7 +278,7 @@ namespace Ephemera.Nebulua
             // Push the arguments to the call.
             _l.PushInteger(bar);
             _l.PushInteger(beat);
-            _l.PushInteger(subdiv);
+            _l.PushInteger(subbeat);
 
             // Do the actual call.
             _l.DoCall(3, 0);
@@ -388,12 +388,12 @@ namespace Ephemera.Nebulua
             //    int velPlay = (int)(vel * MidiDefs.MAX_MIDI);
             //    velPlay = MathUtils.Constrain(velPlay, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
 
-            //    NoteOnEvent evt = new(StepTime.TotalSubdivs, ch.ChannelNumber, absnote, velPlay, dur.TotalSubdivs);
+            //    NoteOnEvent evt = new(StepTime.TotalSubbeats, ch.ChannelNumber, absnote, velPlay, dur.TotalSubbeats);
             //    ch.SendEvent(evt);
             //}
             //else
             //{
-            //    NoteEvent evt = new(StepTime.TotalSubdivs, ch.ChannelNumber, MidiCommandCode.NoteOff, absnote, 0);
+            //    NoteEvent evt = new(StepTime.TotalSubbeats, ch.ChannelNumber, MidiCommandCode.NoteOff, absnote, 0);
             //    ch.SendEvent(evt);
             //}
 
@@ -581,13 +581,13 @@ namespace Ephemera.Nebulua
             foreach (SequenceElement seqel in seq.Elements)
             {
                 // Create the note start and stop times.
-                BarTime startNoteTime = new BarTime(startBeat * MidiSettings.LibSettings.SubdivsPerBeat) + seqel.When;
-                BarTime stopNoteTime = startNoteTime + (seqel.Duration.TotalSubdivs == 0 ? new(1) : seqel.Duration); // 1 is a short hit
+                BarTime startNoteTime = new BarTime(startBeat * MidiSettings.LibSettings.SubbeatsPerBeat) + seqel.When;
+                BarTime stopNoteTime = startNoteTime + (seqel.Duration.TotalSubbeats == 0 ? new(1) : seqel.Duration); // 1 is a short hit
 
                 // Is it a function?
                 if (seqel.ScriptFunction is not null)
                 {
-                    FunctionMidiEvent evt = new(startNoteTime.TotalSubdivs, channel.ChannelNumber, seqel.ScriptFunction);
+                    FunctionMidiEvent evt = new(startNoteTime.TotalSubbeats, channel.ChannelNumber, seqel.ScriptFunction);
                     events.Add(new(evt, channel.ChannelName));
                 }
                 else // plain ordinary
@@ -600,7 +600,7 @@ namespace Ephemera.Nebulua
                         int velPlay = (int)(vel * MidiDefs.MAX_MIDI);
                         velPlay = MathUtils.Constrain(velPlay, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
 
-                        NoteOnEvent evt = new(startNoteTime.TotalSubdivs, channel.ChannelNumber, noteNum, velPlay, seqel.Duration.TotalSubdivs);
+                        NoteOnEvent evt = new(startNoteTime.TotalSubbeats, channel.ChannelNumber, noteNum, velPlay, seqel.Duration.TotalSubbeats);
                         events.Add(new(evt, channel.ChannelName));
                     }
                 }
