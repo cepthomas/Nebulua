@@ -12,6 +12,8 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 //using static Ephemera.Nebulua.Common;
 
+// https://www.codeproject.com/Articles/1204629/DryWetMIDI-Notes-Quantization
+
 
 namespace Ephemera.Nebulua
 {
