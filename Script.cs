@@ -55,7 +55,7 @@ namespace Ephemera.Nebulua
         /// <summary>Main execution lua state.</summary>
         readonly Lua _l = new();
 
-        // Bound static functions.
+        // Bound static functions.//TODOS
         static readonly LuaFunction _fLog = Log;
         static readonly LuaFunction _fSendController = SendController;
         static readonly LuaFunction _fSendNote = SendNote;
@@ -128,7 +128,7 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Bind the C# functions lua can call.
         /// </summary>
-        readonly LuaRegister[] _libFuncs = new LuaRegister[]
+        readonly LuaRegister[] _libFuncs = new LuaRegister[]//TODOS
         {
             new LuaRegister("log", _fLog),
             new LuaRegister("send_controller", _fSendController), //send_controller(chan, controller, val)
@@ -237,11 +237,11 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary>
-        /// Get the sequences and sections. TODO
+        /// Get the sequences and sections.
         /// </summary>
         void GetComposition()
         {
-            _l.GetGlobal("_G");
+            _l.GetGlobal("_G");//TODOS "sequences"
             var keys = GetKeys();
             _l.Pop(1); // GetGlobal
 
@@ -260,49 +260,49 @@ namespace Ephemera.Nebulua
         #endregion
 
 
-        /// <summary>
-        /// Get all keys for table on stack top.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        List<string> GetKeys()
-        {
-            // Check for valid value.
-            if (_l.Type(-1)! != LuaType.Table)
-            {
-                throw new InvalidOperationException($"Expected table at top of stack but is {_l.Type(-1)}");
-            }
+        // /// <summary>
+        // /// Get all keys for table on stack top.
+        // /// </summary>
+        // /// <returns></returns>
+        // /// <exception cref="InvalidOperationException"></exception>
+        // List<string> GetKeys()
+        // {
+        //     // Check for valid value.
+        //     if (_l.Type(-1)! != LuaType.Table)
+        //     {
+        //         throw new InvalidOperationException($"Expected table at top of stack but is {_l.Type(-1)}");
+        //     }
 
-            List<string> keys = new();
+        //     List<string> keys = new();
 
-            // First key.
-            _l.PushNil();
+        //     // First key.
+        //     _l.PushNil();
 
-            // Key(-1) is replaced by the next key(-1) in table(-2).
-            while (_l.Next(-2))
-            {
-                // Get key info (-2).
-                //LuaType keyType = _l.Type(-2);
-                //string? skey = keyType == LuaType.String ? _l.ToStringL(-2) : null;
-                //int? ikey = keyType == LuaType.Number && _l.IsInteger(-2) ? _l.ToInteger(-2) : null;
-                // Get val info (-1).
-                //LuaType valType = _l.Type(-1);
-                //string? sval = _l.ToStringL(-1);
+        //     // Key(-1) is replaced by the next key(-1) in table(-2).
+        //     while (_l.Next(-2))
+        //     {
+        //         // Get key info (-2).
+        //         //LuaType keyType = _l.Type(-2);
+        //         //string? skey = keyType == LuaType.String ? _l.ToStringL(-2) : null;
+        //         //int? ikey = keyType == LuaType.Number && _l.IsInteger(-2) ? _l.ToInteger(-2) : null;
+        //         // Get val info (-1).
+        //         //LuaType valType = _l.Type(-1);
+        //         //string? sval = _l.ToStringL(-1);
 
-                keys.Add(_l.ToStringL(-2)!);
+        //         keys.Add(_l.ToStringL(-2)!);
 
-                // Remove value(-1), now key on top at(-1).
-                _l.Pop(1);
-            }
+        //         // Remove value(-1), now key on top at(-1).
+        //         _l.Pop(1);
+        //     }
 
-            return keys;
-        }
-
-
+        //     return keys;
+        // }
 
 
 
-        #region C# calls lua functions
+
+
+        #region C# calls lua functions //TODOS
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -399,7 +399,7 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Lua calls C# functions TODO all these need implementation and arg int/string handling
+        #region Lua calls C# functions TODOS all these need implementation and arg int/string handling
         /// <summary> </summary>
         static int Log(IntPtr p)
         {
@@ -516,7 +516,7 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary>Add a named chord or scale definition.</summary>
-        static int CreateNotes(IntPtr p) // TODO could be in a script.
+        static int CreateNotes(IntPtr p) // TODOS could be in a script.
         {
             var l = Lua.FromIntPtr(p)!;
 
@@ -532,7 +532,7 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary> </summary>
-        static int GetNotes(IntPtr p) // TODO could be in a script.
+        static int GetNotes(IntPtr p) // TODOS could be in a script.
         {
             var l = Lua.FromIntPtr(p)!;
 
@@ -548,14 +548,14 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region TODO these could be in the script
+        #region TODOS these could be in the script
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
         // CreateSection(int beats, string name, SectionElements elements) -- -> Section
 
         /// <summary>
         /// Convert script sequences etc to internal events.
         /// </summary>
-        public void BuildSteps() //TODO put all these somewhere else?
+        public void BuildSteps() //TODOS put all these somewhere else?
         {
             // Build all the events.
             int sectionBeat = 0;
@@ -596,7 +596,7 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary>
-        /// Get all section names and when they start. The end marker is also added.
+        /// Get all section names and when they start. The end marker is also added.//TODOS
         /// </summary>
         /// <returns></returns>
         public Dictionary<int, string> GetSectionMarkers()
@@ -631,7 +631,7 @@ namespace Ephemera.Nebulua
         /// <param name="channel">Which channel to send it on.</param>
         /// <param name="seq">Which notes to send.</param>
         /// <param name="startBeat">Which beat to start sequence at.</param>
-        List<MidiEventDesc> ConvertToEvents(Channel channel, Sequence seq, int startBeat)
+        List<MidiEventDesc> ConvertToEvents(Channel channel, Sequence seq, int startBeat)//TODOS
         {
             List<MidiEventDesc> events = new();
 

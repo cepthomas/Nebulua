@@ -1,6 +1,8 @@
 
 -- Example Nebulator composition file with some UI demo. This is not actual music.
 
+-- https://github.com/hishamhm/f-strings
+
 local api = require("neb_api")
 local scale = require("scale")
 
@@ -12,6 +14,8 @@ local ctrl = md.controllers
 
 local ad = require("app_defs")
 local dt = ad.device_types
+
+local ut = require("utils")
 
 -- Logging. Defs from the C# logger side.
 LOG_TRACE = 0
@@ -40,7 +44,6 @@ channels =
 -- local vars - Volumes. 
 local keys_vol = 0.8
 local drum_vol = 0.8
-
 
 -- Get some stock chords and scales.
 local alg_scale = api.get_notes("G3.Algerian")
@@ -90,7 +93,13 @@ end
 ----------------------- User lua functions -------------------------
 
 -- Calc something and play it.
-function algo_func()
+function sequence_func()
+    local note_num = math.random(0, #alg_scale)
+    api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
+end
+
+-- Calc something and play it.
+function section_func()
     local note_num = math.random(0, #alg_scale)
     api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
 end
@@ -108,146 +117,130 @@ function boing(note_num)
     return boinged
 end
 
-------------------------- Build composition ---------------------------------------
+------------------------- Composition ---------------------------------------
 
 ---- sequences
 
+-- field types: String Number Integer Function barTime(Number?) Expression? Mapindex(0-9)
+-- TODO eliminate strings for notes?
+-- TODO type for BarTime? or just use number.
+-- TODO volumes could be a user map instead of linear range. optional?
+drum_vol = [0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 ]
+drum_vol_range = [5.0, 9.5]
 
-seq_keys_verse_alt2 = [[
-G4.m7   |7-------|--      |        |        |7-------|--      |        |        |
-G4.m6   |        |        |        |5---    |        |        |        |5-8---  |
-]]
 
 
-
--- Graphical format:
--- "|7-------|" is one beat with 8 subbeats
--- note velocity is 1-9 (relative) or - which is sustained
--- note/chord, velocity/volume
 sequences = {
-    keys_verse = {
-        { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7", keys_vol },
-        { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6", keys_vol * 0.9 }
-    },
+    graphical_seq = [
+        [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ], --SS
+        [ "|7-------|--      |        |        |7-------|--      |        |        |",  84 ], --SI
+        [ "|7-------|--      |        |        |7-------|--      |        |        |",  drum.AcousticSnare ], --SI
+        [ "|        |        |        |5---    |        |        |        |5-8---  |", "D6" ] --SS
+        [ "|        |        |        |5---    |        |        |        |5-8---  |", sequence_func ] --SF
+    ],
 
-    keys_verse_alt = {
-        "G4.m7   |7-------|--      |        |        |7-------|--      |        |        |",
-        "G4.m6   |        |        |        |5---    |        |        |        |5-8---  |"
-    },
+    list_seq = [
+        [ 0.0, "C2",  7, 0.1 ], --TSM(T)
+        [ 0.0, drum.AcousticBassDrum,  4, 0.1 ], --TIM(T)
+        [ 0.4,  44,   5, 0.1 ], --TIM(T)
+        [ 4.0, sequence_func,  7, 1.0 ], --TFM(T)
+        [ 7.4, "A#2", 7, 0.1 ]  --TSM(T)
+    ],
 
-    keys_verse_alt2 = [[
-    G4.m7   |7-------|--      |        |        |7-------|--      |        |        |
-    G4.m6   |        |        |        |5---    |        |        |        |5-8---  |
-    ]],
+    keys_verse = [
+        [ "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ],
+        [ "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" ]
+    ],
 
+    keys_chorus = [
+        [ 0.0, "F4",    6,      0.2 ],
+        [ 0.4, "D#4",   5,      0.2 ],
+        [ 1.0, "C4",    6,      0.2 ],
+        [ 1.4, "B4.m7", 6,      0.2 ],
+        [ 2.0, "F5",    6,      0.2 ],
+        [ 2.4, "D#5",   5,      0.2 ],
+        [ 3.0, "C5",    6,      0.2 ],
+        [ 3.4, "B5.m7", 6,      0.2 ],
+        [ 4.0, "F3",    6,      0.2 ],
+        [ 4.4, "D#3",   5,      0.2 ],
+        [ 5.0, "C3",    6,      0.2 ],
+        [ 5.4, "B3.m7", 6,      0.2 ],
+        [ 6.0, "F2",    6,      0.2 ],
+        [ 6.4, "D#2",   5,      0.2 ],
+        [ 7.0, "C2",    6,      0.2 ],
+        [ 7.4, "B2.m7", 6,      0.2 ]
+    ],
 
--- List format:
--- times are beat.subbeat where beat is 0-N subbeat is 0-7
--- note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
-    keys_chorus = {
-        { 0.0, "F4",    0.7,      0.2 },
-        { 0.4, "D#4",   keys_vol, 0.2 },
-        { 1.0, "C4",    0.7,      0.2 },
-        { 1.4, "B4.m7", 0.7,      0.2 },
-        { 2.0, "F5",    0.7,      0.2 },
-        { 2.4, "D#5",   keys_vol, 0.2 },
-        { 3.0, "C5",    0.7,      0.2 },
-        { 3.4, "B5.m7", 0.7,      0.2 },
-        { 4.0, "F3",    0.7,      0.2 },
-        { 4.4, "D#3",   keys_vol, 0.2 },
-        { 5.0, "C3",    0.7,      0.2 },
-        { 5.4, "B3.m7", 0.7,      0.2 },
-        { 6.0, "F2",    0.7,      0.2 },
-        { 6.4, "D#2",   keys_vol, 0.2 },
-        { 7.0, "C2",    0.7,      0.2 },
-        { 7.4, "B2.m7", 0.7,      0.2 }
-    },
+    bass_verse = [
+        [ 0.0, "C2",    7,   0.1 ],
+        [ 0.4, "C2",    7,   0.1 ],
+        [ 3.5, "E2",    7,   0.1 ],
+        [ 4.0, "C2",    7,   1.0 ],
+        [ 7.4, "A#2",   7,   0.1 ]
+    ],
 
-    bass_verse = {
-        { 0.0, "C2",  0.7, 0.1 },
-        { 0.4, "C2",  0.7, 0.1 },
-        { 3.5, "E2",  0.7, 0.1 },
-        { 4.0, "C2",  0.7, 1.0 },
-        { 7.4, "A#2", 0.7, 0.1 }
-    },
+    bass_chorus = [
+        [ 0.0, "C2",  5,     0.1 ],
+        [ 0.4, "C2",  5,     0.1 ],
+        [ 2.0, "C2",  5,     0.1 ],
+        [ 2.4, "C2",  5,     0.1 ],
+        [ 4.0, "C2",  5,     0.1 ],
+        [ 4.4, "C2",  5,     0.1 ],
+        [ 6.0, "C2",  5,     0.1 ],
+        [ 6.4, "C2",  5,     0.1 ]
+    ],
 
-    bass_chorus = {
-        { 0.0, "C2",  0.7, 0.1 },
-        { 0.4, "C2",  0.7, 0.1 },
-        { 2.0, "C2",  0.7, 0.1 },
-        { 2.4, "C2",  0.7, 0.1 },
-        { 4.0, "C2",  0.7, 0.1 },
-        { 4.4, "C2",  0.7, 0.1 },
-        { 6.0, "C2",  0.7, 0.1 },
-        { 6.4, "C2",  0.7, 0.1 }
-    },
-
-    drums_verse = {
+    drums_verse = [
         --|........|........|........|........|........|........|........|........|
-        {"|8       |        |8       |        |8       |        |8       |        |", AcousticBassDrum,  drum_vol},
-        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", AcousticSnare,     drum_vol * 0.9},
-        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", ClosedHiHat,       drum_vol * 1.1}
-    },
+        ["|8       |        |8       |        |8       |        |8       |        |", drum.AcousticBassDrum ],
+        ["|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", drum.AcousticSnare ],
+        ["|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", drum.ClosedHiHat ]
+    ],
 
-    drums_verse_alt = {
-                          --|........|........|........|........|........|........|........|........|
-        {"AcousticBassDrum  |8       |        |8       |        |8       |        |8       |        |"},
-        {"AcousticSnare     |    8   |        |    8   |    8   |    8   |        |    8   |    8   |"},
-        {"ClosedHiHat       |        |     8 8|        |     8 8|        |     8 8|        |     8 8|"}
-    },
+    drums_chorus = [
+        [ 0.0, drum.AcousticBassDrum, 6 ],
+        [ 0.0, drum.AcousticBassDrum, 6 ],
+        [ 1.0, drum.RideCymbal1,      7 ],
+        [ 1.2, drum.RideCymbal1,      7 ],
+        [ 1.4, drum.HiMidTom,         4 ],
+        [ 2.0, drum.AcousticBassDrum, 6 ],
+        [ 3.0, drum.RideCymbal1,      7 ],
+        [ 3.2, drum.RideCymbal1,      7 ],
+        [ 4.0, drum.AcousticBassDrum, 6 ],
+        [ 5.0, drum.RideCymbal1,      7 ],
+        [ 5.2, drum.RideCymbal1,      7 ],
+        [ 5.4, drum.HiMidTom,         4 ],
+        [ 6.0, drum.AcousticBassDrum, 6 ],
+        [ 7.0, drum.CrashCymbal2,     8 ]
+    ],
 
-    drums_chorus = {
-        { 0.0, AcousticBassDrum,  drum_vol },
-        { 0.0, AcousticBassDrum,  drum_vol },
-        { 1.0, RideCymbal1,       drum_vol },
-        { 1.2, RideCymbal1,       drum_vol },
-        { 1.4, HiMidTom,          drum_vol },
-        { 2.0, AcousticBassDrum,  drum_vol },
-        { 3.0, RideCymbal1,       drum_vol },
-        { 3.2, RideCymbal1,       drum_vol },
-        { 4.0, AcousticBassDrum,  drum_vol },
-        { 5.0, RideCymbal1,       drum_vol },
-        { 5.2, RideCymbal1,       drum_vol },
-        { 5.4, HiMidTom,          drum_vol },
-        { 6.0, AcousticBassDrum,  drum_vol },
-        { 7.0, CrashCymbal2,      drum_vol }
-    },
-
-    dynamic = {
-        { 0.0, "G3",  0.7, 0.5 },
-        { 1.0, "A3",  0.7, 0.5 },
-        { 2.0, "Bb3", 0.7, 0.5 },
-        { 6.0, "C4",  0.7, 0.5 }
-    },
-
-    dynamic_alt = {
-        "G3      |5-----  |        |        |        |        |        |        |        |",
-        "A3      |        |5-----  |        |        |        |        |        |        |",
-        "Bb3     |        |        |5----   |        |        |        |        |        |",
-        "C4      |        |        |        |        |        |        |5----   |        |"
-    },
+    dynamic = [
+        [ 0.0, "G3",  5, 0.5 ],
+        [ 1.0, "A3",  5, 0.5 ],
+        [ 2.0, "Bb3", 5, 0.5 ],
+        [ 6.0, "C4",  5, 0.5 ]
+    ],
 }
-
 
 
 ---- sections ----
 sections = {
-    beginning = {
-        { keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-    },
+    beginning = [
+        [ keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse ],
+        [ drums, drums_verse, drums_verse, drums_verse, drums_verse ],
+        [ bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse ]
+    ]
+    
+    middle = [
+        [ keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus ],
+        [ drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus ],
+        [ bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus ],
+        [ synth,   section_func,    nil,          section_func,    dynamic ]
+    ],
 
-    middle = {
-        { keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
-        { drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
-        { bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-        { synth,   algo_func,    nil,          algo_func,    dynamic }
-    },
-
-    ending = {
-        { keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-    }
+    ending = [
+        [ keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse ],
+        [ drums, drums_verse, drums_verse, drums_verse, drums_verse ],
+        [ bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse ]
+    ]
 }
