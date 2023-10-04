@@ -671,9 +671,7 @@ namespace Ephemera.Nebulua
                     var dev = (IInputDevice)sender;
 
                     // Hand over to the script.
-
-                    // TODO convert dev.DeviceName, e.Channel to string chname
-                    var chName = "???";
+                    var chName = Common.InputChannels.ChannelName; check for invalid
                     try
                     {
                         if (e.Note != -1)
@@ -1000,7 +998,7 @@ namespace Ephemera.Nebulua
         void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
         {
             // Usually come from a different thread.
-            if (!_shuttingDown)// IsHandleCreated) //TODO??
+            if (!_shuttingDown)// IsHandleCreated) //TODO2??
             {
                 Debug.WriteLine("log");
                 this.InvokeIfRequired(_ => { textViewer.AppendLine($"{e.Message}"); });

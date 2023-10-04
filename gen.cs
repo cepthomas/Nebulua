@@ -16,60 +16,98 @@ namespace Ephemera.Nebulua
     public class Gen
     {
 
-        ///// C# calls lua functions //TODOS
+        ///// gen funcs from sig TODO1
 
-// FuncName
-// argtypes[]
-// rettype N I S B T V
-// >>>
-// step
-// III
-// T
-
-        public void Step(int bar, int beat, int subbeat)
+        ///// C# calls lua
+        // lua_func_name
+        // cs_func_name
+        // rettype 
+        // argtypes[]  req/opt?
+        // like:
+        //   func_name
+        //   FuncName
+        //   T
+        //   SIT 
+        // gens:
+        public TableEx FuncName(string arg1, int arg2, TableEx arg3)
         {
             // Get the function to be called. Check return.
-            _l.GetGlobal("step");
+            LuaType lstat = _l.GetGlobal(func_name);
+            EvalLuaStatus(lstat);
 
             // Push the arguments to the call.
-            _l.PushInteger(bar);
-            _l.PushInteger(beat);
-            _l.PushInteger(subbeat);
+            _l.PushType1(arg1);
+            _l.PushType2(arg2);
+            _l.PushType3(arg3);
 
             // Do the actual call.
-            _l.DoCall(3, 1);
+            _l.DoCall(num_args, num_ret);
 
-            // Get the results from the stack.
-            var tbl = _l.ToTableEx(-1);
-            _l.Pop(1); // Clean up results.
+            // Get the results from the stack. maybe
+            var tbl = _l.ToTableEx(-1); // or ToInteger() etc
+            if (tbl is null)
+            {
+
+            }
+            _l.Pop(num_ret); // Clean up results.
         }
 
-        //================================================
 
-// FuncName
-// argtypes[]
-// rettype N I S B T V
-// >>>
-// step
-// III
-// T
 
-        //////// Lua calls C# functions TODOS all these need implementation and arg int/string handling
-        /// <summary> </summary>
-        static int Log(IntPtr p)
+
+        ///// Lua calls C# functions
+        // lua_func_name
+        // cs_func_name
+        // rettype 
+        // argtypes[]  req/opt?
+        // like:
+        //   func_name
+        //   FuncName
+        //   I
+        //   IS 
+        //   work lambda?
+        // gens:
+        static int FuncName(IntPtr p)
         {
-            Lua l = Lua.FromIntPtr(p)!;
+            Lua? l = Lua.FromIntPtr(p);
+            int arg1;
+            string arg2;
 
-            var s = l.DumpStack();
+            if (l is null)
+            {
+               // throw?
+            }
 
             // Get args.
-            var level = l.ToInteger(1);
-            var msg = l.ToStringL(2);
+            if (l.IsInteger(1))
+            {
+                arg1 = l.ToInteger(1);
+            }
+            else
+            {
+               // throw?
+            }
+            if (l.IsString(2))
+            {
+                arg1 = l.ToStringL(2);
+            }
+            else
+            {
+               // throw?
+            }
 
-            // Do the work.
+            // Do the work - or lambda?
+            double ret = FuncName_DoWork(arg1, arg2);
+
+            // Return results.
+            l.PushNumber(ret);
+            return 1;
+        }
+
+        // client supplies this work function
+        static double FuncName_DoWork(int level, string msg)
+        {
             _logger.Log((LogLevel)level!, msg ?? "???");
-
-            // Do the work.
             double totalMsec = 0;
             if (on)
             {
@@ -80,10 +118,8 @@ namespace Ephemera.Nebulua
                 long t = _sw.ElapsedTicks; // snap
                 totalMsec = (t - _startTicks) * 1000D / Stopwatch.Frequency;
             }
-
-            // Return results.
-            l.PushNumber(totalMsec);
-            return 1;
+            return totalMsec;
         }
+
     }
 }

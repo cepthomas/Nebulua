@@ -2,6 +2,21 @@
 An experimental version of Nebulator using Lua as the script flavor.
 
 
+
+field types:
+S = string
+N = number
+I = integer
+F = function
+M = map index(0-9)
+T = TableEx
+V = void
+B = boolean
+X = bar time(Number?)
+E = expression?
+
+
+
 ---- sequences
 
 

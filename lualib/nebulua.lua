@@ -4,7 +4,20 @@ local ut = require("utils")
 local M = {}
 
 
--- seq is a list of lists.
+
+--     msg_info (all I):
+--         msg_type: note, ctlr, patch, function
+--         channel_num
+--         dur in subbeats (opt)
+--         payload1: note_num or ctlid or patchnum
+--         payload2: velocity or ctlvalue
+
+-- For viewing pleasure. ToString()
+
+
+-- return table:
+-- index = subbeat
+-- value = msg_info[] to play
 function M.process_sequence(seq)
 
     -- Length in beats.
@@ -19,9 +32,9 @@ function M.process_sequence(seq)
     local seq_lines = ut.strsplit("\n", seq)
 
     for i = 1, #seq_lines do
-        seq_line = seq_lines[i]
+        local seq_line = seq_lines[i]
         -- One note or chord or function etc in the sequence. Essentially something that gets played.
-        elem = {}
+        local elem = {}
 
 
         -- process line here
@@ -94,14 +107,31 @@ function M.process_section(sect)
 --     return $"Section: Beats:{Beats} Name:{Name} Elements:{Elements.Count}";
 --     return $"SectionElement: ChannelName:{ChannelName}";
 
+end
 
 ------------------------------- all ------------------------------
 
 
 function M.process_all(sequences, sections)
 
+    -- Return a table with:
+    -- table indexed by subbeat. fields: 
+    -- function do_step(bar, beat, subbeat)
+
+    -- public void BuildSteps()
+    -- public Dictionary<int, string> GetSectionMarkers()
+    -- public IEnumerable<MidiEventDesc> GetEvents()
+    -- List<MidiEventDesc> ConvertToEvents(Channel channel, Sequence seq, int startBeat)
+
+end
 
 
+function M.do_step(send_stuff, bar, beat, subbeat)
+    -- calc total subbeat
+    -- get all 
+
+
+end
 
 
 -- Return the module.

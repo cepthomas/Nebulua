@@ -55,15 +55,15 @@ namespace Ephemera.Nebulua
         /// <summary>Main execution lua state.</summary>
         readonly Lua _l = new();
 
-        // Bound static functions.//TODOS
+        // Bound static functions.//TODO1
         static readonly LuaFunction _fLog = Log;
         static readonly LuaFunction _fSendController = SendController;
         static readonly LuaFunction _fSendNote = SendNote;
         static readonly LuaFunction _fSendNoteOn = SendNoteOn;
         static readonly LuaFunction _fSendNoteOff = SendNoteOff;
         static readonly LuaFunction _fSendPatch = SendPatch;
-        static readonly LuaFunction _fGetNotes = GetNotes;
-        static readonly LuaFunction _fCreateNotes = CreateNotes;
+        // static readonly LuaFunction _fGetNotes = GetNotes;
+        // static readonly LuaFunction _fCreateNotes = CreateNotes;
 
         /// <summary>Need static instance for binding functions.</summary>
         static Script _instance;
@@ -128,16 +128,14 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Bind the C# functions lua can call.
         /// </summary>
-        readonly LuaRegister[] _libFuncs = new LuaRegister[]//TODOS
+        readonly LuaRegister[] _libFuncs = new LuaRegister[]//TODO2 automate this also?
         {
             new LuaRegister("log", _fLog),
-            new LuaRegister("send_controller", _fSendController), //send_controller(chan, controller, val)
-            new LuaRegister("send_note", _fSendNote), //send_note(chan, note, vol, dur)
-            new LuaRegister("send_note_on", _fSendNoteOn), //send_note_on(chan, note, vol)
-            new LuaRegister("send_note_off", _fSendNoteOff), //send_note_off(chan, note)
-            new LuaRegister("send_patch", _fSendPatch), // send_patch(chan, patch)
-            new LuaRegister("get_notes", _fGetNotes), //get_notes("B4.MY_SCALE")
-            new LuaRegister("create_notes", _fCreateNotes), //create_notes("MY_SCALE", "1 3 4 b7")
+            new LuaRegister("send_controller", _fSendController),
+            new LuaRegister("send_note", _fSendNote),
+            new LuaRegister("send_note_on", _fSendNoteOn),
+            new LuaRegister("send_note_off", _fSendNoteOff),
+            new LuaRegister("send_patch", _fSendPatch),
             new LuaRegister(null, null)
         };
         #endregion
@@ -166,7 +164,7 @@ namespace Ephemera.Nebulua
             GetChannels();
 
             // Get the sequences and sections.
-            GetComposition();
+            // GetComposition();
         }
 
         /// <summary>
@@ -191,7 +189,7 @@ namespace Ephemera.Nebulua
 
                     if (valid)
                     {
-                        // TODO refactor this mess.
+                        // TODO1 refactor this mess.
                         string? device_id = props.Names.Contains("device_id") ? props["device_id"].ToString() : null;
                         int? channel_num = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
                         int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : 0;
@@ -236,27 +234,27 @@ namespace Ephemera.Nebulua
             }
         }
 
-        /// <summary>
-        /// Get the sequences and sections.
-        /// </summary>
-        void GetComposition()
-        {
-            _l.GetGlobal("_G");//TODOS "sequences"
-            var keys = GetKeys();
-            _l.Pop(1); // GetGlobal
+        // /// <summary>
+        // /// Get the sequences and sections.
+        // /// </summary>
+        // void GetComposition()
+        // {
+        //     _l.GetGlobal("_G");//TODO1 "sequences"
+        //     var keys = GetKeys();
+        //     _l.Pop(1); // GetGlobal
 
-            foreach(var k in keys)
-            {
-                if (k.StartsWith("seq_"))
-                {
-                    _l.GetGlobal(k);
-                    var s = _l.ToStringL(-1);
-                    var parts = s!.SplitByTokens(Environment.NewLine);
+        //     foreach(var k in keys)
+        //     {
+        //         if (k.StartsWith("seq_"))
+        //         {
+        //             _l.GetGlobal(k);
+        //             var s = _l.ToStringL(-1);
+        //             var parts = s!.SplitByTokens(Environment.NewLine);
 
 
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
         #endregion
 
 
@@ -302,7 +300,7 @@ namespace Ephemera.Nebulua
 
 
 
-        #region C# calls lua functions //TODOS
+        #region C# calls lua functions //TODO1 see gen.cs
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -399,13 +397,13 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Lua calls C# functions TODOS all these need implementation and arg int/string handling
+        #region Lua calls C# functions TODO1 see gen.cs
         /// <summary> </summary>
         static int Log(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
-            var s = l.DumpStack();
+            // var s = l.DumpStack();
 
             // Get args.
             var level = l.ToInteger(1);
@@ -418,14 +416,17 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary> </summary>
+        /// api.send_note(S "synth", I note_num, N volume, X dur)
+        /// if volume is 0 note_off else note_on
+        /// if dur is 0 dur = note_on with dur = 0.1 (for drum/hit)
         static int SendNote(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
-            // Get args.         api.send_note("synth", note_num, VEL, 1.0)
+            // Get args. 
             int numArgs = l.GetTop();
-            // var level = l.ToInteger(1);
-            // var msg = l.ToStringL(2);
+            var level = l.ToInteger(1);
+            var msg = l.ToStringL(2);
 
             // Do the work.
             //string channelName, int notenum, double vol, double dur) //send_note(chan, note, vol, dur)
@@ -459,103 +460,104 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
+        /// api.send_note_on(S "synth", I note_num, N volume)
         static int SendNoteOn(IntPtr p)
         {
-            //SendNote(channelName, notenum, vol);
-
             // Return results.
             return 0;
         }
 
         /// <summary>Send an explicit note off immediately.</summary>
+        /// api.send_note_off(S "synth", I note_num)
         static int SendNoteOff(IntPtr p)
         {
-            //SendNote(channelName, notenum, 0); TODO
-
             // Return results.
             return 0;
         }
 
         /// <summary>Send a controller immediately.</summary>
+        /// api.send_controller("synth", ctrl.Pan, 90) -- SII
+
         static int SendController(IntPtr p)
         {
             var l = Lua.FromIntPtr(p)!;
 
-            ///// Get function arguments.
-            string? channelName = l.ToStringL(1);
-            int? controller = l.ToInteger(2);
-            int? val = l.ToInteger(3);
+            // ///// Get function arguments.
+            // string? channelName = l.ToStringL(1);
+            // int? controller = l.ToInteger(2);
+            // int? val = l.ToInteger(3);
 
-            ///// Do the work.
-            var ch = Common.OutputChannels[channelName];
-            //int ctlrid = MidiDefs.GetControllerNumber(controller);
-            //ch.SendController((MidiController)ctlrid, (int)val);
-            ch.SendController((MidiController)controller, (int)val);
+            // ///// Do the work.
+            // var ch = Common.OutputChannels[channelName];
+            // //int ctlrid = MidiDefs.GetControllerNumber(controller);
+            // //ch.SendController((MidiController)ctlrid, (int)val);
+            // ch.SendController((MidiController)controller, (int)val);
 
             // Return results.
             return 0;
         }
 
         /// <summary>Send a midi patch immediately.</summary>
+        /// api.send_patch("synth", inst.Lead1Square)
         static int SendPatch(IntPtr p)
         {
             var l = Lua.FromIntPtr(p)!;
 
-            ///// Get function arguments.
-            string channelName = l.ToStringL(1)!;
-            string patch = l.ToStringL(2)!;
+            // ///// Get function arguments.
+            // string channelName = l.ToStringL(1)!;
+            // string patch = l.ToStringL(2)!;
 
-            ///// Do the work.
-            var ch = Common.OutputChannels[channelName];
-            int patchid = MidiDefs.GetInstrumentNumber(patch); // handle fail?
-            ch.Patch = patchid;
-            ch.SendPatch();
-
-            // Return results.
-            return 0;
-        }
-
-        /// <summary>Add a named chord or scale definition.</summary>
-        static int CreateNotes(IntPtr p) // TODOS could be in a script.
-        {
-            var l = Lua.FromIntPtr(p)!;
-
-            // Get args.
-            var name = l.ToStringL(1);
-            var parts = l.ToStringL(2);
-
-            // Do the work.
-            MusicDefinitions.AddChordScale(name, parts);
+            // ///// Do the work.
+            // var ch = Common.OutputChannels[channelName];
+            // int patchid = MidiDefs.GetInstrumentNumber(patch); // handle fail?
+            // ch.Patch = patchid;
+            // ch.SendPatch();
 
             // Return results.
             return 0;
         }
 
-        /// <summary> </summary>
-        static int GetNotes(IntPtr p) // TODOS could be in a script.
-        {
-            var l = Lua.FromIntPtr(p)!;
+        // /// <summary>Add a named chord or scale definition.</summary>
+        // static int CreateNotes(IntPtr p)
+        // {
+        //     var l = Lua.FromIntPtr(p)!;
 
-            // Get args.
-            var noteString = l.ToStringL(1);
+        //     // Get args.
+        //     var name = l.ToStringL(1);
+        //     var parts = l.ToStringL(2);
 
-            // Do the work.
-            List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
+        //     // Do the work.
+        //     MusicDefinitions.AddChordScale(name, parts);
 
-            // Return results.
-            l.PushList(notes);
-            return 1;
-        }
+        //     // Return results.
+        //     return 0;
+        // }
+
+        // /// <summary> </summary>
+        // static int GetNotes(IntPtr p)
+        // {
+        //     var l = Lua.FromIntPtr(p)!;
+
+        //     // Get args.
+        //     var noteString = l.ToStringL(1);
+
+        //     // Do the work.
+        //     List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
+
+        //     // Return results.
+        //     l.PushList(notes);
+        //     return 1;
+        // }
         #endregion
 
-        #region TODOS these could be in the script
+        #region these could be in the script
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
         // CreateSection(int beats, string name, SectionElements elements) -- -> Section
 
         /// <summary>
         /// Convert script sequences etc to internal events.
         /// </summary>
-        public void BuildSteps() //TODOS put all these somewhere else?
+        public void BuildSteps()
         {
             // Build all the events.
             int sectionBeat = 0;
@@ -596,7 +598,7 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary>
-        /// Get all section names and when they start. The end marker is also added.//TODOS
+        /// Get all section names and when they start. The end marker is also added.
         /// </summary>
         /// <returns></returns>
         public Dictionary<int, string> GetSectionMarkers()
@@ -631,7 +633,7 @@ namespace Ephemera.Nebulua
         /// <param name="channel">Which channel to send it on.</param>
         /// <param name="seq">Which notes to send.</param>
         /// <param name="startBeat">Which beat to start sequence at.</param>
-        List<MidiEventDesc> ConvertToEvents(Channel channel, Sequence seq, int startBeat)//TODOS
+        List<MidiEventDesc> ConvertToEvents(Channel channel, Sequence seq, int startBeat)
         {
             List<MidiEventDesc> events = new();
 

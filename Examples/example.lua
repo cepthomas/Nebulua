@@ -3,10 +3,13 @@
 
 -- https://github.com/hishamhm/f-strings
 
-local api = require("neb_api")
-local scale = require("scale")
+local log = require("logger")
+local ut = require("utils")
 
-local md = require("midi_defs")
+local neb = require("nebulua") -- lua api
+local api = require("neb_api") -- C# api
+
+local md = require("music_defs")
 local inst = md.instruments
 local drum = md.drums
 local kit = md.drum_kits
@@ -14,31 +17,23 @@ local ctrl = md.controllers
 
 local ad = require("app_defs")
 local dt = ad.device_types
+local scale = require("scale")
 
-local ut = require("utils")
 
--- Logging. Defs from the C# logger side.
-LOG_TRACE = 0
-LOG_DEBUG = 1
-LOG_INFO  = 2
-LOG_WARN  = 3
-LOG_ERROR = 4
+log.info("=============== go go go =======================")
 
-api.log(LOG_INFO, "=============== go go go =======================")
-
-math.randomseed(os.time())
 
 channels =
 {
     -- outputs
-    keys  = { device_id = "midi_out",  channel = 1,  patch = inst.AcousticGrandPiano },
-    bass  = { device_id = "midi_out",  channel = 2,  patch = inst.AcousticBass },
-    synth = { device_id = "midi_out",  channel = 3,  patch = inst.Lead1Square },
-    drums = { device_id = "midi_out",  channel = 10, patch = kit.Jazz }, -- for drums TODO identify somehow?
+    keys  = { device_id = "midi_out",  channel_num = 1,  patch = inst.AcousticGrandPiano },
+    bass  = { device_id = "midi_out",  channel_num = 2,  patch = inst.AcousticBass },
+    synth = { device_id = "midi_out",  channel_num = 3,  patch = inst.Lead1Square },
+    drums = { device_id = "midi_out",  channel_num = 10, patch = kit.Jazz }, -- for drums TODO2 identify somehow?
     -- inputs
-    tune  = { device_id = "midi_in",   channel = 1   },
-    trig  = { device_id = "virt_key",  channel = 2,  }, -- optional: show_note_names
-    whiz  = { device_id = "bing_bong", channel = 10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
+    tune  = { device_id = "midi_in",   channel_num = 1   },
+    trig  = { device_id = "virt_key",  channel_num = 2,  }, -- optional: show_note_names
+    whiz  = { device_id = "bing_bong", channel_num = 10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
 }
 
 -- local vars - Volumes. 
@@ -46,48 +41,62 @@ local keys_vol = 0.8
 local drum_vol = 0.8
 
 -- Get some stock chords and scales.
-local alg_scale = api.get_notes("G3.Algerian")
-local chord_notes = api.get_notes("C4.o7")
--- api.log(LOG_INFO, chord_notes)
+local alg_scale = md.get_notes("G3.Algerian")
+local chord_notes = md.get_notes("C4.o7")
+-- log.info(chord_notes)
 
 -- Create custom scale.
-api.create_notes("MY_SCALE", "1 3 4 b7")
-local my_scale_notes = api.get_notes("B4.MY_SCALE")
--- api.log(LOG_INFO, my_scale_notes)
+md.create_notes("MY_SCALE", "1 3 4 b7")
+local my_scale_notes = md.get_notes("B4.MY_SCALE")
+-- log.info(my_scale_notes)
+
+local send_msgs = {}
 
 
-------------------------- Called from core ----------------------------------------
+
+------------------------- Called from C# core ----------------------------------------
 
 -- Init - called to initialize Nebulator stuff.
 function setup()
-    api.log(LOG_INFO, "example initialization")
+    log.info("example initialization")
+    math.randomseed(os.time())
+
+    send_msgs = neb.process_all(sequences, sections)
+
+    api.send_patch("synth", inst.Lead1Square)
+
 end
 
 -- Main loop - called every mmtimer increment.
 function step(bar, beat, subbeat)
     -- boing(60)
 
-    -- Periodic work.
+    -- Main work.
+    neb.do_step(send_msgs, bar, beat, subbeat)
+
+    -- Selective work.
     if beat == 0 and subbeat == 0 then
-        api.send_controller("synth", ctrl.Pan, 90) -- string, int, int
+        api.send_controller("synth", ctrl.Pan, 90) -- SII
+        -- or...
+        -- api.send_controller(channels.synth.channel_num, ctrl.Pan, 90) -- SII
         api.send_controller("keys",  ctrl.Pan, 30)
     end
 end
 
 -- Handlers for input events.
-function input_note(channel, note, vel) -- string?, int, int
-    api.log(LOG_INFO, "input_note") -- string.format("%s", variable_name), channel, note, vel)
+function input_note(channel_name, note, vel) -- SII
+    log.info("input_note") -- string.format("%s", variable_name), channel_name, note, vel)
 
-    if channel == "bing_bong" then
+    if channel_name == "bing_bong" then
         -- whiz = ...
     end
 
-    api.send_note("synth", note, vel, 0.5) -- table, int, int, dbl
+    api.send_note("synth", note, vel, 0.5) -- SIIT
 end
 
 -- Handlers for input events.
-function input_controller(channel, ctlid, value) -- ditto
-    api.log(LOG_INFO, "input_controller") --, channel, ctlid, value)
+function input_controller(channel_name, ctlid, value) -- SII
+    log.info("input_controller") --, channel_name, ctlid, value)
 end
 
 ----------------------- User lua functions -------------------------
@@ -101,14 +110,14 @@ end
 -- Calc something and play it.
 function section_func()
     local note_num = math.random(0, #alg_scale)
-    api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
+    api.send_note("drums", alg_scale[note_num], 0.7, 0.5)
 end
 
 -- Make a noise.
 function boing(note_num)
     local boinged = false;
 
-    api.log(LOG_INFO, "boing")
+    log.info("boing")
     if note_num == 0 then
         note_num = Random(30, 80)
         boinged = true
@@ -121,10 +130,7 @@ end
 
 ---- sequences
 
--- field types: String Number Integer Function barTime(Number?) Expression? Mapindex(0-9)
--- TODO eliminate strings for notes?
--- TODO type for BarTime? or just use number.
--- TODO volumes could be a user map instead of linear range. optional?
+-- TODO1 volumes could be a user map instead of linear range. optional?
 drum_vol = [0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 ]
 drum_vol_range = [5.0, 9.5]
 
@@ -140,11 +146,11 @@ sequences = {
     ],
 
     list_seq = [
-        [ 0.0, "C2",  7, 0.1 ], --TSM(T)
-        [ 0.0, drum.AcousticBassDrum,  4, 0.1 ], --TIM(T)
-        [ 0.4,  44,   5, 0.1 ], --TIM(T)
-        [ 4.0, sequence_func,  7, 1.0 ], --TFM(T)
-        [ 7.4, "A#2", 7, 0.1 ]  --TSM(T)
+        [ 0.0, "C2",  7, 0.1 ], --XSM(X)
+        [ 0.0, drum.AcousticBassDrum,  4, 0.1 ], --XIM(X)
+        [ 0.4,  44,   5, 0.1 ], --XIM(X)
+        [ 4.0, sequence_func,  7, 1.0 ], --XFM(X)
+        [ 7.4, "A#2", 7, 0.1 ]  --XSM(X)
     ],
 
     keys_verse = [
@@ -235,7 +241,7 @@ sections = {
         [ keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus ],
         [ drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus ],
         [ bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus ],
-        [ synth,   section_func,    nil,          section_func,    dynamic ]
+        [ synth,   section_func, nil,          section_func, dynamic ]
     ],
 
     ending = [

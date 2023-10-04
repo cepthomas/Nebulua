@@ -56,5 +56,51 @@ M.controllers =
     PortamentoControl = 084, AllSoundOff = 120, ResetAllControllers = 121, LocalKeyboard = 122, AllNotesOff = 123,
 }
 
+-- see C:\Dev\repos\Libs\NBagOfTricks\Core\MusicDefinitions.cs
+function M.create_notes(name, notes) --"MY_SCALE", "1 3 4 b7")
+    return nil
+
+function M.get_notes(name) --"B4.MY_SCALE")
+    return [ 1, 2, 3 ]
+
+
+-- // TODO2 these
+-- // /// <summary>Add a named chord or scale definition.</summary>
+-- // static int CreateNotes(IntPtr p)
+-- // {
+-- //     var l = Lua.FromIntPtr(p)!;
+
+-- //     // Get args.
+-- //     var name = l.ToStringL(1);
+-- //     var parts = l.ToStringL(2);
+
+-- //     // Do the work.
+-- //     MusicDefinitions.AddChordScale(name, parts);
+
+-- //     // Return results.
+-- //     return 0;
+-- // }
+
+-- // /// <summary> </summary>
+-- // static int GetNotes(IntPtr p)
+-- // {
+-- //     var l = Lua.FromIntPtr(p)!;
+
+-- //     // Get args.
+-- //     var noteString = l.ToStringL(1);
+
+-- //     // Do the work.
+-- //     List<int> notes = MusicDefinitions.GetNotesFromString(noteString);
+
+-- //     // Return results.
+-- //     l.PushList(notes);
+-- //     return 1;
+-- // }
+
+
+
+
+
+
 -- Return the module.
 return M
