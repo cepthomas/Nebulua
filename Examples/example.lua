@@ -15,8 +15,8 @@ local drum = md.drums
 local kit = md.drum_kits
 local ctrl = md.controllers
 
-local ad = require("app_defs")
-local dt = ad.device_types
+-- local ad = require("app_defs")
+-- local dt = ad.device_types
 local scale = require("scale")
 
 
@@ -50,7 +50,7 @@ md.create_notes("MY_SCALE", "1 3 4 b7")
 local my_scale_notes = md.get_notes("B4.MY_SCALE")
 -- log.info(my_scale_notes)
 
-local send_msgs = {}
+local steps = {}
 
 
 
@@ -61,7 +61,7 @@ function setup()
     log.info("example initialization")
     math.randomseed(os.time())
 
-    send_msgs = neb.process_all(sequences, sections)
+    steps = neb.process_all(sequences, sections)
 
     api.send_patch("synth", inst.Lead1Square)
 
@@ -72,7 +72,7 @@ function step(bar, beat, subbeat)
     -- boing(60)
 
     -- Main work.
-    neb.do_step(send_msgs, bar, beat, subbeat)
+    neb.do_step(steps, bar, beat, subbeat)
 
     -- Selective work.
     if beat == 0 and subbeat == 0 then
@@ -105,12 +105,6 @@ end
 function sequence_func()
     local note_num = math.random(0, #alg_scale)
     api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
-end
-
--- Calc something and play it.
-function section_func()
-    local note_num = math.random(0, #alg_scale)
-    api.send_note("drums", alg_scale[note_num], 0.7, 0.5)
 end
 
 -- Make a noise.
@@ -241,7 +235,7 @@ sections = {
         [ keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus ],
         [ drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus ],
         [ bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus ],
-        [ synth,   section_func, nil,          section_func, dynamic ]
+        [ synth,   synth_chorus, nil,          synth_chorus, dynamic ]
     ],
 
     ending = [

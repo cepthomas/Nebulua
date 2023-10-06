@@ -8,7 +8,7 @@ math.randomseed(seed)
 
 function create_scale(scale, root, octDown, octUp)
     sc = {}
-    sc.scale_notes = api.GetNotesFromString("{sroot}.{sscale}") --array of int
+    sc.scale_notes = md.get_notes_from_string("{sroot}.{sscale}") --array of int
     sc.note_weights = {} --array of int
     sc.total_weight = 0
     sc.down = octDown --int

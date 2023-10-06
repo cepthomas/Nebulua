@@ -15,16 +15,21 @@ M.LOG_WARN  = 3
 M.LOG_ERROR = 4
 
 -- Main function.
--- function M.log(level, msg)
---     local marker = ""
---     if level == M.LOG_WARN then marker = "? "
---     elseif level == M.LOG_ERROR then marker = "! "
---     end
+-----------------------------------------------------------------------------
+-- Description
+-- Description
+-- @param name type desc
+-- @return type desc
+function M.log(level, msg)
+    local marker = ""
+    if level == M.LOG_WARN then marker = "? "
+    elseif level == M.LOG_ERROR then marker = "! "
+    end
 
---     api.log(marker)
---     api.log(msg)
---     -- api.log(marker .. msg)
--- end
+    api.log(marker)
+    api.log(msg)
+    -- api.log(marker .. msg)
+end
 
 -- Convenience functions.
 function M.error(msg) api.log(M.LOG_ERROR, msg) end
