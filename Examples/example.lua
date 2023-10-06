@@ -1,8 +1,6 @@
 
 -- Example Nebulator composition file with some UI demo. This is not actual music.
 
--- https://github.com/hishamhm/f-strings
-
 local log = require("logger")
 local ut = require("utils")
 
@@ -15,8 +13,6 @@ local drum = md.drums
 local kit = md.drum_kits
 local ctrl = md.controllers
 
--- local ad = require("app_defs")
--- local dt = ad.device_types
 local scale = require("scale")
 
 
@@ -125,7 +121,7 @@ end
 ---- sequences
 
 -- TODO1 volumes could be a user map instead of linear range. optional?
-drum_vol = [0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 ]
+drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
 drum_vol_range = [5.0, 9.5]
 
 

@@ -7,25 +7,26 @@ local M = {}
 
 ---------------------- types ----------------------
 
-step_type = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
+STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
 
 -- TODO1 class or?? Primary container for everything describing a step - mainly notes but supplementary stuff also.
 -- step_info = {}
 --     subbeat
---     step_type
+--     STEP_TYPE
 --     channel_num
---     payload: STEP_TYPE_NOTE: note_num(I), volume(N), duration(I subbeats)
---              STEP_TYPE_CONTROLLER: ctlid(I), value(I)
---              STEP_TYPE_PATCH: patch_num(I)
---              STEP_TYPE_FUNCTION: function(F)
+--     payload: STEP_TYPE.NOTE: note_num(I), volume(N), duration(I subbeats)
+--              STEP_TYPE.CONTROLLER: ctlid(I), value(I)
+--              STEP_TYPE.PATCH: patch_num(I)
+--              STEP_TYPE.FUNCTION: function(F)
 -- For viewing pleasure. ToString()
 
-InternalPPQ = 32
+internal_ppq = 32
 -- Only 4/4 time supported.
-BeatsPerBar = 4
-SubbeatsPerBeat = InternalPPQ
-SubeatsPerBar = InternalPPQ * BeatsPerBar
-
+beats_per_bar = 4
+subbeats_per_beat = internal_ppq
+subeats_per_bar = internal_ppq * beats_per_bar
+-- subbeat is low_res_ppq
+low_res_ppq = 8
 
 ------------------------------- all ------------------------------
 
@@ -33,19 +34,14 @@ SubeatsPerBar = InternalPPQ * BeatsPerBar
 -- Description
 -- Description
 -- @param name type desc
--- @return type desc
+-- @return list of step_info ordered by subbeat
 function M.process_all(sequences, sections)
-
-    -- Return a list of step_info ordered by subbeat.
-
-    seq_step_infos = []
+    seq_step_infos = {}
 
     for seq_name, seq_steps in ipairs(sequences) do
         -- test types?
 
-        step_infos = []
-
-
+        step_infos = {}
 
         for _, seq_step in ipairs(seq_steps) do
             bad_step = false
@@ -105,18 +101,39 @@ end
 
 
 -----------------------------------------------------------------------------
--- Parse a pattern. Note subbeats per beat is fixed at PPQ of 8.
--- Like: "|M-------|--      |        |        |7-------|--      |        |5-8---  |"
--- @param pattern type Ascii pattern string.
--- @param what type Specific note(s).
--- @param volume type Base volume.
--- @return partially filled-in step_info[]
-function M.parse_graphic_notes(gr_str)
+-- Parse a pattern.
+-- @param notes_src list like: [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ]
+-- @return partially filled-in step_info list
+function M.parse_graphic_notes(notes_src)
+    -- TODO2 check args, numbers in midi range
 
-    step_infos = []
+    -- [ "|        |        |        |5---    |        |        |        |5-8---  |", "D6" ] --SS
+    -- [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ], --SS
+    -- [ "|7-------|--      |        |        |7-------|--      |        |        |", 84 ], --SI
+    -- [ "|7-------|--      |        |        |7-------|--      |        |        |", drum.AcousticSnare ], --SI
+    -- [ "|        |        |        |5---    |        |        |        |5-8---  |", sequence_func ] --SF
 
-    -- Remove visual markers.
-    pattern = gr_str.Replace("|", "")
+    step_infos = {}
+
+    note = notes_src[2]
+    tnote = type(notes_src[2])
+    notes = {}
+    func = nil
+
+    if tnote == "number" then
+        -- use as is
+        table.insert(notes, note)
+    elseif tnote == "function" then
+        -- use as is
+        func = note
+    elseif tnote == "string" then
+        notes = md.get_notes(src)
+    else
+        step_infos = nil
+    end        
+
+    -- Remove visual markers from pattern.
+    pattern = notes_src[1].Replace("|", "")
 
     current_vol = 0 -- default, not sounding
     start_offset = 0 -- in pattern for the start of the current event
@@ -154,6 +171,11 @@ function M.parse_graphic_notes(gr_str)
         end
     end
 
+    -- Straggler?
+    if current_vol > 0 then
+        make_note_event(#pattern - 1)
+    end
+
     -- Local function to package an event.
     function make_note_event(offset)
         -- offset is 0-based.
@@ -161,44 +183,47 @@ function M.parse_graphic_notes(gr_str)
         dur = offset - start_offset
         when = start_offset
 
-        si = { step_type=STEP_TYPE_NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
+        if func is not nil then
+            si = { step_type=STEP_TYPE.NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
+        else
+            si = { step_type=STEP_TYPE.FUNCTION, subbeat=when, function=func, volume=volmod, duration=dur }
+        end
         table.insert(step_infos, si)
     end
-
-    -- Straggler?
-    if current_vol > 0 then
-        make_note_event(#pattern - 1)
-    end
-
+end
 
 -----------------------------------------------------------------------------
 -- Description
 -- Description
 -- @param name type desc
--- @return type desc
-function parse_specific_notes(notes_src)
-        -- [ 0.0, drum.AcousticBassDrum,  4, 0.1 ], --XIM(X)
-        -- [ 0.4,  44,   5, 0.1 ], --XIM(X)
-        -- [ 4.0, sequence_func,  7, 1.0 ], --XFM(X)
-        -- [ 7.4, "A#2", 7, 0.1 ]  --XSM(X)
+-- @return partially filled-in type_info list
+function parse_explicit_notes(notes_src)
+    -- [ 0.0, drum.AcousticBassDrum,  4, 0.1 ], --XIM(X)
+    -- [ 0.4, 44,                     5, 0.4 ], --XIM(X)
+    -- [ 7.4, "A#min",                7, 1.2 ]  --XSM(X)
+    -- [ 4.0, sequence_func,          7      ], --XFM(X)
 
-    -- Return partially filled-in info.
-    -- TODO2 check numbers in midi range
-    step_infos = []
+    -- TODO2 check args, numbers in midi range
+    step_infos = {}
 
-    t = type(src)
-    if t == "number" then
+    start = to_subbeats(notes_src[1])
+    note = notes_src[2]
+    tnote = type(notes_src[2])
+    volume = notes_src[3]
+    duration = notes_src[4] or 0.1
+
+    if tnote == "number" then
         -- use as is
-        si = { step_type=STEP_TYPE_NOTE, subbeat=999, note_num=src, volume=-1, }
+        si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=src, volume=volume / 10 }
         table.insert(step_infos, si)
-    elseif t == "function" then
+    elseif tnote == "function" then
         -- use as is
-        si = { step_type=STEP_TYPE_FUNCTION, subbeat=999, function=src }
+        si = { step_type=STEP_TYPE.FUNCTION, subbeat=start, function=src, volume=volume / 10 }
         table.insert(step_infos, si)
-    elseif t == "string" then
+    elseif tnote == "string" then
         notes = md.get_notes(src)
         for n in notes do
-            si = { step_type=STEP_TYPE_NOTE, subbeat=999, note_num=n, volume=-1, }
+            si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=n, volume=volume / 10 }
             table.insert(step_infos, si)
     else
         step_infos = nil
@@ -208,15 +233,12 @@ end
 
 
 
-
-
-
 -----------------------------------------------------------------------------
 -- Description
 -- Description
 -- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat)
+function M.do_step(send_stuff, bar, beat, subbeat) -- TODO1
     -- calc total subbeat
     -- get all 
 
@@ -224,35 +246,46 @@ function M.do_step(send_stuff, bar, beat, subbeat)
 end
 
 
+-----------------------------------------------------------------------------
+-- Construct a BarTime from Beat.Subbeat representation as a double. Subbeat is low_res_ppq = 8
+-- @param d number value to convert
+-- @return type desc
+function M.to_subbeats(dbeat)
+
+    integral = math.truncate(dbeat)
+    fractional = dbeat - integral
+
+    beats = (int)integral
+    subbeats = (int)math.round(fractional * 10.0)
+
+    if (subbeats >= low_res_ppq)
+        --throw new Exception($"Invalid subbeat value: {beat}")
+    end
+
+    -- Scale subbeats to native.
+    subbeats = subbeats * internal_ppq / low_res_ppq
+    total_subbeats = beats * subbeats_per_beat + subbeats
+
+
+-- public static (double integral, double fractional) SplitDouble(double val)
+-- {
+--     return (integral, fractional);
+-- }
+
+end
+
+
 
 -- /// <summary>
--- /// Construct a BarTime from Beat.Subbeat representation as a double. Subbeat is LOW_RES_PPQ = 8
+-- /// 
 -- /// </summary>
 -- /// <param name="beat"></param>
 -- /// <returns>New BarTime.</returns>
 -- public BarTime(double beat)
 -- {
---     var (integral, fractional) = MathUtils.SplitDouble(beat);
---     var beats = (int)integral;
---     var subbeats = (int)Math.Round(fractional * 10.0);
-
---     if (subbeats >= LOW_RES_PPQ)
---     {
---         throw new Exception($"Invalid subbeat value: {beat}");
---     }
-
---     // Scale subbeats to native.
---     subbeats = subbeats * MidiSettings.LibSettings.InternalPPQ / LOW_RES_PPQ;
---     TotalSubbeats = beats * MidiSettings.LibSettings.SubbeatsPerBeat + subbeats;
 -- }
 
 
--- public static (double integral, double fractional) SplitDouble(double val)
--- {
---     double integral = Math.Truncate(val);
---     double fractional = val - integral;
---     return (integral, fractional);
--- }
 
 
 -- Return the module.
@@ -262,12 +295,12 @@ return M
 --[[ old stuff TODO2
 -- return table:
 -- index = subbeat
--- value = msg_info[] to play
+-- value = msg_info list to play
 function M.process_sequence(seq)
     -- Length in beats.
     local seq_beats = 1
     -- All notes in an instrument sequence.
-    local elements = []
+    local elements = {}
     -- Parse seq string.
     local seq_name = "???"
     local seq_lines = ut.strsplit("\n", seq)
@@ -296,7 +329,7 @@ function M.process_sequence(seq)
         -- Time between note on/off. 0 (default) means not used. BarTime?
         elem.dur = 1.4
         -- The 0th is the root note and other values comprise possible chord notes.
-        elem.notes = [] -- ints
+        elem.notes = {} -- ints
         -- or call a script function.
         elem.func = nil
         -- Store.
