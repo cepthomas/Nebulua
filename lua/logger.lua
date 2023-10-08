@@ -7,12 +7,12 @@ local api = require("neb_api")
 -- Create the namespace/module.
 local M = {}
 
--- Defs from the C# logger side.
-M.LOG_TRACE = 0
-M.LOG_DEBUG = 1
-M.LOG_INFO  = 2
-M.LOG_WARN  = 3
-M.LOG_ERROR = 4
+-- Defs from the C# logger side: enum LogLevel { Trace = 0, Debug = 1, Info = 2, Warn = 3, Error = 4 }
+M.LOG_TRC = 0
+M.LOG_DBG = 1
+M.LOG_INF = 2
+M.LOG_WRN = 3
+M.LOG_ERR = 4
 
 -- Main function.
 -----------------------------------------------------------------------------
@@ -22,8 +22,8 @@ M.LOG_ERROR = 4
 -- @return type desc
 function M.log(level, msg)
     local marker = ""
-    if level == M.LOG_WARN then marker = "? "
-    elseif level == M.LOG_ERROR then marker = "! "
+    if level == M.LOG_WRN then marker = "? "
+    elseif level == M.LOG_ERR then marker = "! "
     end
 
     api.log(marker)
@@ -32,10 +32,11 @@ function M.log(level, msg)
 end
 
 -- Convenience functions.
-function M.error(msg) api.log(M.LOG_ERROR, msg) end
-function M.warn(msg) api.log(M.LOG_WARN, msg) end
-function M.info(msg) api.log(M.LOG_INFO, msg) end
-function M.debug(msg) api.log(M.LOG_DEBUG, msg) end
+function M.error(msg) api.log(M.LOG_ERR, msg) end
+function M.warn(msg)  api.log(M.LOG_WRN, msg) end
+function M.info(msg)  api.log(M.LOG_INF, msg) end
+function M.debug(msg) api.log(M.LOG_DBG, msg) end
+function M.trace(msg) api.log(M.LOG_TRC, msg) end
 
 
 -----------------------------------------------------------------------------

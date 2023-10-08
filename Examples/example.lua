@@ -7,7 +7,7 @@ local ut = require("utils")
 local neb = require("nebulua") -- lua api
 local api = require("neb_api") -- C# api
 
-local md = require("music_defs")
+local md = require("midi_defs")
 local inst = md.instruments
 local drum = md.drums
 local kit = md.drum_kits
@@ -18,6 +18,8 @@ local scale = require("scale")
 
 log.info("=============== go go go =======================")
 
+
+------------------------- Config ----------------------------------------
 
 channels =
 {
@@ -49,20 +51,20 @@ local my_scale_notes = md.get_notes("B4.MY_SCALE")
 local steps = {}
 
 
-
 ------------------------- Called from C# core ----------------------------------------
 
+-----------------------------------------------------------------------------
 -- Init - called to initialize Nebulator stuff.
 function setup()
     log.info("example initialization")
     math.randomseed(os.time())
-
+    -- Load her up.
     steps = neb.process_all(sequences, sections)
-
+    -- Manual patch.
     api.send_patch("synth", inst.Lead1Square)
-
 end
 
+-----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
 function step(bar, beat, subbeat)
     -- boing(60)
@@ -79,6 +81,7 @@ function step(bar, beat, subbeat)
     end
 end
 
+-----------------------------------------------------------------------------
 -- Handlers for input events.
 function input_note(channel_name, note, vel) -- SII
     log.info("input_note") -- string.format("%s", variable_name), channel_name, note, vel)
@@ -90,6 +93,7 @@ function input_note(channel_name, note, vel) -- SII
     api.send_note("synth", note, vel, 0.5) -- SIIT
 end
 
+-----------------------------------------------------------------------------
 -- Handlers for input events.
 function input_controller(channel_name, ctlid, value) -- SII
     log.info("input_controller") --, channel_name, ctlid, value)
@@ -97,12 +101,14 @@ end
 
 ----------------------- User lua functions -------------------------
 
+-----------------------------------------------------------------------------
 -- Calc something and play it.
 function sequence_func()
     local note_num = math.random(0, #alg_scale)
     api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
 end
 
+-----------------------------------------------------------------------------
 -- Make a noise.
 function boing(note_num)
     local boinged = false;
@@ -118,14 +124,13 @@ end
 
 ------------------------- Composition ---------------------------------------
 
----- sequences
-
 -- TODO1 volumes could be a user map instead of linear range. optional?
 drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
 drum_vol_range = [5.0, 9.5]
 
 
 
+-----------------------------------------------------------------------------
 sequences = {
     graphical_seq = [
         [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ], --SS
@@ -219,7 +224,7 @@ sequences = {
 }
 
 
----- sections ----
+-----------------------------------------------------------------------------
 sections = {
     beginning = [
         [ keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse ],

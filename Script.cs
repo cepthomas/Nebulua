@@ -300,7 +300,7 @@ namespace Ephemera.Nebulua
 
 
 
-        #region C# calls lua functions //TODO1 see gen.cs
+        #region C# calls lua functions  TODO1 see gen.cs
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>

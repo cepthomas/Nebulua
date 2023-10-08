@@ -4,8 +4,15 @@ local md = require("music_defs")
 
 local M = {}
 
+-- file:///C:/Dev/3rdLua/Penlight-master/docs/index.html : types, utils, stringx, 
 
----------------------- types ----------------------
+
+-- local mt = getmetatable(f)
+-- if not mt then error('not a callable object',2) end
+
+
+
+---------------------- types and defs ----------------------
 
 STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
 
@@ -20,13 +27,14 @@ STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
 --              STEP_TYPE.FUNCTION: function(F)
 -- For viewing pleasure. ToString()
 
-internal_ppq = 32
+
+INTERNAL_PPQ = 32
 -- Only 4/4 time supported.
-beats_per_bar = 4
-subbeats_per_beat = internal_ppq
-subeats_per_bar = internal_ppq * beats_per_bar
--- subbeat is low_res_ppq
-low_res_ppq = 8
+BEATS_PER_BAR = 4
+SUBBEATS_PER_BEAT = INTERNAL_PPQ
+SUBEATS_PER_BAR = INTERNAL_PPQ * BEATS_PER_BAR
+-- subbeat is LOW_RES_PPQ
+LOW_RES_PPQ = 8
 
 ------------------------------- all ------------------------------
 
@@ -36,6 +44,8 @@ low_res_ppq = 8
 -- @param name type desc
 -- @return list of step_info ordered by subbeat
 function M.process_all(sequences, sections)
+
+    -- index is seq name, value is steps list.
     seq_step_infos = {}
 
     for seq_name, seq_steps in ipairs(sequences) do
@@ -44,67 +54,34 @@ function M.process_all(sequences, sections)
         step_infos = {}
 
         for _, seq_step in ipairs(seq_steps) do
-            bad_step = false
+            gr_steps = nil
 
-            if #seq_steps == 2 and type(seq_steps[1]) == "string" then
-
-                gr_steps = parse_graphic_steps(seq_steps[1])
-                if gr_steps is nil then
-                    bad_step = true
-                    log.error("input_note") -- string.format("%s", variable_name), channel_name, note, vel)
-                else
-                    table.insert(step_infos, gr_steps)
-
-
-
-                t2 = type(seq_steps[2])
-                if t2 == "string" then
-
-
-                elseif t2 == "number" then
-
-                elseif t2 == "function" then
-
-
-                else
-                    bad_step = true
-                end
-
-
-
-            elseif #seq_steps in [3, 4] then
-
-            -- case num==2 seq_step[1]isstring
-
-            else
-                bad_step = true
+            if #seq_steps == 2 then
+                gr_steps = parse_graphic_steps(seq_steps)
+            elseif #seq_steps >= 3 then
+                gr_steps = parse_explicit_notes(seq_steps)
             end
 
-
-
-
+            if gr_steps == nil then
+                log.error("input_note") -- string.format("%s", variable_name), channel_name, note, vel)
+            else
+                step_infos[seq_name] = gr_steps
+            end
         end
-
-        goto error
-
     end
 
-    table.sort(seq_step_infos, function (left, right)
-        return left[2] < right[2]
-    end)
+    table.sort(seq_step_infos, function (left, right) return left.subbeat < right.subbeat end)
 
     return seq_step_infos
 
 end
-
-::error::
 
 
 -----------------------------------------------------------------------------
 -- Parse a pattern.
 -- @param notes_src list like: [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ]
 -- @return partially filled-in step_info list
-function M.parse_graphic_notes(notes_src)
+function parse_graphic_notes(notes_src)
     -- TODO2 check args, numbers in midi range
 
     -- [ "|        |        |        |5---    |        |        |        |5-8---  |", "D6" ] --SS
@@ -247,7 +224,7 @@ end
 
 
 -----------------------------------------------------------------------------
--- Construct a BarTime from Beat.Subbeat representation as a double. Subbeat is low_res_ppq = 8
+-- Construct a subbeat from beat.subbeat representation as a double.
 -- @param d number value to convert
 -- @return type desc
 function M.to_subbeats(dbeat)
@@ -258,32 +235,14 @@ function M.to_subbeats(dbeat)
     beats = (int)integral
     subbeats = (int)math.round(fractional * 10.0)
 
-    if (subbeats >= low_res_ppq)
+    if (subbeats >= LOW_RES_PPQ)
         --throw new Exception($"Invalid subbeat value: {beat}")
     end
 
     -- Scale subbeats to native.
-    subbeats = subbeats * internal_ppq / low_res_ppq
-    total_subbeats = beats * subbeats_per_beat + subbeats
-
-
--- public static (double integral, double fractional) SplitDouble(double val)
--- {
---     return (integral, fractional);
--- }
-
+    subbeats = subbeats * INTERNAL_PPQ / LOW_RES_PPQ
+    total_subbeats = beats * SUBBEATS_PER_BEAT + subbeats
 end
-
-
-
--- /// <summary>
--- /// 
--- /// </summary>
--- /// <param name="beat"></param>
--- /// <returns>New BarTime.</returns>
--- public BarTime(double beat)
--- {
--- }
 
 
 
