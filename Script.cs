@@ -55,7 +55,7 @@ namespace Ephemera.Nebulua
         /// <summary>Main execution lua state.</summary>
         readonly Lua _l = new();
 
-        // Bound static functions.//TODO1
+        // Bound static functions.
         static readonly LuaFunction _fLog = Log;
         static readonly LuaFunction _fSendController = SendController;
         static readonly LuaFunction _fSendNote = SendNote;
@@ -128,7 +128,7 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Bind the C# functions lua can call.
         /// </summary>
-        readonly LuaRegister[] _libFuncs = new LuaRegister[]//TODO2 automate this also?
+        readonly LuaRegister[] _libFuncs = new LuaRegister[]// automate this also?
         {
             new LuaRegister("log", _fLog),
             new LuaRegister("send_controller", _fSendController),
@@ -239,7 +239,7 @@ namespace Ephemera.Nebulua
         // /// </summary>
         // void GetComposition()
         // {
-        //     _l.GetGlobal("_G");//TODO1 "sequences"
+        //     _l.GetGlobal("_G");// "sequences"
         //     var keys = GetKeys();
         //     _l.Pop(1); // GetGlobal
 
@@ -300,7 +300,7 @@ namespace Ephemera.Nebulua
 
 
 
-        #region C# calls lua functions  TODO1 see gen.cs
+        #region C# calls lua functions - see gen.cs
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -397,7 +397,7 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Lua calls C# functions TODO1 see gen.cs
+        #region Lua calls C# functions - see gen.cs
         /// <summary> </summary>
         static int Log(IntPtr p)
         {

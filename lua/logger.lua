@@ -1,5 +1,5 @@
 --[[
-Simple logger. TODO2 will get more capabilities: user supplied streams, filtering,...
+Simple logger. TODO2 will get more capabilities: user supplied streams, filtering,... Make into generic comp.
 --]]
 
 local api = require("neb_api")
@@ -8,11 +8,13 @@ local api = require("neb_api")
 local M = {}
 
 -- Defs from the C# logger side: enum LogLevel { Trace = 0, Debug = 1, Info = 2, Warn = 3, Error = 4 }
-M.LOG_TRC = 0
-M.LOG_DBG = 1
-M.LOG_INF = 2
-M.LOG_WRN = 3
-M.LOG_ERR = 4
+M.LOG_LEVEL = { TRC=0, DBG=1, INF=2, WRN=3, ERR=4 }
+
+-- M.LOG_TRC = 0
+-- M.LOG_DBG = 1
+-- M.LOG_INF = 2
+-- M.LOG_WRN = 3
+-- M.LOG_ERR = 4
 
 -- Main function.
 -----------------------------------------------------------------------------
@@ -22,8 +24,8 @@ M.LOG_ERR = 4
 -- @return type desc
 function M.log(level, msg)
     local marker = ""
-    if level == M.LOG_WRN then marker = "? "
-    elseif level == M.LOG_ERR then marker = "! "
+    if level == M.LOG_LEVEL.WRN then marker = "? "
+    elseif level == M.LOG_LEVEL.ERR then marker = "! "
     end
 
     api.log(marker)
@@ -32,11 +34,11 @@ function M.log(level, msg)
 end
 
 -- Convenience functions.
-function M.error(msg) api.log(M.LOG_ERR, msg) end
-function M.warn(msg)  api.log(M.LOG_WRN, msg) end
-function M.info(msg)  api.log(M.LOG_INF, msg) end
-function M.debug(msg) api.log(M.LOG_DBG, msg) end
-function M.trace(msg) api.log(M.LOG_TRC, msg) end
+function M.error(msg) api.log(M.LOG_LEVEL.ERR, msg) end
+function M.warn(msg)  api.log(M.LOG_LEVEL.WRN, msg) end
+function M.info(msg)  api.log(M.LOG_LEVEL.INF, msg) end
+function M.debug(msg) api.log(M.LOG_LEVEL.DBG, msg) end
+function M.trace(msg) api.log(M.LOG_LEVEL.TRC, msg) end
 
 
 -----------------------------------------------------------------------------

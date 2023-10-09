@@ -15,19 +15,17 @@ namespace Ephemera.Nebulua
 {
     public class Gen
     {
-        ///// gen funcs from sig TODO1
-
-        // General
-        void ErrorHandler(string s)
+        void ErrorHandler(string s) // TODO1
         {
             // Do something with this.
         }
+
 
         ///// C# calls lua
         // lua_func_name: my_lua_func
         // cs_func_name: CsharpCallLua
         // rettype: T
-        // argtypes[]: SIT  TODO2 req/opt?
+        // argtypes[]: SIT  req/opt?
         // gens:
         public TableEx? CsharpCallLua(string arg1, int arg2, TableEx arg3)
         {
@@ -77,13 +75,13 @@ namespace Ephemera.Nebulua
 
 
         ///// Lua calls C# functions
+        // also gen registration func stuff?
 
-
-// lua_func_name: my_lua_func
+        // lua_func_name? my_lua_func
         // cs_func_name: LuaCallCsharp
         // rettype: I
-        // argtypes[]: IS  TODO2 req/opt?
-        // work lambda?
+        // argtypes[]: IS  req/opt?
+        // work func: double ret = LuaCallCsharp_DoWork(arg1, arg2) lambda?
         // gens:
         static int LuaCallCsharp(IntPtr p)
         {
@@ -133,7 +131,7 @@ namespace Ephemera.Nebulua
             if (ok)
             {
                 // Do the work.
-                double ret = FuncName_DoWork(arg1, arg2);
+                double ret = LuaCallCsharp_DoWork(arg1, arg2);
 
                 // Return results.
                 l.PushNumber(ret);
@@ -144,10 +142,11 @@ namespace Ephemera.Nebulua
         }
 
         // client supplies this work function - or lambda?
-        static double FuncName_DoWork(int level, string msg)
+        static double LuaCallCsharp_DoWork(int level, string msg)
         {
             double ret = level * msg.Length;
             return ret;
         }
+
     }
 }

@@ -998,7 +998,7 @@ namespace Ephemera.Nebulua
         void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
         {
             // Usually come from a different thread.
-            if (!_shuttingDown)// IsHandleCreated) //TODO2??
+            if (!_shuttingDown)// IsHandleCreated) // ???
             {
                 Debug.WriteLine("log");
                 this.InvokeIfRequired(_ => { textViewer.AppendLine($"{e.Message}"); });

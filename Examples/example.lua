@@ -27,7 +27,7 @@ channels =
     keys  = { device_id = "midi_out",  channel_num = 1,  patch = inst.AcousticGrandPiano },
     bass  = { device_id = "midi_out",  channel_num = 2,  patch = inst.AcousticBass },
     synth = { device_id = "midi_out",  channel_num = 3,  patch = inst.Lead1Square },
-    drums = { device_id = "midi_out",  channel_num = 10, patch = kit.Jazz }, -- for drums TODO2 identify somehow?
+    drums = { device_id = "midi_out",  channel_num = 10, patch = kit.Jazz }, -- for drums - identify somehow?
     -- inputs
     tune  = { device_id = "midi_in",   channel_num = 1   },
     trig  = { device_id = "virt_key",  channel_num = 2,  }, -- optional: show_note_names
@@ -124,7 +124,7 @@ end
 
 ------------------------- Composition ---------------------------------------
 
--- TODO1 volumes could be a user map instead of linear range. optional?
+-- TODO1 volumes could be a optional user map instead of linear range.
 drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
 drum_vol_range = [5.0, 9.5]
 

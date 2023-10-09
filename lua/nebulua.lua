@@ -14,7 +14,7 @@ local M = {}
 
 ---------------------- types and defs ----------------------
 
-STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
+M.STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
 
 -- TODO1 class or?? Primary container for everything describing a step - mainly notes but supplementary stuff also.
 -- step_info = {}
@@ -25,16 +25,16 @@ STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
 --              STEP_TYPE.CONTROLLER: ctlid(I), value(I)
 --              STEP_TYPE.PATCH: patch_num(I)
 --              STEP_TYPE.FUNCTION: function(F)
--- For viewing pleasure. ToString()
+-- Needs ToString()
 
 
-INTERNAL_PPQ = 32
+M.INTERNAL_PPQ = 32
 -- Only 4/4 time supported.
-BEATS_PER_BAR = 4
-SUBBEATS_PER_BEAT = INTERNAL_PPQ
-SUBEATS_PER_BAR = INTERNAL_PPQ * BEATS_PER_BAR
+M.BEATS_PER_BAR = 4
+M.SUBBEATS_PER_BEAT = INTERNAL_PPQ
+M.SUBEATS_PER_BAR = INTERNAL_PPQ * BEATS_PER_BAR
 -- subbeat is LOW_RES_PPQ
-LOW_RES_PPQ = 8
+M.LOW_RES_PPQ = 8
 
 ------------------------------- all ------------------------------
 
@@ -46,15 +46,15 @@ LOW_RES_PPQ = 8
 function M.process_all(sequences, sections)
 
     -- index is seq name, value is steps list.
-    seq_step_infos = {}
+    local seq_step_infos = {}
 
     for seq_name, seq_steps in ipairs(sequences) do
         -- test types?
 
-        step_infos = {}
+        local step_infos = {}
 
         for _, seq_step in ipairs(seq_steps) do
-            gr_steps = nil
+            local gr_steps = nil
 
             if #seq_steps == 2 then
                 gr_steps = parse_graphic_steps(seq_steps)
@@ -73,7 +73,6 @@ function M.process_all(sequences, sections)
     table.sort(seq_step_infos, function (left, right) return left.subbeat < right.subbeat end)
 
     return seq_step_infos
-
 end
 
 
@@ -90,12 +89,12 @@ function parse_graphic_notes(notes_src)
     -- [ "|7-------|--      |        |        |7-------|--      |        |        |", drum.AcousticSnare ], --SI
     -- [ "|        |        |        |5---    |        |        |        |5-8---  |", sequence_func ] --SF
 
-    step_infos = {}
+    local step_infos = {}
 
-    note = notes_src[2]
-    tnote = type(notes_src[2])
-    notes = {}
-    func = nil
+    local note = notes_src[2]
+    local tnote = type(notes_src[2])
+    local notes = {}
+    local func = nil
 
     if tnote == "number" then
         -- use as is
@@ -110,13 +109,13 @@ function parse_graphic_notes(notes_src)
     end        
 
     -- Remove visual markers from pattern.
-    pattern = notes_src[1].Replace("|", "")
+    local pattern = notes_src[1].Replace("|", "")
 
-    current_vol = 0 -- default, not sounding
-    start_offset = 0 -- in pattern for the start of the current event
+    local current_vol = 0 -- default, not sounding
+    local start_offset = 0 -- in pattern for the start of the current event
 
     for i, #pattern do
-        c = pattern[i]
+        local c = pattern[i]
 
         if c == '-' then
             -- Continue current note.
@@ -156,9 +155,10 @@ function parse_graphic_notes(notes_src)
     -- Local function to package an event.
     function make_note_event(offset)
         -- offset is 0-based.
-        volmod = current_vol / 10
-        dur = offset - start_offset
-        when = start_offset
+        local volmod = current_vol / 10
+        local dur = offset - start_offset
+        local when = start_offset
+        local si = nil
 
         if func is not nil then
             si = { step_type=STEP_TYPE.NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
@@ -181,13 +181,14 @@ function parse_explicit_notes(notes_src)
     -- [ 4.0, sequence_func,          7      ], --XFM(X)
 
     -- TODO2 check args, numbers in midi range
-    step_infos = {}
+    local step_infos = {}
 
-    start = to_subbeats(notes_src[1])
-    note = notes_src[2]
-    tnote = type(notes_src[2])
-    volume = notes_src[3]
-    duration = notes_src[4] or 0.1
+    local start = to_subbeats(notes_src[1])
+    local note = notes_src[2]
+    local tnote = type(notes_src[2])
+    local volume = notes_src[3]
+    local duration = notes_src[4] or 0.1
+    local si = nil
 
     if tnote == "number" then
         -- use as is
@@ -198,7 +199,7 @@ function parse_explicit_notes(notes_src)
         si = { step_type=STEP_TYPE.FUNCTION, subbeat=start, function=src, volume=volume / 10 }
         table.insert(step_infos, si)
     elseif tnote == "string" then
-        notes = md.get_notes(src)
+        local notes = md.get_notes(src)
         for n in notes do
             si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=n, volume=volume / 10 }
             table.insert(step_infos, si)
@@ -229,11 +230,10 @@ end
 -- @return type desc
 function M.to_subbeats(dbeat)
 
-    integral = math.truncate(dbeat)
-    fractional = dbeat - integral
-
-    beats = (int)integral
-    subbeats = (int)math.round(fractional * 10.0)
+    local integral = math.truncate(dbeat)
+    local fractional = dbeat - integral
+    local beats = (int)integral
+    local subbeats = (int)math.round(fractional * 10.0)
 
     if (subbeats >= LOW_RES_PPQ)
         --throw new Exception($"Invalid subbeat value: {beat}")
@@ -243,8 +243,6 @@ function M.to_subbeats(dbeat)
     subbeats = subbeats * INTERNAL_PPQ / LOW_RES_PPQ
     total_subbeats = beats * SUBBEATS_PER_BEAT + subbeats
 end
-
-
 
 
 -- Return the module.
