@@ -10,24 +10,20 @@ using Ephemera.NBagOfTricks;
 using Ephemera.MidiLib;
 using KeraLuaEx;
 
+// For spec see process_interop.lua
+
 
 namespace Ephemera.Nebulua
 {
-    public class Gen
+    public partial class Script
     {
-        void ErrorHandler(string s) // TODO1
-        {
-            // Do something with this.
-        }
-
-
-        ///// C# calls lua
+        ///// Host calls lua
         // lua_func_name: my_lua_func
-        // cs_func_name: CsharpCallLua
+        // cs_func_name: HostCallLua
         // rettype: T
         // argtypes[]: SIT  req/opt?
         // gens:
-        public TableEx? CsharpCallLua(string arg1, int arg2, TableEx arg3)
+        public TableEx? HostCallLua(string arg1, int arg2, TableEx arg3)
         {
             TableEx? ret;
             bool ok = true;
@@ -36,12 +32,8 @@ namespace Ephemera.Nebulua
             LuaType ltype = _l.GetGlobal(my_lua_func);
             if (ltype == LuaType.None)
             {
-                // ERR Bad lua function name: my_lua_func
-                if (_l.ThrowOnError)
-                {
-                    throw (new SyntaxException("Bad lua function: my_lua_func"));
-                }
                 ok = false;
+                ErrorHandler(new SyntaxException("Bad lua function: my_lua_func"));
             }
 
             if (ok)
@@ -55,15 +47,16 @@ namespace Ephemera.Nebulua
                 LuaStatus lstat = _l.DoCall(num_args, num_ret); // optionally throws
                 if (lstat >= LuaStatus.ErrRun)
                 {
-                    // ERR Bad lua function: my_lua_func
                     ok = false;
+                    ErrorHandler(new SyntaxException("?????"));
                 }
 
                 // Get the results from the stack. maybe
                 var tbl = _l.ToTableEx(-1); // or ToInteger() etc
                 if (tbl is null)
                 {
-
+                    ok = false;
+                    ErrorHandler(new SyntaxException("??????????"));
                 }
                 _l.Pop(num_ret); // Clean up results.
             }
@@ -71,19 +64,9 @@ namespace Ephemera.Nebulua
             return ret;
         }
 
-
-
-
-        ///// Lua calls C# functions
+        ///// Lua calls Host functions
         // also gen registration func stuff?
-
-        // lua_func_name? my_lua_func
-        // cs_func_name: LuaCallCsharp
-        // rettype: I
-        // argtypes[]: IS  req/opt?
-        // work func: double ret = LuaCallCsharp_DoWork(arg1, arg2) lambda?
-        // gens:
-        static int LuaCallCsharp(IntPtr p)
+        static int LuaCallHost(IntPtr p)
         {
             bool ok = true;
             int numres = 0;
@@ -94,8 +77,8 @@ namespace Ephemera.Nebulua
 
             if (l is null)
             {
-                throw (new LuaException("This should never happen"));
                 ok = false;
+                ErrorHandler(new LuaException("This should never happen"));
             }
 
             // Get args.
@@ -108,10 +91,7 @@ namespace Ephemera.Nebulua
                 else
                 {
                     ok = false;
-                    if (l.ThrowOnError)
-                    {
-                        throw (new SyntaxException($"Bad arg type: ..."));
-                    }
+                    ErrorHandler(new SyntaxException($"Bad arg type: ..."));
                 }
             }
 
@@ -123,15 +103,15 @@ namespace Ephemera.Nebulua
                 }
                 else
                 {
-                    throw (new SyntaxException("Bad arg type: ..."));
                     ok = false;
+                    ErrorHandler(new SyntaxException("Bad arg type: ..."));
                 }
             }
 
             if (ok)
             {
                 // Do the work.
-                double ret = LuaCallCsharp_DoWork(arg1, arg2);
+                double ret = LuaCallHost_DoWork(arg1, arg2);
 
                 // Return results.
                 l.PushNumber(ret);
@@ -140,13 +120,5 @@ namespace Ephemera.Nebulua
 
             return numres;
         }
-
-        // client supplies this work function - or lambda?
-        static double LuaCallCsharp_DoWork(int level, string msg)
-        {
-            double ret = level * msg.Length;
-            return ret;
-        }
-
     }
 }

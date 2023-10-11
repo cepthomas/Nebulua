@@ -14,7 +14,7 @@ using KeraLuaEx;
 
 namespace Ephemera.Nebulua
 {
-    public class Script : IDisposable
+    public partial class Script : IDisposable
     {
         #region Properties that can be read in the user script.
         /// <summary>Sound is playing. Lua: "playing".</summary>
@@ -295,6 +295,31 @@ namespace Ephemera.Nebulua
 
         //     return keys;
         // }
+
+
+        #region Genned code support
+        void ErrorHandler(Exception e) // TODO1 - from genned code
+        {
+            // Do something with this.
+            if (_l.ThrowOnError)
+            {
+                throw (new SyntaxException("Bad lua function: my_lua_func"));
+            }
+
+        }
+
+
+
+
+        // client supplies this work function - or lambda?
+        static double LuaCallHost_DoWork(int level, string msg)
+        {
+            double ret = level * msg.Length;
+            return ret;
+        }
+
+
+        #endregion
 
 
 
