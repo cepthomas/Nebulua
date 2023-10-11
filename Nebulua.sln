@@ -19,6 +19,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lua", "lua", "{394C1DC8-68D
 		lua\midi_defs.lua = lua\midi_defs.lua
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host", "..\KeraLuaEx\Host\Host.csproj", "{594C0100-6160-418B-BFBC-4B4A0C6D57D9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "..\KeraLuaEx\Test\Test.csproj", "{918BD938-4D05-41E9-92EB-742E91461F6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{DE8DBDA0-EC8C-4F45-B3EA-3BA39A30B7C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE8DBDA0-EC8C-4F45-B3EA-3BA39A30B7C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE8DBDA0-EC8C-4F45-B3EA-3BA39A30B7C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{594C0100-6160-418B-BFBC-4B4A0C6D57D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{594C0100-6160-418B-BFBC-4B4A0C6D57D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{594C0100-6160-418B-BFBC-4B4A0C6D57D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{594C0100-6160-418B-BFBC-4B4A0C6D57D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{918BD938-4D05-41E9-92EB-742E91461F6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{918BD938-4D05-41E9-92EB-742E91461F6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{918BD938-4D05-41E9-92EB-742E91461F6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{918BD938-4D05-41E9-92EB-742E91461F6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

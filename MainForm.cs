@@ -671,7 +671,7 @@ namespace Ephemera.Nebulua
                     var dev = (IInputDevice)sender;
 
                     // Hand over to the script.
-                    var chName = "TODO1 check for invalid";// Common.InputChannels.ChannelName;
+                    var chName = "TODO2 check for invalid";// Common.InputChannels.ChannelName;
                     try
                     {
                         if (e.Note != -1)

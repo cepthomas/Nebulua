@@ -55,15 +55,15 @@ namespace Ephemera.Nebulua
         /// <summary>Main execution lua state.</summary>
         readonly Lua _l = new();
 
-        // Bound static functions.
-        static readonly LuaFunction _fLog = Log;
-        static readonly LuaFunction _fSendController = SendController;
-        static readonly LuaFunction _fSendNote = SendNote;
-        static readonly LuaFunction _fSendNoteOn = SendNoteOn;
-        static readonly LuaFunction _fSendNoteOff = SendNoteOff;
-        static readonly LuaFunction _fSendPatch = SendPatch;
-        // static readonly LuaFunction _fGetNotes = GetNotes;
-        // static readonly LuaFunction _fCreateNotes = CreateNotes;
+        // // Bound static functions.
+        // static readonly LuaFunction _fLog = Log;
+        // static readonly LuaFunction _fSendController = SendController;
+        // static readonly LuaFunction _fSendNote = SendNote;
+        // static readonly LuaFunction _fSendNoteOn = SendNoteOn;
+        // static readonly LuaFunction _fSendNoteOff = SendNoteOff;
+        // static readonly LuaFunction _fSendPatch = SendPatch;
+        // // static readonly LuaFunction _fGetNotes = GetNotes;
+        // // static readonly LuaFunction _fCreateNotes = CreateNotes;
 
         /// <summary>Need static instance for binding functions.</summary>
         static Script _instance;
@@ -84,8 +84,11 @@ namespace Ephemera.Nebulua
         /// </summary>
         public Script()
         {
-            // Load C# impl functions. This table gets pushed on the stack and into globals.
-            _l.RequireF("neb_api", OpenLib, true);
+            // Load C# impl functions.
+            Script_init();
+            
+            // // Load C# impl functions. This table gets pushed on the stack and into globals.
+            // _l.RequireF("neb_api", OpenMyLib, true);
 
             _instance = this;
         }
@@ -111,33 +114,33 @@ namespace Ephemera.Nebulua
             }
         }
 
-        /// <summary>
-        /// Internal callback to actually load the libs.
-        /// </summary>
-        /// <param name="p">Pointer to context.</param>
-        /// <returns></returns>
-        int OpenLib(IntPtr p)
-        {
-            // Open lib into global table.
-            var l = Lua.FromIntPtr(p)!;
-            l.NewLib(_libFuncs);
+        // /// <summary>
+        // /// Internal callback to actually load the libs.
+        // /// </summary>
+        // /// <param name="p">Pointer to context.</param>
+        // /// <returns></returns>
+        // int OpenMyLib(IntPtr p)
+        // {
+        //     // Open lib into global table.
+        //     var l = Lua.FromIntPtr(p)!;
+        //     l.NewLib(_libFuncs);
 
-            return 1;
-        }
+        //     return 1;
+        // }
 
-        /// <summary>
-        /// Bind the C# functions lua can call.
-        /// </summary>
-        readonly LuaRegister[] _libFuncs = new LuaRegister[]// automate this also?
-        {
-            new LuaRegister("log", _fLog),
-            new LuaRegister("send_controller", _fSendController),
-            new LuaRegister("send_note", _fSendNote),
-            new LuaRegister("send_note_on", _fSendNoteOn),
-            new LuaRegister("send_note_off", _fSendNoteOff),
-            new LuaRegister("send_patch", _fSendPatch),
-            new LuaRegister(null, null)
-        };
+        // /// <summary>
+        // /// Bind the C# functions lua can call.
+        // /// </summary>
+        // readonly LuaRegister[] _libFuncs = new LuaRegister[]
+        // {
+        //     new LuaRegister("log", _fLog),
+        //     new LuaRegister("send_controller", _fSendController),
+        //     new LuaRegister("send_note", _fSendNote),
+        //     new LuaRegister("send_note_on", _fSendNoteOn),
+        //     new LuaRegister("send_note_off", _fSendNoteOff),
+        //     new LuaRegister("send_patch", _fSendPatch),
+        //     new LuaRegister(null, null)
+        // };
         #endregion
 
         #region Load the script
@@ -189,7 +192,7 @@ namespace Ephemera.Nebulua
 
                     if (valid)
                     {
-                        // TODO1 refactor this mess.
+                        // TODO1 refactor this mess. GP elegant way to deal with optional lua fields.
                         string? device_id = props.Names.Contains("device_id") ? props["device_id"].ToString() : null;
                         int? channel_num = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
                         int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : 0;
@@ -297,35 +300,32 @@ namespace Ephemera.Nebulua
         // }
 
 
-        #region Genned code support
-        void ErrorHandler(Exception e) // TODO1 - from genned code
+        #region Genned code stuff client supplies TODOGEN
+        static bool ErrorHandler(Exception e)
         {
             // Do something with this.
-            if (_l.ThrowOnError)
+            if (_instance._l.ThrowOnError)
             {
-                throw (new SyntaxException("Bad lua function: my_lua_func"));
+                throw (e);
             }
-
+            else
+            {
+                _logger.Error(e.Message);
+                _logger.Error(e.StackTrace ?? "No stack");
+            }
+            return false;
         }
-
-
 
 
         // client supplies this work function - or lambda?
-        static double LuaCallHost_DoWork(int level, string msg)
+        static double LuaCallHost_DoWork(int? arg1, string? arg2)
         {
-            double ret = level * msg.Length;
+            double ret = arg1 ?? 999 * (arg2 ?? "   ").Length;
             return ret;
         }
-
-
         #endregion
 
-
-
-
-
-        #region C# calls lua functions - see gen.cs
+        #region C# calls lua functions - TODOGEN
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -422,7 +422,7 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Lua calls C# functions - see gen.cs
+        #region Lua calls C# functions - TODOGEN
         /// <summary> </summary>
         static int Log(IntPtr p)
         {
