@@ -290,7 +290,7 @@ namespace Ephemera.Nebulua
         //         //LuaType valType = _l.Type(-1);
         //         //string? sval = _l.ToStringL(-1);
 
-        //         keys.Add(_l.ToStringL(-2)!);
+        //         keys.Add(_l.ToStringL(-2)!);s
 
         //         // Remove value(-1), now key on top at(-1).
         //         _l.Pop(1);
@@ -306,7 +306,7 @@ namespace Ephemera.Nebulua
             // Do something with this.
             if (_instance._l.ThrowOnError)
             {
-                throw (e);
+                throw e;
             }
             else
             {

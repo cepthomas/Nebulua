@@ -15,6 +15,7 @@ using KeraLuaEx;
 
 namespace Ephemera.Nebulua
 {
+    //TODOGEN prefer public class LuaInterop
     public partial class Script
     {
         // TODOGEN generator fills these in place:
@@ -29,40 +30,36 @@ namespace Ephemera.Nebulua
         public TableEx? interop_HostCallLua(string arg1, int arg2, Dictionary<string, object> arg3)
         {
             TableEx? ret = null;
-            bool ok = true;
 
             // Get the function to be called. Check return.
             LuaType ltype = _l.GetGlobal(my_lua_func_name_1);
             if (ltype != LuaType.Function)
             {
-                ok = false;
                 ErrorHandler(new SyntaxException($"Bad lua function: {my_lua_func_name_1}"));
+                return null;
             }
 
-            if (ok)
+            // Push the arguments to the call.
+            _l.PushString(arg1);
+            _l.PushInteger(arg2);
+            _l.PushDictionary(arg3);
+
+            // Do the actual call.
+            LuaStatus lstat = _l.DoCall(num_args, num_ret); // optionally throws
+            if (lstat >= LuaStatus.ErrRun)
             {
-                // Push the arguments to the call.
-                _l.PushString(arg1);
-                _l.PushInteger(arg2);
-                _l.PushDictionary(arg3);
-
-                // Do the actual call.
-                LuaStatus lstat = _l.DoCall(num_args, num_ret); // optionally throws
-                if (lstat >= LuaStatus.ErrRun)
-                {
-                    ok = false;
-                    ErrorHandler(new SyntaxException("?????"));
-                }
-
-                // Get the results from the stack. maybe
-                var tbl = _l.ToTableEx(-1); // or ToInteger() etc
-                if (tbl is null)
-                {
-                    ok = false;
-                    ErrorHandler(new SyntaxException("??????????"));
-                }
-                _l.Pop(num_ret); // Clean up results.
+                ErrorHandler(new SyntaxException("?????"));
+                return null;
             }
+
+            // Get the results from the stack. maybe
+            var tbl = _l.ToTableEx(-1); // or ToInteger() etc
+            if (tbl is null)
+            {
+                ErrorHandler(new SyntaxException("??????????"));
+                return null;
+            }
+            _l.Pop(num_ret); // Clean up results.
 
             return ret;
         }
@@ -71,8 +68,6 @@ namespace Ephemera.Nebulua
 
         static int interop_LuaCallHost(IntPtr p)
         {
-            bool ok = true;
-            int num_ret = 0;
             Lua? l = Lua.FromIntPtr(p);
 
             int? arg1 = null;
@@ -80,48 +75,37 @@ namespace Ephemera.Nebulua
 
             if (l is null)
             {
-                ok = false;
                 ErrorHandler(new LuaException("This should never happen"));
+                return 0;
             }
 
             // Get args.
-            if (ok)
+            if (l!.IsInteger(1))
             {
-                if (l!.IsInteger(1))
-                {
-                    arg1 = l.ToInteger(1);
-                }
-                else
-                {
-                    ok = false;
-                    ErrorHandler(new SyntaxException($"Bad arg type: ..."));
-                }
+                arg1 = l.ToInteger(1);
+            }
+            else
+            {
+                ErrorHandler(new SyntaxException($"Bad arg type: ..."));
+                return 0;
             }
 
-            if (ok)
+            if (l!.IsString(2))
             {
-                if (l!.IsString(2))
-                {
-                    arg2 = l.ToStringL(2);
-                }
-                else
-                {
-                    ok = false;
-                    ErrorHandler(new SyntaxException("Bad arg type: ..."));
-                }
+                arg2 = l.ToStringL(2);
+            }
+            else
+            {
+                ErrorHandler(new SyntaxException("Bad arg type: ..."));
+                return 0;
             }
 
-            if (ok)
-            {
-                // Do the work.
-                double ret = LuaCallHost_DoWork(arg1, arg2);
+            // Do the work.
+            double ret = LuaCallHost_DoWork(arg1, arg2);
 
-                // Return results.
-                l.PushNumber(ret);
-                num_ret = 1;
-            }
-
-            return num_ret;
+            // Return results.
+            l.PushNumber(ret);
+            return 1;
         }
 
 
@@ -145,7 +129,7 @@ namespace Ephemera.Nebulua
         // Bind the C# functions lua can call.
         readonly LuaRegister[] _libFuncs = new LuaRegister[]
         {
-            new LuaRegister(my_lua_func_name_2, LuaCallHost),
+            new LuaRegister(my_lua_func_name_2, interop_LuaCallHost),
             //etc.
             // new LuaRegister("send_controller", _fSendController),
             // new LuaRegister("send_note", _fSendNote),
