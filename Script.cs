@@ -300,7 +300,7 @@ namespace Ephemera.Nebulua
         // }
 
 
-        #region Genned code stuff client supplies TODOGEN
+        #region Genned code stuff client supplies TODO1
         static bool ErrorHandler(Exception e)
         {
             // Do something with this.
@@ -325,7 +325,7 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region C# calls lua functions - TODOGEN
+        #region C# calls lua functions - TODO1
         /// <summary>
         /// Called to initialize Nebulator stuff.
         /// </summary>
@@ -422,7 +422,7 @@ namespace Ephemera.Nebulua
         }
         #endregion
 
-        #region Lua calls C# functions - TODOGEN
+        #region Lua calls C# functions - TODO1
         /// <summary> </summary>
         static int Log(IntPtr p)
         {

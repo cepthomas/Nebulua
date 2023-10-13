@@ -15,10 +15,9 @@ using KeraLuaEx;
 
 namespace Ephemera.Nebulua
 {
-    //TODOGEN prefer public class LuaInterop
     public partial class Script
     {
-        // TODOGEN generator fills these in place:
+        // generator fills these in place:
         static string my_lua_func_name_1 = "call_my_lua_func";
         static string my_lua_func_name_2 = "call_my_host_func";
         static string lib_name = "neb_api";
