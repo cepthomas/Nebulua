@@ -41,7 +41,7 @@ namespace Ephemera.Nebulua
             // Push the arguments to the call.
             _l.PushString(arg1);
             _l.PushInteger(arg2);
-            _l.PushDictionary(arg3);
+//            _l.PushDictionary(arg3);
 
             // Do the actual call.
             LuaStatus lstat = _l.DoCall(num_args, num_ret); // optionally throws
@@ -52,12 +52,12 @@ namespace Ephemera.Nebulua
             }
 
             // Get the results from the stack. maybe
-            var tbl = _l.ToTableEx(-1); // or ToInteger() etc
-            if (tbl is null)
-            {
-                ErrorHandler(new SyntaxException("??????????"));
-                return null;
-            }
+            //var tbl = _l.ToTableEx(-1); // or ToInteger() etc
+            //if (tbl is null)
+            //{
+            //    ErrorHandler(new SyntaxException("??????????"));
+            //    return null;
+            //}
             _l.Pop(num_ret); // Clean up results.
 
             return ret;
@@ -91,7 +91,7 @@ namespace Ephemera.Nebulua
 
             if (l!.IsString(2))
             {
-                arg2 = l.ToStringL(2);
+                arg2 = l.ToString(2);
             }
             else
             {

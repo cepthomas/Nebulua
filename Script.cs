@@ -11,6 +11,7 @@ using Ephemera.MidiLib;
 using KeraLuaEx;
 //using static Ephemera.Nebulua.Common;
 
+// TODO0 update for gen_interop().
 
 namespace Ephemera.Nebulua
 {
@@ -432,7 +433,7 @@ namespace Ephemera.Nebulua
 
             // Get args.
             var level = l.ToInteger(1);
-            var msg = l.ToStringL(2);
+            var msg = l.ToString(2);
 
             // Do the work.
             _logger.Log((LogLevel)level!, msg ?? "???");
@@ -451,7 +452,7 @@ namespace Ephemera.Nebulua
             // Get args. 
             int numArgs = l.GetTop();
             var level = l.ToInteger(1);
-            var msg = l.ToStringL(2);
+            var msg = l.ToString(2);
 
             // Do the work.
             //string channelName, int notenum, double vol, double dur) //send_note(chan, note, vol, dur)
