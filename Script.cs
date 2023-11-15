@@ -66,8 +66,8 @@ namespace Ephemera.Nebulua
         // // static readonly LuaFunction _fGetNotes = GetNotes;
         // // static readonly LuaFunction _fCreateNotes = CreateNotes;
 
-        /// <summary>Need static instance for binding functions.</summary>
-        static Script _instance;
+        // /// <summary>Need static instance for binding functions.</summary>
+        // static Script _instance;
 
         /// <summary>All sections.</summary>
         internal List<Section> _sections = new();
@@ -86,11 +86,10 @@ namespace Ephemera.Nebulua
         public Script()
         {
             // Load C# impl functions.
-            Script_init();
-            
+            // Script_init();
+            LoadInterop();
             // // Load C# impl functions. This table gets pushed on the stack and into globals.
-            // _l.RequireF("neb_api", OpenMyLib, true);
-
+            // _l.RequireF("api_lib", OpenMyLib, true);
             _instance = this;
         }
 
@@ -262,46 +261,6 @@ namespace Ephemera.Nebulua
         #endregion
 
 
-        // /// <summary>
-        // /// Get all keys for table on stack top.
-        // /// </summary>
-        // /// <returns></returns>
-        // /// <exception cref="InvalidOperationException"></exception>
-        // List<string> GetKeys()
-        // {
-        //     // Check for valid value.
-        //     if (_l.Type(-1)! != LuaType.Table)
-        //     {
-        //         throw new InvalidOperationException($"Expected table at top of stack but is {_l.Type(-1)}");
-        //     }
-
-        //     List<string> keys = new();
-
-        //     // First key.
-        //     _l.PushNil();
-
-        //     // Key(-1) is replaced by the next key(-1) in table(-2).
-        //     while (_l.Next(-2))
-        //     {
-        //         // Get key info (-2).
-        //         //LuaType keyType = _l.Type(-2);
-        //         //string? skey = keyType == LuaType.String ? _l.ToStringL(-2) : null;
-        //         //int? ikey = keyType == LuaType.Number && _l.IsInteger(-2) ? _l.ToInteger(-2) : null;
-        //         // Get val info (-1).
-        //         //LuaType valType = _l.Type(-1);
-        //         //string? sval = _l.ToStringL(-1);
-
-        //         keys.Add(_l.ToStringL(-2)!);s
-
-        //         // Remove value(-1), now key on top at(-1).
-        //         _l.Pop(1);
-        //     }
-
-        //     return keys;
-        // }
-
-
-        #region Genned code stuff client supplies TODO1
         static bool ErrorHandler(Exception e)
         {
             // Do something with this.
@@ -318,112 +277,225 @@ namespace Ephemera.Nebulua
         }
 
 
-        // client supplies this work function - or lambda?
-        static double LuaCallHost_DoWork(int? arg1, string? arg2)
-        {
-            double ret = arg1 ?? 999 * (arg2 ?? "   ").Length;
-            return ret;
-        }
-        #endregion
-
         #region C# calls lua functions - TODO1
-        /// <summary>
-        /// Called to initialize Nebulator stuff.
-        /// </summary>
-        public void Setup()
-        {
-            // Get the function to be called.
-            _l.GetGlobal("setup");
 
-            // Push the arguments to the call.
-            // None.
 
-            // Do the actual call.
-            _l.DoCall(0, 0);
 
-            // Get the results from the stack.
-            // None.
-        }
 
-        /// <summary>
-        /// Called every mmtimer increment.
-        /// </summary>
-        /// <param name="bar"></param>
-        /// <param name="beat"></param>
-        /// <param name="subbeat"></param>
-        public void Step(int bar, int beat, int subbeat)
-        {
-            // Get the function to be called. Check return.
-            _l.GetGlobal("step");
+        // /// <summary>
+        // /// Called to initialize Nebulator stuff.
+        // /// </summary>
+        // public void Setup()
+        // {
+        //     // Get the function to be called.
+        //     _l.GetGlobal("setup");
 
-            // Push the arguments to the call.
-            _l.PushInteger(bar);
-            _l.PushInteger(beat);
-            _l.PushInteger(subbeat);
+        //     // Push the arguments to the call.
+        //     // None.
 
-            // Do the actual call.
-            _l.DoCall(3, 0);
+        //     // Do the actual call.
+        //     _l.DoCall(0, 0);
 
-            // Get the results from the stack.
-            // None.
-        }
+        //     // Get the results from the stack.
+        //     // None.
+        // }
 
-        /// <summary>
-        /// Called when input arrives. Optional.
-        /// </summary>
-        /// <param name="channelName"></param>
-        /// <param name="note"></param>
-        /// <param name="vel"></param>
-        public void InputNote(string channelName, int note, int vel)
-        {
-            // Get the function to be called. Check return.
-            if (_l.GetGlobal("input_note") != LuaType.Function) // optional function
-            {
-                _l.Pop(1);
-                return;
-            }
+        // /// <summary>
+        // /// Called every mmtimer increment.
+        // /// </summary>
+        // /// <param name="bar"></param>
+        // /// <param name="beat"></param>
+        // /// <param name="subbeat"></param>
+        // public void Step(int bar, int beat, int subbeat)
+        // {
+        //     // Get the function to be called. Check return.
+        //     _l.GetGlobal("step");
 
-            // Push the arguments to the call.
-            _l.PushString(channelName);
-            _l.PushInteger(note);
-            _l.PushInteger(vel);
+        //     // Push the arguments to the call.
+        //     _l.PushInteger(bar);
+        //     _l.PushInteger(beat);
+        //     _l.PushInteger(subbeat);
 
-            // Do the actual call.
-            _l.DoCall(3, 0);
+        //     // Do the actual call.
+        //     _l.DoCall(3, 0);
 
-            // Get the results from the stack.
-            // None.
-        }
+        //     // Get the results from the stack.
+        //     // None.
+        // }
 
-        /// <summary>
-        /// Called when input arrives. Optional.
-        /// </summary>
-        /// <param name="channelName"></param>
-        /// <param name="controller"></param>
-        /// <param name="value"></param>
-        public void InputController(string channelName, int controller, int value)
-        {
-            // Get the function to be called. Check return.
-            if (_l.GetGlobal("input_controller") != LuaType.Function) // optional function
-            {
-                _l.Pop(1);
-                return;
-            }
+        // /// <summary>
+        // /// Called when input arrives. Optional.
+        // /// </summary>
+        // /// <param name="channelName"></param>
+        // /// <param name="note"></param>
+        // /// <param name="vel"></param>
+        // public void InputNote(string channelName, int note, int vel)
+        // {
+        //     // Get the function to be called. Check return.
+        //     if (_l.GetGlobal("input_note") != LuaType.Function) // optional function
+        //     {
+        //         _l.Pop(1);
+        //         return;
+        //     }
 
-            // Push the arguments to the call.
-            _l.PushString(channelName);
-            _l.PushInteger(controller);
-            _l.PushInteger(value);
+        //     // Push the arguments to the call.
+        //     _l.PushString(channelName);
+        //     _l.PushInteger(note);
+        //     _l.PushInteger(vel);
 
-            // Do the actual call.
-            _l.DoCall(4, 0);
+        //     // Do the actual call.
+        //     _l.DoCall(3, 0);
 
-            // Get the results from the stack.
-            // None.
-        }
+        //     // Get the results from the stack.
+        //     // None.
+        // }
+
+        // /// <summary>
+        // /// Called when input arrives. Optional.
+        // /// </summary>
+        // /// <param name="channelName"></param>
+        // /// <param name="controller"></param>
+        // /// <param name="value"></param>
+        // public void InputController(string channelName, int controller, int value)
+        // {
+        //     // Get the function to be called. Check return.
+        //     if (_l.GetGlobal("input_controller") != LuaType.Function) // optional function
+        //     {
+        //         _l.Pop(1);
+        //         return;
+        //     }
+
+        //     // Push the arguments to the call.
+        //     _l.PushString(channelName);
+        //     _l.PushInteger(controller);
+        //     _l.PushInteger(value);
+
+        //     // Do the actual call.
+        //     _l.DoCall(4, 0);
+
+        //     // Get the results from the stack.
+        //     // None.
+        // }
         #endregion
 
-        #region Lua calls C# functions - TODO1
+        #region Lua calls C# functions - TODO1 work functions
+
+        // 
+        static bool LogWork(int level, string msg)
+        {
+            // Do the work.
+            _logger.Log((LogLevel)level!, msg ?? "???");
+
+            return true;
+        }
+
+        /// api.send_note(S "synth", I note_num, N volume, X dur)
+        /// if volume is 0 note_off else note_on
+        /// if dur is 0 dur = note_on with dur = 0.1 (for drum/hit)
+        static bool SendNoteWork(string inst, int note_num, double volume, double dur)
+        {
+            // Do the work.
+            //string channelName, int notenum, double vol, double dur) //send_note(chan, note, vol, dur)
+
+            //if (!_channels.ContainsKey(channelName))
+            //{
+            //    throw new ArgumentException($"Invalid channel [{channelName}]");
+            //}
+
+            //var ch = _channels[channelName];
+            //int absnote = MathUtils.Constrain(Math.Abs(notenum), MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+
+            //// If vol is positive it's note on else note off.
+            //if (vol > 0)
+            //{
+            //    double vel = ch.NextVol(vol) * MasterVolume;
+            //    int velPlay = (int)(vel * MidiDefs.MAX_MIDI);
+            //    velPlay = MathUtils.Constrain(velPlay, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+
+            //    NoteOnEvent evt = new(StepTime.TotalSubbeats, ch.ChannelNumber, absnote, velPlay, dur.TotalSubbeats);
+            //    ch.SendEvent(evt);
+            //}
+            //else
+            //{
+            //    NoteEvent evt = new(StepTime.TotalSubbeats, ch.ChannelNumber, MidiCommandCode.NoteOff, absnote, 0);
+            //    ch.SendEvent(evt);
+            //}
+
+            // Return results.
+            return true;
+        }
+
+        /// <summary>Send an explicit note on immediately. Caller is responsible for sending note off later.</summary>
+        /// api.send_note_on(S "synth", I note_num, N volume)
+        static bool SendNoteOnWork(string inst, int note_num, double volume)
+        {
+            // Do the work.
+
+
+            // Return results.
+            return true;
+        }
+
+        /// <summary>Send an explicit note off immediately.</summary>
+        /// api.send_note_off(S "synth", I note_num)
+        static bool SendNoteOffWork(string inst, int note_num)
+        {
+            // Do the work.
+
+
+            // Return results.
+            return true;
+        }
+
+        /// <summary>Send a controller immediately.</summary>
+        /// api.send_controller("synth", ctrl.Pan, 90) -- SII
+        static bool SendControllerWork(string inst, int ctlr, int value)
+        {
+            // Do the work.
+
+
+            // ///// Get function arguments.
+            // string? channelName = l.ToStringL(1);
+            // int? controller = l.ToInteger(2);
+            // int? val = l.ToInteger(3);
+
+            // ///// Do the work.
+            // var ch = Common.OutputChannels[channelName];
+            // //int ctlrid = MidiDefs.GetControllerNumber(controller);
+            // //ch.SendController((MidiController)ctlrid, (int)val);
+            // ch.SendController((MidiController)controller, (int)val);
+
+            // Return results.
+            return true;
+        }
+
+        /// <summary>Send a midi patch immediately.</summary>
+        /// api.send_patch("synth", inst.Lead1Square)
+        static bool SendPatchWork(string inst, int patch)
+        {
+            // Do the work.
+
+
+            // ///// Get function arguments.
+            // string channelName = l.ToStringL(1)!;
+            // string patch = l.ToStringL(2)!;
+
+            // ///// Do the work.
+            // var ch = Common.OutputChannels[channelName];
+            // int patchid = MidiDefs.GetInstrumentNumber(patch); // handle fail?
+            // ch.Patch = patchid;
+            // ch.SendPatch();
+
+            // Return results.
+            return true;
+        }
+
+
+
+
+
+
+/*
         /// <summary> </summary>
         static int Log(IntPtr p)
         {
@@ -575,6 +647,7 @@ namespace Ephemera.Nebulua
         //     return 1;
         // }
         #endregion
+*/
 
         #region these could be in the script
         // CreateSequence(int beats, SequenceElements elements) -- -> Sequence

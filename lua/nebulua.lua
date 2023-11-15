@@ -1,3 +1,4 @@
+-- Does the actual music generation.
 
 local ut = require("utils")
 local md = require("music_defs")

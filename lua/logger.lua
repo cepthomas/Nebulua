@@ -1,6 +1,4 @@
---[[
-Simple logger. TODO2 will get more capabilities: user supplied streams, filtering,... Make into generic comp.
---]]
+-- Simple logger. TODO2 will get more capabilities: user supplied streams, filtering,... Make into generic comp.
 
 local api = require("neb_api")
 
