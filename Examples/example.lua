@@ -74,29 +74,28 @@ function step(bar, beat, subbeat)
 
     -- Selective work.
     if beat == 0 and subbeat == 0 then
-        api.send_controller("synth", ctrl.Pan, 90) -- SII
+        api.send_controller("synth", ctrl.Pan, 90)
         -- or...
-        -- api.send_controller(channels.synth.channel_num, ctrl.Pan, 90) -- SII
-        api.send_controller("keys",  ctrl.Pan, 30)
+        api.send_controller("keys",  ctrl.Pan, 30) -- TODO use other than string?
     end
 end
 
 -----------------------------------------------------------------------------
 -- Handlers for input events.
-function input_note(channel_name, note, vel) -- SII
-    log.info("input_note") -- string.format("%s", variable_name), channel_name, note, vel)
+function input_note(channel, note, vel)
+    log.info("input_note") -- string.format("%s", variable_name), channel, note, vel)
 
-    if channel_name == "bing_bong" then
+    if channel == "bing_bong" then -- TODO use other than string?
         -- whiz = ...
     end
 
-    api.send_note("synth", note, vel, 0.5) -- SIIT
+    api.send_note("synth", note, vel, 0.5)
 end
 
 -----------------------------------------------------------------------------
 -- Handlers for input events.
-function input_controller(channel_name, ctlid, value) -- SII
-    log.info("input_controller") --, channel_name, ctlid, value)
+function input_controller(channel, ctlid, value)
+    log.info("input_controller") --, channel, ctlid, value)
 end
 
 ----------------------- User lua functions -------------------------
@@ -104,27 +103,27 @@ end
 -----------------------------------------------------------------------------
 -- Calc something and play it.
 function sequence_func()
-    local note_num = math.random(0, #alg_scale)
-    api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
+    local notenum = math.random(0, #alg_scale)
+    api.send_note("synth", alg_scale[notenum], 0.7, 0.5)
 end
 
 -----------------------------------------------------------------------------
 -- Make a noise.
-function boing(note_num)
+function boing(notenum)
     local boinged = false;
 
     log.info("boing")
-    if note_num == 0 then
-        note_num = Random(30, 80)
+    if notenum == 0 then
+        notenum = Random(30, 80)
         boinged = true
-        api.send_note("synth", note_num, VEL, 1.0)
+        api.send_note("synth", notenum, VEL, 1.0)
     end
     return boinged
 end
 
 ------------------------- Composition ---------------------------------------
 
--- TODO2 volumes could be a optional user map instead of linear range.
+-- TODO volumes could be a optional user map instead of linear range.
 drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
 drum_vol_range = [5.0, 9.5]
 

@@ -1,33 +1,25 @@
--- Simple logger. TODO2 will get more capabilities: user supplied streams, filtering,... Make into generic comp.
+-- Simple logger using host api.
 
 local api = require("neb_api")
 
 -- Create the namespace/module.
 local M = {}
 
--- Defs from the C# logger side: enum LogLevel { Trace = 0, Debug = 1, Info = 2, Warn = 3, Error = 4 }
+-- Host defs: enum LogLevel { Trace = 0, Debug = 1, Info = 2, Warn = 3, Error = 4 }
 M.LOG_LEVEL = { TRC=0, DBG=1, INF=2, WRN=3, ERR=4 }
 
--- M.LOG_TRC = 0
--- M.LOG_DBG = 1
--- M.LOG_INF = 2
--- M.LOG_WRN = 3
--- M.LOG_ERR = 4
 
--- Main function.
 -----------------------------------------------------------------------------
--- Description
--- Description
--- @param name type desc
--- @return type desc
+-- Log something.
+-- @param level int LOG_LEVEL.
+-- @param msg string Content.
 function M.log(level, msg)
-    local marker = ""
-    if level == M.LOG_LEVEL.WRN then marker = "? "
-    elseif level == M.LOG_LEVEL.ERR then marker = "! "
-    end
+    api.log(level, msg)
 
-    api.log(marker)
-    api.log(msg)
+    -- local marker = ""
+    -- if level == M.LOG_LEVEL.WRN then marker = "? "
+    -- elseif level == M.LOG_LEVEL.ERR then marker = "! "
+    -- end
     -- api.log(marker .. msg)
 end
 

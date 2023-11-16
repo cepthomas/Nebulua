@@ -670,23 +670,29 @@ namespace Ephemera.Nebulua
                 {
                     var dev = (IInputDevice)sender;
 
-                    // Hand over to the script.
-                    var chName = "TODO2 check for invalid";// Common.InputChannels.ChannelName;
-                    try
+                    // Locate channel.
+                    var channel = Common.InputChannels.Where(c => c.Value.Device == dev).FirstOrDefault();
+
+                    if (channel.Value.Device is not null)
                     {
-                        if (e.Note != -1)
+                        // Hand over to the script.
+                        var chName = channel.Key;
+                        try
                         {
-                            _script.InputNote(chName, e.Note, e.Value); // throws?
+                            if (e.Note != -1)
+                            {
+                                _script.InputNote(chName, e.Note, e.Value);
+                            }
+                            else if (e.Controller != -1)
+                            {
+                                _script.InputController(chName, e.Controller, e.Value);
+                            }
                         }
-                        else if (e.Controller != -1)
+                        catch (Exception ex)
                         {
-                            _script.InputController(chName, e.Controller, e.Value); // throws?
+                            _logger.Error($"{ex.Message}");
+                            ProcessPlay(PlayCommand.Stop);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error($"{ex.Message}");
-                        ProcessPlay(PlayCommand.Stop);
                     }
                 }
             });

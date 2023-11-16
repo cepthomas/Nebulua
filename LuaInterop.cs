@@ -12,53 +12,50 @@ namespace Ephemera.Nebulua
     public partial class Script
     {
         #region Functions exported from lua for execution by host
-        /// <summary>Lua export function: Tell me something good.</summary>
-        /// <param name="arg_one">some strings</param>
-        /// <param name="arg_two">a nice integer</param>
-        /// <param name="arg_three"></param>
-        /// <returns>TableEx a returned thing></returns>
-        public TableEx? MyLuaFunc(string arg_one, int arg_two, TableEx arg_three)
+        /// <summary>Lua export function: Called to initialize Nebulator stuff.</summary>
+        /// <returns>bool Required empty.></returns>
+        public bool? Setup()
         {
             int numArgs = 0;
             int numRet = 1;
 
             // Get function.
-            LuaType ltype = _l.GetGlobal("my_lua_func");
-            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: my_lua_func")); return null; }
+            LuaType ltype = _l.GetGlobal("setup");
+            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: setup")); return null; }
 
             // Push arguments.
-            _l.PushString(arg_one);
-            numArgs++;
-            _l.PushInteger(arg_two);
-            numArgs++;
-            _l.PushTableEx(arg_three);
-            numArgs++;
 
             // Do the actual call.
             LuaStatus lstat = _l.DoCall(numArgs, numRet);
             if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; }
 
             // Get the results from the stack.
-            TableEx? ret = _l.ToTableEx(-1);
-            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a TableEx")); return null; }
+            bool? ret = _l.ToBoolean(-1);
+            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a bool")); return null; }
             _l.Pop(1);
             return ret;
         }
 
-        /// <summary>Lua export function: wooga wooga</summary>
-        /// <param name="arg_one">aaa bbb ccc</param>
-        /// <returns>double a returned number></returns>
-        public double? MyLuaFunc2(bool arg_one)
+        /// <summary>Lua export function: Called every mmtimer increment.</summary>
+        /// <param name="bar"></param>
+        /// <param name="beat"></param>
+        /// <param name="subbeat"></param>
+        /// <returns>bool Required empty.></returns>
+        public bool? Step(int bar, int beat, int subbeat)
         {
             int numArgs = 0;
             int numRet = 1;
 
             // Get function.
-            LuaType ltype = _l.GetGlobal("my_lua_func2");
-            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: my_lua_func2")); return null; }
+            LuaType ltype = _l.GetGlobal("step");
+            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: step")); return null; }
 
             // Push arguments.
-            _l.PushBoolean(arg_one);
+            _l.PushInteger(bar);
+            numArgs++;
+            _l.PushInteger(beat);
+            numArgs++;
+            _l.PushInteger(subbeat);
             numArgs++;
 
             // Do the actual call.
@@ -66,32 +63,74 @@ namespace Ephemera.Nebulua
             if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; }
 
             // Get the results from the stack.
-            double? ret = _l.ToNumber(-1);
-            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a double")); return null; }
+            bool? ret = _l.ToBoolean(-1);
+            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a bool")); return null; }
             _l.Pop(1);
             return ret;
         }
 
-        /// <summary>Lua export function: no_args</summary>
-        /// <returns>double a returned number></returns>
-        public double? NoArgsFunc()
+        /// <summary>Lua export function: Called when input arrives. Optional.</summary>
+        /// <param name="channel"></param>
+        /// <param name="note"></param>
+        /// <param name="val"></param>
+        /// <returns>bool Required empty.></returns>
+        public bool? InputNote(string channel, int note, int val)
         {
             int numArgs = 0;
             int numRet = 1;
 
             // Get function.
-            LuaType ltype = _l.GetGlobal("no_args_func");
-            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: no_args_func")); return null; }
+            LuaType ltype = _l.GetGlobal("input_note");
+            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: input_note")); return null; }
 
             // Push arguments.
+            _l.PushString(channel);
+            numArgs++;
+            _l.PushInteger(note);
+            numArgs++;
+            _l.PushInteger(val);
+            numArgs++;
 
             // Do the actual call.
             LuaStatus lstat = _l.DoCall(numArgs, numRet);
             if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; }
 
             // Get the results from the stack.
-            double? ret = _l.ToNumber(-1);
-            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a double")); return null; }
+            bool? ret = _l.ToBoolean(-1);
+            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a bool")); return null; }
+            _l.Pop(1);
+            return ret;
+        }
+
+        /// <summary>Lua export function: Called when input arrives. Optional.</summary>
+        /// <param name="channel"></param>
+        /// <param name="controller"></param>
+        /// <param name="value"></param>
+        /// <returns>bool Required empty.></returns>
+        public bool? InputController(string channel, int controller, int value)
+        {
+            int numArgs = 0;
+            int numRet = 1;
+
+            // Get function.
+            LuaType ltype = _l.GetGlobal("input_controller");
+            if (ltype != LuaType.Function) { ErrorHandler(new SyntaxException($"Bad lua function: input_controller")); return null; }
+
+            // Push arguments.
+            _l.PushString(channel);
+            numArgs++;
+            _l.PushInteger(controller);
+            numArgs++;
+            _l.PushInteger(value);
+            numArgs++;
+
+            // Do the actual call.
+            LuaStatus lstat = _l.DoCall(numArgs, numRet);
+            if (lstat >= LuaStatus.ErrRun) { ErrorHandler(new SyntaxException("DoCall() failed")); return null; }
+
+            // Get the results from the stack.
+            bool? ret = _l.ToBoolean(-1);
+            if (ret is null) { ErrorHandler(new SyntaxException("Return value is not a bool")); return null; }
             _l.Pop(1);
             return ret;
         }
@@ -99,41 +138,169 @@ namespace Ephemera.Nebulua
         #endregion
 
         #region Functions exported from host for execution by lua
-        /// <summary>Host export function: fooga
-        /// Lua arg: "arg_one">kakakakaka
-        /// Lua return: bool required return value>
+        /// <summary>Host export function: Script wants to log something.
+        /// Lua arg: "level">Log level.
+        /// Lua arg: "msg">Log message.
+        /// Lua return: bool Required empty.>
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
-        int MyLuaFunc3(IntPtr p)
+        int Log(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
             // Get arguments
-            double? arg_one = null;
-            if (l.IsNumber(1)) { arg_one = l.ToNumber(1); }
-            else { ErrorHandler(new SyntaxException($"Bad arg type for {arg_one}")); return 0; }
+            int? level = null;
+            if (l.IsInteger(1)) { level = l.ToInteger(1); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {level}")); return 0; }
+            string? msg = null;
+            if (l.IsString(2)) { msg = l.ToString(2); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {msg}")); return 0; }
 
             // Do the work. One result.
-            bool ret = MyLuaFunc3Work(arg_one);
+            bool ret = Log_Work(level, msg);
             l.PushBoolean(ret);
             return 1;
         }
 
-        /// <summary>Host export function: Func with no args
-        /// Lua return: double a returned thing>
+        /// <summary>Host export function: If volume is 0 note_off else note_on. If dur is 0 dur = note_on with dur = 0.1 (for drum/hit).
+        /// Lua arg: "channel">Channel name.
+        /// Lua arg: "notenum">Note number.
+        /// Lua arg: "volume">Volume between 0.0 and 1.0.
+        /// Lua arg: "dur">Duration as bar.beat.
+        /// Lua return: bool Required empty.>
         /// </summary>
         /// <param name="p">Internal lua state</param>
         /// <returns>Number of lua return values></returns>
-        int FuncWithNoArgs(IntPtr p)
+        int SendNote(IntPtr p)
         {
             Lua l = Lua.FromIntPtr(p)!;
 
             // Get arguments
+            string? channel = null;
+            if (l.IsString(1)) { channel = l.ToString(1); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {channel}")); return 0; }
+            int? notenum = null;
+            if (l.IsInteger(2)) { notenum = l.ToInteger(2); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {notenum}")); return 0; }
+            double? volume = null;
+            if (l.IsNumber(3)) { volume = l.ToNumber(3); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {volume}")); return 0; }
+            double? dur = null;
+            if (l.IsNumber(4)) { dur = l.ToNumber(4); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {dur}")); return 0; }
 
             // Do the work. One result.
-            double ret = FuncWithNoArgsWork();
-            l.PushNumber(ret);
+            bool ret = SendNote_Work(channel, notenum, volume, dur);
+            l.PushBoolean(ret);
+            return 1;
+        }
+
+        /// <summary>Host export function: Send an explicit note on immediately. Caller is responsible for sending note off later.
+        /// Lua arg: "channel">Channel name.
+        /// Lua arg: "notenum">Note number.
+        /// Lua arg: "volume">Volume between 0.0 and 1.0.
+        /// Lua return: bool Required empty.>
+        /// </summary>
+        /// <param name="p">Internal lua state</param>
+        /// <returns>Number of lua return values></returns>
+        int SendNoteOn(IntPtr p)
+        {
+            Lua l = Lua.FromIntPtr(p)!;
+
+            // Get arguments
+            string? channel = null;
+            if (l.IsString(1)) { channel = l.ToString(1); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {channel}")); return 0; }
+            int? notenum = null;
+            if (l.IsInteger(2)) { notenum = l.ToInteger(2); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {notenum}")); return 0; }
+            double? volume = null;
+            if (l.IsNumber(3)) { volume = l.ToNumber(3); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {volume}")); return 0; }
+
+            // Do the work. One result.
+            bool ret = SendNoteOn_Work(channel, notenum, volume);
+            l.PushBoolean(ret);
+            return 1;
+        }
+
+        /// <summary>Host export function: Send an explicit note off immediately.
+        /// Lua arg: "channel">Channel name.
+        /// Lua arg: "notenum">Note number.
+        /// Lua return: bool Required empty.>
+        /// </summary>
+        /// <param name="p">Internal lua state</param>
+        /// <returns>Number of lua return values></returns>
+        int SendNoteOff(IntPtr p)
+        {
+            Lua l = Lua.FromIntPtr(p)!;
+
+            // Get arguments
+            string? channel = null;
+            if (l.IsString(1)) { channel = l.ToString(1); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {channel}")); return 0; }
+            int? notenum = null;
+            if (l.IsInteger(2)) { notenum = l.ToInteger(2); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {notenum}")); return 0; }
+
+            // Do the work. One result.
+            bool ret = SendNoteOff_Work(channel, notenum);
+            l.PushBoolean(ret);
+            return 1;
+        }
+
+        /// <summary>Host export function: Send a controller immediately.
+        /// Lua arg: "channel">Channel name.
+        /// Lua arg: "ctlr">Specific controller.
+        /// Lua arg: "value">Specific value.
+        /// Lua return: bool Required empty.>
+        /// </summary>
+        /// <param name="p">Internal lua state</param>
+        /// <returns>Number of lua return values></returns>
+        int SendController(IntPtr p)
+        {
+            Lua l = Lua.FromIntPtr(p)!;
+
+            // Get arguments
+            string? channel = null;
+            if (l.IsString(1)) { channel = l.ToString(1); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {channel}")); return 0; }
+            int? ctlr = null;
+            if (l.IsInteger(2)) { ctlr = l.ToInteger(2); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {ctlr}")); return 0; }
+            int? value = null;
+            if (l.IsInteger(3)) { value = l.ToInteger(3); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {value}")); return 0; }
+
+            // Do the work. One result.
+            bool ret = SendController_Work(channel, ctlr, value);
+            l.PushBoolean(ret);
+            return 1;
+        }
+
+        /// <summary>Host export function: Send a midi patch immediately.
+        /// Lua arg: "channel">Channel name.
+        /// Lua arg: "patch">Specific patch.
+        /// Lua return: bool Required empty.>
+        /// </summary>
+        /// <param name="p">Internal lua state</param>
+        /// <returns>Number of lua return values></returns>
+        int SendPatch(IntPtr p)
+        {
+            Lua l = Lua.FromIntPtr(p)!;
+
+            // Get arguments
+            string? channel = null;
+            if (l.IsString(1)) { channel = l.ToString(1); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {channel}")); return 0; }
+            int? patch = null;
+            if (l.IsInteger(2)) { patch = l.ToInteger(2); }
+            else { ErrorHandler(new SyntaxException($"Bad arg type for {patch}")); return 0; }
+
+            // Do the work. One result.
+            bool ret = SendPatch_Work(channel, patch);
+            l.PushBoolean(ret);
             return 1;
         }
 
@@ -143,8 +310,12 @@ namespace Ephemera.Nebulua
         // Bind functions to static instance.
         static Script? _instance;
         // Bound functions.
-        static LuaFunction? _MyLuaFunc3;
-        static LuaFunction? _FuncWithNoArgs;
+        static LuaFunction? _Log;
+        static LuaFunction? _SendNote;
+        static LuaFunction? _SendNoteOn;
+        static LuaFunction? _SendNoteOff;
+        static LuaFunction? _SendController;
+        static LuaFunction? _SendPatch;
         readonly List<LuaRegister> _libFuncs = new();
 
         int OpenInterop(IntPtr p)
@@ -157,13 +328,21 @@ namespace Ephemera.Nebulua
         void LoadInterop()
         {
             _instance = this;
-            _MyLuaFunc3 = _instance!.MyLuaFunc3;
-            _libFuncs.Add(new LuaRegister("my_lua_func3", _MyLuaFunc3));
-            _FuncWithNoArgs = _instance!.FuncWithNoArgs;
-            _libFuncs.Add(new LuaRegister("func_with_no_args", _FuncWithNoArgs));
+            _Log = _instance!.Log;
+            _libFuncs.Add(new LuaRegister("log", _Log));
+            _SendNote = _instance!.SendNote;
+            _libFuncs.Add(new LuaRegister("send_note", _SendNote));
+            _SendNoteOn = _instance!.SendNoteOn;
+            _libFuncs.Add(new LuaRegister("send_note_on", _SendNoteOn));
+            _SendNoteOff = _instance!.SendNoteOff;
+            _libFuncs.Add(new LuaRegister("send_note_off", _SendNoteOff));
+            _SendController = _instance!.SendController;
+            _libFuncs.Add(new LuaRegister("send_controller", _SendController));
+            _SendPatch = _instance!.SendPatch;
+            _libFuncs.Add(new LuaRegister("send_patch", _SendPatch));
 
             _libFuncs.Add(new LuaRegister(null, null));
-            _l.RequireF("api_lib", OpenInterop, true);
+            _l.RequireF("neb_api", OpenInterop, true);
         }
         #endregion
     }

@@ -3,90 +3,124 @@ local M = {}
 
 M.config =
 {
-    lua_lib_name = "api_lib",
+    lua_lib_name = "neb_api",
     namespace = "Ephemera.Nebulua",
     class = "Script",
     add_refs = { "System.Diagnostics", },
 }
 
 
-
-        -- #region C# calls lua functions - TODO1
-        -- // public void Setup()
-        -- // public void Step(int bar, int beat, int subbeat)
-        -- // public void InputNote(string channelName, int note, int vel)
-        -- // public void InputController(string channelName, int controller, int value)
-
-
-
 -- Host calls lua.
 M.lua_export_funcs =
 {
     {
-        lua_func_name = "my_lua_func",
-        host_func_name = "MyLuaFunc",
-        description = "Tell me something good.",
+        lua_func_name = "setup",
+        host_func_name = "Setup",
+        description = "Called to initialize Nebulator stuff.",
+        ret = { type = "B", description = "Required empty." }
+    },
+
+    {
+        lua_func_name = "step",
+        host_func_name = "Step",
+        description = "Called every mmtimer increment.",
         args =
         {
             {
-                name = "arg_one",
-                type = "S",
-                description = "some strings"
-            },
-            {
-                name = "arg_two",
+                name = "bar",
                 type = "I",
-                description = "a nice integer"
+                description = ""
             },
             {
-                name = "arg_three",
-                type = "T",
+                name = "beat",
+                type = "I",
+                description = ""
+            },
+            {
+                name = "subbeat",
+                type = "I",
+                description = ""
             },
         },
-        ret =
-        {
-            type = "T",
-            description = "a returned thing"
-        }
+        ret = { type = "B", description = "Required empty." }
     },
+
     {
-        lua_func_name = "my_lua_func2",
-        host_func_name = "MyLuaFunc2",
-        description = "wooga wooga",
+        lua_func_name = "input_note",
+        host_func_name = "InputNote",
+        description = "Called when input arrives. Optional.",
         args =
         {
             {
-                name = "arg_one",
-                type = "B",
-                description = "aaa bbb ccc"
+                name = "channel",
+                type = "S",
+                description = ""
+            },
+            {
+                name = "note",
+                type = "I",
+                description = ""
+            },
+            {
+                name = "val",
+                type = "I",
+                description = ""
             },
         },
-         ret =
-        {
-            type = "N",
-            description = "a returned number"
-        }
+        ret = { type = "B", description = "Required empty." }
     },
+
     {
-        lua_func_name = "no_args_func",
-        host_func_name = "NoArgsFunc",
-        description = "no_args",
-        ret =
+        lua_func_name = "input_controller",
+        host_func_name = "InputController",
+        description = "Called when input arrives. Optional.",
+        args =
         {
-            type = "N",
-            description = "a returned number"
+            {
+                name = "channel",
+                type = "S",
+                description = ""
+            },
+            {
+                name = "controller",
+                type = "I",
+                description = ""
+            },
+            {
+                name = "value",
+                type = "I",
+                description = ""
+            },
         },
+        ret = { type = "B", description = "Required empty." }
     },
+
 }
-
-
-
 
 -- Lua calls host.
 M.host_export_funcs =
 {
     {
-        -- static int SendNoteWork(string channel, int note_num, double volume, double dur)
+        lua_func_name = "log",
+        host_func_name = "Log",
+        description = "Script wants to log something.",
+        args =
+        {
+            {
+                name = "level",
+                type = "I",
+                description = "Log level."
+            },
+            {
+                name = "msg",
+                type = "S",
+                description = "Log message."
+            },
+        },
+        ret = { type = "B", description = "Required empty." }
+    },
+
+    {
         lua_func_name = "send_note",
         host_func_name = "SendNote",
         description = "If volume is 0 note_off else note_on. If dur is 0 dur = note_on with dur = 0.1 (for drum/hit).",
@@ -98,7 +132,7 @@ M.host_export_funcs =
                 description = "Channel name."
             },
             {
-                name = "note_num",
+                name = "notenum",
                 type = "I",
                 description = "Note number."
             },
@@ -117,10 +151,9 @@ M.host_export_funcs =
     },
 
     {
-        -- static int SendNoteOnWork(string channel, int note_num, double volume)
         lua_func_name = "send_note_on",
         host_func_name = "SendNoteOn",
-        description = "Explicit note on.",
+        description = "Send an explicit note on immediately. Caller is responsible for sending note off later.",
         args =
         {
             {
@@ -129,7 +162,7 @@ M.host_export_funcs =
                 description = "Channel name."
             },
             {
-                name = "note_num",
+                name = "notenum",
                 type = "I",
                 description = "Note number."
             },
@@ -143,10 +176,9 @@ M.host_export_funcs =
     },
 
     {
-        -- static int SendNoteOffWork(string channel, int note_num)
         lua_func_name = "send_note_off",
         host_func_name = "SendNoteOff",
-        description = "Explicit note off.",
+        description = "Send an explicit note off immediately.",
         args =
         {
             {
@@ -155,7 +187,7 @@ M.host_export_funcs =
                 description = "Channel name."
             },
             {
-                name = "note_num",
+                name = "notenum",
                 type = "I",
                 description = "Note number."
             },
@@ -164,10 +196,9 @@ M.host_export_funcs =
     },
 
     {
-        -- static int SendControllerWork(string channel, int ctlr, int value)
         lua_func_name = "send_controller",
         host_func_name = "SendController",
-        description = "Explicit note on.",
+        description = "Send a controller immediately.",
         args =
         {
             {
@@ -190,10 +221,9 @@ M.host_export_funcs =
     },
 
     {
-        -- static int SendPatchWork(string channel, int patch)
         lua_func_name = "send_patch",
         host_func_name = "SendPatch",
-        description = "Send patch now.",
+        description = "Send a midi patch immediately.",
         args =
         {
             {
@@ -209,7 +239,6 @@ M.host_export_funcs =
         },
         ret = { type = "B", description = "Required empty." }
     },
-
 }
 
 return M

@@ -17,12 +17,12 @@ local M = {}
 
 M.STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
 
--- TODO1 class or?? Primary container for everything describing a step - mainly notes but supplementary stuff also.
+-- TODO0 class/dataclass/record/?? Primary container for everything describing a step - mainly notes but supplementary stuff also.
 -- step_info = {}
 --     subbeat
 --     STEP_TYPE
 --     channel_num
---     payload: STEP_TYPE.NOTE: note_num(I), volume(N), duration(I subbeats)
+--     payload: STEP_TYPE.NOTE: notenum(I), volume(N), duration(I subbeats)
 --              STEP_TYPE.CONTROLLER: ctlid(I), value(I)
 --              STEP_TYPE.PATCH: patch_num(I)
 --              STEP_TYPE.FUNCTION: function(F)
@@ -82,7 +82,6 @@ end
 -- @param notes_src list like: [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ]
 -- @return partially filled-in step_info list
 function parse_graphic_notes(notes_src)
-    -- TODO2 check args, numbers in midi range
 
     -- [ "|        |        |        |5---    |        |        |        |5-8---  |", "D6" ] --SS
     -- [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ], --SS
@@ -162,7 +161,7 @@ function parse_graphic_notes(notes_src)
         local si = nil
 
         if func is not nil then
-            si = { step_type=STEP_TYPE.NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
+            si = { step_type=STEP_TYPE.NOTE, subbeat=when, notenum=src, volume=volmod, duration=dur }
         else
             si = { step_type=STEP_TYPE.FUNCTION, subbeat=when, function=func, volume=volmod, duration=dur }
         end
@@ -181,7 +180,6 @@ function parse_explicit_notes(notes_src)
     -- [ 7.4, "A#min",                7, 1.2 ]  --XSM(X)
     -- [ 4.0, sequence_func,          7      ], --XFM(X)
 
-    -- TODO2 check args, numbers in midi range
     local step_infos = {}
 
     local start = to_subbeats(notes_src[1])
@@ -193,7 +191,7 @@ function parse_explicit_notes(notes_src)
 
     if tnote == "number" then
         -- use as is
-        si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=src, volume=volume / 10 }
+        si = { step_type=STEP_TYPE.NOTE, subbeat=start, notenum=src, volume=volume / 10 }
         table.insert(step_infos, si)
     elseif tnote == "function" then
         -- use as is
@@ -202,7 +200,7 @@ function parse_explicit_notes(notes_src)
     elseif tnote == "string" then
         local notes = md.get_notes(src)
         for n in notes do
-            si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=n, volume=volume / 10 }
+            si = { step_type=STEP_TYPE.NOTE, subbeat=start, notenum=n, volume=volume / 10 }
             table.insert(step_infos, si)
     else
         step_infos = nil
@@ -217,7 +215,7 @@ end
 -- Description
 -- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat) -- TODO1
+function M.do_step(send_stuff, bar, beat, subbeat) -- TODO0
     -- calc total subbeat
     -- get all 
 
@@ -250,7 +248,7 @@ end
 return M
 
 
---[[ old stuff TODO2
+--[[ old stuff TODO
 -- return table:
 -- index = subbeat
 -- value = msg_info list to play

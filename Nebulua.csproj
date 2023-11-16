@@ -21,9 +21,6 @@
         <!-- en none -->
     </PropertyGroup>
     <ItemGroup>
-      <Compile Include="..\..\Lua\LuaBagOfTricks\out\interop_out.cs" Link="interop_out.cs" />
-    </ItemGroup>
-    <ItemGroup>
         <PackageReference Include="NAudio" Version="2.1.0" />
         <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     </ItemGroup>
