@@ -27,11 +27,11 @@ channels =
     keys  = { device_id = "midi_out",  channel_num = 1,  patch = inst.AcousticGrandPiano },
     bass  = { device_id = "midi_out",  channel_num = 2,  patch = inst.AcousticBass },
     synth = { device_id = "midi_out",  channel_num = 3,  patch = inst.Lead1Square },
-    drums = { device_id = "midi_out",  channel_num = 10, patch = kit.Jazz }, -- for drums - identify somehow?
+    drums = { device_id = "midi_out",  channel_num = 10, patch = kit.Jazz }, -- for drums
     -- inputs
     tune  = { device_id = "midi_in",   channel_num = 1   },
-    trig  = { device_id = "virt_key",  channel_num = 2,  }, -- optional: show_note_names
-    whiz  = { device_id = "bing_bong", channel_num = 10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
+    trig  = { device_id = "virt_key",  channel_num = 2,  }, -- TODO optional: show_note_names
+    whiz  = { device_id = "bing_bong", channel_num = 10, }, -- TODO optional: draw_note_grid, min_note, max_note, min_control, max_control
 }
 
 -- local vars - Volumes. 
@@ -44,7 +44,7 @@ local chord_notes = md.get_notes("C4.o7")
 -- log.info(chord_notes)
 
 -- Create custom scale.
-md.create_notes("MY_SCALE", "1 3 4 b7")
+md.create_notes("MY_SCALE", "1 +3 4 -b7")
 local my_scale_notes = md.get_notes("B4.MY_SCALE")
 -- log.info(my_scale_notes)
 
@@ -76,7 +76,7 @@ function step(bar, beat, subbeat)
     if beat == 0 and subbeat == 0 then
         api.send_controller("synth", ctrl.Pan, 90)
         -- or...
-        api.send_controller("keys",  ctrl.Pan, 30) -- TODO use other than string?
+        api.send_controller("keys",  ctrl.Pan, 30) -- TODO0 use other than string?
     end
 end
 
@@ -85,7 +85,7 @@ end
 function input_note(channel, note, vel)
     log.info("input_note") -- string.format("%s", variable_name), channel, note, vel)
 
-    if channel == "bing_bong" then -- TODO use other than string?
+    if channel == "bing_bong" then -- TODO0 use other than string?
         -- whiz = ...
     end
 
@@ -123,7 +123,7 @@ end
 
 ------------------------- Composition ---------------------------------------
 
--- TODO volumes could be a optional user map instead of linear range.
+-- TODOF volumes could be an optional user map instead of linear range.
 drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
 drum_vol_range = [5.0, 9.5]
 

@@ -1,4 +1,6 @@
 
+local ut = require('utils')
+
 -- Create the namespace/module.
 local M = {}
 
@@ -93,31 +95,17 @@ local scale_defs =
     "Yo                      | 1 b3 4 5 b7                  | Yo scale                                 |                   |"
 }
 
--- All possible note names and aliases.
+-- All possible note names and aliases as offset from middle C.
 local note_names =
 {
-    "C",   "Db",  "D",  "Eb",  "E",   "F",   "Gb",  "G",  "Ab",  "A",   "Bb",  "B", 
-    "B#",  "C#",  "",   "D#",  "Fb",  "E#",  "F#",   "",  "G#",  "",    "A#",  "Cb", 
-    "1",   "2",   "3",  "4",   "5",   "6",   "7",   "8",  "9",   "10",  "11",  "12"
+    ["C"]=0,  ["Db"]=1, ["D"]=2, ["Eb"]=3, ["E"]=4,  ["F"]=5,  ["Gb"]=6, ["G"]=7, ["Ab"]=8, ["A"]=9,  ["Bb"]=10, ["B"]=11,
+    ["B#"]=0, ["C#"]=1,          ["D#"]=3, ["Fb"]=4, ["E#"]=5, ["F#"]=6,          ["G#"]=8,           ["A#"]=10, ["Cb"]=11,
+    ["1"]=0,  ["2"]=1,  ["3"]=2, ["4"]=3,  ["5"]=4,  ["6"]=5,  ["7"]=6,  ["8"]=7, ["9"]=8,  ["10"]=9, ["11"]=1,  ["12"]=11
 }
-
--- White keys.
-local naturals =
-{
-    0, 2, 4, 5, 7, 9, 11
-}
-
--- Names of note intervals two ways.
-local intervals =
-{
-    "1",  "b2",  "2",  "b3",  "3",  "4",  "b5",  "5",  "#5",  "6",  "b7",  "7", 
-    "",   "",    "9",  "#9",  "",  "11",  "#11",  "",  "",    "13",  "",   ""
-}
-
 
 ------ Init stuff ------
 
--- The chord and scale note definitions. Key is chord/scale name, value is list of constituent notes.
+-- The chord and scale note definitions. Key is chord/scale name, value is list of constituent notes as strings.
 M.chords_and_scales = {}
 
 for sc in scale_defs do
@@ -135,160 +123,94 @@ end
 -- Description
 -- @param name string which
 -- @param notes string space separated note names
-function M.create_notes(name, notes) --"MY_SCALE", "1 3 4 b7"
+function M.create_notes(name, notes) --"MY_SCALE", "1 +3 4 -b7"
     M.chords_and_scales[name] = ut.split(" ", notes)
-end
-
------------------------------------------------------------------------------
--- Get a defined chord or scale definition.
--- Description
--- @param name string which
--- @return The list of notes or nil if invalid
-function M.get_named_notes(name)
-    ret = M.chords_and_scales[name]
-    return ret
 end
 
 -----------------------------------------------------------------------------
 -- Parse note or notes from input value. Could look like:
 --   F4 - named note
---   F4.dim7 - named key/chord
---   F4.major - named key/scale
---   F4.MY_SCALE - user defined key/chord or scale
--- @param str string Standard string to parse.
--- @param str string Standard string to parse.
--- @return partially filled-in step_info[]
-function M.get_notes_from_string(root, scale) -- TODO0
+--   Bb2.dim7 - named key/chord
+--   E#5.major - named key/scale
+--   A3.MY_SCALE - user defined key/chord or scale
+-- @param nstr string Standard string to parse.
+-- @return List of note numbers or nil if invalid nstr.
+function M.get_notes_from_string(nstr)
     notes = {}
 
+    -- Break it up.
+    parts = ut.split(".", nstr)
+    snote = parts[1]
+    scon = parts[2] -- may be nil
 
---         // Break it up.
---         var parts = noteString.SplitByToken(".")
---         string snote = parts[0]
---         // Start with octave.
---         int octave = 4 // default is middle C
---         string soct = parts[0].Last().ToString()
---         if (soct.IsInteger())
---         {
---             octave = int.Parse(soct)
---             snote = snote.Remove(snote.Length - 1)
---         }
---         // Figure out the root note.
---         int? noteNum = NoteNameToNumber(snote)
---         if (noteNum is not null)
---         {
---             // Transpose octave.
---             noteNum += (octave + 1) * NOTES_PER_OCTAVE
---             if (parts.Count > 1)
---             {
---                 // It's a chord. M, M7, m, m7, etc. Determine the constituents.
---                 var chordNotes = M.chords_and_scales[parts[1] ]
---                 //var chordNotes = chordParts[0].SplitByToken(" ")
---                 for (int p = 0 p < chordNotes.Count p++)
---                 {
---                     string interval = chordNotes[p]
---                     bool down = false
---                     if (interval.StartsWith("-"))
---                     {
---                         down = true
---                         interval = interval.Replace("-", "")
---                     }
---                     int? iint = GetInterval(interval)
---                     if (iint is not null)
---                     {
---                         iint = down ? iint - NOTES_PER_OCTAVE : iint
---                         notes.Add(noteNum.Value + iint.Value)
---                     }
---                 }
---             }
---             else
---             {
---                 // Just the root.
---                 notes.Add(noteNum.Value)
---             }
---         }
---         else
---         {
---             notes.Clear()
---         }
+    -- Start with root and octave.
+    soct = snote[#snote]
+    octave = tonumber(soct)
+    if not octave then -- not specified
+        octave = 4 -- default is middle C
+    else -- trim octave
+        snote = snote.sub(1, #snote - 1)
+    end
+    root_note_num = M.note_name_to_number(snote)
+
+    -- Transpose octave.
+    root_note_num = root_note_num + (octave + 1) * NOTES_PER_OCTAVE
+
+    if scon then
+        -- It's a chord or scale. Determine the constituents.
+        const_notes = M.chords_and_scales[scon]
+        if const_notes then
+            for cn in const_notes do
+                nn = M.note_name_to_number(cn)
+                if nn then
+                    table.insert(notes, nn + root_note_num)
+                else
+                    -- error
+                    return nil
+                end
+            end
+        else
+            -- error
+            return nil
+        end
+    else
+        -- Just the root.
+        table.insert(notes, root_note_num)
+    end
 
     return notes
 end
 
 -----------------------------------------------------------------------------
--- Convert note number into name.
--- @param int inote
--- @return string name
-function M.note_number_to_name(inote)
-    root, octavw = split_note_number(inote)
-    s = note_names[root] .. octave
-    return s
-end
-
------------------------------------------------------------------------------
 -- Convert note name into number.
--- @param snote string The root of the note without octave.
+-- @param snote string The root of the note with optional +- octave shift.
 -- @return The number or nil if invalid.
 function M.note_name_to_number(snote)
-    inote = nil
-    for i = 1, #note_names do
-        if snote == note_names[i] then inote = i end
+    if snote[1] == '+' then
+        up = true
+        snote = snote:sub(2)
+    elseif snote[1] == '-' then
+        dn = true
+        snote = snote:sub(2)
     end
+
+    inote = note_names[snote]
+
+    -- Adjust for octave shift.
+    if inote and up then inote = inote + NOTES_PER_OCTAVE end
+    if inote and dn then inote = inote - NOTES_PER_OCTAVE end
+
     return inote
 end
 
 -----------------------------------------------------------------------------
--- Is it a white key?
--- @param notenum Which note
--- @return true/false
-function M.is_natural(notenum)
-    return naturals.Contains(split_note_number(notenum).root % NOTES_PER_OCTAVE)
-end
-
------------------------------------------------------------------------------
 -- Split a midi note number into root note and octave.
--- @param notenum">Absolute note number
--- @return root, octave
+-- @param notenum Absolute note number.
+-- @return ints of root, octave
 function M.split_note_number(notenum)
     root = notenum % NOTES_PER_OCTAVE
     octave = (notenum / NOTES_PER_OCTAVE) - 1
     return root, octave
-end
-
------------------------------------------------------------------------------
--- Get interval offset from name.
--- @param sinterval string xxx
--- @return Offset or nil if invalid.
-function M.get_interval(sinterval)
-    flats = sinterval.Count(c => c == 'b')
-    sharps = sinterval.Count(c => c == '#')
-    sinterval = sinterval.Replace(" ", "").Replace("b", "").Replace("#", "")
-
-    iinterval = _intervals.IndexOf(sinterval)
-    return iinterval == -1 ? -1 : iinterval + sharps - flats
-end
-
------------------------------------------------------------------------------
--- Get interval name from note number offset.
--- @param iint The name or empty if invalid.
--- @return string
-function M.get_interval(iint)
-    return iint >= _intervals.Count ? "" : _intervals[iint % _intervals.Count]
-end
-
------------------------------------------------------------------------------
--- Try to make a note and/or chord string from the param. If it can't find a chord return the individual notes.
--- @param notes list
--- @return xxx
-function M.format_notes(notes)
-    snotes = {}
-    -- Dissect root note.
-    for n in notes do
-        octave = split_note_number(n).octave
-        root = split_note_number(n).root
-        snotes.Add("\"{NoteNumberToName(root)}{octave}\"")
-
-    return snotes
 end
 
 -----------------------------------------------------------------------------
