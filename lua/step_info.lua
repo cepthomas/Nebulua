@@ -1,8 +1,6 @@
 
-
-
-
-local cls = require('class')
+local ut = require("utils")
+require('class')
 
 STEP_TYPE = { NONE = 0, NOTE = 1, CONTROLLER = 2, PATCH = 3, FUNCTION = 4 }
 
@@ -15,6 +13,9 @@ StepInfo = class(
     end)
 
 function StepInfo:__tostring()
+
+-- ex: interp( [[Hello {name}, welcome to {company}.]], { name = name, company = get_company_name() } )
+
     return self.subbeat..' '..self.channel_num..': '..self:format()
     -- return self.name..': '..self:speak()
 end
@@ -28,7 +29,7 @@ StepNote = class(StepInfo,
     end)
 
 function StepNote:format()
-    return 'TODO0'
+    return 'NOTE'
 end
 
 
