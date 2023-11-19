@@ -592,7 +592,7 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Output steps for next time increment.
         /// </summary>
-        void NextStep()
+        void NextStep() // TODO0 put in lua?
         {
             if (_script is not null && chkPlay.Checked)// && !_needCompile)
             {

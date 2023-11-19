@@ -146,13 +146,14 @@ namespace Ephemera.Nebulua
 
                     if (valid)
                     {
-                        // TODO refactor this mess. GP elegant way to deal with optional lua fields.
+                        // TODO0 refactor this mess. GP elegant way to deal with optional lua fields.
                         string? device_id = props.Names.Contains("device_id") ? props["device_id"].ToString() : null;
                         int? channel_num = props.Names.Contains("channel") ? int.Parse(props["channel"].ToString()) : null;
                         int? patch = props.Names.Contains("patch") ? int.Parse(props["patch"].ToString()) : 0;
-                        //bool show_note_names = props.Names.Contains("show_note_names") && bool.Parse(props["show_note_names"].ToString());
-                        //bool draw_note_grid = props.Names.Contains("draw_note_grid") && bool.Parse(props["draw_note_grid"].ToString());
-
+                        // virt_key options
+                        bool show_note_names = props.Names.Contains("show_note_names") && bool.Parse(props["show_note_names"].ToString());
+                        // bing_bong options   min_note, max_note, min_control, max_control?
+                        bool draw_note_grid = props.Names.Contains("draw_note_grid") && bool.Parse(props["draw_note_grid"].ToString());
                         // required
                         valid = device_id is not null && channel_num is not null;
 
@@ -189,152 +190,6 @@ namespace Ephemera.Nebulua
                     }
                 }
             }
-        }
-
-
-
-        ///////////// TODO0 everything below could/should? be in the script ///////////
-
-
-
-        /// <summary>
-        /// Get the sequences and sections.
-        /// </summary>
-        void GetComposition()
-        {
-            //_l.GetGlobal("_G");// "sequences"
-            //var keys = GetKeys();
-            //_l.Pop(1); // GetGlobal
-
-            //foreach(var k in keys)
-            //{
-            //    if (k.StartsWith("seq_"))
-            //    {
-            //        _l.GetGlobal(k);
-            //        var s = _l.ToStringL(-1);
-            //        var parts = s!.SplitByTokens(Environment.NewLine);
-            //    }
-            //}
-        }
-
-
-
-
-        // CreateSequence(int beats, SequenceElements elements) -- -> Sequence
-        // CreateSection(int beats, string name, SectionElements elements) -- -> Section
-
-        /// <summary>
-        /// Convert script sequences etc to internal events.
-        /// </summary>
-        public void BuildSteps()
-        {
-            // Build all the events.
-            int sectionBeat = 0;
-
-            foreach (Section section in _sections)
-            {
-                foreach (SectionElement sectel in section.Elements)
-                {
-                    if (sectel.Sequences.Length > 0)
-                    {
-                        // Current index in the sequences list.
-                        int seqIndex = 0;
-
-                        // Current beat in the section.
-                        int beatInSect = 0;
-
-                        while (beatInSect < section.Beats)
-                        {
-                            var seq = sectel.Sequences[seqIndex];
-                            //was AddSequence(sectel.Channel, seq, sectionBeat + beatInSect);
-                            var ch = Common.OutputChannels[sectel.ChannelName];
-                            int beat = sectionBeat + beatInSect;
-                            var ecoll = ConvertToEvents(ch, seq, beat);
-                            _scriptEvents.AddRange(ecoll);
-
-                            beatInSect += seq.Beats;
-                            if (seqIndex < sectel.Sequences.Length - 1)
-                            {
-                                seqIndex++;
-                            }
-                        }
-                    }
-                }
-
-                // Update accumulated time.
-                sectionBeat += section.Beats;
-            }
-        }
-
-        /// <summary>
-        /// Get all section names and when they start. The end marker is also added.
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<int, string> GetSectionMarkers()
-        {
-            Dictionary<int, string> info = new();
-            int when = 0;
-
-            foreach (Section sect in _sections)
-            {
-                info.Add(when, sect.Name);
-                when += sect.Beats;
-            }
-
-            // Add the dummy end marker.
-            info.Add(when, "");
-
-            return info;
-        }
-
-        /// <summary>
-        /// Get all events.
-        /// </summary>
-        /// <returns>Enumerator for all events.</returns>
-        public IEnumerable<MidiEventDesc> GetEvents()
-        {
-            return _scriptEvents;
-        }
-
-        /// <summary>
-        /// Generate events from sequence notes.
-        /// </summary>
-        /// <param name="channel">Which channel to send it on.</param>
-        /// <param name="seq">Which notes to send.</param>
-        /// <param name="startBeat">Which beat to start sequence at.</param>
-        List<MidiEventDesc> ConvertToEvents(Channel channel, Sequence seq, int startBeat)
-        {
-            List<MidiEventDesc> events = new();
-
-            foreach (SequenceElement seqel in seq.Elements)
-            {
-                // Create the note start and stop times.
-                BarTime startNoteTime = new BarTime(startBeat * MidiSettings.LibSettings.SubbeatsPerBeat) + seqel.When;
-                BarTime stopNoteTime = startNoteTime + (seqel.Duration.TotalSubbeats == 0 ? new(1) : seqel.Duration); // 1 is a short hit
-
-                // Is it a function?
-                if (seqel.ScriptFunction is not null)
-                {
-                    FunctionMidiEvent evt = new(startNoteTime.TotalSubbeats, channel.ChannelNumber, seqel.ScriptFunction);
-                    events.Add(new(evt, channel.ChannelName));
-                }
-                else // plain ordinary
-                {
-                    // Process all note numbers.
-                    foreach (int noteNum in seqel.Notes)
-                    {
-                        ///// Note on.
-                        double vel = channel.NextVol(seqel.Volume) * _masterVolume;
-                        int velPlay = (int)(vel * MidiDefs.MAX_MIDI);
-                        velPlay = MathUtils.Constrain(velPlay, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-
-                        NoteOnEvent evt = new(startNoteTime.TotalSubbeats, channel.ChannelNumber, noteNum, velPlay, seqel.Duration.TotalSubbeats);
-                        events.Add(new(evt, channel.ChannelName));
-                    }
-                }
-            }
-
-            return events;
         }
     }
 }

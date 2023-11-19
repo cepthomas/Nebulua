@@ -2,32 +2,14 @@
 
 local ut = require("utils")
 local md = require("music_defs")
+local si = require("step_info")
 
 local M = {}
 
--- file:///C:/Dev/3rdLua/Penlight-master/docs/index.html : types, utils, stringx, 
+-- file:///C:/Dev/3rdLua/Penlight-master/docs/index.html
 
 
--- local mt = getmetatable(f)
--- if not mt then error('not a callable object',2) end
-
-
-
----------------------- types and defs ----------------------
-
-M.STEP_TYPE = { NONE=0, NOTE=1, CONTROLLER=2, PATCH=3, FUNCTION=4 }
-
--- TODO0 class/dataclass/record/?? Primary container for everything describing a step - mainly notes but supplementary stuff also.
--- step_info = {}
---     subbeat
---     STEP_TYPE
---     channel_num
---     payload: STEP_TYPE.NOTE: notenum(I), volume(N), duration(I subbeats)
---              STEP_TYPE.CONTROLLER: ctlid(I), value(I)
---              STEP_TYPE.PATCH: patch_num(I)
---              STEP_TYPE.FUNCTION: function(F)
--- Needs ToString()
-
+---------------------- defs -------------------------------------------------
 
 M.INTERNAL_PPQ = 32
 -- Only 4/4 time supported.
@@ -37,14 +19,12 @@ M.SUBEATS_PER_BAR = INTERNAL_PPQ * BEATS_PER_BAR
 -- subbeat is LOW_RES_PPQ
 M.LOW_RES_PPQ = 8
 
-------------------------------- all ------------------------------
 
 -----------------------------------------------------------------------------
--- Description
--- Description
+-- Process all script info into discrete steps.
 -- @param name type desc
 -- @return list of step_info ordered by subbeat
-function M.process_all(sequences, sections)
+function M.process_all(sequences, sections) -- TODO0 sections
 
     -- index is seq name, value is steps list.
     local seq_step_infos = {}
@@ -79,15 +59,15 @@ end
 
 -----------------------------------------------------------------------------
 -- Parse a pattern.
--- @param notes_src list like: [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ]
+-- @param notes_src like: [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ]
 -- @return partially filled-in step_info list
 function parse_graphic_notes(notes_src)
 
-    -- [ "|        |        |        |5---    |        |        |        |5-8---  |", "D6" ] --SS
-    -- [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ], --SS
-    -- [ "|7-------|--      |        |        |7-------|--      |        |        |", 84 ], --SI
-    -- [ "|7-------|--      |        |        |7-------|--      |        |        |", drum.AcousticSnare ], --SI
-    -- [ "|        |        |        |5---    |        |        |        |5-8---  |", sequence_func ] --SF
+    -- [ "|        |        |        |5---    |        |        |        |5-8---  |", "D6" ],
+    -- [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ],
+    -- [ "|7-------|--      |        |        |7-------|--      |        |        |", 84 ],
+    -- [ "|7-------|--      |        |        |7-------|--      |        |        |", drum.AcousticSnare ],
+    -- [ "|        |        |        |5---    |        |        |        |5-8---  |", sequence_func ]
 
     local step_infos = {}
 
@@ -114,7 +94,7 @@ function parse_graphic_notes(notes_src)
     local current_vol = 0 -- default, not sounding
     local start_offset = 0 -- in pattern for the start of the current event
 
-    for i, #pattern do
+    for i = 1, #pattern do
         local c = pattern[i]
 
         if c == '-' then
@@ -160,10 +140,10 @@ function parse_graphic_notes(notes_src)
         local when = start_offset
         local si = nil
 
-        if func is not nil then
-            si = { step_type=STEP_TYPE.NOTE, subbeat=when, notenum=src, volume=volmod, duration=dur }
-        else
+        if func then
             si = { step_type=STEP_TYPE.FUNCTION, subbeat=when, function=func, volume=volmod, duration=dur }
+        else
+            si = { step_type=STEP_TYPE.NOTE, subbeat=when, notenum=src, volume=volmod, duration=dur }
         end
         table.insert(step_infos, si)
     end
@@ -171,14 +151,14 @@ end
 
 -----------------------------------------------------------------------------
 -- Description
--- Description
--- @param name type desc
+-- @param notes_src like: [ 0.4, 44, 5, 0.4 ]
 -- @return partially filled-in type_info list
 function parse_explicit_notes(notes_src)
-    -- [ 0.0, drum.AcousticBassDrum,  4, 0.1 ], --XIM(X)
-    -- [ 0.4, 44,                     5, 0.4 ], --XIM(X)
-    -- [ 7.4, "A#min",                7, 1.2 ]  --XSM(X)
-    -- [ 4.0, sequence_func,          7      ], --XFM(X)
+
+    -- [ 0.0, drum.AcousticBassDrum,  4, 0.1 ],
+    -- [ 0.4, 44,                     5, 0.4 ],
+    -- [ 7.4, "A#min",                7, 1.2 ],
+    -- [ 4.0, sequence_func,          7      ],
 
     local step_infos = {}
 
@@ -208,11 +188,8 @@ function parse_explicit_notes(notes_src)
     return step_infos
 end
 
-
-
 -----------------------------------------------------------------------------
--- Description
--- Description
+-- Process notes at this tick.
 -- @param name type desc
 -- @return type desc
 function M.do_step(send_stuff, bar, beat, subbeat) -- TODO0
@@ -249,6 +226,8 @@ return M
 
 
 --[[ old stuff TODO0
+
+
 -- return table:
 -- index = subbeat
 -- value = msg_info list to play
@@ -312,5 +291,76 @@ function M.process_section(sect)
 -- For viewing pleasure. ToString()
 --     return $"Section: Beats:{Beats} Name:{Name} Elements:{Elements.Count}";
 --     return $"SectionElement: ChannelName:{ChannelName}";
+
+        /// <summary>
+        /// Get all section names and when they start. The end marker is also added.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<int, string> GetSectionMarkers()
+        {
+            Dictionary<int, string> info = new();
+            int when = 0;
+
+            foreach (Section sect in _sections)
+            {
+                info.Add(when, sect.Name);
+                when += sect.Beats;
+            }
+
+            // Add the dummy end marker.
+            info.Add(when, "");
+
+            return info;
+        }
+
+        /// <summary>
+        /// Get all events.
+        /// </summary>
+        /// <returns>Enumerator for all events.</returns>
+        public IEnumerable<MidiEventDesc> GetEvents()
+        {
+            return _scriptEvents;
+        }
+
+        /// <summary>
+        /// Generate events from sequence notes.
+        /// </summary>
+        /// <param name="channel">Which channel to send it on.</param>
+        /// <param name="seq">Which notes to send.</param>
+        /// <param name="startBeat">Which beat to start sequence at.</param>
+        List<MidiEventDesc> ConvertToEvents(Channel channel, Sequence seq, int startBeat)
+        {
+            List<MidiEventDesc> events = new();
+
+            foreach (SequenceElement seqel in seq.Elements)
+            {
+                // Create the note start and stop times.
+                BarTime startNoteTime = new BarTime(startBeat * MidiSettings.LibSettings.SubbeatsPerBeat) + seqel.When;
+                BarTime stopNoteTime = startNoteTime + (seqel.Duration.TotalSubbeats == 0 ? new(1) : seqel.Duration); // 1 is a short hit
+
+                // Is it a function?
+                if (seqel.ScriptFunction is not null)
+                {
+                    FunctionMidiEvent evt = new(startNoteTime.TotalSubbeats, channel.ChannelNumber, seqel.ScriptFunction);
+                    events.Add(new(evt, channel.ChannelName));
+                }
+                else // plain ordinary
+                {
+                    // Process all note numbers.
+                    foreach (int noteNum in seqel.Notes)
+                    {
+                        ///// Note on.
+                        double vel = channel.NextVol(seqel.Volume) * _masterVolume;
+                        int velPlay = (int)(vel * MidiDefs.MAX_MIDI);
+                        velPlay = MathUtils.Constrain(velPlay, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+
+                        NoteOnEvent evt = new(startNoteTime.TotalSubbeats, channel.ChannelNumber, noteNum, velPlay, seqel.Duration.TotalSubbeats);
+                        events.Add(new(evt, channel.ChannelName));
+                    }
+                }
+            }
+
+            return events;
+        }
 
 ]]

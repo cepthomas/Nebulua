@@ -103,9 +103,16 @@ local note_names =
     ["1"]=0,  ["2"]=1,  ["3"]=2, ["4"]=3,  ["5"]=4,  ["6"]=5,  ["7"]=6,  ["8"]=7, ["9"]=8,  ["10"]=9, ["11"]=1,  ["12"]=11
 }
 
+-- Intervals as used in chord and scale defs.
+local intervals =
+{
+    ["1"]=0,   ["b2"]=1, ["2"]=2,  ["b3"]=3,  ["3"]=4,   ["4"]=5,    ["b5"]=6,  ["5"]=7, ["#5"]=8, ["b6"]=8, ["6"]=9, ["bb7"]=9,
+    ["b7"]=10, ["7"]=11, ["9"]=14, ["#9"]=15, ["11"]=17, ["#11"]=18, ["13"]=21
+}
+
 ------ Init stuff ------
 
--- The chord and scale note definitions. Key is chord/scale name, value is list of constituent notes as strings.
+-- The chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals as strings.
 M.chords_and_scales = {}
 
 for sc in scale_defs do
@@ -158,12 +165,12 @@ function M.get_notes_from_string(nstr)
 
     if scon then
         -- It's a chord or scale. Determine the constituents.
-        const_notes = M.chords_and_scales[scon]
-        if const_notes then
-            for cn in const_notes do
-                nn = M.note_name_to_number(cn)
-                if nn then
-                    table.insert(notes, nn + root_note_num)
+        const_intervals = M.chords_and_scales[scon]
+        if const_intervals then
+            for cint in const_intervals do
+                nint = intervals[cint]
+                if nint then
+                    table.insert(notes, nint + root_note_num)
                 else
                     -- error
                     return nil
@@ -182,7 +189,7 @@ function M.get_notes_from_string(nstr)
 end
 
 -----------------------------------------------------------------------------
--- Convert note name into number.
+-- Convert note name into note number.
 -- @param snote string The root of the note with optional +- octave shift.
 -- @return The number or nil if invalid.
 function M.note_name_to_number(snote)
