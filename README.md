@@ -2,7 +2,6 @@
 An experimental version of Nebulator using Lua as the script flavor.
 
 
-
 field types:
 S = string
 N = number
@@ -16,10 +15,7 @@ X = bar time(Number?)
 E = expression?
 
 
-
 ---- sequences
-
-
 -- Graphical format:
 -- "|7-------|" is one beat with 8 subbeats
 -- note velocity is 1-9 (map) or - which means sustained

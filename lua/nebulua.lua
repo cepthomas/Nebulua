@@ -6,8 +6,9 @@ local si = require("step_info")
 
 local M = {}
 
--- file:///C:/Dev/3rdLua/Penlight-master/docs/index.html
+-- file:///[](C:/Dev/3rdLua/Penlight-master/docs/index.html)
 
+-- [](C:/Dev/3rdLua/Penlight/docs/index.html)
 
 ---------------------- defs -------------------------------------------------
 

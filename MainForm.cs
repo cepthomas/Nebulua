@@ -469,38 +469,34 @@ namespace Ephemera.Nebulua
 
             foreach (var dev in _settings.MidiSettings.OutputDevices)
             {
-                switch (dev.DeviceName)
+                // Try midi.
+                bool devok = false;
+
+                if (!devok)
                 {
-                    default:
-                        // Try midi or OSC.
-                        try
-                        {
-                            var mout = new MidiOutput(dev.DeviceName);
-                            var mosc = new OscOutput(dev.DeviceName);
-                            if (mout.Valid)
-                            {
-                                Common.OutputDevices.Add(dev.DeviceId, mout);
-                            }
-                            else if (mosc.Valid)
-                            {
-                                Common.OutputDevices.Add(dev.DeviceId, mosc);
-                            }
-                            else
-                            {
-                                ok = false;
-                            }
-                        }
-                        catch
-                        {
-                            ok = false;
-                        }
+                    var mout = new MidiOutput(dev.DeviceName);
+                    if (mout.Valid)
+                    {
+                        _outputDevices.Add(dev.DeviceId, mout);
+                        devok = true;
+                    }
+                }
 
-                        if (!ok)
-                        {
-                            _logger.Error($"Something wrong with your output device:{dev.DeviceName} id:{dev.DeviceId}");
-                        }
+                if (!devok)
+                {
+                    // Try osc.
+                    var mosc = new OscOutput(dev.DeviceName);
+                    if (mosc.Valid)
+                    {
+                        _outputDevices.Add(dev.DeviceId, mosc);
+                        devok = true;
+                    }
+                }
 
-                        break;
+                if (!devok)
+                {
+                    _logger.Error($"Invalid output device:{dev.DeviceName} id:{dev.DeviceId}");
+                    ok = false;
                 }
             }
 
