@@ -1,10 +1,165 @@
+
+local M = {}
+
+
+-- Host defs: enum LogLevel { Trace = 0, Debug = 1, Info = 2, Warn = 3, Error = 4 }
+M.LOG_LEVEL = { TRC=0, DBG=1, INF=2, WRN=3, ERR=4 }
+
+-- Convenience functions.
+function M.error(msg) api.log(M.LOG_LEVEL.ERR, msg) end
+function M.warn(msg)  api.log(M.LOG_LEVEL.WRN, msg) end
+function M.info(msg)  api.log(M.LOG_LEVEL.INF, msg) end
+function M.debug(msg) api.log(M.LOG_LEVEL.DBG, msg) end
+function M.trace(msg) api.log(M.LOG_LEVEL.TRC, msg) end
+
+
+---------------------------- from emblua -------------------------------
+---------------------------- from emblua -------------------------------
+---------------------------- from emblua -------------------------------
+
+--[[
+Lua script for a simplistic coroutine application
+--]]
+
+
+local li = require "luainterop" -- C module
+local ut = require "utils"
+local math = require "math"
+
+-- print("*** script 1")
+
+-- This is the same as the C type.
+state_type = {
+  [1] = 'ST_READY',       -- Ready to be scheduled
+  [2] = 'ST_IN_PROCESS',  -- Scheduled or running
+  [3] = 'ST_DONE'         -- All done
+}
+
+-- Print something.
+function tell(s)
+  li.cliwr('S:'..s)
+end
+
+------------------------- Main loop ----------------------------------------------------
+
+function do_it()
+  tell("module initialization")
+
+  -- for n in pairs(_G) do print(n) end
+
+  -- Process the data passed from C. my_static_data contains the equivalent of my_static_data_t.
+  slog = string.format ("script_string:%s script_int:%s", script_string, script_int)
+  tell(slog)
+
+  -- Start working.
+  tell("do some pretend script work then yield")
+
+  for i = 1, 5 do
+    tell("doing loop number " .. i)
+
+    -- Do pretend work.
+    counter = 0
+    while counter < 1000 do
+      counter = counter + 1
+    end
+    -- ut.sleep(200)
+
+    -- Plays well with others.
+    coroutine.yield()
+  end
+  tell("done loop")
+end
+
+
+-------------- Handlers for commands from C --------------------------
+
+-- Pin input has arrived from board via C.
+function hinput (pin, value)
+  tell(string.format("demoapp: got hinput pin:%d value:%s ", pin, tostring(value)))
+end
+
+-- Dumb calculator, only does addition.
+function calc (x, y)
+  return (x + y)
+end
+
+-- Just a test for struct IO.
+function structinator(data)
+  state_name = state_type[data.state]
+  slog = string.format ("demoapp: structinator got val:%d state:%s text:%s", data.val, state_name, data.text)
+  tell(slog)
+
+  -- Package return data.
+  data.val = data.val + 1
+  data.state = 3
+  data.text = "Back atcha"
+
+  return data
+end
+
+
+-------------- from utils --------------------------
+
+-- Creates a function that returns false until the arg is exceeded.
+-- @param msec Number of milliseconds to wait.
+-- @return status Function that returns state of the timer.
+function M.delay_timer(msec)
+  -- Init our copies of the args.
+  local timeout = msec
+
+  -- Grab the start time.
+  local start = li.msec()
+  
+  -- The accessor function.
+  local status =
+    function()
+      -- Are we there yet?
+      return (li.msec() - start) > timeout
+    end  
+      
+  return { status = status }
+end
+
+-- Blocking wait.
+-- @param time Sleep time in msec.
+function M.sleep(time)
+  local timer = M.delay_timer(time)
+  while not timer.status() do coroutine.yield() end
+end
+
+-- Generate a random number.
+-- @param rmin Minimum number value.
+-- @param rmax Maximum number value.
+-- @return next Function that returns number.
+function M.numb_rand(rmin, rmax)
+  -- Init our copies of the args.
+  local n = rmin
+  local x = rmax
+  
+  -- Determine if this is an integer or real rand.
+  ni, nf = math.modf(n)
+  xi, xf = math.modf(x)
+  
+  -- If either has a fractional part > 0, it's a float.
+  if nf > 0 or xf > 0 then
+    local next = function() return math.random() * (x - n) + n  end 
+    return { next = next }      
+  else -- it's an int
+    local next = function() return math.random(n, x) end  
+    return { next = next }
+  end
+end
+
+
+------------------------------------ from old attempt ----------------------
+------------------------------------ from old attempt ----------------------
+------------------------------------ from old attempt ----------------------
 -- Does the actual music generation.
 
 local ut = require("utils")
 local md = require("music_defs")
 local si = require("step_info")
 
-local M = {}
 
 -- file:///[](C:/Dev/3rdLua/Penlight-master/docs/index.html)
 
@@ -239,7 +394,7 @@ function M.process_sequence(seq)
     local elements = {}
     -- Parse seq string.
     local seq_name = "???"
-    local seq_lines = ut.strsplit("\n", seq)
+    local seq_lines = sx.strsplit(seq, "\n")
     for i = 1, #seq_lines do
         local seq_line = seq_lines[i]
         -- One note or chord or function etc in the sequence. Essentially something that gets played.

@@ -3,11 +3,24 @@ local M = {}
 
 M.config =
 {
-    lua_lib_name = "neb_api",
-    namespace = "Ephemera.Nebulua",
-    class = "Script",
-    add_refs = { "System.Diagnostics", },
+    lua_lib_name = "nebulua_api",
+    -- add_refs = { "<abc.h>", },
 }
+
+
+--[[ List of midi events
+note:
+name = "channel", S or I
+name = "notenum", I
+name = "volume", N 0 note_off else note_on
+name = "dur", N 0 dur = note_on with dur = 0.1
+
+controller:
+name = "channel", S or I
+name = "ctlr", I
+name = "value", I
+]]
+
 
 
 -- Host calls lua.
@@ -17,7 +30,7 @@ M.lua_export_funcs =
         lua_func_name = "setup",
         host_func_name = "Setup",
         description = "Called to initialize Nebulator stuff.",
-        ret = { type = "B", description = "Required empty." }
+        ret = { type = "I", description = "Status." }
     },
 
     {
@@ -29,20 +42,20 @@ M.lua_export_funcs =
             {
                 name = "bar",
                 type = "I",
-                description = ""
+                description = "Which bar"
             },
             {
                 name = "beat",
                 type = "I",
-                description = ""
+                description = "Which beat"
             },
             {
                 name = "subbeat",
                 type = "I",
-                description = ""
+                description = "Which subbeat"
             },
         },
-        ret = { type = "B", description = "Required empty." }
+        ret = { type = "I", description = "Status." }
     },
 
     {
@@ -53,21 +66,26 @@ M.lua_export_funcs =
         {
             {
                 name = "channel",
-                type = "S",
-                description = ""
+                type = "I",
+                description = "Input channel handle"
             },
             {
-                name = "note",
+                name = "notenum",
                 type = "I",
-                description = ""
+                description = "Note number"
             },
             {
-                name = "val",
-                type = "I",
-                description = ""
+                name = "volume",
+                type = "N",
+                description = "Volume between 0.0 and 1.0."
             },
+            -- {
+            --     name = "velocity",
+            --     type = "I",
+            --     description = "Note velocity"
+            -- },
         },
-        ret = { type = "B", description = "Required empty." }
+        ret = { type = "I", description = "Status." }
     },
 
     {
@@ -78,21 +96,21 @@ M.lua_export_funcs =
         {
             {
                 name = "channel",
-                type = "S",
-                description = ""
+                type = "I",
+                description = "Input channel handle"
             },
             {
                 name = "controller",
                 type = "I",
-                description = ""
+                description = "Specific controller id"
             },
             {
                 name = "value",
                 type = "I",
-                description = ""
+                description = "Payload"
             },
         },
-        ret = { type = "B", description = "Required empty." }
+        ret = { type = "I", description = "Status." }
     },
 
 }
@@ -100,6 +118,7 @@ M.lua_export_funcs =
 -- Lua calls host.
 M.host_export_funcs =
 {
+
     {
         lua_func_name = "log",
         host_func_name = "Log",
@@ -117,7 +136,7 @@ M.host_export_funcs =
                 description = "Log message."
             },
         },
-        ret = { type = "B", description = "Required empty." }
+        ret = { type = "I", description = "Status." }
     },
 
     {
@@ -128,28 +147,55 @@ M.host_export_funcs =
         {
             {
                 name = "channel",
-                type = "S",
-                description = "Channel name."
+                type = "I",
+                description = "Output channel handle"
             },
             {
                 name = "notenum",
                 type = "I",
-                description = "Note number."
+                description = "Note number"
             },
             {
                 name = "volume",
                 type = "N",
-                description = "Volume between 0.0 and 1.0."
+                description = "Volume between 0.0 and 1.0"
             },
             {
                 name = "dur",
                 type = "N",
-                description = "Duration as bar.beat."
+                description = "Duration as bar.beat"
             },
         },
-        ret = { type = "B", description = "Required empty." }
+        ret = { type = "I", description = "Status." }
     },
 
+    {
+        lua_func_name = "send_controller",
+        host_func_name = "SendController",
+        description = "Send a controller immediately.",
+        args =
+        {
+            {
+                name = "channel",
+                type = "I",
+                description = "Output channel handle"
+            },
+            {
+                name = "ctlr",
+                type = "I",
+                description = "Specific controller"
+            },
+            {
+                name = "value",
+                type = "I",
+                description = "Payload."
+            },
+        },
+        ret = { type = "I", description = "Status" }
+    },
+
+
+--[[
     {
         lua_func_name = "send_note_on",
         host_func_name = "SendNoteOn",
@@ -196,31 +242,6 @@ M.host_export_funcs =
     },
 
     {
-        lua_func_name = "send_controller",
-        host_func_name = "SendController",
-        description = "Send a controller immediately.",
-        args =
-        {
-            {
-                name = "channel",
-                type = "S",
-                description = "Channel name."
-            },
-            {
-                name = "ctlr",
-                type = "I",
-                description = "Specific controller."
-            },
-            {
-                name = "value",
-                type = "I",
-                description = "Specific value."
-            },
-        },
-        ret = { type = "B", description = "Required empty." }
-    },
-
-    {
         lua_func_name = "send_patch",
         host_func_name = "SendPatch",
         description = "Send a midi patch immediately.",
@@ -239,6 +260,7 @@ M.host_export_funcs =
         },
         ret = { type = "B", description = "Required empty." }
     },
+]]
 }
 
 return M

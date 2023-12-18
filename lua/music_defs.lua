@@ -1,5 +1,6 @@
 
 local ut = require('utils')
+local sx = require("stringex")
 
 -- Create the namespace/module.
 local M = {}
@@ -116,13 +117,13 @@ local intervals =
 M.chords_and_scales = {}
 
 for sc in scale_defs do
-    parts = ut.split("|", sc)
-    M.chords_and_scales[parts[1]] = ut.split(" ", parts[2])
+    parts = sx.strsplit(sc, "|")
+    M.chords_and_scales[parts[1]] = sx.strsplit(parts[2], " ")
 end
 
 for sc in chord_defs do
-    parts = ut.split("|", sc)
-    M.chords_and_scales[parts[1]] = ut.split(" ", parts[2])
+    parts = sx.strsplit(sc, "|")
+    M.chords_and_scales[parts[1]] = sx.strsplit(parts[2], " ")
 end
 
 -----------------------------------------------------------------------------
@@ -131,7 +132,7 @@ end
 -- @param name string which
 -- @param notes string space separated note names
 function M.create_notes(name, notes) --"MY_SCALE", "1 +3 4 -b7"
-    M.chords_and_scales[name] = ut.split(" ", notes)
+    M.chords_and_scales[name] = sx.strsplit(notes, " ")
 end
 
 -----------------------------------------------------------------------------
@@ -146,7 +147,7 @@ function M.get_notes_from_string(nstr)
     notes = {}
 
     -- Break it up.
-    parts = ut.split(".", nstr)
+    parts = sx.strsplit(nstr, ".")
     snote = parts[1]
     scon = parts[2] -- may be nil
 
