@@ -21,6 +21,15 @@ double p_start_sec;
 /// Current time.
 double p_CurrentSec();
 
+
+/// Validate pointer arg. If fails, early returns err.
+/// @param ptr Pointer.
+/// @param err Error value to return in case of failure.
+#define VAL_PTR(ptr, err) if(ptr == NULL) { return err; }
+
+static const int RS_ERR = -1;
+
+
 //---------------- Public API Implementation -------------//
 
 //--------------------------------------------------------//
@@ -36,7 +45,7 @@ int logger_Init(const char* fn)
     strftime(snow, 32, "%Y-%m-%d %H:%M:%S", localtime(&now));
     fprintf(p_fp, "================ Log start %s =====================\n", snow);
 
-    return RS_PASS;
+    return 0;
 }
 
 //--------------------------------------------------------//
@@ -45,7 +54,7 @@ int logger_SetFilters(log_level_t level)
     assert(p_fp != NULL);
 
     p_level = level;
-    return RS_PASS;
+    return 0;
 }
 
 //--------------------------------------------------------//
@@ -80,7 +89,7 @@ int logger_Log(log_level_t level, const char* fn, int line, const char* format, 
         fflush(p_fp);
     }
 
-    return RS_PASS;
+    return 0;
 }
 
 

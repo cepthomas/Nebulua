@@ -3,6 +3,8 @@ echo off
 
 cls
 
+cd c
+
 mkdir build
 cd build
 del /F /Q *.*
@@ -12,7 +14,9 @@ cmake -G "MinGW Makefiles" ..
 make
 cd ..
 
-rem This really should be done by CMake but it's kind of a pain.
+cd ..
+
+rem TODO This really should be done by CMake but it's kind of a pain.
 rem copy source\lua\*.lua build
 
 rem pause
