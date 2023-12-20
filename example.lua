@@ -6,7 +6,7 @@ local sx = require("stringex")
 local ut = require("utils")
 
 local neb = require("nebulua") -- lua api
-local api = require("neb_api") -- C# api
+local api = require("host_api") -- C# api
 
 local md = require("midi_defs")
 local inst = md.instruments
@@ -14,28 +14,32 @@ local drum = md.drums
 local kit = md.drum_kits
 local ctrl = md.controllers
 
-local scale = require("scale")
-
 
 log.info("=============== go go go =======================")
 
 
 ------------------------- Config ----------------------------------------
 
-channels =
-{
-    -- outputs
-    keys  = { device_id = "midi_out",  channel_num = 1,  patch = inst.AcousticGrandPiano },
-    bass  = { device_id = "midi_out",  channel_num = 2,  patch = inst.AcousticBass },
-    synth = { device_id = "midi_out",  channel_num = 3,  patch = inst.Lead1Square },
-    drums = { device_id = "midi_out",  channel_num = 10, patch = kit.Jazz }, -- for drums
-    -- inputs
-    tune  = { device_id = "midi_in",   channel_num = 1   },
-    trig  = { device_id = "virt_key",  channel_num = 2,  }, -- optional: show_note_names
-    whiz  = { device_id = "bing_bong", channel_num = 10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
-}
+-- channels =
+-- {
+--     -- outputs
+--     keys  = { device_id = "midi_out",  channel_num = 1,  patch = inst.AcousticGrandPiano },
+--     bass  = { device_id = "midi_out",  channel_num = 2,  patch = inst.AcousticBass },
+--     synth = { device_id = "midi_out",  channel_num = 3,  patch = inst.Lead1Square },
+--     drums = { device_id = "midi_out",  channel_num = 10, patch = kit.Jazz }, -- for drums
+--     -- inputs
+--     tune  = { device_id = "midi_in",   channel_num = 1   },
+--     trig  = { device_id = "virt_key",  channel_num = 2,  }, -- optional: show_note_names
+--     whiz  = { device_id = "bing_bong", channel_num = 10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
+-- }
 
-local hkeys = open_midi("midi_out", 1, inst.AcousticGrandPiano)
+
+-- create devices 0=out 1=in
+local hkeys  = create_device(0, 1, inst.AcousticGrandPiano)
+local hbass  = create_device(0, 2, inst.AcousticBass)
+local hsynth = create_device(0, 3, inst.Lead1Square)
+local hdrums = create_device(0, 10, kit.Jazz)
+local hinp1 = create_device(1, 2)
 -- etc
 
 

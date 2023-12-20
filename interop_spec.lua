@@ -3,7 +3,7 @@ local M = {}
 
 M.config =
 {
-    lua_lib_name = "nebulua_api",
+    lua_lib_name = "host_api",
     -- add_refs = { "<abc.h>", },
 }
 
@@ -102,6 +102,31 @@ M.lua_export_funcs =
 -- Lua calls host.
 M.host_export_funcs =
 {
+
+    {
+        lua_func_name = "create_device",
+        host_func_name = "CreateDevice",
+        description = "Create an in/out midi device.",
+        args =
+        {
+            {
+                name = "dtype",
+                type = "I",
+                description = "Device type: 0=output 1=input"
+            },
+            {
+                name = "channel",
+                type = "I",
+                description = "Midi channel number"
+            },
+            {
+                name = "patch",
+                type = "I",
+                description = "Patch - output hannel only"
+            },
+        },
+        ret = { type = "I", description = "Device handle" }
+    },
 
     {
         lua_func_name = "log",

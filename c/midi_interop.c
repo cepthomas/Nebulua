@@ -17,25 +17,61 @@
 // :rcv msg
 
 
+void p_MidiInProc(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+{
+    //see MidiIn_Callback below
+
+    // hMidiIn
+    // Handle to the MIDI input device.
+    // wMsg
+    // MIDI input message.
+    // dwInstance
+    // Instance data supplied with the midiInOpen function.
+    // dwParam1
+    // Message parameter.
+    // dwParam2
+    // Message parameter.
+
+};
+
+
+
+
+
 void doit()
 {
+    MMRESULT res = 0;
+    int dev_in = 1; // from enumeration
+    HMIDIIN hmidi_in = 0;
+    MIDIINCAPS caps_in;
 
-int deviceNo = 1;
-
-MmResult midiInOpen(out IntPtr hMidiIn, IntPtr uDeviceID, MidiInCallback callback, IntPtr dwInstance, int dwFlags);
-MMRESULT res = midiInOpen(
-  LPHMIDIIN phmi,
-  UINT      uDeviceID,
-  DWORD_PTR dwCallback,
-  DWORD_PTR dwInstance,
-  DWORD     fdwOpen
-);
+    int dev_out = 1; // from enumeration
+    HMIDIOUT hmidi_out = 0;
+    MIDIOUTCAPS caps_out;
 
 
+    // IN:
+    int num_in = midiInGetNumDevs();
+    res = midiInGetDevCaps(dev_in, &caps_in, sizeof(caps_in));
 
+    res = midiInOpen(&hmidi_in, dev_in, p_MidiInProc, 0, CALLBACK_FUNCTION);
+    res = midiInStart(hmidi_in);
 
+    res = midiInReset(hmidi_in);
+    res = midiInStop(hmidi_in);
+    res = midiInClose(hmidi_in);
 
+    // OUT:
+    int num_out = midiOutGetNumDevs();
+    res = midiOutGetDevCaps(dev_out, &caps_out, sizeof(caps_out));
 
+    res = midiOutOpen(&hmidi_out, dev_out, 0, 0, 0);
+    int msg, dw1, dw2, dwMsg = 0;
+    res = midiOutMessage(hmidi_out, msg, dw1, dw2);
+    res = midiOutShortMsg(hmidi_out, dwMsg);
+
+    res = midiOutReset(hmidi_out);
+    res = midiOutClose(hmidi_out);
 }
 
 
@@ -45,6 +81,34 @@ MMRESULT res = midiInOpen(
 
 /* all useful MM api calls:
 
+        public enum MidiInMessage
+        {
+            /// MIM_OPEN
+            Open = 0x3C1,
+            /// MIM_CLOSE
+            Close = 0x3C2,
+            /// MIM_DATA
+            Data = 0x3C3,
+            /// MIM_LONGDATA
+            LongData = 0x3C4,
+            /// MIM_ERROR
+            Error = 0x3C5,
+            /// MIM_LONGERROR
+            LongError = 0x3C6,
+            /// MIM_MOREDATA
+            MoreData = 0x3CC,
+        }
+
+        public enum MidiOutMessage
+        {
+            /// MOM_OPEN
+            Open = 0x3C7,
+            /// MOM_CLOSE
+            Close = 0x3C8,
+            /// MOM_DONE
+            Done = 0x3C9
+        }
+
 enum MmResult
 {
     /// <summary>no error, MMSYSERR_NOERROR</summary>
@@ -53,6 +117,29 @@ enum MmResult
     UnspecifiedError = 1,
     // etc...
 }
+
+
+
+typedef struct midiincaps_tag {
+  WORD    wMid;
+  WORD    wPid;
+  VERSION vDriverVersion;
+  char    szPname[MAXPNAMELEN];
+  DWORD   dwSupport;
+} MIDIINCAPS, *PMIDIINCAPS, *NPMIDIINCAPS, *LPMIDIINCAPS;
+
+typedef struct midioutcaps_tag {
+  WORD    wMid;
+  WORD    wPid;
+  VERSION vDriverVersion;
+  char    szPname[MAXPNAMELEN];
+  WORD    wTechnology;
+  WORD    wVoices;
+  WORD    wNotes;
+  WORD    wChannelMask;
+  DWORD   dwSupport;
+} MIDIOUTCAPS, *PMIDIOUTCAPS, *NPMIDIOUTCAPS, *LPMIDIOUTCAPS;
+
 
 
 // http://msdn.microsoft.com/en-us/library/dd798452%28VS.85%29.aspx
@@ -69,13 +156,6 @@ int midiInGetNumDevs();
 
 // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
 MmResult midiInOpen(out IntPtr hMidiIn, IntPtr uDeviceID, MidiInCallback callback, IntPtr dwInstance, int dwFlags);
-MMRESULT midiInOpen(
-  LPHMIDIIN phmi,
-  UINT      uDeviceID,
-  DWORD_PTR dwCallback,
-  DWORD_PTR dwInstance,
-  DWORD     fdwOpen
-);
 
 // http://msdn.microsoft.com/en-us/library/dd798461%28VS.85%29.aspx
 MmResult midiInReset(IntPtr hMidiIn);

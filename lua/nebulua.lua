@@ -74,7 +74,7 @@ end
 -------------- Handlers for commands from C --------------------------
 
 -- Pin input has arrived from board via C.
-function hinput (pin, value)
+function hinput(pin, value)
   tell(string.format("demoapp: got hinput pin:%d value:%s ", pin, tostring(value)))
 end
 

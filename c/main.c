@@ -1,33 +1,20 @@
-
-// #include <windows.h>
-// #include <cstdio>
-// #include <cstring>
-// #include <stdlib.h>
-// #include <unistd.h>
-
-
+#include <windows.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-
-// #include "common.h"
-// #include "exec.h"
-
 #include "luainterop.h"
 #include "luainteropwork.h"
-
 #include "logger.h"
 #include "ftimer.h"
 #include "stopwatch.h"
 
 
-// The main Lua thread.
+// The main Lua thread - C code incl interrupts (mm/fast timer, midi events)
 static lua_State* p_lmain;
 
 // The Lua thread where the script is running.
@@ -40,160 +27,76 @@ static bool p_script_running = false;
 static bool p_loop_running;
 
 // Last tick time.
-static unsigned long p_last_usec;
+// static unsigned long p_last_usec;
+static double p_last_msec = 0;
 
-/// Helper macro to check/log stack size. TODO keep stuff in luautils.*?
+/// Helper macro to check/log stack size. TODO keep other stuff in luautils.*?
 #define EVAL_STACK(L, expected)  { int num = lua_gettop(L); if (num != expected) { logger_Log(LVL_DEBUG, __FILE__, __LINE__, "Expected %d stack but is %d", expected, num); } }
 
 /// Helper macro to check then handle error..
 #define PROCESS_LUA_ERROR(L, err, fmt, ...)  // if(err >= LUA_ERRRUN) { luautils_LuaError(L, __FILE__, __LINE__, err, fmt, ##__VA_ARGS__); }
 
 
-/////////////////// ftimer test stuff //////////////////
-static double p_last_msec = 0.0;
-#define TEST_COUNT 100
-double p_test_res_1[TEST_COUNT]; // driver says
-double p_test_res_2[TEST_COUNT]; // I say
-int p_test_index = 0;
-//-------------------------------------------------------//
-void PeriodicInterruptFunc(double msec)
-{
-    //- TODO See lua.c for a way to treat C signals, which you may adapt to your interrupts.
 
-    if(p_test_index < TEST_COUNT)
+//-------------------------------------------------------//
+// Tick corresponding to bpm. Interrupt!
+void p_MidiClockFunc(double msec)
+{
+    // TODO yield over to script thread and call its step function.
+    // TODO See lua.c for a way to treat C signals, which you may adapt to your interrupts.
+
+}
+
+//--------------------------------------------------------//
+// Handle incoming messages. Interrupt!
+void p_MidiInFunc(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+{
+    // hMidiIn - Handle to the MIDI input device.
+    // wMsg - MIDI input message.
+    // dwInstance - Instance data supplied with the midiInOpen function.
+    // dwParam1 - Message parameter.
+    // dwParam2 - Message parameter.
+
+    switch(message)
     {
-        double em = stopwatch_TotalElapsedMsec();
-        p_test_res_1[p_test_index] = msec;
-        p_test_res_2[p_test_index] = em - p_last_msec;
-        p_last_msec = em;
-        p_test_index++;
+        case MIM_DATA://MidiInterop.MidiInMessage.Data:
+            // parameter 1 is packed MIDI message
+            // parameter 2 is milliseconds since MidiInStart
+            MessageReceived(this, new MidiInMessageEventArgs(messageParameter1.ToInt32(), messageParameter2.ToInt32()));
+            break;
+
+        case MIM_ERROR://MidiInterop.MidiInMessage.Error:
+            // parameter 1 is invalid MIDI message
+            ErrorReceived(this, new MidiInMessageEventArgs(messageParameter1.ToInt32(), messageParameter2.ToInt32()));
+            break;
+
+        case MIM_OPEN://MidiInterop.MidiInMessage.Open:
+        case MIM_CLOSE://MidiInterop.MidiInMessage.Close:
+        case MIM_LONGDATA://MidiInterop.MidiInMessage.LongData:
+        case MIM_LONGERROR://MidiInterop.MidiInMessage.LongError:
+        case MIM_MOREDATA:// MidiInterop.MidiInMessage.MoreData:
+            break;
     }
-    else
-    {
-        // Stop.
-        ftimer_Run(0);
-    }
+};
+
+
+//--------------------------------------------------------//
+// Blocking sleep.
+void p_Sleep(int msec)
+{
+    struct timespec ts;
+    ts.tv_sec = msec / 1000;
+    ts.tv_nsec = (msec % 1000) * 1000000;
+    nanosleep(&ts, NULL);
 }
 
 
-
-/////////////// proto /////////////
-int exec_Init(void);
-int exec_Run(const char* fn);
-// void PeriodicInterruptFunc(double msec);
-// Sleep for msec.
-// @param msec How long.
-static void p_Sleep(int msec);
-
-
-
-
-
 //----------------------------------------------------//
-// Main entry for the application. Process args and start system.
-// @param argc How many args.
-// @param argv The args.
-// @return Standard exit code.
-int main(int argc, char* argv[])
+int p_Init(void)
 {
     int ret = 0;
 
-
-    /////////////////// stopwatch test stuff //////////////////
-    ret = stopwatch_Init();
-    double msec = stopwatch_ElapsedMsec();
-
-    stopwatch_Reset();
-    msec = stopwatch_ElapsedMsec();
-
-    sleep(1);
-
-    msec = stopwatch_ElapsedMsec();
-    //UT_CLOSE(stopwatch_ElapsedMsec(), 1000.0, 5.0); // because sleep() is sloppy
-
-
-    /////////////////// ftimer test stuff //////////////////
-    ret = ftimer_Init(PeriodicInterruptFunc, 10);
-
-    // Grab the stopwatch time.
-    p_last_msec = stopwatch_TotalElapsedMsec();
-
-    // Go.
-    ret = ftimer_Run(17);
-
-    int timeout = 3;
-    while(ftimer_IsRunning())// && timeout > 0)
-    {
-        sleep(1);
-        timeout--;
-    }
-
-    ftimer_Destroy();
-
-    // Check what happened.
-    double vmin_1 = 1000;
-    double vmax_1 = 0;
-    double vmin_2 = 1000;
-    double vmax_2 = 0;
-
-    for(int i = 0; i < TEST_COUNT; i++)
-    {
-        double v = p_test_res_1[i];
-        vmin_1 = v < vmin_1 ? v : vmin_1;
-        vmax_1 = v > vmax_1 ? v : vmax_1;
-
-        v = p_test_res_2[i];
-        vmin_2 = v < vmin_2 ? v : vmin_2;
-        vmax_2 = v > vmax_2 ? v : vmax_2;
-
-        //printf("%g\n", p_test_res[i]);
-    }
-
-    //printf("max_1:%g min_1:%g max_2:%g min_2:%g\n", vmax_1, vmin_1, vmax_2, vmin_2);
-
-
-
-
-    ////////////////////// original start //////////////////
-    if(argc == 2)
-    {
-        if(exec_Init() == 0)
-        {
-            // Blocks forever.
-            if(exec_Run(argv[1]) != 0)
-            {
-                // Bad thing happened.
-                ret = 3;
-                printf("!!! exec_run() failed\n");
-            }
-        }
-        else
-        {
-            ret = 2;
-            printf("!!! exec_init() failed\n");
-        }
-    }
-    else
-    {
-        ret = 1;
-        printf("!!! invalid args\n");
-    }
-
-
-    return ret;
-}
-
-
-/////////////////////////////////////////////////////////////////////
-
-//----------------------------------------------------//
-int exec_Init(void)
-{
-    int stat = 0;
-
-    // Init stuff.
-    logger_Init(".\\cel_log.txt");
-    logger_SetFilters(LVL_DEBUG);
+    // Init internal stuff.
     p_loop_running = false;
     p_lmain = luaL_newstate();
     EVAL_STACK(p_lmain, 0);
@@ -202,37 +105,28 @@ int exec_Init(void)
     luaL_openlibs(p_lmain);
     EVAL_STACK(p_lmain, 0);
 
-/* this:
-    // Set up all board-specific stuff.
-    stat = board_Init();
-    stat = board_CliOpen(0);
-    stat = board_RegDigInterrupt(p_DigInputHandler);
+    // Stopwatch.
+    ret = stopwatch_Init();
+    p_last_msec = stopwatch_TotalElapsedMsec();
 
-    // Init outputs.
-    stat = board_WriteDig(DIG_OUT_1, true);
-    stat = board_WriteDig(DIG_OUT_2, false);
-    stat = board_WriteDig(DIG_OUT_3, true);
+    // Tempo timer and interrupt.
+    ret = ftimer_Init(p_MidiClockFunc, 10);
+    ret = ftimer_Run(17); // tempo from ???
 
-    p_last_usec = board_GetCurrentUsec();
-    EVAL_STACK(p_lmain, 0);
-*/
+    // Midi event interrupt.
 
-    return stat;
+    return ret;
 }
 
 
 //---------------------------------------------------//
-int exec_Run(const char* fn)
+int p_Run(const char* fn)
 {
     int stat = 0;
-    int lua_stat = 0;
+    int lua_stat = 0; check all!
     EVAL_STACK(p_lmain, 0);
 
-    // Let her rip!
-//    board_EnableInterrupts(true);
     p_loop_running = true;
-
-//    p_Usage();
 
     // Set up a second Lua thread so we can background execute the script.
     p_lscript = lua_newthread(p_lmain);
@@ -255,12 +149,12 @@ int exec_Run(const char* fn)
     // lua_load() pushes the compiled chunk as a Lua function on top of the stack.
     lua_stat = luaL_loadfile(p_lscript, fn);
 
-    // Give it some data. 
-    lua_pushstring(p_lscript, "Hey diddle diddle");
-    lua_setglobal(p_lscript, "script_string");
-    lua_pushinteger(p_lscript, 90309);
-    lua_setglobal(p_lscript, "script_int");
-    EVAL_STACK(p_lscript, 1);
+    // // Give it some data. 
+    // lua_pushstring(p_lscript, "Hey diddle diddle");
+    // lua_setglobal(p_lscript, "script_string");
+    // lua_pushinteger(p_lscript, 90309);
+    // lua_setglobal(p_lscript, "script_int");
+    // EVAL_STACK(p_lscript, 1);
 
     // Priming run of the loaded Lua script to create the script's global variables
     lua_stat = lua_pcall(p_lscript, 0, 0, 0);
@@ -287,7 +181,7 @@ int exec_Run(const char* fn)
             switch(lua_stat)
             {
                 case LUA_YIELD:
-                    LOG_DEBUG("===LUA_YIELD.");
+                    // LOG_DEBUG("===LUA_YIELD.");
                     break;
 
                 case LUA_OK:
@@ -296,7 +190,7 @@ int exec_Run(const char* fn)
 
                 default:
                     // Unexpected error.
-                    PROCESS_LUA_ERROR(p_lscript, lua_stat, "exec_Run() error");
+                    PROCESS_LUA_ERROR(p_lscript, lua_stat, "p_Run() error");
                     break;
             }
 
@@ -304,49 +198,90 @@ int exec_Run(const char* fn)
         }
         while (lua_stat == LUA_YIELD);
 
-        ///// Then loop forever doing cli requests. /////
+        /// Then loop forever doing cli requests. /////
         do
         {
-            // stat = board_CliReadLine(p_cli_buf, CLI_BUFF_LEN);
-            // if(stat == 0 && strlen(p_cli_buf) > 0)
-            // {
-            //     // LOG_DEBUG("|||got:%s", p_cli_buf);
-            //     stat = p_ProcessCommand(p_cli_buf);
-            // }
-            // p_Sleep(100);
+            stat = board_CliReadLine(p_cli_buf, CLI_BUFF_LEN);
+            if(stat == 0 && strlen(p_cli_buf) > 0)
+            {
+                // LOG_DEBUG("|||got:%s", p_cli_buf);
+                stat = p_ProcessCommand(p_cli_buf);
+            }
+            p_Sleep(100);
         } while (p_script_running);
 
         ///// Script complete now. /////
-//        board_CliWriteLine("Finished script.");
+        LOG_INFO("Finished script");
     }
     else
     {
-        PROCESS_LUA_ERROR(p_lscript, lua_stat, "exec_Run() error");
+        PROCESS_LUA_ERROR(p_lscript, lua_stat, "p_Run() error");
     }
 
-    ///// Done, close up shop. /////
-    EVAL_STACK(p_lmain, 0);
-    EVAL_STACK(p_lscript, 0);
 
-//    board_CliWriteLine("Goodbye - come back soon!");
-//    board_EnableInterrupts(false);
+    return stat;
+}
+
+
+//----------------------------------------------------//
+// Main entry for the application. Process args and start system.
+// @param argc How many args.
+// @param argv The args.
+// @return Standard exit code.
+int main(int argc, char* argv[])
+{
+    int ret = 0;
+
+    logger_Init(".\\cel_log.txt");
+    logger_SetFilters(LVL_DEBUG);
+
+
+    ret = p_Init();
+
+    // Go.
+    char* serr = NULL;
+    char* sfn = NULL;
+
+    if(argc == 2)
+    {
+        sfn = argv[1];
+    }
+    else
+    {
+        serr = "Invalid args";
+    }
+
+    if (serr == NULL && sfn != NULL)
+    {
+        if(p_Init() != 0)
+        {
+            serr = "Init failed";
+        }
+    }
+
+    if (serr == NULL && sfn != NULL)
+    {
+        // Run the script file. Blocks forever. TODO need elegant way to stop - part of user interaction or ctrl-C?
+        if(p_Run(argv[1]) != 0)
+        {
+            serr = "Run failed";
+        }
+    }
+
+    // How did we do?
+    if (serr != NULL)
+    {
+        LOG_ERROR(serr);
+        printf("Epic fail!! %s\n", serr);
+    }
+
+    // Clean up and go home.
+    // EVAL_STACK(p_lmain, 0);
+    // EVAL_STACK(p_lscript, 0);
+    ftimer_Run(0);
+    ftimer_Destroy();
+    lua_close(p_lscript);
     lua_close(p_lmain);
 
-    return stat == 0;// RS_ERR ? 1 : 0;
+    return serr == NULL ? 0 : 1;
 }
-
-
-
-//--------------------------------------------------------//
-void p_Sleep(int msec)
-{
-    struct timespec ts;
-    ts.tv_sec = msec / 1000;
-    ts.tv_nsec = (msec % 1000) * 1000000;
-    nanosleep(&ts, NULL);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////
-
-

@@ -130,10 +130,36 @@ int luainterop_InputController(lua_State* l, int channel, int controller, int va
 
 //---------------- Call host functions from Lua -------------//
 
+// Host export function: Create an in/out midi device.
+// Lua arg: dtype Device type: 0=output 1=input
+// Lua arg: channel Midi channel number
+// Lua arg: patch Patch - output hannel only
+// Lua return: int Device handle
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
+static int luainterop_CreateDevice(lua_State* l)
+{
+    // Get arguments
+    int dtype;
+    if (lua_isinteger(l, 1)) { dtype = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Bad arg type for dtype"); }
+    int channel;
+    if (lua_isinteger(l, 2)) { channel = lua_tointeger(l, 2); }
+    else { luaL_error(l, "Bad arg type for channel"); }
+    int patch;
+    if (lua_isinteger(l, 3)) { patch = lua_tointeger(l, 3); }
+    else { luaL_error(l, "Bad arg type for patch"); }
+
+    // Do the work. One result.
+    int ret = luainteropwork_CreateDevice(dtype, channel, patch);
+    lua_pushinteger(l, ret);
+    return 1;
+}
+
 // Host export function: Script wants to log something.
-// Lua arg: "level">Log level.
-// Lua arg: "msg">Log message.
-// Lua return: int Status.
+// Lua arg: level Log level
+// Lua arg: msg Log message
+// Lua return: int status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 static int luainterop_Log(lua_State* l)
@@ -153,11 +179,11 @@ static int luainterop_Log(lua_State* l)
 }
 
 // Host export function: If volume is 0 note_off else note_on. If dur is 0 dur = note_on with dur = 0.1 (for drum/hit).
-// Lua arg: "channel">Output channel handle
-// Lua arg: "notenum">Note number
-// Lua arg: "volume">Volume between 0.0 and 1.0
-// Lua arg: "dur">Duration as bar.beat
-// Lua return: int Status.
+// Lua arg: channel Output channel handle
+// Lua arg: notenum Note number
+// Lua arg: volume Volume between 0.0 and 1.0
+// Lua arg: dur Duration as bar.beat
+// Lua return: int status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 static int luainterop_SendNote(lua_State* l)
@@ -183,9 +209,9 @@ static int luainterop_SendNote(lua_State* l)
 }
 
 // Host export function: Send a controller immediately.
-// Lua arg: "channel">Output channel handle
-// Lua arg: "ctlr">Specific controller
-// Lua arg: "value">Payload.
+// Lua arg: channel Output channel handle
+// Lua arg: ctlr Specific controller
+// Lua arg: value Payload.
 // Lua return: int Status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
@@ -213,6 +239,7 @@ static int luainterop_SendController(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
+    { "create_device", luainterop_CreateDevice },
     { "log", luainterop_Log },
     { "send_note", luainterop_SendNote },
     { "send_controller", luainterop_SendController },
@@ -227,5 +254,5 @@ static int luainterop_Open(lua_State* l)
 
 void luainterop_Load(lua_State* l)
 {
-    luaL_requiref(l, "nebulua_api", luainterop_Open, true);
+    luaL_requiref(l, "host_api", luainterop_Open, true);
 }

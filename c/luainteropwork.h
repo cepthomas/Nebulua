@@ -13,6 +13,9 @@
 int luainteropwork_Log(int level, char* msg);
 
 
+
+int luainteropwork_CreateDevice(int dtype, int channel, int patch);
+
 //--------------------------------------------------------//
 // Host export function: If volume is 0 note_off else note_on. If dur is 0 dur = note_on with dur = 0.1 (for drum/hit).
 // @param[in] channel Output channel handle

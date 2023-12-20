@@ -20,6 +20,7 @@ include_directories(
 add_executable(nebulua
     main.c
     logger.c
+    midi_interop.c
     luainterop.c
     luainteropwork.c
     ${FTIMER}/private/ftimer.c
