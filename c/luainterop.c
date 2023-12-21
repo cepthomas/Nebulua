@@ -130,19 +130,19 @@ int luainterop_InputController(lua_State* l, int channel, int controller, int va
 
 //---------------- Call host functions from Lua -------------//
 
-// Host export function: Create an in/out midi device.
-// Lua arg: dtype Device type: 0=output 1=input
+// Host export function: Create an in or out midi channel.
+// Lua arg: device Midi device name
 // Lua arg: channel Midi channel number
 // Lua arg: patch Patch - output hannel only
-// Lua return: int Device handle
+// Lua return: int Channel handle
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-static int luainterop_CreateDevice(lua_State* l)
+static int luainterop_CreateChannel(lua_State* l)
 {
     // Get arguments
-    int dtype;
-    if (lua_isinteger(l, 1)) { dtype = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Bad arg type for dtype"); }
+    char* device;
+    if (lua_isstring(l, 1)) { device = lua_tostring(l, 1); }
+    else { luaL_error(l, "Bad arg type for device"); }
     int channel;
     if (lua_isinteger(l, 2)) { channel = lua_tointeger(l, 2); }
     else { luaL_error(l, "Bad arg type for channel"); }
@@ -151,7 +151,7 @@ static int luainterop_CreateDevice(lua_State* l)
     else { luaL_error(l, "Bad arg type for patch"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_CreateDevice(dtype, channel, patch);
+    int ret = luainteropwork_CreateChannel(device, channel, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -178,7 +178,7 @@ static int luainterop_Log(lua_State* l)
     return 1;
 }
 
-// Host export function: If volume is 0 note_off else note_on. If dur is 0 dur = note_on with dur = 0.1 (for drum/hit).
+// Host export function: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).
 // Lua arg: channel Output channel handle
 // Lua arg: notenum Note number
 // Lua arg: volume Volume between 0.0 and 1.0
@@ -239,7 +239,7 @@ static int luainterop_SendController(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
-    { "create_device", luainterop_CreateDevice },
+    { "create_channel", luainterop_CreateChannel },
     { "log", luainterop_Log },
     { "send_note", luainterop_SendNote },
     { "send_controller", luainterop_SendController },

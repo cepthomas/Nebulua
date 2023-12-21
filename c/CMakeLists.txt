@@ -8,8 +8,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(LUA "C:/Program Files/Lua")
 set(FTIMER "C:/Dev/repos/C/c_fast_timer/source")
 
-# needs -g to debug.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable")
+# needs -g to debug. TODO clean these up:
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")
 
 include_directories(
     ${LUA}/include
@@ -20,7 +20,7 @@ include_directories(
 add_executable(nebulua
     main.c
     logger.c
-    midi_interop.c
+    common.c
     luainterop.c
     luainteropwork.c
     ${FTIMER}/private/ftimer.c

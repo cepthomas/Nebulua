@@ -20,7 +20,7 @@ M.lua_export_funcs =
     {
         lua_func_name = "step",
         host_func_name = "Step",
-        description = "Called every mmtimer increment.",
+        description = "Called every fast timer increment.",
         args =
         {
             {
@@ -104,15 +104,15 @@ M.host_export_funcs =
 {
 
     {
-        lua_func_name = "create_device",
-        host_func_name = "CreateDevice",
-        description = "Create an in/out midi device.",
+        lua_func_name = "create_channel",
+        host_func_name = "CreateChannel",
+        description = "Create an in or out midi channel.",
         args =
         {
             {
-                name = "dtype",
-                type = "I",
-                description = "Device type: 0=output 1=input"
+                name = "device",
+                type = "S",
+                description = "Midi device name"
             },
             {
                 name = "channel",
@@ -125,7 +125,7 @@ M.host_export_funcs =
                 description = "Patch - output hannel only"
             },
         },
-        ret = { type = "I", description = "Device handle" }
+        ret = { type = "I", description = "Channel handle" }
     },
 
     {
@@ -151,7 +151,7 @@ M.host_export_funcs =
     {
         lua_func_name = "send_note",
         host_func_name = "SendNote",
-        description = "If volume is 0 note_off else note_on. If dur is 0 dur = note_on with dur = 0.1 (for drum/hit).",
+        description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).",
         args =
         {
             {

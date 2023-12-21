@@ -180,7 +180,7 @@ M.LOW_RES_PPQ = 8
 -- Process all script info into discrete steps.
 -- @param name type desc
 -- @return list of step_info ordered by subbeat
-function M.process_all(sequences, sections) -- TODO0 sections
+function M.process_all(sequences, sections) -- TODOX sections
 
     -- index is seq name, value is steps list.
     local seq_step_infos = {}
@@ -348,7 +348,7 @@ end
 -- Process notes at this tick.
 -- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat) -- TODO0
+function M.do_step(send_stuff, bar, beat, subbeat) -- TODOX
     -- calc total subbeat
     -- get all 
 
@@ -381,7 +381,7 @@ end
 return M
 
 
---[[ old stuff TODO0
+--[[ old stuff TODO
 
 
 -- return table:

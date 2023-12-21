@@ -2,123 +2,34 @@
 #include <windows.h>
 
 
-
-// :startup
-// - get in/out numdevs and caps
-// - open output device(s)
-// - open input device(s) -> callback(s)
-// - midin(s) start
-
-
-// :shutdown
-
-
-
-// :rcv msg
-
-
-void p_MidiInProc(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+eventToSend.GetAsShortMessage()
+MmException.Try(MidiInterop.midiOutShortMsg(hMidiOut,message),"midiOutShortMsg");
+public virtual int GetAsShortMessage()
 {
-    //see MidiIn_Callback below
-
-    // hMidiIn
-    // Handle to the MIDI input device.
-    // wMsg
-    // MIDI input message.
-    // dwInstance
-    // Instance data supplied with the midiInOpen function.
-    // dwParam1
-    // Message parameter.
-    // dwParam2
-    // Message parameter.
-
-};
-
-
-
-
-
-void doit()
-{
-    MMRESULT res = 0;
-    int dev_in = 1; // from enumeration
-    HMIDIIN hmidi_in = 0;
-    MIDIINCAPS caps_in;
-
-    int dev_out = 1; // from enumeration
-    HMIDIOUT hmidi_out = 0;
-    MIDIOUTCAPS caps_out;
-
-
-    // IN:
-    int num_in = midiInGetNumDevs();
-    res = midiInGetDevCaps(dev_in, &caps_in, sizeof(caps_in));
-
-    res = midiInOpen(&hmidi_in, dev_in, p_MidiInProc, 0, CALLBACK_FUNCTION);
-    res = midiInStart(hmidi_in);
-
-    res = midiInReset(hmidi_in);
-    res = midiInStop(hmidi_in);
-    res = midiInClose(hmidi_in);
-
-    // OUT:
-    int num_out = midiOutGetNumDevs();
-    res = midiOutGetDevCaps(dev_out, &caps_out, sizeof(caps_out));
-
-    res = midiOutOpen(&hmidi_out, dev_out, 0, 0, 0);
-    int msg, dw1, dw2, dwMsg = 0;
-    res = midiOutMessage(hmidi_out, msg, dw1, dw2);
-    res = midiOutShortMsg(hmidi_out, dwMsg);
-
-    res = midiOutReset(hmidi_out);
-    res = midiOutClose(hmidi_out);
+    return (channel - 1) + (int)commandCode; NoteOn etc
 }
 
 
+// // IN:
+// int num_in = midiInGetNumDevs();
+// res = midiInGetDevCaps(dev_in, &caps_in, sizeof(caps_in));
+// res = midiInOpen(&hmidi_in, dev_in, p_MidiInProc, 0, CALLBACK_FUNCTION);
+// res = midiInStart(hmidi_in);
+// res = midiInReset(hmidi_in);
+// res = midiInStop(hmidi_in);
+// res = midiInClose(hmidi_in);
+
+// // OUT:
+// int num_out = midiOutGetNumDevs();
+// res = midiOutGetDevCaps(dev_out, &caps_out, sizeof(caps_out));
+// res = midiOutOpen(&hmidi_out, dev_out, 0, 0, 0);
+// int dwMsg = 0;
+// res = midiOutShortMsg(hmidi_out, dwMsg);
+// res = midiOutReset(hmidi_out);
+// res = midiOutClose(hmidi_out);
 
 
-
-
-/* all useful MM api calls:
-
-        public enum MidiInMessage
-        {
-            /// MIM_OPEN
-            Open = 0x3C1,
-            /// MIM_CLOSE
-            Close = 0x3C2,
-            /// MIM_DATA
-            Data = 0x3C3,
-            /// MIM_LONGDATA
-            LongData = 0x3C4,
-            /// MIM_ERROR
-            Error = 0x3C5,
-            /// MIM_LONGERROR
-            LongError = 0x3C6,
-            /// MIM_MOREDATA
-            MoreData = 0x3CC,
-        }
-
-        public enum MidiOutMessage
-        {
-            /// MOM_OPEN
-            Open = 0x3C7,
-            /// MOM_CLOSE
-            Close = 0x3C8,
-            /// MOM_DONE
-            Done = 0x3C9
-        }
-
-enum MmResult
-{
-    /// <summary>no error, MMSYSERR_NOERROR</summary>
-    NoError = 0,
-    /// <summary>unspecified error, MMSYSERR_ERROR</summary>
-    UnspecifiedError = 1,
-    // etc...
-}
-
-
+///////// all useful MM api calls ///////
 
 typedef struct midiincaps_tag {
   WORD    wMid;
@@ -139,7 +50,6 @@ typedef struct midioutcaps_tag {
   WORD    wChannelMask;
   DWORD   dwSupport;
 } MIDIOUTCAPS, *PMIDIOUTCAPS, *NPMIDIOUTCAPS, *LPMIDIOUTCAPS;
-
 
 
 // http://msdn.microsoft.com/en-us/library/dd798452%28VS.85%29.aspx
@@ -187,10 +97,117 @@ MmResult midiOutReset(IntPtr hMidiOut);
 // http://msdn.microsoft.com/en-us/library/dd798481%28VS.85%29.aspx
 MmResult midiOutShortMsg(IntPtr hMidiOut, int dwMsg);
 
-*/
+//////// Neb client stuff ///////
 
 
-/* Client stuff (from cs):
+public static MidiInCapabilities DeviceInfo(int midiInDeviceNumber)
+{
+    MidiInCapabilities caps = new MidiInCapabilities();
+    int structSize = Marshal.SizeOf(caps);
+    MmException.Try(MidiInterop.midiInGetDevCaps((IntPtr)midiInDeviceNumber,out caps,structSize),"midiInGetDevCaps");
+    return caps;
+}
+
+
+//////////////////////////////////////////////////////////////////
+MidiIn _midiIn;
+public event EventHandler<InputReceiveEventArgs>? InputReceive;
+
+public MidiInput(string deviceName)
+{
+    DeviceName = deviceName;
+    for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+    {
+        if (deviceName == MidiIn.DeviceInfo(i).ProductName)
+        {
+            _midiIn = new MidiIn(i);
+            _midiIn.MessageReceived += MidiIn_MessageReceived;
+            _midiIn.ErrorReceived += MidiIn_ErrorReceived;
+            break;
+        }
+    }
+}
+
+void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
+{
+    MidiEvent me = MidiEvent.FromRawMessage(e.RawMessage);
+
+    switch (me)
+    {
+        case NoteOnEvent evt:
+            mevt = new InputReceiveEventArgs()
+            {
+                Channel = evt.Channel,
+                Note = evt.NoteNumber,
+                Value = evt.Velocity
+            };
+            break;
+
+        case NoteEvent evt:
+            mevt = new InputReceiveEventArgs()
+            {
+                Channel = evt.Channel,
+                Note = evt.NoteNumber,
+                Value = 0
+            };
+            break;
+
+        case ControlChangeEvent evt:
+            mevt = new InputReceiveEventArgs()
+            {
+                Channel = evt.Channel,
+                Controller = (int)evt.Controller,
+                Value = evt.ControllerValue
+            };
+            break;
+
+        case PitchWheelChangeEvent evt:
+            mevt = new InputReceiveEventArgs()
+            {
+                Channel = evt.Channel,
+                Controller = InputReceiveEventArgs.PITCH_CONTROL,
+                Value = evt.Pitch
+            };
+            break;
+
+        default:
+            // Ignore.
+            break;
+    }
+    InputReceive.Invoke(this, mevt);
+}
+
+void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
+{
+    InputReceiveEventArgs evt = new()
+    {
+        ErrorInfo = $"Message:0x{e.RawMessage:X8}"
+    };
+    Log(evt);
+}
+
+
+//////////////////////////////////////////////////////////////////
+MidiOut _midiOut;
+public MidiOutput(string deviceName)
+{
+    DeviceName = deviceName;
+    for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+    {
+        if (deviceName == MidiOut.DeviceInfo(i).ProductName)
+        {
+            _midiOut = new MidiOut(i);
+            break;
+        }
+    }
+}
+public void SendEvent(MidiEvent evt)
+{
+    _midiOut.Send(evt.GetAsShortMessage());
+}
+
+
+//////// Client stuff (from NAudio) ////////////
 
 private IntPtr hMidiIn = IntPtr.Zero;
 private MidiInterop.MidiInCallback callback;
@@ -217,14 +234,6 @@ public static MidiInCapabilities MidiIn_DeviceInfo(int midiInDeviceNumber)
 public MidiIn_MidiIn(int deviceNo)
 {
     this.callback = new MidiInterop.MidiInCallback(Callback);
-    (MidiInterop.midiInOpen(out hMidiIn, (IntPtr) deviceNo,this.callback,IntPtr.Zero,MidiInterop.CALLBACK_FUNCTION),"midiInOpen");
-MMRESULT midiInOpen(
-  LPHMIDIIN phmi,
-  UINT      uDeviceID,
-  DWORD_PTR dwCallback,
-  DWORD_PTR dwInstance,
-  DWORD     fdwOpen
-);
 }
 
 /// Closes this MIDI in device
@@ -340,7 +349,7 @@ public void MidiOut_Close()
 /// Gets or sets the volume for this MIDI out device
 public int MidiOut_Volume 
 {
-    // TODO: Volume can be accessed by device ID
+    // TO-DO: Volume can be accessed by device ID
     get 
     {
         int volume = 0;

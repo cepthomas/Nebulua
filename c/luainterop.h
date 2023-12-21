@@ -22,7 +22,7 @@
 // @return int status
 int luainterop_Setup(lua_State* l);
 
-// Lua export function: Called every mmtimer increment.
+// Lua export function: Called every fast timer increment.
 // @param[in] l Internal lua state.
 // @param[in] bar Which bar
 // @param[in] beat Which beat

@@ -33,13 +33,16 @@ log.info("=============== go go go =======================")
 --     whiz  = { device_id = "bing_bong", channel_num = 10, }, -- optional: draw_note_grid, min_note, max_note, min_control, max_control
 -- }
 
+-- Devices
+local midi_in = "xxx zzz"
+local midi_out = "abc 123"
 
--- create devices 0=out 1=in
-local hkeys  = create_device(0, 1, inst.AcousticGrandPiano)
-local hbass  = create_device(0, 2, inst.AcousticBass)
-local hsynth = create_device(0, 3, inst.Lead1Square)
-local hdrums = create_device(0, 10, kit.Jazz)
-local hinp1 = create_device(1, 2)
+-- Channels
+local hkeys  = create_channel(midi_out, 1, inst.AcousticGrandPiano)
+local hbass  = create_channel(midi_out, 2, inst.AcousticBass)
+local hsynth = create_channel(midi_out, 3, inst.Lead1Square)
+local hdrums = create_channel(midi_out, 10, kit.Jazz)
+local hinp1 = create_channel(midi_in, 2)
 -- etc
 
 
