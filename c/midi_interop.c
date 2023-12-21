@@ -3,11 +3,11 @@
 
 
 eventToSend.GetAsShortMessage()
-MmException.Try(MidiInterop.midiOutShortMsg(hMidiOut,message),"midiOutShortMsg");
 public virtual int GetAsShortMessage()
 {
     return (channel - 1) + (int)commandCode; NoteOn etc
 }
+MmException.Try(MidiInterop.midiOutShortMsg(hMidiOut,message),"midiOutShortMsg");
 
 
 // // IN:
@@ -379,4 +379,3 @@ public void MidiOut_Send(int message)
 {
     (MidiInterop.midiOutShortMsg(hMidiOut,message),"midiOutShortMsg");
 }
-*/

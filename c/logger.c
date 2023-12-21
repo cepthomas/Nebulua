@@ -2,41 +2,28 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <assert.h>
 #include <time.h>
 #include <sys/time.h>
 
 #include "logger.h"
 
 
-//---------------- Private Declarations ------------------//
-
-/// Logging support items.
+//--------------------------------------------------------//
+// Logging support items.
 log_level_t p_level = LVL_INFO;
 FILE* p_fp = NULL;
 double p_start_sec;
 
 #define LOG_LINE_LEN 100
 
-/// Current time.
+// Current time.
 double p_CurrentSec();
 
-
-/// Validate pointer arg. If fails, early returns err.
-/// @param ptr Pointer.
-/// @param err Error value to return in case of failure.
-#define VAL_PTR(ptr, err) if(ptr == NULL) { return err; }
-
-static const int RS_ERR = -1;
-
-
-//---------------- Public API Implementation -------------//
 
 //--------------------------------------------------------//
 int logger_Init(const char* fn)
 {
     p_fp = fopen(fn, "w"); // or "a"
-    VAL_PTR(p_fp, RS_ERR);
     p_start_sec = p_CurrentSec();
 
     // Banner.
@@ -51,23 +38,18 @@ int logger_Init(const char* fn)
 //--------------------------------------------------------//
 int logger_SetFilters(log_level_t level)
 {
-    assert(p_fp != NULL);
-
     p_level = level;
     return 0;
 }
 
 //--------------------------------------------------------//
-int logger_Log(log_level_t level, const char* fn, int line, const char* format, ...)
+// int logger_Log(log_level_t level, const char* fn, int line, const char* format, ...)
+int logger_Log(log_level_t level, const char* format, ...)
 {
-    assert(p_fp != NULL);
-
-    VAL_PTR(p_fp, RS_ERR);
-    VAL_PTR(format, RS_ERR);
     static char buff[LOG_LINE_LEN];
 
-    const char* pfn = strrchr(fn, '\\');
-    pfn = pfn == NULL ? fn : pfn + 1;
+    // const char* pfn = strrchr(fn, '\\');
+    // pfn = pfn == NULL ? fn : pfn + 1;
 
     // Check filters.
     if(level >= p_level)
@@ -85,7 +67,8 @@ int logger_Log(log_level_t level, const char* fn, int line, const char* format, 
             case LVL_ERROR: slevel = "ERR"; break;
         }
 
-        fprintf(p_fp, "%03.6f,%s,%s(%d),%s\n", p_CurrentSec() - p_start_sec, slevel, pfn, line, buff);
+        fprintf(p_fp, "%03.6f,%s,%s\n", p_CurrentSec() - p_start_sec, slevel, buff);
+        // fprintf(p_fp, "%03.6f,%s,%s(%d),%s\n", p_CurrentSec() - p_start_sec, slevel, pfn, line, buff);
         fflush(p_fp);
     }
 
@@ -93,8 +76,7 @@ int logger_Log(log_level_t level, const char* fn, int line, const char* format, 
 }
 
 
-//---------------- Private Implementation --------------------------//
-
+//--------------------------------------------------------//
 double p_CurrentSec()
 {
     struct timeval tv;

@@ -15,6 +15,7 @@
 #include "stopwatch.h"
 
 
+//----------------------------------------------------//
 // The main Lua thread - C code incl interrupts (mm/fast timer, midi events)
 static lua_State* p_lmain;
 
@@ -32,6 +33,11 @@ static bool p_loop_running;
 static double p_last_msec = 0;
 
 
+static MIDI_DEVICE _devices[MAX_MIDI_DEVS];
+
+
+
+//----------------------------------------------------//
 //
 void p_InitMidiDevices(void);
 // Tick corresponding to bpm. Interrupt!
@@ -45,7 +51,7 @@ int p_Init(void);
 //
 int p_Run(const char* fn);
 
-void do_fatal() { }
+void do_fatal() { } // TODO1
 
 
 
@@ -58,7 +64,7 @@ int main(int argc, char* argv[])
 {
     int ret = 0;
 
-    logger_Init(".\\cel_log.txt");
+    logger_Init(".\\nebulua_log.txt");
     logger_SetFilters(LVL_DEBUG);
 
 
@@ -87,7 +93,7 @@ int main(int argc, char* argv[])
 
     if (serr == NULL && sfn != NULL)
     {
-        // Run the script file. Blocks forever. TODOX need elegant way to stop - part of user interaction or ctrl-C?
+        // Run the script file. Blocks forever. TODO2 need elegant way to stop - part of user interaction or ctrl-C?
         if(p_Run(argv[1]) != 0)
         {
             serr = "Run failed";
@@ -111,10 +117,6 @@ int main(int argc, char* argv[])
 
     return serr == NULL ? 0 : 1;
 }
-
-
-MIDI_DEVICE _devices[MAX_MIDI_DEVS];
-
 
 
 //-------------------------------------------------------//
@@ -225,7 +227,7 @@ void p_InitMidiDevices(void)
 //-------------------------------------------------------//
 void p_MidiClockHandler(double msec)
 {
-    // TODOX yield over to script thread and call its step function.
+    // TODO2 yield over to script thread and call its step function.
     //  See lua.c for a way to treat C signals, which you may adapt to your interrupts.
 
 }
@@ -244,13 +246,78 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
         case MIM_DATA:
             // parameter 1 is packed MIDI message
             // parameter 2 is milliseconds since MidiInStart
- //TODOX           MessageReceived(this, new MidiInMessageEventArgs(messageParameter1.ToInt32(), messageParameter2.ToInt32()));
+ //TODO1           MessageReceived(this, new MidiInMessageEventArgs(messageParameter1.ToInt32(), messageParameter2.ToInt32()));
             // this.RawMessage = message;
             // this.Timestamp = timestamp;
             // try
             // {
             //     this.MidiEvent = MidiEvent.FromRawMessage(message);
             // }
+
+
+        // public static MidiEvent FromRawMessage(int rawMessage)
+        // {
+        //     long absoluteTime = 0;
+        //     int b = rawMessage & 0xFF;
+        //     int data1 = (rawMessage >> 8) & 0xFF;
+        //     int data2 = (rawMessage >> 16) & 0xFF;
+        //     MidiCommandCode commandCode;
+        //     int channel = 1;
+
+        //     if ((b & 0xF0) == 0xF0)
+        //     {
+        //         // both bytes are used for command code in this case
+        //         commandCode = (MidiCommandCode)b;
+        //     }
+        //     else
+        //     {
+        //         commandCode = (MidiCommandCode)(b & 0xF0);
+        //         channel = (b & 0x0F) + 1;
+        //     }
+
+        //     MidiEvent me;
+        //     switch (commandCode)
+        //     {
+        //         case MidiCommandCode.NoteOn:
+        //         case MidiCommandCode.NoteOff:
+        //         case MidiCommandCode.KeyAfterTouch:
+        //             if (data2 > 0 && commandCode == MidiCommandCode.NoteOn)
+        //             {
+        //                 me = new NoteOnEvent(absoluteTime, channel, data1, data2, 0);
+        //             }
+        //             else
+        //             {
+        //                 me = new NoteEvent(absoluteTime, channel, commandCode, data1, data2);
+        //             }
+        //             break;
+        //         case MidiCommandCode.ControlChange:
+        //             me = new ControlChangeEvent(absoluteTime,channel,(MidiController)data1,data2);
+        //             break;
+        //         case MidiCommandCode.PatchChange:
+        //             me = new PatchChangeEvent(absoluteTime,channel,data1);
+        //             break;
+        //         case MidiCommandCode.ChannelAfterTouch:
+        //             me = new ChannelAfterTouchEvent(absoluteTime,channel,data1);
+        //             break;
+        //         case MidiCommandCode.PitchWheelChange:
+        //             me = new PitchWheelChangeEvent(absoluteTime, channel, data1 + (data2 << 7));
+        //             break;
+        //         case MidiCommandCode.TimingClock:
+        //         case MidiCommandCode.StartSequence:
+        //         case MidiCommandCode.ContinueSequence:
+        //         case MidiCommandCode.StopSequence:
+        //         case MidiCommandCode.AutoSensing:
+        //             me = new MidiEvent(absoluteTime,channel,commandCode);
+        //             break;
+        //         //case MidiCommandCode.MetaEvent:
+        //         //case MidiCommandCode.Sysex:
+        //         default:
+        //             throw new FormatException(String.Format("Unsupported MIDI Command Code for Raw Message {0}", commandCode));
+        //     }
+        //     return me;
+
+        // }
+
 
 
             break;

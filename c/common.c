@@ -1,7 +1,5 @@
-
 #include <stdarg.h>
 #include <string.h>
-
 #include "logger.h"
 #include "common.h"
 
@@ -10,11 +8,11 @@
 
 
 //--------------------------------------------------------//
-int common_DumpStack(lua_State* L, const char* fn, int line, const char* info)
+int common_DumpStack(lua_State* L, const char* info)
 {
     static char buff[BUFF_LEN];
 
-    logger_Log(LVL_DEBUG, fn, line, "Dump stack:%s (L:%p)", info, L);
+    LOG_DEBUG("Dump stack:%s (L:%p)", info, L);
 
     for(int i = lua_gettop(L); i >= 1; i--)
     {
@@ -49,7 +47,7 @@ int common_DumpStack(lua_State* L, const char* fn, int line, const char* info)
                 break;
         }
     
-        logger_Log(LVL_DEBUG, fn, line, "   %s", buff);
+        LOG_DEBUG("   %s", buff);
     }
 
     return 0;
@@ -62,7 +60,7 @@ void common_LuaError(lua_State* L, const char* fn, int line, int err, const char
 
     va_list args;
     va_start(args, format);
-    logger_Log(LVL_DEBUG, fn, line, format, args);
+    LOG_DEBUG(format, args);
     va_end(args);
 
     switch(err)
@@ -89,20 +87,20 @@ void common_LuaError(lua_State* L, const char* fn, int line, int err, const char
             snprintf(buff, BUFF_LEN-1, "Unknown error %i (caller:%d)", err, line);
             break;
     }
-    logger_Log(LVL_DEBUG, fn, line, "   %s", buff);
+    LOG_DEBUG("   %s", buff);
 
     // Dump trace.
     luaL_traceback(L, L, NULL, 1);
     snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-    logger_Log(LVL_DEBUG, fn, line, "   %s", buff);
+    LOG_DEBUG("   %s", buff);
 
     lua_error(L); // never returns
 }
 
 //--------------------------------------------------------//
-int common_DumpTable(lua_State* L, const char* name)
+int common_DumpTable(lua_State* L, const char* tbl_name)
 {
-    logger_Log(LVL_DEBUG, name, -1, name);
+    LOG_DEBUG("table:%s", tbl_name);
 
     // Put a nil key on stack.
     lua_pushnil(L);
@@ -111,12 +109,13 @@ int common_DumpTable(lua_State* L, const char* name)
     while (lua_next(L, -2) != 0)
     {
         // Get key(-2) name.
-        const char* name = lua_tostring(L, -2);
+        const char* kname = lua_tostring(L, -2);
 
         // Get type of value(-1).
         const char* type = luaL_typename(L, -1);
 
-        logger_Log(LVL_DEBUG, name, -1, "   %s=%s", name, type);
+
+        LOG_DEBUG("   %s=%s", kname, type);
 
         // Remove value(-1), now key on top at(-1).
         lua_pop(L, 1);

@@ -2,15 +2,19 @@
 local M = {}
 
 
--- Host defs: enum LogLevel { Trace = 0, Debug = 1, Info = 2, Warn = 3, Error = 4 }
-M.LOG_LEVEL = { TRC=0, DBG=1, INF=2, WRN=3, ERR=4 }
+---------------------------- okokokok -------------------------------
+---------------------------- okokokok -------------------------------
+---------------------------- okokokok -------------------------------
+
+-- Log levels - must match those in the host C code.
+M.LOG_LEVEL = { DBG = 1, INF = 2, ERR = 3 }
 
 -- Convenience functions.
 function M.error(msg) api.log(M.LOG_LEVEL.ERR, msg) end
-function M.warn(msg)  api.log(M.LOG_LEVEL.WRN, msg) end
 function M.info(msg)  api.log(M.LOG_LEVEL.INF, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DBG, msg) end
-function M.trace(msg) api.log(M.LOG_LEVEL.TRC, msg) end
+
+
 
 
 ---------------------------- from emblua -------------------------------
@@ -180,7 +184,7 @@ M.LOW_RES_PPQ = 8
 -- Process all script info into discrete steps.
 -- @param name type desc
 -- @return list of step_info ordered by subbeat
-function M.process_all(sequences, sections) -- TODOX sections
+function M.process_all(sequences, sections) -- TODO3 sections
 
     -- index is seq name, value is steps list.
     local seq_step_infos = {}
@@ -348,7 +352,7 @@ end
 -- Process notes at this tick.
 -- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat) -- TODOX
+function M.do_step(send_stuff, bar, beat, subbeat) -- TODO3
     -- calc total subbeat
     -- get all 
 
