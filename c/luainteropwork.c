@@ -1,36 +1,16 @@
 #include <windows.h>
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <stdarg.h>
-// #include <stdbool.h>
-// #include <stdint.h>
-// #include <string.h>
-// #include <float.h>
-// #include <errno.h>
-// #include "lua.h"
-// #include "lualib.h"
-// #include "lauxlib.h"
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 #include "luainterop.h"
 #include "luainteropwork.h"
 #include "logger.h"
 
 // Definition of work functions.
-
-//     stat = board_RegDigInterrupt(p_DigInputHandler);
-// void p_DigInputHandler(unsigned int pin, bool value)
-// {
-//     int lstat = LUA_OK;
-//     ///// Get the function to be called.
-//     int gtype = lua_getglobal(L, "hinput");
-//     ///// Push the arguments to the call.
-//     lua_pushinteger(L, pin);
-//     lua_pushboolean(L, value);
-//     ///// Use lua_pcall to do the actual call.
-//     lstat = lua_pcall(L, 2, 0, 0);
-//     PROCESS_LUA_ERROR(L, lstat, "Call hinput() failed");
-//     // no return value
-// }
 
 
 //--------------------------------------------------------//
@@ -48,6 +28,14 @@ int luainteropwork_Log(int level, char* msg)
         LOG_ERROR(msg);
         break;
     }
+
+    return 0;
+}
+
+
+//--------------------------------------------------------//
+int luainteropwork_SetTempo(int bpm) // TODO1 content
+{
 
     return 0;
 }

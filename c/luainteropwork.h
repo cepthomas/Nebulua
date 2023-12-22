@@ -13,6 +13,12 @@
 int luainteropwork_Log(int level, char* msg);
 
 //--------------------------------------------------------//
+// Script wants to change speed.
+// @param[in] bpm New val
+// @return int status
+int luainteropwork_SetTempo(int bpm);
+
+//--------------------------------------------------------//
 // Create a channel - input or output depending on device.
 // @param[in] device Name
 // @param[in] channel Number

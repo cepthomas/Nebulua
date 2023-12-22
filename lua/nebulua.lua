@@ -1,4 +1,7 @@
 
+-- Core generic functions for this app. Matches/requires the C libs.
+
+
 local M = {}
 
 
@@ -14,95 +17,23 @@ function M.error(msg) api.log(M.LOG_LEVEL.ERR, msg) end
 function M.info(msg)  api.log(M.LOG_LEVEL.INF, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DBG, msg) end
 
+-- defs/settings??
+local INTERNAL_PPQ = 32
+-- Only 4/4 time supported.
+local BEATS_PER_BAR = 4
+local SUBBEATS_PER_BEAT = INTERNAL_PPQ
+local SUBEATS_PER_BAR = INTERNAL_PPQ * BEATS_PER_BAR
+-- subbeat is LOW_RES_PPQ
+local LOW_RES_PPQ = 8
 
+-- /// <summary>Only 4/4 time supported.</summary>
+-- public int BeatsPerBar { get { return 4; } }
+-- public int SubbeatsPerBeat { get { return InternalPPQ; } }  32
+-- public int SubeatsPerBar { get { return InternalPPQ * BeatsPerBar; } }
 
-
----------------------------- from emblua -------------------------------
----------------------------- from emblua -------------------------------
----------------------------- from emblua -------------------------------
-
---[[
-Lua script for a simplistic coroutine application
---]]
-
-
-local li = require "luainterop" -- C module
-local ut = require "utils"
-local math = require "math"
-
--- print("*** script 1")
-
--- This is the same as the C type.
-state_type = {
-  [1] = 'ST_READY',       -- Ready to be scheduled
-  [2] = 'ST_IN_PROCESS',  -- Scheduled or running
-  [3] = 'ST_DONE'         -- All done
-}
-
--- Print something.
-function tell(s)
-  li.cliwr('S:'..s)
-end
-
-------------------------- Main loop ----------------------------------------------------
-
-function do_it()
-  tell("module initialization")
-
-  -- for n in pairs(_G) do print(n) end
-
-  -- Process the data passed from C. my_static_data contains the equivalent of my_static_data_t.
-  slog = string.format ("script_string:%s script_int:%s", script_string, script_int)
-  tell(slog)
-
-  -- Start working.
-  tell("do some pretend script work then yield")
-
-  for i = 1, 5 do
-    tell("doing loop number " .. i)
-
-    -- Do pretend work.
-    counter = 0
-    while counter < 1000 do
-      counter = counter + 1
-    end
-    -- ut.sleep(200)
-
-    -- Plays well with others.
-    coroutine.yield()
-  end
-  tell("done loop")
-end
-
-
--------------- Handlers for commands from C --------------------------
-
--- Pin input has arrived from board via C.
-function hinput(pin, value)
-  tell(string.format("demoapp: got hinput pin:%d value:%s ", pin, tostring(value)))
-end
-
--- Dumb calculator, only does addition.
-function calc (x, y)
-  return (x + y)
-end
-
--- Just a test for struct IO.
-function structinator(data)
-  state_name = state_type[data.state]
-  slog = string.format ("demoapp: structinator got val:%d state:%s text:%s", data.val, state_name, data.text)
-  tell(slog)
-
-  -- Package return data.
-  data.val = data.val + 1
-  data.state = 3
-  data.text = "Back atcha"
-
-  return data
-end
-
-
--------------- from utils --------------------------
+---------------------------- maybe -------------------------------
+---------------------------- maybe -------------------------------
+---------------------------- maybe -------------------------------
 
 -- Creates a function that returns false until the arg is exceeded.
 -- @param msec Number of milliseconds to wait.
@@ -131,60 +62,17 @@ function M.sleep(time)
   while not timer.status() do coroutine.yield() end
 end
 
--- Generate a random number.
--- @param rmin Minimum number value.
--- @param rmax Maximum number value.
--- @return next Function that returns number.
-function M.numb_rand(rmin, rmax)
-  -- Init our copies of the args.
-  local n = rmin
-  local x = rmax
-  
-  -- Determine if this is an integer or real rand.
-  ni, nf = math.modf(n)
-  xi, xf = math.modf(x)
-  
-  -- If either has a fractional part > 0, it's a float.
-  if nf > 0 or xf > 0 then
-    local next = function() return math.random() * (x - n) + n  end 
-    return { next = next }      
-  else -- it's an int
-    local next = function() return math.random(n, x) end  
-    return { next = next }
-  end
-end
 
-
------------------------------------- from old attempt ----------------------
------------------------------------- from old attempt ----------------------
------------------------------------- from old attempt ----------------------
--- Does the actual music generation.
-
-local ut = require("utils")
-local md = require("music_defs")
-local si = require("step_info")
-
-
--- file:///[](C:/Dev/3rdLua/Penlight-master/docs/index.html)
-
--- [](C:/Dev/3rdLua/Penlight/docs/index.html)
-
----------------------- defs -------------------------------------------------
-
-M.INTERNAL_PPQ = 32
--- Only 4/4 time supported.
-M.BEATS_PER_BAR = 4
-M.SUBBEATS_PER_BEAT = INTERNAL_PPQ
-M.SUBEATS_PER_BAR = INTERNAL_PPQ * BEATS_PER_BAR
--- subbeat is LOW_RES_PPQ
-M.LOW_RES_PPQ = 8
+-----------------------------TODO2 data handling?? ----------------------
+-----------------------------data handling?? ----------------------
+-----------------------------data handling?? ----------------------
 
 
 -----------------------------------------------------------------------------
 -- Process all script info into discrete steps.
 -- @param name type desc
 -- @return list of step_info ordered by subbeat
-function M.process_all(sequences, sections) -- TODO3 sections
+function M.process_all(sequences, sections)
 
     -- index is seq name, value is steps list.
     local seq_step_infos = {}
@@ -352,7 +240,7 @@ end
 -- Process notes at this tick.
 -- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat) -- TODO3
+function M.do_step(send_stuff, bar, beat, subbeat) -- TODO2
     -- calc total subbeat
     -- get all 
 
@@ -385,7 +273,7 @@ end
 return M
 
 
---[[ old stuff TODO
+--[[ old stuff TODO3
 
 
 -- return table:

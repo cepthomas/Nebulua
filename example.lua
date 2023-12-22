@@ -42,9 +42,10 @@ local hkeys  = create_channel(midi_out, 1, inst.AcousticGrandPiano)
 local hbass  = create_channel(midi_out, 2, inst.AcousticBass)
 local hsynth = create_channel(midi_out, 3, inst.Lead1Square)
 local hdrums = create_channel(midi_out, 10, kit.Jazz)
-local hinp1 = create_channel(midi_in, 2)
+local hinp1  = create_channel(midi_in, 2)
 -- etc
 
+------------------------- Vars ----------------------------------------
 
 -- local vars - Volumes. 
 local keys_vol = 0.8
@@ -58,6 +59,7 @@ local chord_notes = md.get_notes("C4.o7")
 md.create_notes("MY_SCALE", "1 +3 4 -b7")
 local my_scale_notes = md.get_notes("B4.MY_SCALE")
 
+------------------------- Init ----------------------------------------
 
 log.info("example initialization")
 math.randomseed(os.time())
@@ -66,6 +68,37 @@ math.randomseed(os.time())
 local steps = {}
 steps = neb.process_all(sequences, sections)
 
+api.set_tempo(100)
+
+
+------------------------- from _demoapp.lua -----------------------
+-- function do_it()
+--     tell("module initialization")
+
+--     -- for n in pairs(_G) do print(n) end
+
+--     -- Process the data passed from C. my_static_data contains the equivalent of my_static_data_t.
+--     slog = string.format ("script_string:%s script_int:%s", script_string, script_int)
+--     tell(slog)
+
+--     -- Start working.
+--     tell("do some pretend script work then yield")
+
+--     for i = 1, 5 do
+--         tell("doing loop number " .. i)
+
+--         -- Do pretend work.
+--         counter = 0
+--         while counter < 1000 do
+--             counter = counter + 1
+--         end
+--         -- ut.sleep(200)
+
+--         -- Plays well with others.
+--         coroutine.yield()
+--     end
+--     tell("done loop")
+-- end
 
 ------------------------- Called from C# core ----------------------------------------
 
@@ -83,6 +116,10 @@ function step(bar, beat, subbeat)
         -- or...
         api.send_controller(hkeys,  ctrl.Pan, 30)
     end
+
+    -- -- Plays well with others.
+    -- coroutine.yield()
+
 end
 
 -----------------------------------------------------------------------------
@@ -107,14 +144,14 @@ end
 
 -----------------------------------------------------------------------------
 -- Calc something and play it.
-function func1()
+local function func1()
     local notenum = math.random(0, #alg_scale)
     api.send_note("synth", alg_scale[notenum], 0.7, 0.5)
 end
 
 -----------------------------------------------------------------------------
 -- Make a noise.
-function boing(notenum)
+local function boing(notenum)
     local boinged = false;
 
     log.info("boing")
@@ -274,3 +311,6 @@ sections =
         { bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
     }
 }
+
+-- -- Return the module.
+-- return M

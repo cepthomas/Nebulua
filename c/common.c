@@ -54,14 +54,14 @@ int common_DumpStack(lua_State* L, const char* info)
 }
 
 //--------------------------------------------------------//
-void common_LuaError(lua_State* L, const char* fn, int line, int err, const char* format, ...)
+void common_LuaError(lua_State* L, const char* fn, int line, int err)//, const char* format, ...)
 {
     static char buff[BUFF_LEN];
 
-    va_list args;
-    va_start(args, format);
-    LOG_DEBUG(format, args);
-    va_end(args);
+    // va_list args;
+    // va_start(args, format);
+    // LOG_DEBUG(format, args);
+    // va_end(args);
 
     switch(err)
     {

@@ -178,6 +178,24 @@ static int luainterop_Log(lua_State* l)
     return 1;
 }
 
+// Host export function: Script wants to change tempo.
+// Lua arg: bpm BPM
+// Lua return: int status
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
+static int luainterop_SetTempo(lua_State* l)
+{
+    // Get arguments
+    int bpm;
+    if (lua_isinteger(l, 1)) { bpm = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Bad arg type for bpm"); }
+
+    // Do the work. One result.
+    int ret = luainteropwork_SetTempo(bpm);
+    lua_pushinteger(l, ret);
+    return 1;
+}
+
 // Host export function: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).
 // Lua arg: channel Output channel handle
 // Lua arg: notenum Note number
@@ -241,6 +259,7 @@ static const luaL_Reg function_map[] =
 {
     { "create_channel", luainterop_CreateChannel },
     { "log", luainterop_Log },
+    { "set_tempo", luainterop_SetTempo },
     { "send_note", luainterop_SendNote },
     { "send_controller", luainterop_SendController },
     { NULL, NULL }

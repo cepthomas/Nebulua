@@ -40,18 +40,23 @@ static MIDI_DEVICE _devices[MAX_MIDI_DEVS];
 //----------------------------------------------------//
 //
 void p_InitMidiDevices(void);
+
 // Tick corresponding to bpm. Interrupt!
 void p_MidiClockHandler(double msec);
+
 // Handle incoming messages. Interrupt!
 void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+
 // Blocking sleep.
 void p_Sleep(int msec);
+
 //
 int p_Init(void);
+
 //
 int p_Run(const char* fn);
 
-void do_fatal() { } // TODO1
+void p_Fatal() { } // TODO2
 
 
 
@@ -66,7 +71,6 @@ int main(int argc, char* argv[])
 
     logger_Init(".\\nebulua_log.txt");
     logger_SetFilters(LVL_DEBUG);
-
 
     ret = p_Init();
 
@@ -93,7 +97,7 @@ int main(int argc, char* argv[])
 
     if (serr == NULL && sfn != NULL)
     {
-        // Run the script file. Blocks forever. TODO2 need elegant way to stop - part of user interaction or ctrl-C?
+        // Run the script file. Blocks forever. TODO1 need elegant way to stop - part of user interaction or ctrl-C?
         if(p_Run(argv[1]) != 0)
         {
             serr = "Run failed";
@@ -127,23 +131,13 @@ void p_InitMidiDevices(void)
     memset(_devices, 0, sizeof(_devices));
     int d = 0;
 
-
-// typedef struct _MIDI_DEVICE
-// {
-//     char     dev_name[MAXPNAMELEN];
-//     int dev_index; // from enumeration
-//     HMIDI  hnd;
-// } MIDI_DEVICE;
-
-// #define MAX_MIDI_DEVS 16
-
     {
         int num_in = midiInGetNumDevs();
         for (int i = 0; i < num_in; i++, d++)
         {
             if (d >= MAX_MIDI_DEVS)
             {
-                do_fatal();
+                p_Fatal();
             }
 
             // http://msdn.microsoft.com/en-us/library/dd798453%28VS.85%29.aspx
@@ -151,7 +145,7 @@ void p_InitMidiDevices(void)
             res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
             if (res > 0)
             {
-                do_fatal();
+                p_Fatal();
             }
 
             HMIDIIN hmidi_in;
@@ -159,7 +153,7 @@ void p_InitMidiDevices(void)
             res = midiInOpen(&hmidi_in, i, (DWORD_PTR)p_MidiInHandler, (DWORD_PTR)0, CALLBACK_FUNCTION);
             if (res > 0 || hmidi_in < 0)
             {
-                do_fatal();
+                p_Fatal();
             }
 
             // Save the device info.
@@ -171,27 +165,13 @@ void p_InitMidiDevices(void)
         }
     }
 
-    // Midi outputs.
-    // int dev_out = 1; // from enumeration
-    // typedef struct midioutcaps_tag {
-    //   WORD    wMid;
-    //   WORD    wPid;
-    //   VERSION vDriverVersion;
-    //   char    szPname[MAXPNAMELEN];
-    //   WORD    wTechnology;
-    //   WORD    wVoices;
-    //   WORD    wNotes;
-    //   WORD    wChannelMask;
-    //   DWORD   dwSupport;
-    // } MIDIOUTCAPS, *PMIDIOUTCAPS, *NPMIDIOUTCAPS, *LPMIDIOUTCAPS;
-
     {
         int num_out = midiOutGetNumDevs();
         for (int i = 0; i < num_out; i++, d++)
         {
             if (d >= MAX_MIDI_DEVS)
             {
-                do_fatal();
+                p_Fatal();
             }
 
             // http://msdn.microsoft.com/en-us/library/dd798469%28VS.85%29.aspx
@@ -199,7 +179,7 @@ void p_InitMidiDevices(void)
             res = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
             if (res > 0)
             {
-                do_fatal();
+                p_Fatal();
             }
 
             HMIDIOUT hmidi_out;
@@ -207,7 +187,7 @@ void p_InitMidiDevices(void)
             res = midiOutOpen(&hmidi_out, i, 0, 0, 0);
             if (res > 0 || hmidi_out < 0)
             {
-                do_fatal();
+                p_Fatal();
             }
 
             // Save the device info.
@@ -216,25 +196,22 @@ void p_InitMidiDevices(void)
             strncpy(_devices[d].dev_name, caps_out.szPname, MAXPNAMELEN);
         }
     }
-
-    // int dwMsg = 0;
-    // res = midiOutShortMsg(hmidi_out, dwMsg);
-    // res = midiOutReset(hmidi_out);
-    // res = midiOutClose(hmidi_out);
 }
 
 
 //-------------------------------------------------------//
 void p_MidiClockHandler(double msec)
 {
-    // TODO2 yield over to script thread and call its step function.
+    // TODO1 yield over to script thread and call its step function.
     //  See lua.c for a way to treat C signals, which you may adapt to your interrupts.
 
 }
 
+
 //--------------------------------------------------------//
-void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) // TODO2 put in utility?
 {
+    // Input midi event. Note this is in an interrupt handler!
     // hMidiIn - Handle to the MIDI input device.
     // wMsg - MIDI input message.
     // dwInstance - Instance data supplied with the midiInOpen function.
@@ -246,85 +223,68 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
         case MIM_DATA:
             // parameter 1 is packed MIDI message
             // parameter 2 is milliseconds since MidiInStart
- //TODO1           MessageReceived(this, new MidiInMessageEventArgs(messageParameter1.ToInt32(), messageParameter2.ToInt32()));
-            // this.RawMessage = message;
-            // this.Timestamp = timestamp;
-            // try
-            // {
-            //     this.MidiEvent = MidiEvent.FromRawMessage(message);
-            // }
+            // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-midievent
 
+            int ts = dwParam2;
+            int raw_msg = dwParam1;
+            int b = raw_msg & 0xFF;
+            int data1 = (raw_msg >> 8) & 0xFF;
+            int data2 = (raw_msg >> 16) & 0xFF;
+            midi_event_t midi_evt;
+            int channel = 1;
 
-        // public static MidiEvent FromRawMessage(int rawMessage)
-        // {
-        //     long absoluteTime = 0;
-        //     int b = rawMessage & 0xFF;
-        //     int data1 = (rawMessage >> 8) & 0xFF;
-        //     int data2 = (rawMessage >> 16) & 0xFF;
-        //     MidiCommandCode commandCode;
-        //     int channel = 1;
+            if ((b & 0xF0) == 0xF0)
+            {
+                // Both bytes are used for command code in this case.
+                midi_evt = (midi_event_t)b;
+            }
+            else
+            {
+                midi_evt = (midi_event_t)(b & 0xF0);
+                channel = (b & 0x0F) + 1;
+            }
 
-        //     if ((b & 0xF0) == 0xF0)
-        //     {
-        //         // both bytes are used for command code in this case
-        //         commandCode = (MidiCommandCode)b;
-        //     }
-        //     else
-        //     {
-        //         commandCode = (MidiCommandCode)(b & 0xF0);
-        //         channel = (b & 0x0F) + 1;
-        //     }
+            switch (midi_evt)
+            {
+                case NoteOn:
+                case NoteOff:
+                    if (data2 > 0 && midi_evt == NoteOn)
+                    {
+                        // me = new NoteOnEvent(ts, channel, data1, data2, 0);
+                        // log.WriteInfo(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
+                    }
+                    else
+                    {
+                        // me = new NoteEvent(ts, channel, midi_evt, data1, data2);
+                    }
+                    break;
+                case ControlChange:
+                    // me = new ControlChangeEvent(ts, channel, (MidiController)data1, data2);
+                    break;
+                case PitchWheelChange:
+                    // me = new PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
+                    break;
 
-        //     MidiEvent me;
-        //     switch (commandCode)
-        //     {
-        //         case MidiCommandCode.NoteOn:
-        //         case MidiCommandCode.NoteOff:
-        //         case MidiCommandCode.KeyAfterTouch:
-        //             if (data2 > 0 && commandCode == MidiCommandCode.NoteOn)
-        //             {
-        //                 me = new NoteOnEvent(absoluteTime, channel, data1, data2, 0);
-        //             }
-        //             else
-        //             {
-        //                 me = new NoteEvent(absoluteTime, channel, commandCode, data1, data2);
-        //             }
-        //             break;
-        //         case MidiCommandCode.ControlChange:
-        //             me = new ControlChangeEvent(absoluteTime,channel,(MidiController)data1,data2);
-        //             break;
-        //         case MidiCommandCode.PatchChange:
-        //             me = new PatchChangeEvent(absoluteTime,channel,data1);
-        //             break;
-        //         case MidiCommandCode.ChannelAfterTouch:
-        //             me = new ChannelAfterTouchEvent(absoluteTime,channel,data1);
-        //             break;
-        //         case MidiCommandCode.PitchWheelChange:
-        //             me = new PitchWheelChangeEvent(absoluteTime, channel, data1 + (data2 << 7));
-        //             break;
-        //         case MidiCommandCode.TimingClock:
-        //         case MidiCommandCode.StartSequence:
-        //         case MidiCommandCode.ContinueSequence:
-        //         case MidiCommandCode.StopSequence:
-        //         case MidiCommandCode.AutoSensing:
-        //             me = new MidiEvent(absoluteTime,channel,commandCode);
-        //             break;
-        //         //case MidiCommandCode.MetaEvent:
-        //         //case MidiCommandCode.Sysex:
-        //         default:
-        //             throw new FormatException(String.Format("Unsupported MIDI Command Code for Raw Message {0}", commandCode));
-        //     }
-        //     return me;
-
-        // }
-
-
-
+                // Ignore other events for now.
+                // case KeyAfterTouch:
+                // case PatchChange:
+                // case ChannelAfterTouch:
+                // case TimingClock:
+                // case StartSequence:
+                // case ContinueSequence:
+                // case StopSequence:
+                // case AutoSensing:
+                // case MetaEvent:
+                // case Sysex:
+                default:
+                    // throw new FormatException(String.Format("Unsupported MIDI Command Code for Raw Message {0}", midi_evt));
+                    break;
+            }
             break;
 
         case MIM_ERROR:
             // parameter 1 is invalid MIDI message
-//TODOX            ErrorReceived(this, new MidiInMessageEventArgs(messageParameter1.ToInt32(), messageParameter2.ToInt32()));
+            //TODO1 log.WriteError(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
             break;
 
         // Others not implemented:
@@ -383,7 +343,6 @@ int p_Run(const char* fn)
     int stat = 0;
     EVAL_STACK(p_lmain, 0);
 
-    p_loop_running = true;
 
     // Set up a second Lua thread so we can background execute the script.
     p_lscript = lua_newthread(p_lmain);
@@ -391,91 +350,108 @@ int p_Run(const char* fn)
     lua_pop(p_lmain, 1); // from lua_newthread()
     EVAL_STACK(p_lmain, 0);
 
-    // Open std libs.
+    // Open lua std libs.
     luaL_openlibs(p_lscript);
 
-    // Load app stuff. This table gets pushed on the stack and into globals.
+    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(p_lscript);
     EVAL_STACK(p_lscript, 1);
 
-    // Pop the table off the stack as it interferes with calling the module function.
+    // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(p_lscript, 1);
     EVAL_STACK(p_lscript, 0);
 
-    // Now load the script/file we are going to run.
-    // lua_load() pushes the compiled chunk as a Lua function on top of the stack.
-    stat = luaL_loadfile(p_lscript, fn);
-
-    // // Give it some data. 
-    // lua_pushstring(p_lscript, "Hey diddle diddle");
-    // lua_setglobal(p_lscript, "script_string");
-    // lua_pushinteger(p_lscript, 90309);
-    // lua_setglobal(p_lscript, "script_int");
-    // EVAL_STACK(p_lscript, 1);
-
-    // Priming run of the loaded Lua script to create the script's global variables
-    stat = lua_pcall(p_lscript, 0, 0, 0);
+    // Load/run the script/file.
+    stat = luaL_dofile(p_lscript, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
+    // stat = luaL_loadfile(p_lscript, fn);
+    CHK_LUA_ERROR(p_lscript, stat);
     EVAL_STACK(p_lscript, 0);
 
-    if (stat != LUA_OK)
+    // // Priming run of the loaded Lua script to create the script's global variables
+    // stat = lua_pcall(p_lscript, 0, 0, 0);
+    // CHK_LUA_ERROR(p_lscript, stat);
+    // EVAL_STACK(p_lscript, 0);
+
+    // Init the script. This also starts blocking execution.
+    p_script_running = true;
+    p_loop_running = true;
+
+    int gtype = lua_getglobal(p_lscript, "do_it");
+    EVAL_STACK(p_lscript, 1);
+
+    ///// First do some yelding. /////
+    do
     {
-        LOG_ERROR("lua_pcall() error code %i: %s", stat, lua_tostring(p_lscript, -1));
-    }
+        stat = lua_resume(p_lscript, p_lmain, 0, 0);
 
-    if(stat == LUA_OK)
-    {
-        // Init the script. This also starts blocking execution.
-        p_script_running = true;
-
-        int gtype = lua_getglobal(p_lscript, "do_it");
-        EVAL_STACK(p_lscript, 1);
-
-        ///// First do some yelding. /////
-        do
+        switch(stat)
         {
-            stat = lua_resume(p_lscript, p_lmain, 0, 0);
+            case LUA_YIELD:
+                // LOG_DEBUG("===LUA_YIELD.");
+                break;
 
-            switch(stat)
-            {
-                case LUA_YIELD:
-                    // LOG_DEBUG("===LUA_YIELD.");
-                    break;
+            case LUA_OK:
+                // Script complete now.
+                break;
 
-                case LUA_OK:
-                    // Script complete now.
-                    break;
-
-                default:
-                    // Unexpected error.
-                    CHK_LUA_ERROR(p_lscript, stat, "p_Run() error");
-                    break;
-            }
-
-            p_Sleep(200);
+            default:
+                // Unexpected error.
+                CHK_LUA_ERROR(p_lscript, stat);
+                // CHK_LUA_ERROR(p_lscript, stat, "p_Run() error");
+                break;
         }
-        while (stat == LUA_YIELD);
 
-        /// Then loop forever doing cli requests. /////
-        do
-        {
-            // stat = board_CliReadLine(p_cli_buf, CLI_BUFF_LEN);
-            // if(stat == 0 && strlen(p_cli_buf) > 0)
-            // {
-            //     // LOG_DEBUG("|||got:%s", p_cli_buf);
-            //     stat = p_ProcessCommand(p_cli_buf);
-            // }
-            p_Sleep(100);
-        } while (p_script_running);
-
-        ///// Script complete now. /////
-        LOG_INFO("Finished script");
+        p_Sleep(200);
     }
-    else
+    while (stat == LUA_YIELD);
+
+    /// Then loop forever doing cli requests. /////
+    do
     {
-        CHK_LUA_ERROR(p_lscript, stat, "p_Run() error");
-    }
+        // stat = board_CliReadLine(p_cli_buf, CLI_BUFF_LEN);
+        // if(stat == 0 && strlen(p_cli_buf) > 0)
+        // {
+        //     // LOG_DEBUG("|||got:%s", p_cli_buf);
+        //     stat = p_ProcessCommand_ex(p_cli_buf);
+        // }
+        p_Sleep(100);
+    } while (p_script_running);
 
+    ///// Script complete now. /////
+    LOG_INFO("Finished script");
 
     return stat;
 }
 
+
+int p_ProcessCommand_ex(const char* sin)
+{
+    int stat = 0;
+
+    // What are the command line options. First one should be the actual command.
+    char* opts[88];
+    memset(opts, 0x00, sizeof(opts));
+    int oind = 0;
+
+    // Make writable copy and tokenize it.
+    char cp[strlen(sin) + 1];
+    strcpy(cp, sin);
+    char* token = strtok(cp, " ");
+
+    while(token != NULL && oind < 22)
+    {
+        opts[oind++] = token;
+        token = strtok(NULL, " ");
+    }
+
+    bool valid = false; // default
+
+    // commands do things like:
+
+    // p_script_running = false;
+    //
+    // interop_Calc(p_lscript, x, y, &res);
+    // board_CliWriteLine("%g + %g = %g", x, y, res);
+
+    return stat;
+}

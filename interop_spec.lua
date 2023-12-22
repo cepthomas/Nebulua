@@ -149,6 +149,21 @@ M.host_export_funcs =
     },
 
     {
+        lua_func_name = "set_tempo",
+        host_func_name = "SetTempo",
+        description = "Script wants to change tempo.",
+        args =
+        {
+            {
+                name = "bpm",
+                type = "I",
+                description = "BPM"
+            },
+        },
+        ret = { type = "I", description = "status" }
+    },
+
+    {
         lua_func_name = "send_note",
         host_func_name = "SendNote",
         description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).",
