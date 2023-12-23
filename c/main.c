@@ -54,7 +54,7 @@ int p_Init(void);
 //
 int p_Run(const char* fn);
 
-void p_Fatal() { } // TODO2
+void p_Fatal() { } // TODO1 => errors
 
 
 
@@ -198,14 +198,14 @@ void p_InitMidiDevices(void)
 //-------------------------------------------------------//
 void p_MidiClockHandler(double msec)
 {
-    // TODO1 yield over to script thread and call its step function.
+    // TODO2 process
     //  See lua.c for a way to treat C signals, which you may adapt to your interrupts.
 
 }
 
 
 //--------------------------------------------------------//
-void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) // TODO2 put in utility?
+void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) // TODO2 put in midi utility?
 {
     // Input midi event. Note this is in an interrupt handler!
     // hMidiIn - Handle to the MIDI input device.
