@@ -3,8 +3,19 @@
 #include "logger.h"
 #include "common.h"
 
+// TODO2 put this and logger etc in some sort of C utils.
+
+//--------------------- Defs -----------------------------//
 
 #define BUFF_LEN 100
+
+//------------------- Privates ---------------------------//
+
+// Make it readable.
+static const char* p_LuaErrToString(int err);
+
+// // Capture error stack trace Message handler used to run all chunks.
+// static int p_MsgHandler(lua_State* L);
 
 
 //--------------------------------------------------------//
@@ -47,54 +58,10 @@ int common_DumpStack(lua_State* L, const char* info)
                 break;
         }
     
-        LOG_DEBUG("   %s", buff);
+        LOG_DEBUG("    %s", buff);
     }
 
     return 0;
-}
-
-//--------------------------------------------------------//
-void common_LuaError(lua_State* L, const char* fn, int line, int err)//, const char* format, ...)
-{
-    static char buff[BUFF_LEN];
-
-    // va_list args;
-    // va_start(args, format);
-    // LOG_DEBUG(format, args);
-    // va_end(args);
-
-    switch(err)
-    {
-        case LUA_ERRRUN:
-            snprintf(buff, BUFF_LEN-1, "LUA_ERRRUN");
-            break;
-        case LUA_ERRSYNTAX:
-            snprintf(buff, BUFF_LEN-1, "LUA_ERRSYNTAX: syntax error during pre-compilation");
-            break;
-        case LUA_ERRMEM:
-            snprintf(buff, BUFF_LEN-1, "LUA_ERRMEM: memory allocation error");
-            break;
-        // case LUA_ERRGCMM:
-        //     snprintf(buff, BUFF_LEN-1, "LUA_ERRGCMM: GC error");
-        //     break;
-        case LUA_ERRERR:
-            snprintf(buff, BUFF_LEN-1, "LUA_ERRERR: error while running the error handler function");
-            break;
-        case LUA_ERRFILE:
-            snprintf(buff, BUFF_LEN-1, "LUA_ERRFILE: couldn't open the given file");
-            break;
-        default:
-            snprintf(buff, BUFF_LEN-1, "Unknown error %i (caller:%d)", err, line);
-            break;
-    }
-    LOG_DEBUG("   %s", buff);
-
-    // Dump trace.
-    luaL_traceback(L, L, NULL, 1);
-    snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
-    LOG_DEBUG("   %s", buff);
-
-    lua_error(L); // never returns
 }
 
 //--------------------------------------------------------//
@@ -113,9 +80,7 @@ int common_DumpTable(lua_State* L, const char* tbl_name)
 
         // Get type of value(-1).
         const char* type = luaL_typename(L, -1);
-
-
-        LOG_DEBUG("   %s=%s", kname, type);
+        LOG_DEBUG("    %s=%s", kname, type);
 
         // Remove value(-1), now key on top at(-1).
         lua_pop(L, 1);
@@ -123,3 +88,144 @@ int common_DumpTable(lua_State* L, const char* tbl_name)
     
     return 0;
 }
+
+
+//--------------------------------------------------------//
+void common_EvalStack(lua_State* L, int expected)
+{
+    int num = lua_gettop(L);
+    if (num != expected)
+    {
+        LOG_DEBUG("Expected %d stack but is %d", expected, num);
+    }
+}
+
+
+// //--------------------------------------------------------//
+// void common_LuaError(lua_State* L, const char* fn, int line, int err, const char* msg)
+// {
+//     static char buff[BUFF_LEN];
+
+//     if (err >= LUA_ERRRUN && err <= LUA_ERRFILE)
+//     {
+//         LOG_DEBUG("%s:%s", p_LuaErrToString(err), msg);
+
+//         // Dump trace.
+//         luaL_traceback(L, L, NULL, 1);
+//         snprintf(buff, BUFF_LEN-1, "%s | %s | %s", lua_tostring(L, -1), lua_tostring(L, -2), lua_tostring(L, -3));
+//         LOG_DEBUG(buff);
+
+//         lua_error(L); // never returns
+//     }
+// }
+
+// public bool EvalLuaStatus(LuaStatus lstat, [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
+// {
+//     bool hasError = false;
+//     if (lstat >= LuaStatus.ErrRun)
+//     {
+//         hasError = true;
+//         // Get error message on stack.
+//         string s;
+//         if (GetTop() > 0)
+//         {
+//             s = ToString(-1)!.Trim();
+//             Pop(1); // remove
+//         }
+//         else
+//         {
+//             s = "No error message!!!";
+//         }
+//         var serror = $"{file}({line}) [{lstat}]: {s}";
+//     }
+//     return hasError;
+// }
+
+
+// //--------------------------------------------------------//
+// int common_DoCall(lua_State* L, int narg, int nres) // TODO2 debug then stitch into gen - like cs.
+// {
+//     int lstat = LUA_OK;
+//     int fbase = lua_gettop(L) - narg;  // function index
+//     lua_pushcfunction(L, p_MsgHandler);  // push message handler
+//     // put it under function and args  Insert(fbase);
+//     lua_rotate(L, fbase, 1);
+//     lstat = lua_pcall(L, narg, nres, fbase);
+//     // remove message handler from the stack NativeMethods.  Remove(fbase);
+//     lua_rotate(L, fbase, -1);
+//     lua_pop(L, 1);
+//     return lstat;
+// }
+
+// //--------------------------------------------------------//
+// // Capture error stack trace Message handler used to run all chunks.
+// static int p_MsgHandler(lua_State* L)
+// {
+//     char* msg = lua_tostring(L, 1);
+//     if (msg == NULL)  // is error object not a string?
+//     {
+//         // does it have a metamethod that produces a string?
+//         if (luaL_callmeta(L, 1, "__tostring") && lua_type(L, -1) == LUA_TSTRING)
+//         {
+//             // that is the message
+//             return 1;
+//         }
+//         else
+//         {
+//             msg = "error object is a {L->Type(1)} value)";
+//             lua_pushstring(L, msg);
+//         }
+//     }
+
+//     // append and return  a standard traceback
+//     luaL_traceback(L, L, msg, 1);  
+//     return 1;
+// }
+
+//--------------------------------------------------------//
+static const char* p_LuaErrToString(int err)
+{
+    const char* serr = "UNKNOWN";
+    switch(err)
+    {
+        case LUA_OK: serr = "OK"; break;
+        case LUA_YIELD: serr = "YIELD"; break;
+        case LUA_ERRRUN: serr = "ERRRUN"; break;
+        case LUA_ERRSYNTAX: serr = "ERRSYNTAX"; break; // syntax error during pre-compilation
+        case LUA_ERRMEM: serr = "ERRMEM"; break; // memory allocation error
+        case LUA_ERRERR: serr = "ERRERR"; break; // error while running the error handler function
+        case LUA_ERRFILE: serr = "ERRFILE"; break; // couldn't open the given file
+    }
+    return serr;
+}
+
+
+// /// <summary> TODO2
+// /// Loads and runs the given file.
+// /// </summary>
+// /// <param name="file"></param>
+// /// <returns>Returns false if there are no errors or true in case of errors.</returns>
+// public bool DoFile(string file)
+// {
+//     bool err;
+//     LuaStatus lstat = LoadFile(file);
+//     err = EvalLuaStatus(lstat);
+//     lstat = DoCall(0, LUA_MULTRET);
+//     err |= EvalLuaStatus(lstat);
+//     return err;
+// }
+// /// <summary> TODO2
+// /// Loads and runs the given string.
+// /// </summary>
+// /// <param name="chunk"></param>
+// /// <returns>Returns false if there are no errors or true in case of errors.</returns>
+// public bool DoString(string chunk)
+// {
+//     bool err;
+//     LuaStatus lstat = LoadString(chunk);
+//     err = EvalLuaStatus(lstat);
+//     lstat = DoCall(0, LUA_MULTRET);
+//     err |= EvalLuaStatus(lstat);
+//     return err;
+// }
+

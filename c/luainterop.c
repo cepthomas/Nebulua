@@ -11,7 +11,8 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-
+#include "luaex.h"
+#include "luaex.h"
 #include "luainterop.h"
 #include "luainteropwork.h"
 
@@ -29,8 +30,8 @@ int luainterop_Setup(lua_State* l)
     // Push arguments.
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     int ret;
@@ -58,8 +59,8 @@ int luainterop_Step(lua_State* l, int bar, int beat, int subbeat)
     num_args++;
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     int ret;
@@ -87,8 +88,8 @@ int luainterop_InputNote(lua_State* l, int channel, int notenum, double volume)
     num_args++;
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     int ret;
@@ -116,8 +117,8 @@ int luainterop_InputController(lua_State* l, int channel, int controller, int va
     num_args++;
 
     // Do the actual call.
-    int lstat = lua_pcall(l, num_args, num_ret, 0); // optionally throws
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "lua_pcall() failed: %d", lstat); }
+    int lstat = luaex_docall(l, num_args, num_ret);
+    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
 
     // Get the results from the stack.
     int ret;

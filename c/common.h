@@ -15,23 +15,7 @@
 #include "logger.h"
 
 
-// Diagnostic utility.
-int common_DumpStack(lua_State* L, const char* info);
-
-// Diagnostic utility.
-int common_DumpTable(lua_State* L, const char* tbl_name);
-
-// Diagnostic utility.
-void common_LuaError(lua_State* L, const char* fn, int line, int err);
-// void common_LuaError(lua_State* L, const char* fn, int line, int err, const char* format, ...);
-
-// Helper macro to check/log stack size.
-#define EVAL_STACK(L, expected)  { int num = lua_gettop(L); if (num != expected) { LOG_DEBUG("Expected %d stack but is %d", expected, num); } }
-
-// Helper macro to check then handle error.
-#define CHK_LUA_ERROR(L, err)  if(err >= LUA_ERRRUN) { common_LuaError(L, __FILE__, __LINE__, err); }
-// #define CHK_LUA_ERROR(L, err, fmt, ...)  if(err >= LUA_ERRRUN) { common_LuaError(L, __FILE__, __LINE__, err, fmt, ##__VA_ARGS__); }
-
+//----------------------- Types -----------------------------//
 
 // Internal device management.
 typedef struct _MIDI_DEVICE
@@ -77,6 +61,32 @@ typedef enum
     // Meta-event
     MetaEvent = 0xFF,
 } midi_event_t;
+
+
+// //----------------------- Diagnostics -----------------------------//
+
+// // Diagnostic utility.
+// int common_DumpStack(lua_State* L, const char* info);
+
+// // Diagnostic utility.
+// int common_DumpTable(lua_State* L, const char* tbl_name);
+
+// // // Diagnostic utility.
+// // void common_LuaError(lua_State* L, const char* fn, int line, int err, const char* msg);
+
+// // Check/log stack size.
+// void common_EvalStack(lua_State* L, int expected);
+
+// // #define EVAL_STACK(L, expected) {     int num = lua_gettop(L);     if (num != expected)     {         LOG_DEBUG("Expected %d stack but is %d", expected, num);     } }
+
+// // // Helper macro to check then handle error.
+// // #define CHK_LUA_ERROR(L, err, msg)  if(err >= LUA_ERRRUN) { common_LuaError(L, __FILE__, __LINE__, err, msg); }
+
+// //----------------------- Utils -----------------------------//
+
+// // // Interface to lua_pcall, but sets appropriate message function and C-signal handler. Used to run all chunks.
+// // int common_DoCall(lua_State* L, int narg, int nres);
+
 
 
 #endif // NEB_COMMON_H

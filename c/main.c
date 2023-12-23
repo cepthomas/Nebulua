@@ -10,6 +10,7 @@
 #include "luainterop.h"
 #include "luainteropwork.h"
 #include "common.h"
+#include "diag.h"
 #include "logger.h"
 #include "ftimer.h"
 #include "stopwatch.h"
@@ -18,9 +19,6 @@
 //----------------------------------------------------//
 // The main Lua thread - C code incl interrupts (mm/fast timer, midi events)
 static lua_State* p_lmain;
-
-// The Lua thread where the script is running.
-static lua_State* p_lscript;
 
 // The script execution status.
 static bool p_script_running = false;
@@ -112,11 +110,9 @@ int main(int argc, char* argv[])
     }
 
     // Clean up and go home.
-    // EVAL_STACK(p_lmain, 0);
-    // EVAL_STACK(p_lscript, 0);
+    // diag_EvalStack(p_lmain, 0);
     ftimer_Run(0);
     ftimer_Destroy();
-    lua_close(p_lscript);
     lua_close(p_lmain);
 
     return serr == NULL ? 0 : 1;
@@ -317,11 +313,19 @@ int p_Init(void)
     // Init internal stuff.
     p_loop_running = false;
     p_lmain = luaL_newstate();
-    EVAL_STACK(p_lmain, 0);
+    diag_EvalStack(p_lmain, 0);
 
     // Load std libraries.
     luaL_openlibs(p_lmain);
-    EVAL_STACK(p_lmain, 0);
+    diag_EvalStack(p_lmain, 0);
+
+    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
+    luainterop_Load(p_lmain);
+    diag_EvalStack(p_lmain, 1);
+
+    // Pop the table off the stack as it interferes with calling the module functions.
+    lua_pop(p_lmain, 1);
+    diag_EvalStack(p_lmain, 0);
 
     // Stopwatch.
     ret = stopwatch_Init();
@@ -329,7 +333,7 @@ int p_Init(void)
 
     // Tempo timer and interrupt.
     ret = ftimer_Init(p_MidiClockHandler, 10);
-    ret = ftimer_Run(17); // tempo from ???
+    ret = ftimer_Run(17); // TODO2 tempo from ???
 
     // Midi event interrupt.
 
@@ -341,71 +345,45 @@ int p_Init(void)
 int p_Run(const char* fn)
 {
     int stat = 0;
-    EVAL_STACK(p_lmain, 0);
+
+    stat = luaL_loadfile(p_lmain, fn);
+    //if err - do like common_LuaError or EvalLuaStatus
+    diag_EvalStack(p_lmain, 0);
+
+    // Load/run the script/file. >>>>>>>>>>>> use new style
+    // stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
+    // or...
+    stat = luaL_loadfile(p_lmain, fn);
+    //if err - do like common_LuaError or EvalLuaStatus
+    diag_EvalStack(p_lmain, 0);
+
+    // Call script setup.
+    stat = luainterop_Setup(p_lmain);
+    //if err - do like common_LuaError or EvalLuaStatus
+    diag_EvalStack(p_lmain, 0);
 
 
-    // Set up a second Lua thread so we can background execute the script.
-    p_lscript = lua_newthread(p_lmain);
-    EVAL_STACK(p_lscript, 0);
-    lua_pop(p_lmain, 1); // from lua_newthread()
-    EVAL_STACK(p_lmain, 0);
+//    CHK_LUA_ERROR(p_lmain, stat, fn);
+    diag_EvalStack(p_lmain, 0);
 
-    // Open lua std libs.
-    luaL_openlibs(p_lscript);
 
-    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
-    luainterop_Load(p_lscript);
-    EVAL_STACK(p_lscript, 1);
 
-    // Pop the table off the stack as it interferes with calling the module functions.
-    lua_pop(p_lscript, 1);
-    EVAL_STACK(p_lscript, 0);
 
-    // Load/run the script/file.
-    stat = luaL_dofile(p_lscript, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
-    // stat = luaL_loadfile(p_lscript, fn);
-    CHK_LUA_ERROR(p_lscript, stat);
-    EVAL_STACK(p_lscript, 0);
 
-    // // Priming run of the loaded Lua script to create the script's global variables
-    // stat = lua_pcall(p_lscript, 0, 0, 0);
-    // CHK_LUA_ERROR(p_lscript, stat);
-    // EVAL_STACK(p_lscript, 0);
 
-    // Init the script. This also starts blocking execution.
-    p_script_running = true;
-    p_loop_running = true;
+// void Client() TODO1 from CS
+// {
+//     bool err;
+//     LuaStatus lstat = LoadString(chunk);
+//     err = EvalLuaStatus(lstat);
+//     lstat = DoCall(0, LUA_MULTRET);
+//     err |= EvalLuaStatus(lstat);
+// }
+//
 
-    int gtype = lua_getglobal(p_lscript, "do_it");
-    EVAL_STACK(p_lscript, 1);
 
-    ///// First do some yelding. /////
-    do
-    {
-        stat = lua_resume(p_lscript, p_lmain, 0, 0);
-
-        switch(stat)
-        {
-            case LUA_YIELD:
-                // LOG_DEBUG("===LUA_YIELD.");
-                break;
-
-            case LUA_OK:
-                // Script complete now.
-                break;
-
-            default:
-                // Unexpected error.
-                CHK_LUA_ERROR(p_lscript, stat);
-                // CHK_LUA_ERROR(p_lscript, stat, "p_Run() error");
-                break;
-        }
-
-        p_Sleep(200);
-    }
-    while (stat == LUA_YIELD);
-
-    /// Then loop forever doing cli requests. /////
+    /// Then loop forever doing cli requests. TODO2
+    bool _run = true;
     do
     {
         // stat = board_CliReadLine(p_cli_buf, CLI_BUFF_LEN);
@@ -415,43 +393,7 @@ int p_Run(const char* fn)
         //     stat = p_ProcessCommand_ex(p_cli_buf);
         // }
         p_Sleep(100);
-    } while (p_script_running);
-
-    ///// Script complete now. /////
-    LOG_INFO("Finished script");
-
-    return stat;
-}
-
-
-int p_ProcessCommand_ex(const char* sin)
-{
-    int stat = 0;
-
-    // What are the command line options. First one should be the actual command.
-    char* opts[88];
-    memset(opts, 0x00, sizeof(opts));
-    int oind = 0;
-
-    // Make writable copy and tokenize it.
-    char cp[strlen(sin) + 1];
-    strcpy(cp, sin);
-    char* token = strtok(cp, " ");
-
-    while(token != NULL && oind < 22)
-    {
-        opts[oind++] = token;
-        token = strtok(NULL, " ");
-    }
-
-    bool valid = false; // default
-
-    // commands do things like:
-
-    // p_script_running = false;
-    //
-    // interop_Calc(p_lscript, x, y, &res);
-    // board_CliWriteLine("%g + %g = %g", x, y, res);
+    } while (_run);
 
     return stat;
 }

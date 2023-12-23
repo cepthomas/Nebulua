@@ -59,48 +59,22 @@ local chord_notes = md.get_notes("C4.o7")
 md.create_notes("MY_SCALE", "1 +3 4 -b7")
 local my_scale_notes = md.get_notes("B4.MY_SCALE")
 
-------------------------- Init ----------------------------------------
-
-log.info("example initialization")
-math.randomseed(os.time())
-
--- Load her up.
-local steps = {}
-steps = neb.process_all(sequences, sections)
-
-api.set_tempo(100)
-
-
-------------------------- from _demoapp.lua -----------------------
--- function do_it()
---     tell("module initialization")
-
---     -- for n in pairs(_G) do print(n) end
-
---     -- Process the data passed from C. my_static_data contains the equivalent of my_static_data_t.
---     slog = string.format ("script_string:%s script_int:%s", script_string, script_int)
---     tell(slog)
-
---     -- Start working.
---     tell("do some pretend script work then yield")
-
---     for i = 1, 5 do
---         tell("doing loop number " .. i)
-
---         -- Do pretend work.
---         counter = 0
---         while counter < 1000 do
---             counter = counter + 1
---         end
---         -- ut.sleep(200)
-
---         -- Plays well with others.
---         coroutine.yield()
---     end
---     tell("done loop")
--- end
 
 ------------------------- Called from C# core ----------------------------------------
+
+-----------------------------------------------------------------------------
+-- Init stuff.
+function setup()
+    log.info("example initialization")
+    math.randomseed(os.time())
+
+    -- Load her up.
+    local steps = {}
+    steps = neb.process_all(sequences, sections)
+
+    api.set_tempo(100)
+
+    return 0
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
