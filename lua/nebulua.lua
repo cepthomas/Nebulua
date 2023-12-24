@@ -17,19 +17,6 @@ function M.error(msg) api.log(M.LOG_LEVEL.ERR, msg) end
 function M.info(msg)  api.log(M.LOG_LEVEL.INF, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DBG, msg) end
 
--- defs/settings??
-local INTERNAL_PPQ = 32
--- Only 4/4 time supported.
-local BEATS_PER_BAR = 4
-local SUBBEATS_PER_BEAT = INTERNAL_PPQ
-local SUBEATS_PER_BAR = INTERNAL_PPQ * BEATS_PER_BAR
--- subbeat is LOW_RES_PPQ
-local LOW_RES_PPQ = 8
-
--- /// <summary>Only 4/4 time supported.</summary>
--- public int BeatsPerBar { get { return 4; } }
--- public int SubbeatsPerBeat { get { return InternalPPQ; } }  32
--- public int SubeatsPerBar { get { return InternalPPQ * BeatsPerBar; } }
 
 ---------------------------- maybe -------------------------------
 ---------------------------- maybe -------------------------------

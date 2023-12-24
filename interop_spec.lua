@@ -14,7 +14,7 @@ M.lua_export_funcs =
         lua_func_name = "setup",
         host_func_name = "Setup",
         description = "Called to initialize Nebulator stuff.",
-        ret = { type = "I", description = "status" }
+        ret = { type = "I", description = "lua status" }
     },
 
     {
@@ -39,7 +39,7 @@ M.lua_export_funcs =
                 description = "Which subbeat"
             },
         },
-        ret = { type = "I", description = "status" }
+        ret = { type = "I", description = "lua status" }
     },
 
     {
@@ -49,7 +49,7 @@ M.lua_export_funcs =
         args =
         {
             {
-                name = "channel",
+                name = "hndchan",
                 type = "I",
                 description = "Input channel handle"
             },
@@ -63,13 +63,8 @@ M.lua_export_funcs =
                 type = "N",
                 description = "Volume between 0.0 and 1.0."
             },
-            -- {
-            --     name = "velocity",
-            --     type = "I",
-            --     description = "Note velocity"
-            -- },
         },
-        ret = { type = "I", description = "status" }
+        ret = { type = "I", description = "lua status" }
     },
 
     {
@@ -79,7 +74,7 @@ M.lua_export_funcs =
         args =
         {
             {
-                name = "channel",
+                name = "hndchan",
                 type = "I",
                 description = "Input channel handle"
             },
@@ -94,7 +89,7 @@ M.lua_export_funcs =
                 description = "Payload"
             },
         },
-        ret = { type = "I", description = "status" }
+        ret = { type = "I", description = "lua status" }
     },
 
 }
@@ -115,17 +110,17 @@ M.host_export_funcs =
                 description = "Midi device name"
             },
             {
-                name = "channel",
+                name = "channum",
                 type = "I",
-                description = "Midi channel number"
+                description = "Midi channel number 1-16"
             },
             {
                 name = "patch",
                 type = "I",
-                description = "Patch - output hannel only"
+                description = "Midi patch number (output channel only)"
             },
         },
-        ret = { type = "I", description = "Channel handle" }
+        ret = { type = "I", description = "Channel handle or 0 if invalid" }
     },
 
     {
@@ -145,7 +140,7 @@ M.host_export_funcs =
                 description = "Log message"
             },
         },
-        ret = { type = "I", description = "status" }
+        ret = { type = "I", description = "lua status" }
     },
 
     {
@@ -160,7 +155,7 @@ M.host_export_funcs =
                 description = "BPM"
             },
         },
-        ret = { type = "I", description = "status" }
+        ret = { type = "I", description = "lua status" }
     },
 
     {
@@ -170,7 +165,7 @@ M.host_export_funcs =
         args =
         {
             {
-                name = "channel",
+                name = "hndchan",
                 type = "I",
                 description = "Output channel handle"
             },
@@ -190,7 +185,7 @@ M.host_export_funcs =
                 description = "Duration as bar.beat"
             },
         },
-        ret = { type = "I", description = "status" }
+        ret = { type = "I", description = "lua status" }
     },
 
     {
@@ -200,12 +195,12 @@ M.host_export_funcs =
         args =
         {
             {
-                name = "channel",
+                name = "hndchan",
                 type = "I",
                 description = "Output channel handle"
             },
             {
-                name = "ctlr",
+                name = "controller",
                 type = "I",
                 description = "Specific controller"
             },
@@ -215,7 +210,7 @@ M.host_export_funcs =
                 description = "Payload."
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "lua status" }
     },
 
 }

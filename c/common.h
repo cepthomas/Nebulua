@@ -14,6 +14,30 @@
 #include "luainteropwork.h"
 #include "logger.h"
 
+//----------------------- Defs -----------------------------//
+
+// Only 4/4 time supported.
+#define BEATS_PER_BAR 4
+
+// This app internal resolution.
+#define INTERNAL_PPQ 32
+
+// Conveniences.
+#define SUBBEATS_PER_BEAT INTERNAL_PPQ
+#define SUBEATS_PER_BAR SUBBEATS_PER_BEAT * BEATS_PER_BAR
+
+// Arbitrary cap.
+#define MIDI_DEVICES 4
+
+// Midi cap per device. Note midi is 1-based.
+#define MIDI_CHANNELS 16
+
+// Midi caps.
+#define MIDI_MIN 0
+
+// Midi caps.
+#define MIDI_MAX 127
+
 
 //----------------------- Types -----------------------------//
 
@@ -21,45 +45,30 @@
 typedef struct _MIDI_DEVICE
 {
     char dev_name[MAXPNAMELEN];
-    int dev_index; // from enumeration
+    int dev_index; // from system enumeration
+    bool channels[MIDI_CHANNELS]; // 0-based
     HMIDIIN hnd_in;
     HMIDIOUT hnd_out;
 } MIDI_DEVICE;
-#define MAX_MIDI_DEVS 16
 
-// Midi events. TODO3 these should come from header file somewhere else?
+// Midi events.
 typedef enum
 {
-    // Note Off
-    NoteOff = 0x80,
-    // Note On
-    NoteOn = 0x90,
-    // Key After-touch
-    KeyAfterTouch = 0xA0,
-    // Control change
-    ControlChange = 0xB0,
-    // Patch change
-    PatchChange = 0xC0,
-    // Channel after-touch
-    ChannelAfterTouch = 0xD0,
-    // Pitch wheel change
-    PitchWheelChange = 0xE0,
-    // Sysex message
-    Sysex = 0xF0,
-    // Eox (comes at end of a sysex message)
-    Eox = 0xF7,
-    // Timing clock (used when synchronization is required)
-    TimingClock = 0xF8,
-    // Start sequence
-    StartSequence = 0xFA,
-    // Continue sequence
-    ContinueSequence = 0xFB,
-    // Stop sequence
-    StopSequence = 0xFC,
-    // Auto-Sensing
-    AutoSensing = 0xFE,
-    // Meta-event
-    MetaEvent = 0xFF,
+    MIDI_NOTE_OFF = 0X80,
+    MIDI_NOTE_ON = 0X90,
+    MIDI_KEY_AFTER_TOUCH = 0XA0,
+    MIDI_CONTROL_CHANGE = 0XB0,
+    MIDI_PATCH_CHANGE = 0XC0,
+    MIDI_CHANNEL_AFTER_TOUCH = 0XD0,
+    MIDI_PITCH_WHEEL_CHANGE = 0XE0,
+    MIDI_SYSEX = 0XF0,
+    MIDI_EOX = 0XF7,
+    MIDI_TIMING_CLOCK = 0XF8,
+    MIDI_START_SEQUENCE = 0XFA,
+    MIDI_CONTINUE_SEQUENCE = 0XFB,
+    MIDI_STOP_SEQUENCE = 0XFC,
+    MIDI_AUTO_SENSING = 0XFE,
+    MIDI_META_EVENT = 0XFF,
 } midi_event_t;
 
 

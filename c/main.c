@@ -7,16 +7,17 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luainterop.h"
-#include "luainteropwork.h"
 #include "common.h"
 #include "diag.h"
 #include "logger.h"
 #include "ftimer.h"
 #include "stopwatch.h"
+#include "luainterop.h"
+#include "luainteropwork.h"
 
 
-//----------------------------------------------------//
+//----------------------- Vars -----------------------------//
+
 // The main Lua thread - C code incl interrupts (mm/fast timer, midi events)
 static lua_State* p_lmain;
 
@@ -27,15 +28,16 @@ static bool p_script_running = false;
 static bool p_loop_running;
 
 // Last tick time.
-// static unsigned long p_last_usec;
 static double p_last_msec = 0;
+// static unsigned long p_last_usec;
+
+// Devices specified in the user script.
+static MIDI_DEVICE _devices[MIDI_DEVICES];
 
 
-static MIDI_DEVICE _devices[MAX_MIDI_DEVS];
 
+//---------------------- Private functions ------------------------//
 
-
-//----------------------------------------------------//
 //
 void p_InitMidiDevices(void);
 
@@ -54,6 +56,7 @@ int p_Init(void);
 //
 int p_Run(const char* fn);
 
+//
 void p_Fatal() { } // TODO1 => errors
 
 
@@ -67,12 +70,13 @@ int main(int argc, char* argv[])
 {
     int ret = 0;
 
+    ///// Initialize /////
     logger_Init(".\\nebulua_log.txt");
     logger_SetFilters(LVL_DEBUG);
 
     ret = p_Init();
 
-    // Go.
+    ///// Get args /////
     char* serr = NULL;
     char* sfn = NULL;
 
@@ -93,16 +97,16 @@ int main(int argc, char* argv[])
         }
     }
 
+    ///// Run the application. Blocks forever. ///// TODO1 need elegant way to stop - part of user interaction or CLI/ctrl-C?
     if (serr == NULL && sfn != NULL)
     {
-        // Run the script file. Blocks forever. TODO1 need elegant way to stop - part of user interaction or ctrl-C?
         if(p_Run(argv[1]) != 0)
         {
             serr = "Run failed";
         }
     }
 
-    // How did we do?
+    ///// Finished /////
     if (serr != NULL)
     {
         LOG_ERROR(serr);
@@ -110,9 +114,22 @@ int main(int argc, char* argv[])
     }
 
     // Clean up and go home.
-    // diag_EvalStack(p_lmain, 0);
     ftimer_Run(0);
     ftimer_Destroy();
+
+    for (int i = 0; i < MIDI_DEVICES; i++)
+    {
+        if (_devices[i].hnd_in > 0)
+        {
+            midiInStop(_devices[i].hnd_in);
+            midiInClose(_devices[i].hnd_in); 
+        }
+        else if (_devices[i].hnd_out > 0)
+        {
+            midiOutClose(_devices[i].hnd_out);
+        }
+    }
+
     lua_close(p_lmain);
 
     return serr == NULL ? 0 : 1;
@@ -127,16 +144,16 @@ void p_InitMidiDevices(void)
     memset(_devices, 0, sizeof(_devices));
     int d = 0;
 
+    // Inputs.
     {
         int num_in = midiInGetNumDevs();
         for (int i = 0; i < num_in; i++, d++)
         {
-            if (d >= MAX_MIDI_DEVS)
+            if (d >= MIDI_DEVICES)
             {
                 p_Fatal();
             }
 
-            // http://msdn.microsoft.com/en-us/library/dd798453%28VS.85%29.aspx
             MIDIINCAPS caps_in;
             res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
             if (res > 0)
@@ -145,7 +162,6 @@ void p_InitMidiDevices(void)
             }
 
             HMIDIIN hmidi_in;
-            // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
             res = midiInOpen(&hmidi_in, i, (DWORD_PTR)p_MidiInHandler, (DWORD_PTR)0, CALLBACK_FUNCTION);
             if (res > 0 || hmidi_in < 0)
             {
@@ -161,11 +177,12 @@ void p_InitMidiDevices(void)
         }
     }
 
+    // Outputs.
     {
         int num_out = midiOutGetNumDevs();
         for (int i = 0; i < num_out; i++, d++)
         {
-            if (d >= MAX_MIDI_DEVS)
+            if (d >= MIDI_DEVICES)
             {
                 p_Fatal();
             }
@@ -214,6 +231,9 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
     // dwParam1 - Message parameter.
     // dwParam2 - Message parameter.
 
+//TODO1 validate midiin device and channel number as registered by user.
+
+
     switch(wMsg)
     {
         case MIM_DATA:
@@ -242,9 +262,9 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
 
             switch (midi_evt)
             {
-                case NoteOn:
-                case NoteOff:
-                    if (data2 > 0 && midi_evt == NoteOn)
+                case MIDI_NOTE_ON: // => luainterop_InputNote
+                case MIDI_NOTE_OFF:
+                    if (data2 > 0 && midi_evt == MIDI_NOTE_ON)
                     {
                         // me = new NoteOnEvent(ts, channel, data1, data2, 0);
                         // log.WriteInfo(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
@@ -254,13 +274,14 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
                         // me = new NoteEvent(ts, channel, midi_evt, data1, data2);
                     }
                     break;
-                case ControlChange:
+
+                case MIDI_CONTROL_CHANGE: // => luainterop_InputController
                     // me = new ControlChangeEvent(ts, channel, (MidiController)data1, data2);
                     break;
-                case PitchWheelChange:
-                    // me = new PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
-                    break;
 
+                // case PitchWheelChange:
+                //     // me = new PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
+                //     break;
                 // Ignore other events for now.
                 // case KeyAfterTouch:
                 // case PatchChange:
@@ -288,7 +309,7 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
         case MIM_CLOSE:
         case MIM_LONGDATA:
         case MIM_LONGERROR:
-        case MIM_MOREDATA:// MidiInterop.MidiInMessage.MoreData:
+        case MIM_MOREDATA:
             break;
     }
 };
@@ -331,11 +352,11 @@ int p_Init(void)
     ret = stopwatch_Init();
     p_last_msec = stopwatch_TotalElapsedMsec();
 
-    // Tempo timer and interrupt.
-    ret = ftimer_Init(p_MidiClockHandler, 10);
-    ret = ftimer_Run(17); // TODO2 tempo from ???
+    // Tempo timer and interrupt - 1 msec resolution.
+    ret = ftimer_Init(p_MidiClockHandler, 1);
+    luainteropwork_SetTempo(60);
 
-    // Midi event interrupt.
+    // Midi event interrupt inited in p_InitMidiDevices(void).
 
     return ret;
 }

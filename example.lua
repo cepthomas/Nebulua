@@ -98,7 +98,7 @@ end
 
 -----------------------------------------------------------------------------
 -- Handlers for input events.
-function input_note(channel, note, vel)
+function input_note(channel, note, vel) -> hndchan
     log.info("input_note") -- string.format("%s", variable_name), channel, note, vel)
 
     if channel == hbing_bong then
