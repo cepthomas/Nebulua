@@ -57,7 +57,7 @@ int p_Init(void);
 int p_Run(const char* fn);
 
 //
-void p_Fatal() { } // TODO1 => errors
+void p_Fatal() { } // TODOE => errors
 
 
 
@@ -231,9 +231,6 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
     // dwParam1 - Message parameter.
     // dwParam2 - Message parameter.
 
-//TODO1 validate midiin device and channel number as registered by user.
-
-
     switch(wMsg)
     {
         case MIM_DATA:
@@ -241,41 +238,50 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
             // parameter 2 is milliseconds since MidiInStart
             // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-midievent
 
-            int ts = dwParam2;
             int raw_msg = dwParam1;
+            int timestamp = dwParam2;
             int b = raw_msg & 0xFF;
             int data1 = (raw_msg >> 8) & 0xFF;
             int data2 = (raw_msg >> 16) & 0xFF;
-            midi_event_t midi_evt;
             int channel = 1;
+            midi_event_t evt;
 
             if ((b & 0xF0) == 0xF0)
             {
                 // Both bytes are used for command code in this case.
-                midi_evt = (midi_event_t)b;
+                evt = (midi_event_t)b;
             }
             else
             {
-                midi_evt = (midi_event_t)(b & 0xF0);
+                evt = (midi_event_t)(b & 0xF0);
                 channel = (b & 0x0F) + 1;
             }
 
-            switch (midi_evt)
+
+            //TODOE validate midiin device and channel number as registered by user.
+
+            int hndchan = 0;
+            
+
+
+            switch (evt)
             {
-                case MIDI_NOTE_ON: // => luainterop_InputNote
+                case MIDI_NOTE_ON: // => luainterop_InputNote(lua_State* l, int hndchan, int notenum, double volume)
                 case MIDI_NOTE_OFF:
-                    if (data2 > 0 && midi_evt == MIDI_NOTE_ON)
+                    if (data2 > 0 && evt == MIDI_NOTE_ON)
                     {
                         // me = new NoteOnEvent(ts, channel, data1, data2, 0);
+                        // NoteOnEvent(long absoluteTime, int channel, int noteNumber, int velocity, int duration)
+
                         // log.WriteInfo(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
                     }
                     else
                     {
-                        // me = new NoteEvent(ts, channel, midi_evt, data1, data2);
+                        // me = new NoteEvent(ts, channel, evt, data1, data2);
                     }
                     break;
 
-                case MIDI_CONTROL_CHANGE: // => luainterop_InputController
+                case MIDI_CONTROL_CHANGE: // => luainterop_InputController(lua_State* l, int hndchan, int controller, int value)
                     // me = new ControlChangeEvent(ts, channel, (MidiController)data1, data2);
                     break;
 
@@ -294,14 +300,14 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
                 // case MetaEvent:
                 // case Sysex:
                 default:
-                    // throw new FormatException(String.Format("Unsupported MIDI Command Code for Raw Message {0}", midi_evt));
+                    // throw new FormatException(String.Format("Unsupported MIDI Command Code for Raw Message {0}", evt));
                     break;
             }
             break;
 
         case MIM_ERROR:
             // parameter 1 is invalid MIDI message
-            //TODO1 log.WriteError(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
+            //TODOE log.WriteError(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
             break;
 
         // Others not implemented:

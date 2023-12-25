@@ -95,7 +95,7 @@ int luainteropwork_SendNote(int hndchan, int note_num, double volume, double dur
 {
     int ret = LUA_OK;
 
-    // Validate user args.
+    // Validate user lua args.
     int channum = hndchan & 0xFF;
     int devi = (hndchan >> 8) & 0xFF;
 
@@ -111,7 +111,7 @@ int luainteropwork_SendNote(int hndchan, int note_num, double volume, double dur
     }
     else
     {
-        ret = -99; // TODO1 errors notify/log?
+        ret = -99; // TODOE errors notify/log?
     }
 
     return ret;
@@ -123,7 +123,7 @@ int luainteropwork_SendController(int hndchan, int ctlr, int value)
 {
     int ret = LUA_OK;
 
-    // Validate user args. TODO3 refactor?
+    // Validate user lua args. TODOE refactor?
     int channum = hndchan & 0xFF;
     int devi = (hndchan >> 8) & 0xFF;
 

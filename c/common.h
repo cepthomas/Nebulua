@@ -16,6 +16,18 @@
 
 //----------------------- Defs -----------------------------//
 
+
+// Consolidate all error stuff - TODOE
+// #define LUA_OK      0
+// #define LUA_YIELD   1
+// #define LUA_ERRRUN  2
+// #define LUA_ERRSYNTAX   3
+// #define LUA_ERRMEM  4
+// #define LUA_ERRERR  5
+// #define LUA_ERRFILE     (LUA_ERRERR+1)
+
+
+
 // Only 4/4 time supported.
 #define BEATS_PER_BAR 4
 
