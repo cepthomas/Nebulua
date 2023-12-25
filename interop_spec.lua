@@ -14,7 +14,7 @@ M.lua_export_funcs =
         lua_func_name = "setup",
         host_func_name = "Setup",
         description = "Called to initialize Nebulator stuff.",
-        ret = { type = "I", description = "Status TODOE" }
+        ret = { type = "I", description = "Status" }
     },
 
     {

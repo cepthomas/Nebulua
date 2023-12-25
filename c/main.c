@@ -39,7 +39,7 @@ static MIDI_DEVICE _devices[MIDI_DEVICES];
 //---------------------- Private functions ------------------------//
 
 //
-void p_InitMidiDevices(void);
+int p_InitMidiDevices(void);
 
 // Tick corresponding to bpm. Interrupt!
 void p_MidiClockHandler(double msec);
@@ -51,7 +51,7 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
 void p_Sleep(int msec);
 
 //
-int p_Init(void);
+int p_InitScript(void);
 
 //
 int p_Run(const char* fn);
@@ -68,13 +68,11 @@ void p_Fatal() { } // TODOE => errors
 // @return Standard exit code.
 int main(int argc, char* argv[])
 {
-    int ret = 0;
+    int stat = NEB_OK;
 
     ///// Initialize /////
     logger_Init(".\\nebulua_log.txt");
     logger_SetFilters(LVL_DEBUG);
-
-    ret = p_Init();
 
     ///// Get args /////
     char* serr = NULL;
@@ -86,8 +84,17 @@ int main(int argc, char* argv[])
     }
     else
     {
-        serr = "Invalid args";
+        serr = "Invalid args"; NEB_ERR_BAD_APP_ARG
     }
+
+
+    stat = p_InitMidiDevices();
+    common_EvalStatus(p_lmain, stat, "Failed to init midi");
+
+    stat = p_InitScript();
+    common_EvalStatus(p_lmain, stat, "Failed to init script");
+
+
 
     if (serr == NULL && sfn != NULL)
     {
@@ -109,7 +116,7 @@ int main(int argc, char* argv[])
     ///// Finished /////
     if (serr != NULL)
     {
-        LOG_ERROR(serr);
+        logger_Log(LVL_ERROR, serr);
         printf("Epic fail!! %s\n", serr);
     }
 
@@ -137,8 +144,9 @@ int main(int argc, char* argv[])
 
 
 //-------------------------------------------------------//
-void p_InitMidiDevices(void)
+int p_InitMidiDevices(void)
 {
+    int stat = NEB_OK    ;
     MMRESULT res = 0;
 
     memset(_devices, 0, sizeof(_devices));
@@ -333,9 +341,9 @@ void p_Sleep(int msec)
 
 
 //----------------------------------------------------//
-int p_Init(void)
+int p_InitScript(void)
 {
-    int ret = 0;
+    int stat = NEB_OK;
 
     // Init internal stuff.
     p_loop_running = false;
@@ -355,26 +363,26 @@ int p_Init(void)
     diag_EvalStack(p_lmain, 0);
 
     // Stopwatch.
-    ret = stopwatch_Init();
+    stat = stopwatch_Init();
     p_last_msec = stopwatch_TotalElapsedMsec();
 
     // Tempo timer and interrupt - 1 msec resolution.
-    ret = ftimer_Init(p_MidiClockHandler, 1);
+    stat = ftimer_Init(p_MidiClockHandler, 1);
     luainteropwork_SetTempo(60);
 
     // Midi event interrupt inited in p_InitMidiDevices(void).
 
-    return ret;
+    return stat;
 }
 
 
 //---------------------------------------------------//
 int p_Run(const char* fn)
 {
-    int stat = 0;
+    int stat = NEB_OK;
 
     stat = luaL_loadfile(p_lmain, fn);
-    //if err - do like common_LuaError or EvalLuaStatus
+    // TODOE if err - do like common_LuaError or EvalLuaStatus
     diag_EvalStack(p_lmain, 0);
 
     // Load/run the script/file. >>>>>>>>>>>> use new style
@@ -391,22 +399,12 @@ int p_Run(const char* fn)
 
 
 //    CHK_LUA_ERROR(p_lmain, stat, fn);
-    diag_EvalStack(p_lmain, 0);
+// >>>>
+// LuaStatus lstat = LoadFile(file); /LoadString
+// err = EvalLuaStatus(lstat);
+// lstat = DoCall(0, LUA_MULTRET);
+// err |= EvalLuaStatus(lstat);
 
-
-
-
-
-
-// void Client() TODO1 from CS
-// {
-//     bool err;
-//     LuaStatus lstat = LoadString(chunk);
-//     err = EvalLuaStatus(lstat);
-//     lstat = DoCall(0, LUA_MULTRET);
-//     err |= EvalLuaStatus(lstat);
-// }
-//
 
 
     /// Then loop forever doing cli requests. TODO2
@@ -416,7 +414,7 @@ int p_Run(const char* fn)
         // stat = board_CliReadLine(p_cli_buf, CLI_BUFF_LEN);
         // if(stat == 0 && strlen(p_cli_buf) > 0)
         // {
-        //     // LOG_DEBUG("|||got:%s", p_cli_buf);
+        //     // logger_Log(LVL_DEBUG, "|||got:%s", p_cli_buf);
         //     stat = p_ProcessCommand_ex(p_cli_buf);
         // }
         p_Sleep(100);

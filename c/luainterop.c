@@ -160,7 +160,7 @@ static int luainterop_CreateChannel(lua_State* l)
 // Host export function: Script wants to log something.
 // Lua arg: level Log level
 // Lua arg: msg Log message
-// Lua return: int lua status
+// Lua return: int Status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 static int luainterop_Log(lua_State* l)
@@ -181,7 +181,7 @@ static int luainterop_Log(lua_State* l)
 
 // Host export function: Script wants to change tempo.
 // Lua arg: bpm BPM
-// Lua return: int lua status
+// Lua return: int Status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 static int luainterop_SetTempo(lua_State* l)
@@ -202,7 +202,7 @@ static int luainterop_SetTempo(lua_State* l)
 // Lua arg: notenum Note number
 // Lua arg: volume Volume between 0.0 and 1.0
 // Lua arg: dur Duration as bar.beat
-// Lua return: int lua status
+// Lua return: int Status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 static int luainterop_SendNote(lua_State* l)
@@ -231,7 +231,7 @@ static int luainterop_SendNote(lua_State* l)
 // Lua arg: hndchan Output channel handle
 // Lua arg: controller Specific controller
 // Lua arg: value Payload.
-// Lua return: int lua status
+// Lua return: int Status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 static int luainterop_SendController(lua_State* l)

@@ -16,16 +16,13 @@
 
 //----------------------- Defs -----------------------------//
 
-
-// Consolidate all error stuff - TODOE
-// #define LUA_OK      0
-// #define LUA_YIELD   1
-// #define LUA_ERRRUN  2
-// #define LUA_ERRSYNTAX   3
-// #define LUA_ERRMEM  4
-// #define LUA_ERRERR  5
-// #define LUA_ERRFILE     (LUA_ERRERR+1)
-
+// App errors start after internal lua errors so they can be handled harmoniously.
+#define NEB_OK                  LUA_OK
+#define NEB_ERR_START           10
+#define NEB_ERR_BAD_APP_ARG     11
+#define NEB_ERR_BAD_LUA_ARG     12
+#define NEB_ERR_BAD_MIDI_IN     13
+#define NEB_ERR_BAD_MIDI_OUT    14
 
 
 // Only 4/4 time supported.
@@ -82,6 +79,21 @@ typedef enum
     MIDI_AUTO_SENSING = 0XFE,
     MIDI_META_EVENT = 0XFF,
 } midi_event_t;
+
+
+//----------------------- Publics -----------------------------//
+
+// Examine status and log message if failed. Calls lua error function which doesn't return!
+// @param[in] l Internal lua state.
+// @param[in] stat Status to look at.
+// @param[in] msg Info to add if not internal lua error.
+// @return bool Pontless pass.
+bool common_EvalStatus(lua_State* l, int stat, const char* msg);
+
+// Convert a status to string.
+// @param[in] err Status to examine.
+// @return String or NULL if not valid.
+const char* common_StatusToString(int err);
 
 
 #endif // NEB_COMMON_H

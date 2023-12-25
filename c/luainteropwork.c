@@ -20,20 +20,7 @@
 //--------------------------------------------------------//
 int luainteropwork_Log(int level, char* msg)
 {
-    switch (level)
-    {
-    case LVL_DEBUG:
-        LOG_DEBUG(msg);
-        break;
-    case LVL_INFO:
-        LOG_INFO(msg);
-        break;
-    case LVL_ERROR:
-        LOG_ERROR(msg);
-        break;
-    }
-
-    return 0;
+    return logger_Log(level, msg);
 }
 
 
@@ -49,11 +36,12 @@ int luainteropwork_SetTempo(int bpm)
     return 0;
 }
 
+static MIDI_DEVICE _devices[MIDI_DEVICES];
 
 //--------------------------------------------------------//
 int luainteropwork_CreateChannel(const char* device, int channum, int patch)
 {
-    // Handle is
+    // Handle is combination of device id/index and channel number.
     int hnd = 0; // default = invalid
 
     if (channum >= 1 && channum <= MIDI_CHANNELS)
@@ -67,26 +55,23 @@ int luainteropwork_CreateChannel(const char* device, int channum, int patch)
                 _devices[i].channels[channum - 1] = true;
                 hnd = (i << 8) | channum;
 
-                if (_devices[i].hmidi_out > 0)
+                if (_devices[i].hnd_out > 0)
                 {
                     // Send patch now.
                     int short_msg = (channum - 1) + MIDI_PATCH_CHANGE + (patch << 8);
-                    int ret = midiOutShortMsg(_devices[i].hmidi_out, short_msg);
+                    int ret = midiOutShortMsg(_devices[i].hnd_out, short_msg);
                 }
 
                 break; // done
             }
         }
     }
+    else
+    {
+        logger_Log(LVL_ERROR, "NEB_ERR_BAD_LUA_ARG %d", __LINE__);
+    }
 
     return hnd;
-}
-
-int p_Constrain(int val)
-{
-    val = max(val, MIDI_MIN);
-    val = min(val, MIDI_MAX);
-    return val;
 }
 
 
@@ -99,19 +84,22 @@ int luainteropwork_SendNote(int hndchan, int note_num, double volume, double dur
     int channum = hndchan & 0xFF;
     int devi = (hndchan >> 8) & 0xFF;
 
-    if (channum >= 1 && channum <= MIDI_CHANNELS && devi >= 0 && devi < MIDI_DEVICES)
+    if (channum >= 1 && channum <= MIDI_CHANNELS &&
+        volume >= 0.0 && volume <= 1.0 &&
+        devi >= 0 && devi < MIDI_DEVICES)
     {
-        if(_devices[devi].hmidi_out > 0 && _devices[devi].channels[channum - 1])
+        if(_devices[devi].hnd_out > 0 && _devices[devi].channels[channum - 1])
         {
             int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
-            int velocity = p_Constrain((int)(volume * MIDI_MAX));
+            int velocity = (int)(volume * MIDI_MAX);
             int short_msg = (channum - 1) + cmd + ((byte)note_num << 8) + ((byte)velocity << 16);
-            ret = midiOutShortMsg(_devices[devi].hmidi_out, short_msg);
+            ret = midiOutShortMsg(_devices[devi].hnd_out, short_msg);
         }
     }
     else
     {
-        ret = -99; // TODOE errors notify/log?
+        ret = NEB_ERR_BAD_LUA_ARG;
+        logger_Log(LVL_ERROR, "NEB_ERR_BAD_LUA_ARG %d", __LINE__);
     }
 
     return ret;
@@ -123,7 +111,7 @@ int luainteropwork_SendController(int hndchan, int ctlr, int value)
 {
     int ret = LUA_OK;
 
-    // Validate user lua args. TODOE refactor?
+    // Validate user lua args. TODO3 refactor?
     int channum = hndchan & 0xFF;
     int devi = (hndchan >> 8) & 0xFF;
 
@@ -132,18 +120,18 @@ int luainteropwork_SendController(int hndchan, int ctlr, int value)
         ctlr >= 0 && ctlr < MIDI_MAX &&
         value >= 0 && value < MIDI_MAX)
     {
-        if(_devices[devi].hmidi_out > 0 && _devices[devi].channels[channum - 1])
+        if(_devices[devi].hnd_out > 0 && _devices[devi].channels[channum - 1])
         {
             int cmd = MIDI_CONTROL_CHANGE;
             int short_msg = (channum - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);
-            ret = midiOutShortMsg(_devices[devi].hmidi_out, short_msg);
+            ret = midiOutShortMsg(_devices[devi].hnd_out, short_msg);
         }
     }
     else
     {
-        ret = -99;
+        ret = NEB_ERR_BAD_LUA_ARG;
+        logger_Log(LVL_ERROR, "NEB_ERR_BAD_LUA_ARG %d", __LINE__);
     }
-
 
     return ret;
 }
