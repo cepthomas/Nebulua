@@ -41,6 +41,12 @@ static MIDI_DEVICE _devices[MIDI_DEVICES];
 //
 int p_InitMidiDevices(void);
 
+//
+int p_InitScript(void);
+
+//
+int p_Run(const char* fn);
+
 // Tick corresponding to bpm. Interrupt!
 void p_MidiClockHandler(double msec);
 
@@ -49,16 +55,6 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
 
 // Blocking sleep.
 void p_Sleep(int msec);
-
-//
-int p_InitScript(void);
-
-//
-int p_Run(const char* fn);
-
-//
-void p_Fatal() { } // TODOE => errors
-
 
 
 //----------------------------------------------------//
@@ -84,9 +80,8 @@ int main(int argc, char* argv[])
     }
     else
     {
-        serr = "Invalid args"; NEB_ERR_BAD_APP_ARG
+        common_EvalStatus(p_lmain, NEB_ERR_BAD_APP_ARG, "Invalid args");
     }
-
 
     stat = p_InitMidiDevices();
     common_EvalStatus(p_lmain, stat, "Failed to init midi");
@@ -94,15 +89,6 @@ int main(int argc, char* argv[])
     stat = p_InitScript();
     common_EvalStatus(p_lmain, stat, "Failed to init script");
 
-
-
-    if (serr == NULL && sfn != NULL)
-    {
-        if(p_Init() != 0)
-        {
-            serr = "Init failed";
-        }
-    }
 
     ///// Run the application. Blocks forever. ///// TODO1 need elegant way to stop - part of user interaction or CLI/ctrl-C?
     if (serr == NULL && sfn != NULL)
@@ -146,77 +132,56 @@ int main(int argc, char* argv[])
 //-------------------------------------------------------//
 int p_InitMidiDevices(void)
 {
-    int stat = NEB_OK    ;
+    int stat = NEB_OK;
     MMRESULT res = 0;
 
     memset(_devices, 0, sizeof(_devices));
     int d = 0;
 
-    // Inputs.
+    int num_in = midiInGetNumDevs();
+    int num_out = midiOutGetNumDevs();
+
+    if (num_in + num_out >= MIDI_DEVICES)
     {
-        int num_in = midiInGetNumDevs();
-        for (int i = 0; i < num_in; i++, d++)
-        {
-            if (d >= MIDI_DEVICES)
-            {
-                p_Fatal();
-            }
+        common_EvalStatus(p_lmain, NEB_ERR_BAD_MIDI_CFG, "Too many midi devices");
+    }
 
-            MIDIINCAPS caps_in;
-            res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
-            if (res > 0)
-            {
-                p_Fatal();
-            }
+    // Inputs.
+    for (int i = 0; i < num_in; i++, d++)
+    {
+        MIDIINCAPS caps_in;
+        res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
 
-            HMIDIIN hmidi_in;
-            res = midiInOpen(&hmidi_in, i, (DWORD_PTR)p_MidiInHandler, (DWORD_PTR)0, CALLBACK_FUNCTION);
-            if (res > 0 || hmidi_in < 0)
-            {
-                p_Fatal();
-            }
+        HMIDIIN hmidi_in;
+        res = midiInOpen(&hmidi_in, i, (DWORD_PTR)p_MidiInHandler, (DWORD_PTR)0, CALLBACK_FUNCTION);
 
-            // Save the device info.
-            _devices[d].hnd_in = hmidi_in;
-            _devices[d].dev_index = i;
-            strncpy(_devices[d].dev_name, caps_in.szPname, MAXPNAMELEN);
+        // Save the device info.
+        _devices[d].hnd_in = hmidi_in;
+        _devices[d].dev_index = i;
+        strncpy(_devices[d].dev_name, caps_in.szPname, MAXPNAMELEN);
 
-            res = midiInStart(hmidi_in);
-        }
+        // Fire it up.
+        res = midiInStart(hmidi_in);
     }
 
     // Outputs.
+    for (int i = 0; i < num_out; i++, d++)
     {
-        int num_out = midiOutGetNumDevs();
-        for (int i = 0; i < num_out; i++, d++)
-        {
-            if (d >= MIDI_DEVICES)
-            {
-                p_Fatal();
-            }
+        // http://msdn.microsoft.com/en-us/library/dd798469%28VS.85%29.aspx
+        MIDIOUTCAPS caps_out;
+        res = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
 
-            // http://msdn.microsoft.com/en-us/library/dd798469%28VS.85%29.aspx
-            MIDIOUTCAPS caps_out;
-            res = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
-            if (res > 0)
-            {
-                p_Fatal();
-            }
+        HMIDIOUT hmidi_out;
+        // http://msdn.microsoft.com/en-us/library/dd798476%28VS.85%29.aspx
+        res = midiOutOpen(&hmidi_out, i, 0, 0, 0);
 
-            HMIDIOUT hmidi_out;
-            // http://msdn.microsoft.com/en-us/library/dd798476%28VS.85%29.aspx
-            res = midiOutOpen(&hmidi_out, i, 0, 0, 0);
-            if (res > 0 || hmidi_out < 0)
-            {
-                p_Fatal();
-            }
-
-            // Save the device info.
-            _devices[d].hnd_out = hmidi_out;
-            _devices[d].dev_index = i;
-            strncpy(_devices[d].dev_name, caps_out.szPname, MAXPNAMELEN);
-        }
+        // Save the device info.
+        _devices[d].hnd_out = hmidi_out;
+        _devices[d].dev_index = i;
+        strncpy(_devices[d].dev_name, caps_out.szPname, MAXPNAMELEN);
     }
+
+    return stat;
 }
 
 
@@ -246,6 +211,22 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
             // parameter 2 is milliseconds since MidiInStart
             // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-midievent
 
+
+        bStatus= u.bData[0]; // MIDI status byte
+        bData1 = u.bData[1]; // first MIDI data byte
+        bData2 = u.bData[2]; // second MIDI data byte
+        /*
+        0x80-0x8f note off 2 - 1 byte pitch, followed by 1 byte velocity
+        0x90-0x9f note on 2 - 1 byte pitch, followed by 1 byte velocity
+        0xa0-0xaf key pressure 2 - 1 byte pitch, 1 byte pressure (after-touch)
+        0xb0-0xbf parameter 2 - 1 byte parameter number, 1 byte setting
+        0xc0-0xcf program 1 byte program selected
+        0xd0-0xdf chan. pressure 1 byte channel pressure (after-touch)
+        0xe0-0xef pitch wheel 2 bytes gives a 14 bit value, least significant 7 bits first
+        */
+
+
+
             int raw_msg = dwParam1;
             int timestamp = dwParam2;
             int b = raw_msg & 0xFF;
@@ -270,6 +251,19 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
 
             int hndchan = 0;
             
+    for (int i = 0; i < MIDI_DEVICES; i++)
+    {
+        if (_devices[i].hnd_in > 0)
+        {
+            midiInStop(_devices[i].hnd_in);
+            midiInClose(_devices[i].hnd_in); 
+        }
+        else if (_devices[i].hnd_out > 0)
+        {
+            midiOutClose(_devices[i].hnd_out);
+        }
+    }
+
 
 
             switch (evt)
@@ -280,7 +274,6 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
                     {
                         // me = new NoteOnEvent(ts, channel, data1, data2, 0);
                         // NoteOnEvent(long absoluteTime, int channel, int noteNumber, int velocity, int duration)
-
                         // log.WriteInfo(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
                     }
                     else

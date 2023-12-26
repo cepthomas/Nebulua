@@ -21,8 +21,9 @@
 #define NEB_ERR_START           10
 #define NEB_ERR_BAD_APP_ARG     11
 #define NEB_ERR_BAD_LUA_ARG     12
-#define NEB_ERR_BAD_MIDI_IN     13
-#define NEB_ERR_BAD_MIDI_OUT    14
+#define NEB_ERR_BAD_MIDI_CFG    13
+// #define NEB_ERR_BAD_MIDI_IN     13
+// #define NEB_ERR_BAD_MIDI_OUT    14
 
 
 // Only 4/4 time supported.
@@ -36,7 +37,7 @@
 #define SUBEATS_PER_BAR SUBBEATS_PER_BEAT * BEATS_PER_BAR
 
 // Arbitrary cap.
-#define MIDI_DEVICES 4
+#define MIDI_DEVICES 8
 
 // Midi cap per device. Note midi is 1-based.
 #define MIDI_CHANNELS 16

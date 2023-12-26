@@ -2,6 +2,7 @@
 #include <string.h>
 #include "logger.h"
 #include "common.h"
+#include "diag.h"
 
 
 //--------------------- Defs -----------------------------//
@@ -35,12 +36,12 @@ bool common_EvalStatus(lua_State* l, int stat, const char* msg)
             {
                 logger_Log(LVL_ERROR, "Status:%s msg:%s", sstat, msg);
             }
-            lua_error(L); // never returns...
+            lua_error(l); // never returns...
         }
         else // assume nebulua error
         {
             logger_Log(LVL_ERROR, "Status:%s msg:%s", sstat, msg);
-            lua_error(L); // never returns...
+            lua_error(l); // never returns...
         }
     }
 
@@ -55,8 +56,9 @@ const char* common_StatusToString(int err)
     switch(err)
     {
         case NEB_OK: serr = "NEB_OK"; break;
+        case NEB_ERR_BAD_APP_ARG: serr = "NEB_ERR_BAD_APP_ARG"; break;
         case NEB_ERR_BAD_LUA_ARG: serr = "NEB_ERR_BAD_LUA_ARG"; break;
-        case NEB_ERRXXX: serr = "NEB_ERRXXX"; break;
+        case NEB_ERR_BAD_MIDI_CFG: serr = "NEB_ERR_BAD_MIDI_CFG"; break;
         default: serr = diag_LuaStatusToString(err); break; // lua error?
     }
     return serr == NULL ? "No error string" : serr;
