@@ -1,60 +1,72 @@
+// system
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
+// lua
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "common.h"
+// lbot
 #include "diag.h"
 #include "logger.h"
 #include "ftimer.h"
 #include "stopwatch.h"
+// application
+#include "common.h"
+#include "cli.h"
+#include "devmgr.h"
 #include "luainterop.h"
 #include "luainteropwork.h"
 
 
+
 //----------------------- Vars -----------------------------//
 
-// The main Lua thread - C code incl interrupts (mm/fast timer, midi events)
+// The main Lua thread - C code incl interrupts for mm/fast timer and midi events.
 static lua_State* p_lmain;
 
 // The script execution status.
-static bool p_script_running = false;
+static bool p_running = false;
 
 // Processing loop status.
-static bool p_loop_running;
+// static bool p_loop_running;
 
 // Last tick time.
 static double p_last_msec = 0;
 // static unsigned long p_last_usec;
 
-// Devices specified in the user script.
-static MIDI_DEVICE _devices[MIDI_DEVICES];
+// CLI contents.
+static char p_cli_buf[CLI_BUFF_LEN];
+
+// // Devices specified in the user script.
+// static midi_device_t _devices[NUM_MIDI_DEVICES];  //TODO1 global, refine/pointers
 
 
 
 //---------------------- Private functions ------------------------//
 
 //
-int p_InitMidiDevices(void);
+// static int p_InitMidiDevices(void);
 
 //
-int p_InitScript(void);
+static int p_InitScript(void);
 
 //
-int p_Run(const char* fn);
+static int p_Run(const char* fn);
 
 // Tick corresponding to bpm. Interrupt!
-void p_MidiClockHandler(double msec);
+static void p_MidiClockHandler(double msec);
 
 // Handle incoming messages. Interrupt!
-void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+static void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 // Blocking sleep.
-void p_Sleep(int msec);
+static void p_Sleep(int msec);
+
+static int p_ProcessCommand(const char* sin);
 
 
 //----------------------------------------------------//
@@ -71,118 +83,105 @@ int main(int argc, char* argv[])
     logger_SetFilters(LVL_DEBUG);
 
     ///// Get args /////
-    char* serr = NULL;
-    char* sfn = NULL;
-
-    if(argc == 2)
+    if(argc != 2)
     {
-        sfn = argv[1];
-    }
-    else
-    {
-        common_EvalStatus(p_lmain, NEB_ERR_BAD_APP_ARG, "Invalid args");
+        stat = NEB_ERR_BAD_APP_ARG;
+        common_EvalStatus(p_lmain, stat, "Invalid args");
     }
 
-    stat = p_InitMidiDevices();
+    stat = devmgr_Init((DWORD_PTR)p_MidiInHandler);
+    // stat = p_InitMidiDevices();
     common_EvalStatus(p_lmain, stat, "Failed to init midi");
 
     stat = p_InitScript();
     common_EvalStatus(p_lmain, stat, "Failed to init script");
 
-
-    ///// Run the application. Blocks forever. ///// TODO1 need elegant way to stop - part of user interaction or CLI/ctrl-C?
-    if (serr == NULL && sfn != NULL)
-    {
-        if(p_Run(argv[1]) != 0)
-        {
-            serr = "Run failed";
-        }
-    }
+    ///// Run the application. Blocks forever.
+    stat = p_Run(argv[1]);
+    common_EvalStatus(p_lmain, stat, "Run failed");
 
     ///// Finished /////
-    if (serr != NULL)
-    {
-        logger_Log(LVL_ERROR, serr);
-        printf("Epic fail!! %s\n", serr);
-    }
-
+    cli_WriteLine("Goodbye - come back soon!");
     // Clean up and go home.
     ftimer_Run(0);
     ftimer_Destroy();
+    cli_Destroy();
+    devmgr_Destroy();
 
-    for (int i = 0; i < MIDI_DEVICES; i++)
-    {
-        if (_devices[i].hnd_in > 0)
-        {
-            midiInStop(_devices[i].hnd_in);
-            midiInClose(_devices[i].hnd_in); 
-        }
-        else if (_devices[i].hnd_out > 0)
-        {
-            midiOutClose(_devices[i].hnd_out);
-        }
-    }
+    // for (int i = 0; i < NUM_MIDI_DEVICES; i++)//devmgr_Destroy()
+    // {
+    //     if (_devices[i].hnd_in > 0)
+    //     {
+    //         midiInStop(_devices[i].hnd_in);
+    //         midiInClose(_devices[i].hnd_in); 
+    //     }
+    //     else if (_devices[i].hnd_out > 0)
+    //     {
+    //         midiOutClose(_devices[i].hnd_out);
+    //     }
+    // }
 
     lua_close(p_lmain);
 
-    return serr == NULL ? 0 : 1;
+    return NEB_OK;
 }
 
 
 //-------------------------------------------------------//
-int p_InitMidiDevices(void)
-{
-    int stat = NEB_OK;
-    MMRESULT res = 0;
+// int p_InitMidiDevices(void)//devmgr_Init()
+// {
+//     int stat = NEB_OK;
+//     MMRESULT res = 0;
 
-    memset(_devices, 0, sizeof(_devices));
-    int d = 0;
+//     memset(_devices, 0, sizeof(_devices));
+//     int dev_index = 0;
 
-    int num_in = midiInGetNumDevs();
-    int num_out = midiOutGetNumDevs();
+//     int num_in = midiInGetNumDevs();
+//     int num_out = midiOutGetNumDevs();
 
-    if (num_in + num_out >= MIDI_DEVICES)
-    {
-        common_EvalStatus(p_lmain, NEB_ERR_BAD_MIDI_CFG, "Too many midi devices");
-    }
+//     if (num_in + num_out >= NUM_MIDI_DEVICES)
+//     {
+//         common_EvalStatus(p_lmain, NEB_ERR_BAD_MIDI_CFG, "Too many midi devices");
+//     }
 
-    // Inputs.
-    for (int i = 0; i < num_in; i++, d++)
-    {
-        MIDIINCAPS caps_in;
-        res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
+//     // Inputs.
+//     for (int i = 0; i < num_in; i++, dev_index++)
+//     {
+//         MIDIINCAPS caps_in;
+//         res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
 
-        HMIDIIN hmidi_in;
-        res = midiInOpen(&hmidi_in, i, (DWORD_PTR)p_MidiInHandler, (DWORD_PTR)0, CALLBACK_FUNCTION);
+//         HMIDIIN hmidi_in;
+//         // dev_index => dwInstance;
+//         res = midiInOpen(&hmidi_in, i, (DWORD_PTR)p_MidiInHandler, (DWORD_PTR)dev_index, CALLBACK_FUNCTION);
 
-        // Save the device info.
-        _devices[d].hnd_in = hmidi_in;
-        _devices[d].dev_index = i;
-        strncpy(_devices[d].dev_name, caps_in.szPname, MAXPNAMELEN);
+//         // Save the device info.
+//         _devices[dev_index].hnd_in = hmidi_in;
+//         _devices[dev_index].sys_dev_index = i;
+//         strncpy(_devices[dev_index].sys_dev_name, caps_in.szPname, MAXPNAMELEN - 1);
 
-        // Fire it up.
-        res = midiInStart(hmidi_in);
-    }
+//         // Fire it up.
+//         res = midiInStart(hmidi_in);
+//     }
 
-    // Outputs.
-    for (int i = 0; i < num_out; i++, d++)
-    {
-        // http://msdn.microsoft.com/en-us/library/dd798469%28VS.85%29.aspx
-        MIDIOUTCAPS caps_out;
-        res = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
+//     // Outputs.
+//     for (int i = 0; i < num_out; i++, dev_index++)
+//     {
+//         // http://msdn.microsoft.com/en-us/library/dd798469%28VS.85%29.aspx
+//         MIDIOUTCAPS caps_out;
+//         res = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
 
-        HMIDIOUT hmidi_out;
-        // http://msdn.microsoft.com/en-us/library/dd798476%28VS.85%29.aspx
-        res = midiOutOpen(&hmidi_out, i, 0, 0, 0);
+//         HMIDIOUT hmidi_out;
+//         // http://msdn.microsoft.com/en-us/library/dd798476%28VS.85%29.aspx
+//         res = midiOutOpen(&hmidi_out, i, 0, 0, 0);
 
-        // Save the device info.
-        _devices[d].hnd_out = hmidi_out;
-        _devices[d].dev_index = i;
-        strncpy(_devices[d].dev_name, caps_out.szPname, MAXPNAMELEN);
-    }
+//         // Save the device info.
+//         _devices[dev_index].hnd_out = hmidi_out;
+//         _devices[dev_index].sys_dev_index = i;
+//         strncpy(_devices[dev_index].sys_dev_name, caps_out.szPname, MAXPNAMELEN);
+//     }
 
-    return stat;
-}
+//     return stat;
+// }
 
 
 //-------------------------------------------------------//
@@ -194,129 +193,83 @@ void p_MidiClockHandler(double msec)
 }
 
 
+// bool p_IsValid()
+
 //--------------------------------------------------------//
 void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) // TODO2 put in midi utility?
 {
     // Input midi event. Note this is in an interrupt handler!
-    // hMidiIn - Handle to the MIDI input device.
-    // wMsg - MIDI input message.
-    // dwInstance - Instance data supplied with the midiInOpen function.
-    // dwParam1 - Message parameter.
-    // dwParam2 - Message parameter.
+    // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
+
+    // int dev_index = dwInstance;
+    // midi_device_t* pdev = _devices + dev_index;//midi_device_t* devmgr_Get(dev_index);
+//    midi_device_t* pdev = devmgr_GetByIndex(dwInstance);
 
     switch(wMsg)
     {
         case MIM_DATA:
-            // parameter 1 is packed MIDI message
-            // parameter 2 is milliseconds since MidiInStart
-            // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/ns-mmeapi-midievent
-
-
-        bStatus= u.bData[0]; // MIDI status byte
-        bData1 = u.bData[1]; // first MIDI data byte
-        bData2 = u.bData[2]; // second MIDI data byte
-        /*
-        0x80-0x8f note off 2 - 1 byte pitch, followed by 1 byte velocity
-        0x90-0x9f note on 2 - 1 byte pitch, followed by 1 byte velocity
-        0xa0-0xaf key pressure 2 - 1 byte pitch, 1 byte pressure (after-touch)
-        0xb0-0xbf parameter 2 - 1 byte parameter number, 1 byte setting
-        0xc0-0xcf program 1 byte program selected
-        0xd0-0xdf chan. pressure 1 byte channel pressure (after-touch)
-        0xe0-0xef pitch wheel 2 bytes gives a 14 bit value, least significant 7 bits first
-        */
-
-
-
-            int raw_msg = dwParam1;
-            int timestamp = dwParam2;
-            int b = raw_msg & 0xFF;
-            int data1 = (raw_msg >> 8) & 0xFF;
-            int data2 = (raw_msg >> 16) & 0xFF;
-            int channel = 1;
+            int raw_msg = dwParam1; // packed MIDI message
+            int timestamp = dwParam2; // milliseconds since MidiInStart
+            BYTE bstatus = raw_msg & 0xFF;// MIDI status byte
+            BYTE bdata1 = (raw_msg >> 8) & 0xFF;// first MIDI data byte
+            BYTE bdata2 = (raw_msg >> 16) & 0xFF;// second MIDI data byte
+            int channel = -1;
+            int hndchan = 0;
             midi_event_t evt;
 
-            if ((b & 0xF0) == 0xF0)
+            if ((bstatus & 0xF0) == 0xF0)
             {
-                // Both bytes are used for command code in this case.
-                evt = (midi_event_t)b;
+                // System events.
+                evt = (midi_event_t)bstatus;
             }
             else
             {
-                evt = (midi_event_t)(b & 0xF0);
-                channel = (b & 0x0F) + 1;
+                // Channel events.
+                evt = (midi_event_t)(bstatus & 0xF0);
+                channel = (bstatus & 0x0F) + 1;
             }
 
+            // Validate midiin device and channel number as registered by user.//midi_device_t* devmgr_Get(hMidiIn, channel)
+            midi_device_t* pdev = devmgr_GetByMidiHandle(hMidiIn);
+            hndchan = devmgr_GetChannelHandle(pdev, channel);
 
-            //TODOE validate midiin device and channel number as registered by user.
-
-            int hndchan = 0;
-            
-    for (int i = 0; i < MIDI_DEVICES; i++)
-    {
-        if (_devices[i].hnd_in > 0)
-        {
-            midiInStop(_devices[i].hnd_in);
-            midiInClose(_devices[i].hnd_in); 
-        }
-        else if (_devices[i].hnd_out > 0)
-        {
-            midiOutClose(_devices[i].hnd_out);
-        }
-    }
+            // for (int i = 0; i < NUM_MIDI_DEVICES && hndchan == 0; i++)
+            // {
+            //     if (_devices[i].hnd_in == hMidiIn && _devices[i].channels[channel - 1]) // test for -1
+            //     {
+            //         hndchan = MAKE_HANDLE(i, channel);
+            //     }
+            // }
 
 
-
-            switch (evt)
+            if (hndchan > 0)
             {
-                case MIDI_NOTE_ON: // => luainterop_InputNote(lua_State* l, int hndchan, int notenum, double volume)
-                case MIDI_NOTE_OFF:
-                    if (data2 > 0 && evt == MIDI_NOTE_ON)
-                    {
-                        // me = new NoteOnEvent(ts, channel, data1, data2, 0);
-                        // NoteOnEvent(long absoluteTime, int channel, int noteNumber, int velocity, int duration)
-                        // log.WriteInfo(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
-                    }
-                    else
-                    {
-                        // me = new NoteEvent(ts, channel, evt, data1, data2);
-                    }
-                    break;
+                switch (evt)
+                {
+                    case MIDI_NOTE_ON:
+                    case MIDI_NOTE_OFF:
+                        double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
+                        luainterop_InputNote(p_lmain, hndchan, bdata1, volume);                            
+                        break;
 
-                case MIDI_CONTROL_CHANGE: // => luainterop_InputController(lua_State* l, int hndchan, int controller, int value)
-                    // me = new ControlChangeEvent(ts, channel, (MidiController)data1, data2);
-                    break;
+                    case MIDI_CONTROL_CHANGE:
+                        luainterop_InputController(p_lmain, hndchan, bdata1, bdata2);
+                        break;
 
-                // case PitchWheelChange:
-                //     // me = new PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
-                //     break;
-                // Ignore other events for now.
-                // case KeyAfterTouch:
-                // case PatchChange:
-                // case ChannelAfterTouch:
-                // case TimingClock:
-                // case StartSequence:
-                // case ContinueSequence:
-                // case StopSequence:
-                // case AutoSensing:
-                // case MetaEvent:
-                // case Sysex:
-                default:
-                    // throw new FormatException(String.Format("Unsupported MIDI Command Code for Raw Message {0}", evt));
-                    break;
+                    case MIDI_PITCH_WHEEL_CHANGE:
+                        // PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
+                        break;
+
+                    // Ignore other events for now.
+                    default:
+                        break;
+                }
+                break;
             }
-            break;
+            // else ignore
 
-        case MIM_ERROR:
-            // parameter 1 is invalid MIDI message
-            //TODOE log.WriteError(String.Format("Time {0} Message 0x{1:X8} Event {2}", e.Timestamp, e.RawMessage, e.MidiEvent));
-            break;
-
-        // Others not implemented:
-        case MIM_OPEN:
-        case MIM_CLOSE:
-        case MIM_LONGDATA:
-        case MIM_LONGERROR:
-        case MIM_MOREDATA:
+        // Ignore other messages for now.
+        default:
             break;
     }
 };
@@ -339,7 +292,7 @@ int p_InitScript(void)
     int stat = NEB_OK;
 
     // Init internal stuff.
-    p_loop_running = false;
+    p_running = false;
     p_lmain = luaL_newstate();
     diag_EvalStack(p_lmain, 0);
 
@@ -374,44 +327,91 @@ int p_Run(const char* fn)
 {
     int stat = NEB_OK;
 
+    // Load/run the script/file.
     stat = luaL_loadfile(p_lmain, fn);
-    // TODOE if err - do like common_LuaError or EvalLuaStatus
+    // or: stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
+    common_EvalStatus(p_lmain, stat, "luaL_loadfile");
     diag_EvalStack(p_lmain, 0);
 
-    // Load/run the script/file. >>>>>>>>>>>> use new style
-    // stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
-    // or...
-    stat = luaL_loadfile(p_lmain, fn);
-    //if err - do like common_LuaError or EvalLuaStatus
-    diag_EvalStack(p_lmain, 0);
-
-    // Call script setup.
+    // Script setup.
     stat = luainterop_Setup(p_lmain);
-    //if err - do like common_LuaError or EvalLuaStatus
+    common_EvalStatus(p_lmain, stat, "setup");
     diag_EvalStack(p_lmain, 0);
 
-
-//    CHK_LUA_ERROR(p_lmain, stat, fn);
-// >>>>
-// LuaStatus lstat = LoadFile(file); /LoadString
-// err = EvalLuaStatus(lstat);
-// lstat = DoCall(0, LUA_MULTRET);
-// err |= EvalLuaStatus(lstat);
-
-
-
-    /// Then loop forever doing cli requests. TODO2
-    bool _run = true;
+    // Loop forever doing cli requests.
+    p_running = true;
     do
     {
-        // stat = board_CliReadLine(p_cli_buf, CLI_BUFF_LEN);
-        // if(stat == 0 && strlen(p_cli_buf) > 0)
-        // {
-        //     // logger_Log(LVL_DEBUG, "|||got:%s", p_cli_buf);
-        //     stat = p_ProcessCommand_ex(p_cli_buf);
-        // }
+        stat = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
+        if(stat == 0 && strlen(p_cli_buf) > 0)
+        {
+            // logger_Log(LVL_DEBUG, "|||got:%s", p_cli_buf);
+            stat = p_ProcessCommand(p_cli_buf);
+        }
         p_Sleep(100);
-    } while (_run);
+    } while (p_running);
+
+    return stat;
+}
+
+
+//---------------------------------------------------//
+int p_ProcessCommand(const char* sin)
+{
+    int stat = NEB_OK;
+#define MAX_NUM_OPTS 8
+    // What are the command line options. First one should be the actual command.
+    char* opts[MAX_NUM_OPTS];
+    memset(opts, 0x00, sizeof(opts));
+    int oind = 0;
+
+    // Make writable copy and tokenize it.
+    char cp[strlen(sin) + 1];
+    strcpy(cp, sin);
+    char* token = strtok(cp, " ");
+
+    while(token != NULL && oind < MAX_NUM_OPTS)
+    {
+        opts[oind++] = token;
+        token = strtok(NULL, " ");
+    }
+
+    bool valid = false; // default
+    if(oind > 0)
+    {
+        switch(opts[0][0])
+        {
+            case 'x':
+                valid = true;
+                p_running = false;
+                break;
+
+            case 'c':
+                if(oind == 3)
+                {
+                    double x = -1;
+                    double y = -1;
+                    double res = -1;
+                    if(common_StrToDouble(opts[1], &x) && common_StrToDouble(opts[2], &y))
+                    {
+//>>>                        interop_Calc(p_lscript, x, y, &res);
+                        cli_WriteLine("%g + %g = %g", x, y, res);
+                        valid = true;
+                    }
+                }
+                break;
+        }
+    }
+
+    if(!valid)
+    {
+        // usage
+        cli_WriteLine("Invalid cmd:%s ", sin);
+        cli_WriteLine("Try:");
+        cli_WriteLine("  exit: x");
+        cli_WriteLine("  tell script to blabla: c op1 op2");
+        stat = NEB_ERR_BAD_APP_ARG;
+    }
 
     return stat;
 }

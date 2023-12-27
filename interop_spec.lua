@@ -26,17 +26,17 @@ M.lua_export_funcs =
             {
                 name = "bar",
                 type = "I",
-                description = "Which bar"
+                description = "Which bar 0-N"
             },
             {
                 name = "beat",
                 type = "I",
-                description = "Which beat"
+                description = "Which beat 0-3"
             },
             {
                 name = "subbeat",
                 type = "I",
-                description = "Which subbeat"
+                description = "Which subbeat 0-7"
             },
         },
         ret = { type = "I", description = "Status" }

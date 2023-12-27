@@ -22,6 +22,8 @@ include_directories(
 add_executable(nebulua
     main.c
     common.c
+    cli.c
+    devmgr.c
     luainterop.c
     luainteropwork.c
     ${C_SRC}/diag.c
