@@ -9,37 +9,32 @@
 //--------------------- Defs -----------------------------//
 
 
-// #define MAKE_HANDLE(dev_index, chan_num) ((dev_index << 8) | (chan_num))
-// #define GET_DEV_INDEX(hndchan) ((hndchan >> 8) & 0xFF)
-// #define GET_CHAN_NUM(hndchan) (hndchan & 0xFF)
+//------------------- Privates ---------------------------//
 
+// Devices specified in the user script.
+static midi_device_t _devices[NUM_MIDI_DEVICES];
 
-int devmgr_GetChannelNumberFromChannelHandle(int hndchan)
+midi_device_t* p_GetDeviceFromIndex(int dev_index)
 {
-    return hndchan & 0xFF;
+    assert(dev_index >= 0 && dev_index < NUM_MIDI_DEVICES);
+    return _devices + dev_index;
 }
 
-int devmgr_GetDevIndexFromChannelHandle(int hndchan)
+int p_GetDevIndexFromChannelHandle(int hndchan)
 {
     return ((hndchan >> 8) & 0xFF);
 }
 
-int devmgr_MakeChannelHandle(int dev_index, int chan_num)
+int p_MakeChannelHandle(int dev_index, int chan_num)
 {
+    assert(dev_index >= 0 && dev_index < NUM_MIDI_DEVICES);
+    assert(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
     return ((dev_index << 8) | (chan_num));
 }
 
-
-//------------------- Privates ---------------------------//
-
-// Devices specified in the user script.
-static midi_device_t _devices[NUM_MIDI_DEVICES];  //TODO1 global, refine/pointers
-
-
-
-
 //------------------- Publics ----------------------------//
 
+//--------------------------------------------------------//
 int devmgr_Init(DWORD_PTR midi_handler)
 {
     assert(midi_handler);
@@ -95,9 +90,10 @@ int devmgr_Init(DWORD_PTR midi_handler)
     }
 
     return stat;
-
 }
 
+
+//--------------------------------------------------------//
 int devmgr_Destroy()
 {
     int stat = NEB_OK;
@@ -118,6 +114,7 @@ int devmgr_Destroy()
 }
 
 
+//--------------------------------------------------------//
 int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
 {
     assert(pdev);
@@ -129,7 +126,7 @@ int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
     {
         if (_devices[i].hnd_in == pdev->hnd_in && _devices[i].channels[chan_num - 1]) // test for -1
         {
-            hndchan = devmgr_MakeChannelHandle(i, chan_num);
+            hndchan = p_MakeChannelHandle(i, chan_num);
         }
     }
 
@@ -137,18 +134,8 @@ int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
 }
 
 
-midi_device_t* devmgr_GetByIndex(int dev_index)
-{
-    assert(dev_index >= 0 && dev_index < NUM_MIDI_DEVICES);
-
-    midi_device_t* pdev = NULL;
-    //int dev_index = dwInstance;
-    pdev = _devices + dev_index;//midi_device_t* devmgr_Get(dev_index);
-    return pdev;
-}
-
-
-midi_device_t* devmgr_GetByMidiHandle(HMIDIIN hMidiIn)
+//--------------------------------------------------------//
+midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn)
 {
     assert(hMidiIn >= 0);
 
@@ -160,22 +147,23 @@ midi_device_t* devmgr_GetByMidiHandle(HMIDIIN hMidiIn)
         if (_devices[i].hnd_in == hMidiIn)// && _devices[i].channels[chan_num - 1]) // test for -1
         {
             pdev = _devices + i;
-            // hndchan = MAKE_HANDLE(i, chan_num);
         }
     }
 
     return pdev;
 }
 
-midi_device_t* devmgr_GetOutputByChannelHandle(int hndchan)
+
+//--------------------------------------------------------//
+midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int hndchan)
 {
     assert(hndchan);
     midi_device_t* pdev = NULL;
 
     // Validate user lua args.
-    int chan_num = devmgr_GetChannelNumberFromChannelHandle(hndchan);
+    int chan_num = devmgr_GetChannelNumber(hndchan);
     assert(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
-    int dev_index = devmgr_GetDevIndexFromChannelHandle(hndchan);
+    int dev_index = p_GetDevIndexFromChannelHandle(hndchan);
     assert(dev_index >= 0 && dev_index < NUM_MIDI_DEVICES);
 
     if(_devices[dev_index].hnd_out > 0 && _devices[dev_index].channels[chan_num - 1])
@@ -183,28 +171,12 @@ midi_device_t* devmgr_GetOutputByChannelHandle(int hndchan)
         pdev = _devices + dev_index;
     }
 
-    // if (chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS &&  //midi_device_t* devmgr_Get(hndchan)
-    //     volume >= 0.0 && volume <= 1.0 &&
-    //     dev_index >= 0 && dev_index < NUM_MIDI_DEVICES)
-    // {
-    //     if(_devices[dev_index].hnd_out > 0 && _devices[dev_index].channels[chan_num - 1])
-    //     {
-    //         int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
-    //         int velocity = (int)(volume * MIDI_VAL_MAX);
-    //         int short_msg = (chan_num - 1) + cmd + ((byte)note_num << 8) + ((byte)velocity << 16);
-    //         ret = midiOutShortMsg(_devices[dev_index].hnd_out, short_msg);
-    //     }
-    // }
-    // else
-    // {
-    //     ret = NEB_ERR_BAD_LUA_ARG;
-    //     logger_Log(LVL_ERROR, "NEB_ERR_BAD_LUA_ARG %d", __LINE__);
-    // }
-
     return pdev;
 }
 
-midi_device_t* devmgr_GetByName(const char* sys_dev_name)
+
+//--------------------------------------------------------//
+midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name)
 {
     midi_device_t* pdev = NULL;
 
@@ -216,21 +188,16 @@ midi_device_t* devmgr_GetByName(const char* sys_dev_name)
         if (strcmp(sys_dev_name, _devices[i].sys_dev_name) == 0)
         {
             pdev = _devices + i;
-
-            // // Valid device. Make a simple handle from the index and the channel number.
-            // hndchan = MAKE_HANDLE(i, chan_num);
-            // _devices[i].channels[chan_num - 1] = true;
-
-            // if (_devices[i].hnd_out > 0)
-            // {
-            //     // Send patch now.
-            //     int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
-            //     int ret = midiOutShortMsg(_devices[i].hnd_out, short_msg);
-            // }
-
             break; // done
         }
     }
 
     return pdev;
+}
+
+
+//--------------------------------------------------------//
+int devmgr_GetChannelNumber(int hndchan)
+{
+    return (hndchan & 0xFF);
 }

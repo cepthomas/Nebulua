@@ -30,11 +30,11 @@ int cli_Destroy(void);
 // Read a line from a cli. This does not block. Buffers chars until EOL.
 // @param buff Data buffer. Will be a zero-terminated string.
 // @param num Max length of buff.
-// @return Status. True if buff is valid.
+// @return Status. True if buff is valid line.
 bool cli_ReadLine(char* buff, int num);
 
 // Write a line to a cli.
-// @param buff What to send as a zero-terminated string.
+// @param buff Line to send to user.
 // @return Status.
 int cli_WriteLine(const char* format, ...);
 

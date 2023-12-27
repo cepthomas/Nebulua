@@ -28,11 +28,8 @@
 // The main Lua thread - C code incl interrupts for mm/fast timer and midi events.
 static lua_State* p_lmain;
 
-// The script execution status.
+// The execution status.
 static bool p_running = false;
-
-// Processing loop status.
-// static bool p_loop_running;
 
 // Last tick time.
 static double p_last_msec = 0;
@@ -41,15 +38,8 @@ static double p_last_msec = 0;
 // CLI contents.
 static char p_cli_buf[CLI_BUFF_LEN];
 
-// // Devices specified in the user script.
-// static midi_device_t _devices[NUM_MIDI_DEVICES];  //TODO1 global, refine/pointers
-
-
 
 //---------------------- Private functions ------------------------//
-
-//
-// static int p_InitMidiDevices(void);
 
 //
 static int p_InitScript(void);
@@ -66,6 +56,7 @@ static void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DW
 // Blocking sleep.
 static void p_Sleep(int msec);
 
+// Do what the cli says.
 static int p_ProcessCommand(const char* sin);
 
 
@@ -82,7 +73,7 @@ int main(int argc, char* argv[])
     logger_Init(".\\nebulua_log.txt");
     logger_SetFilters(LVL_DEBUG);
 
-    ///// Get args /////
+    // Get args
     if(argc != 2)
     {
         stat = NEB_ERR_BAD_APP_ARG;
@@ -107,81 +98,10 @@ int main(int argc, char* argv[])
     ftimer_Destroy();
     cli_Destroy();
     devmgr_Destroy();
-
-    // for (int i = 0; i < NUM_MIDI_DEVICES; i++)//devmgr_Destroy()
-    // {
-    //     if (_devices[i].hnd_in > 0)
-    //     {
-    //         midiInStop(_devices[i].hnd_in);
-    //         midiInClose(_devices[i].hnd_in); 
-    //     }
-    //     else if (_devices[i].hnd_out > 0)
-    //     {
-    //         midiOutClose(_devices[i].hnd_out);
-    //     }
-    // }
-
     lua_close(p_lmain);
 
     return NEB_OK;
 }
-
-
-//-------------------------------------------------------//
-// int p_InitMidiDevices(void)//devmgr_Init()
-// {
-//     int stat = NEB_OK;
-//     MMRESULT res = 0;
-
-//     memset(_devices, 0, sizeof(_devices));
-//     int dev_index = 0;
-
-//     int num_in = midiInGetNumDevs();
-//     int num_out = midiOutGetNumDevs();
-
-//     if (num_in + num_out >= NUM_MIDI_DEVICES)
-//     {
-//         common_EvalStatus(p_lmain, NEB_ERR_BAD_MIDI_CFG, "Too many midi devices");
-//     }
-
-//     // Inputs.
-//     for (int i = 0; i < num_in; i++, dev_index++)
-//     {
-//         MIDIINCAPS caps_in;
-//         res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
-
-//         HMIDIIN hmidi_in;
-//         // dev_index => dwInstance;
-//         res = midiInOpen(&hmidi_in, i, (DWORD_PTR)p_MidiInHandler, (DWORD_PTR)dev_index, CALLBACK_FUNCTION);
-
-//         // Save the device info.
-//         _devices[dev_index].hnd_in = hmidi_in;
-//         _devices[dev_index].sys_dev_index = i;
-//         strncpy(_devices[dev_index].sys_dev_name, caps_in.szPname, MAXPNAMELEN - 1);
-
-//         // Fire it up.
-//         res = midiInStart(hmidi_in);
-//     }
-
-//     // Outputs.
-//     for (int i = 0; i < num_out; i++, dev_index++)
-//     {
-//         // http://msdn.microsoft.com/en-us/library/dd798469%28VS.85%29.aspx
-//         MIDIOUTCAPS caps_out;
-//         res = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
-
-//         HMIDIOUT hmidi_out;
-//         // http://msdn.microsoft.com/en-us/library/dd798476%28VS.85%29.aspx
-//         res = midiOutOpen(&hmidi_out, i, 0, 0, 0);
-
-//         // Save the device info.
-//         _devices[dev_index].hnd_out = hmidi_out;
-//         _devices[dev_index].sys_dev_index = i;
-//         strncpy(_devices[dev_index].sys_dev_name, caps_out.szPname, MAXPNAMELEN);
-//     }
-
-//     return stat;
-// }
 
 
 //-------------------------------------------------------//
@@ -192,8 +112,6 @@ void p_MidiClockHandler(double msec)
 
 }
 
-
-// bool p_IsValid()
 
 //--------------------------------------------------------//
 void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) // TODO2 put in midi utility?
@@ -229,18 +147,9 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
                 channel = (bstatus & 0x0F) + 1;
             }
 
-            // Validate midiin device and channel number as registered by user.//midi_device_t* devmgr_Get(hMidiIn, channel)
-            midi_device_t* pdev = devmgr_GetByMidiHandle(hMidiIn);
+            // Validate midiin device and channel number as registered by user.
+            midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle(hMidiIn);
             hndchan = devmgr_GetChannelHandle(pdev, channel);
-
-            // for (int i = 0; i < NUM_MIDI_DEVICES && hndchan == 0; i++)
-            // {
-            //     if (_devices[i].hnd_in == hMidiIn && _devices[i].channels[channel - 1]) // test for -1
-            //     {
-            //         hndchan = MAKE_HANDLE(i, channel);
-            //     }
-            // }
-
 
             if (hndchan > 0)
             {
@@ -316,7 +225,7 @@ int p_InitScript(void)
     stat = ftimer_Init(p_MidiClockHandler, 1);
     luainteropwork_SetTempo(60);
 
-    // Midi event interrupt inited in p_InitMidiDevices(void).
+    // Midi event interrupt is inited in devmgr_Init().
 
     return stat;
 }
@@ -359,8 +268,9 @@ int p_Run(const char* fn)
 int p_ProcessCommand(const char* sin)
 {
     int stat = NEB_OK;
-#define MAX_NUM_OPTS 8
+
     // What are the command line options. First one should be the actual command.
+    #define MAX_NUM_OPTS 8
     char* opts[MAX_NUM_OPTS];
     memset(opts, 0x00, sizeof(opts));
     int oind = 0;
@@ -386,7 +296,7 @@ int p_ProcessCommand(const char* sin)
                 p_running = false;
                 break;
 
-            case 'c':
+            case 'c': // TODO1 just example
                 if(oind == 3)
                 {
                     double x = -1;
@@ -394,7 +304,7 @@ int p_ProcessCommand(const char* sin)
                     double res = -1;
                     if(common_StrToDouble(opts[1], &x) && common_StrToDouble(opts[2], &y))
                     {
-//>>>                        interop_Calc(p_lscript, x, y, &res);
+                        //>>>interop_Calc(p_lscript, x, y, &res);
                         cli_WriteLine("%g + %g = %g", x, y, res);
                         valid = true;
                     }

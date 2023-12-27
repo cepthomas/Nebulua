@@ -9,11 +9,6 @@
 
 #define BUFF_LEN 100
 
-//------------------- Privates ---------------------------//
-
-
-//------------------- Publics ----------------------------//
-
 
 //--------------------------------------------------------//
 bool common_EvalStatus(lua_State* l, int stat, const char* msg)
@@ -65,10 +60,8 @@ const char* common_StatusToString(int err)
 }
 
 
-//////////////////////////////////////////////////////////
-
 //--------------------------------------------------------//
-bool common_StrToDouble(const char* str, double* val)
+bool common_StrToDouble(const char* str, double* val) // TODO2 put these somewhere else
 {
     bool valid = true;
     char* p;
@@ -88,6 +81,7 @@ bool common_StrToDouble(const char* str, double* val)
 
     return valid;
 }
+
 
 //--------------------------------------------------------//
 bool common_StrToInt(const char* str, int* val)

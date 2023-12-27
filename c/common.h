@@ -9,13 +9,9 @@
 #include <time.h>
 #include <unistd.h>
 #include "lua.h"
-// #include "lualib.h"
-// #include "lauxlib.h"
-// #include "luainterop.h"
-// #include "luainteropwork.h"
-// #include "logger.h"
 
-//----------------------- Defs -----------------------------//
+
+//----------------------- App defs -----------------------------//
 
 // App errors start after internal lua errors so they can be handled harmoniously.
 #define NEB_OK                  LUA_OK
@@ -26,7 +22,10 @@
 // #define NEB_ERR_BAD_MIDI_IN     13
 // #define NEB_ERR_BAD_MIDI_OUT    14
 
+#define assert(expr) // TODO1
 
+
+//----------------------- Midi defs -----------------------------//
 // Only 4/4 time supported.
 #define BEATS_PER_BAR 4
 
@@ -37,51 +36,13 @@
 #define SUBBEATS_PER_BEAT INTERNAL_PPQ
 #define SUBEATS_PER_BAR SUBBEATS_PER_BEAT * BEATS_PER_BAR
 
-// // Arbitrary cap.
-// #define NUM_MIDI_DEVICES 16
-
-// // Midi cap per device.
-// #define NUM_MIDI_CHANNELS 16
-
 // Midi caps.
 #define MIDI_VAL_MIN 0
 
 // Midi caps.
 #define MIDI_VAL_MAX 127
 
-
-// void assert(int expression);
-// expression − This can be a variable or any C expression. If expression evaluates to TRUE, assert() does nothing.
-// If expression evaluates to FALSE, assert() displays an error message on stderr (standard error stream to
-// display error messages and diagnostics) and aborts program execution.
-#define assert(expr)
-
-//----------------------- Types -----------------------------//
-
-// // Internal device management.
-// typedef struct
-// {
-//     char sys_dev_name[MAXPNAMELEN];
-//     int sys_dev_index; // from system enumeration
-//     bool channels[NUM_MIDI_CHANNELS]; // true if created by script, 0-based
-//     HMIDIIN hnd_in;
-//     HMIDIOUT hnd_out;
-// } midi_device_t;
-
-
-// // A handle is used to identify channels between lua and c. It's a unique packed int.
-// // Macros to do the pack/unpack. chan_num is 1-based.
-// #define MAKE_HANDLE(dev_index, chan_num) ((dev_index << 8) | (chan_num))
-// #define GET_DEV_INDEX(hnd) ((hndchan >> 8) & 0xFF)
-// #define GET_CHAN_NUM(hnd) (hndchan & 0xFF)
-// // Validate user lua args. TODO1 refactor?
-//     // if (chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS &&
-//     //     devi >= 0 && devi < NUM_MIDI_DEVICES &&
-// // && _devices[i].channels[c]...
-
-
-
-
+// Midi events.
 typedef enum
 {
     // Channel events 0x80-0x8F
@@ -110,7 +71,7 @@ typedef enum
 // @param[in] l Internal lua state.
 // @param[in] stat Status to look at.
 // @param[in] msg Info to add if not internal lua error.
-// @return bool Pontless pass.
+// @return bool Pointless pass.
 bool common_EvalStatus(lua_State* l, int stat, const char* msg);
 
 // Convert a status to string.

@@ -9,11 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "lua.h"
-// #include "lualib.h"
-// #include "lauxlib.h"
-// #include "luainterop.h"
-// #include "luainteropwork.h"
-// #include "logger.h"
+
 
 //----------------------- Defs -----------------------------//
 
@@ -38,35 +34,42 @@ typedef struct
 
 
 // A handle is used to identify channels between lua and c. It's a unique packed int.
-// Macros to do the pack/unpack.
-
-
-// Validate user lua args. TODO1 refactor?
-    // if (chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS &&
-    //     devi >= 0 && devi < NUM_MIDI_DEVICES &&
-// && _devices[i].channels[c]...
 
 
 //----------------------- Publics -----------------------------//
 
+// Initialize the component.
+// @return Status.
 int devmgr_Init();
 
+// Clean up component resources.
+// @return Status.
 int devmgr_Destroy();
 
-midi_device_t* devmgr_GetByIndex(int dev_index);
+// Request.
+// @param[in] hMidiIn System midi handle.
+// @return midi_device_t The device or NULL if invalid.
+midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn);
 
+// Request.
+// @param[in] hndchan Channel handle.
+// @return midi_device_t The device or NULL if invalid.
+midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int hndchan);
 
-midi_device_t* devmgr_GetByMidiHandle(HMIDIIN hMidiIn);
+// Request.
+// @param[in] sys_dev_name Device name.
+// @return midi_device_t The device or NULL if invalid.
+midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name);
 
-midi_device_t* devmgr_GetOutputByChannelHandle(int hndchan);
-
-
-midi_device_t* devmgr_GetByName(const char* sys_dev_name);
-
+// Request.
+// @param[in] pdev Device.
+// @param[in] chan_num Chanel number 1-16.
+// @return int Channel handle.
 int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num);
 
-// int devmgr_MakeChannelHandle(int dev_index, int chan_num)
-int devmgr_GetChannelNumberFromChannelHandle(int hndchan);
-// int devmgr_GetDevIndexFromChannelHandle(int hndchan);
+// Request.
+// @param[in] hndchan Channel handle.
+// @return int Channel number 1-16.
+int devmgr_GetChannelNumber(int hndchan);
 
 #endif // DEVMGR_H
