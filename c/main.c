@@ -107,21 +107,17 @@ int main(int argc, char* argv[])
 //-------------------------------------------------------//
 void p_MidiClockHandler(double msec)
 {
-    // TODO2 process
+    // TODO2 process events
     //  See lua.c for a way to treat C signals, which you may adapt to your interrupts.
 
 }
 
 
 //--------------------------------------------------------//
-void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) // TODO2 put in midi utility?
+void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
-    // Input midi event. Note this is in an interrupt handler!
+    // Input midi event -- this is in an interrupt handler! It is inited in devmgr_Init().
     // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
-
-    // int dev_index = dwInstance;
-    // midi_device_t* pdev = _devices + dev_index;//midi_device_t* devmgr_Get(dev_index);
-//    midi_device_t* pdev = devmgr_GetByIndex(dwInstance);
 
     switch(wMsg)
     {
@@ -225,8 +221,6 @@ int p_InitScript(void)
     stat = ftimer_Init(p_MidiClockHandler, 1);
     luainteropwork_SetTempo(60);
 
-    // Midi event interrupt is inited in devmgr_Init().
-
     return stat;
 }
 
@@ -296,7 +290,7 @@ int p_ProcessCommand(const char* sin)
                 p_running = false;
                 break;
 
-            case 'c': // TODO1 just example
+            case 'c': // TODO2 impl real commands
                 if(oind == 3)
                 {
                     double x = -1;

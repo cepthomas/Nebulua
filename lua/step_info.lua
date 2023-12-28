@@ -1,6 +1,6 @@
 
 
--- TODO3 midi event class may be useful.
+-- TODO2 event class may be useful.
 
 -- public class Channel
 -- {

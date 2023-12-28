@@ -15,15 +15,63 @@
 
 // App errors start after internal lua errors so they can be handled harmoniously.
 #define NEB_OK                  LUA_OK
-#define NEB_ERR_START           10
+#define NEB_ERR_INTERNAL        10
 #define NEB_ERR_BAD_APP_ARG     11
 #define NEB_ERR_BAD_LUA_ARG     12
 #define NEB_ERR_BAD_MIDI_CFG    13
 // #define NEB_ERR_BAD_MIDI_IN     13
 // #define NEB_ERR_BAD_MIDI_OUT    14
 
-#define assert(expr) // TODO1
+/////////////////////////////////////////////////////////////
 
+/*
+>>> main: init/run errors (fatal) 
+// Examine status and log message if failed. Calls lua error function which doesn't return!
+bool common_EvalStatus(lua_State* l, int stat, const char* info);
+
+if stat is a LUA_XXX
+    if function put error message on the stack, log it + info
+    else just info
+else NEB_XXX
+    log info
+luainterop(); // never returns...  >>>>> use luainterop() intead
+
+
+>>> luainteropwork (mainly) syntax errors - fatal
+#define assertS(expr)
+log #expr
+
+luaL_error(#expr, __LINE__)
+
+int luaL_error (lua_State *L, const char *fmt, ...);
+
+
+
+>>> luainterop syntax errors (fatal)
+-- TODO1 needs user supplied ErrorHandler() like cs. Replace luaL_error()
+// Interop error handler. Do something with this - log it or other.
+// <param name="e"></param>
+// <returns></returns>
+bool luainterop_ErrorHandler(Exception e)
+{
+    Debug.WriteLine(e.ToString());
+    return false;
+}
+
+
+
+*/
+
+// TODO1 User syntax error - fatal.
+#define assertS(expr) //luaL_error(lua_State* l, const char *fmt, ...)
+
+// TODO1 internal fatal error
+// #define assertF(expr)
+
+// TODO1 return failure, client deals with it.
+// #define assertR(expr, ret)
+
+int common_DoError(lua_State* l, const char *fmt, ...);
 
 //----------------------- Midi defs -----------------------------//
 // Only 4/4 time supported.
@@ -79,7 +127,6 @@ bool common_EvalStatus(lua_State* l, int stat, const char* msg);
 // @return String or NULL if not valid.
 const char* common_StatusToString(int err);
 
-// TODO3 put these somewhere generic:
 /// Safe convert a string to double.
 /// @param str The input.
 /// @param val The output.

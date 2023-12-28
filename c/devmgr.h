@@ -33,9 +33,6 @@ typedef struct
 } midi_device_t;
 
 
-// A handle is used to identify channels between lua and c. It's a unique packed int.
-
-
 //----------------------- Publics -----------------------------//
 
 // Initialize the component.
@@ -46,30 +43,30 @@ int devmgr_Init();
 // @return Status.
 int devmgr_Destroy();
 
-// Request.
+// Request for device using win midi handle.
 // @param[in] hMidiIn System midi handle.
 // @return midi_device_t The device or NULL if invalid.
 midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn);
 
-// Request.
+// Request for device for channel handle.
 // @param[in] hndchan Channel handle.
 // @return midi_device_t The device or NULL if invalid.
 midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int hndchan);
 
-// Request.
+// Request for device with name.
 // @param[in] sys_dev_name Device name.
 // @return midi_device_t The device or NULL if invalid.
 midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name);
 
-// Request.
+// Request for channel number on the device.
 // @param[in] pdev Device.
 // @param[in] chan_num Chanel number 1-16.
-// @return int Channel handle.
+// @return int Channel handle or 0 if invalid.
 int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num);
 
-// Request.
+// Request for channel number for channel handle.
 // @param[in] hndchan Channel handle.
-// @return int Channel number 1-16.
+// @return int Channel number 1-16 or 0 if invalid.
 int devmgr_GetChannelNumber(int hndchan);
 
 #endif // DEVMGR_H

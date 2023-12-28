@@ -14,8 +14,8 @@
 #include "luainterop.h"
 #include "luainteropwork.h"
 
-// Definition of work functions for host functions called by lua.
 
+// Definition of work functions for host functions called by lua.
 
 //--------------------------------------------------------//
 int luainteropwork_Log(int level, char* msg)
@@ -42,14 +42,15 @@ int luainteropwork_CreateChannel(const char* sys_dev_name, int chan_num, int pat
 {
     int hndchan = 0;
 
-    assert(sys_dev_name);
-    assert(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
-    assert(patch >= 0 && patch < MIDI_VAL_MAX);
+    assertS(sys_dev_name);
+    assertS(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
+    assertS(patch >= 0 && patch < MIDI_VAL_MAX);
 
     midi_device_t* pdev = devmgr_GetDeviceFromName(sys_dev_name);
-    assert(pdev);
+    assertS(pdev);
 
     hndchan = devmgr_GetChannelHandle(pdev, chan_num);
+    assertS(hndchan > 0);
 
     // Send patch now.
     int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
@@ -60,20 +61,20 @@ int luainteropwork_CreateChannel(const char* sys_dev_name, int chan_num, int pat
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendNote(int hndchan, int note_num, double volume, double dur) // TODO1 if dur>0 add note off
+int luainteropwork_SendNote(int hndchan, int note_num, double volume, double dur) // TODO2 if dur>0 add note off
 {
     int ret = LUA_OK;
 
-    assert(hndchan > 0);
-    assert(note_num >= 0 && note_num < MIDI_VAL_MAX);
-    assert(volume >= 0.0 && volume <= 1.0);
-    assert(dur >= 0.0 && dur <= 100.0);
+    assertS(hndchan > 0);
+    assertS(note_num >= 0 && note_num < MIDI_VAL_MAX);
+    assertS(volume >= 0.0 && volume <= 1.0);
+    assertS(dur >= 0.0 && dur <= 100.0);
 
     midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(hndchan);
-    assert(pdev);
+    assertS(pdev);
 
     int chan_num = devmgr_GetChannelNumber(hndchan);
-    assert(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
+    assertS(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
 
 
     int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
@@ -90,15 +91,15 @@ int luainteropwork_SendController(int hndchan, int ctlr, int value)
 {
     int ret = LUA_OK;
 
-    assert(hndchan > 0);
-    assert(ctlr >= 0 && ctlr < MIDI_VAL_MAX);
-    assert(value >= 0 && value < MIDI_VAL_MAX);
+    assertS(hndchan > 0);
+    assertS(ctlr >= 0 && ctlr < MIDI_VAL_MAX);
+    assertS(value >= 0 && value < MIDI_VAL_MAX);
 
     midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(hndchan);
-    assert(pdev);
+    assertS(pdev);
 
     int chan_num = devmgr_GetChannelNumber(hndchan);
-    assert(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
+    assertS(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
 
     int cmd = MIDI_CONTROL_CHANGE;
     int short_msg = (chan_num - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);
