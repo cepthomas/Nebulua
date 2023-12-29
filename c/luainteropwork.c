@@ -27,6 +27,8 @@ int luainteropwork_Log(int level, char* msg)
 //--------------------------------------------------------//
 int luainteropwork_SetTempo(int bpm)
 {
+    VALIDATE(bpm >= 30 && bpm <= 240);
+
     double sec_per_beat = 60.0 / bpm;
     double msec_per_subbeat = 1000 * sec_per_beat / SUBEATS_PER_BAR;
     int period = msec_per_subbeat > 1.0 ? round(msec_per_subbeat) : 1;
@@ -42,15 +44,15 @@ int luainteropwork_CreateChannel(const char* sys_dev_name, int chan_num, int pat
 {
     int hndchan = 0;
 
-    assertS(sys_dev_name);
-    assertS(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
-    assertS(patch >= 0 && patch < MIDI_VAL_MAX);
+    VALIDATE(sys_dev_name != NULL);
+    VALIDATE(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
+    VALIDATE(patch >= 0 && patch < MIDI_VAL_MAX);
 
     midi_device_t* pdev = devmgr_GetDeviceFromName(sys_dev_name);
-    assertS(pdev);
+    VALIDATE(pdev);
 
     hndchan = devmgr_GetChannelHandle(pdev, chan_num);
-    assertS(hndchan > 0);
+    VALIDATE(hndchan > 0);
 
     // Send patch now.
     int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
@@ -65,17 +67,16 @@ int luainteropwork_SendNote(int hndchan, int note_num, double volume, double dur
 {
     int ret = LUA_OK;
 
-    assertS(hndchan > 0);
-    assertS(note_num >= 0 && note_num < MIDI_VAL_MAX);
-    assertS(volume >= 0.0 && volume <= 1.0);
-    assertS(dur >= 0.0 && dur <= 100.0);
+    VALIDATE(hndchan > 0);
+    VALIDATE(note_num >= 0 && note_num < MIDI_VAL_MAX);
+    VALIDATE(volume >= 0.0 && volume <= 1.0);
+    VALIDATE(dur >= 0.0 && dur <= 100.0);
 
     midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(hndchan);
-    assertS(pdev);
+    VALIDATE(pdev);
 
     int chan_num = devmgr_GetChannelNumber(hndchan);
-    assertS(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
-
+    VALIDATE(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
 
     int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
     int velocity = (int)(volume * MIDI_VAL_MAX);
@@ -91,15 +92,15 @@ int luainteropwork_SendController(int hndchan, int ctlr, int value)
 {
     int ret = LUA_OK;
 
-    assertS(hndchan > 0);
-    assertS(ctlr >= 0 && ctlr < MIDI_VAL_MAX);
-    assertS(value >= 0 && value < MIDI_VAL_MAX);
+    VALIDATE(hndchan > 0);
+    VALIDATE(ctlr >= 0 && ctlr < MIDI_VAL_MAX);
+    VALIDATE(value >= 0 && value < MIDI_VAL_MAX);
 
     midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(hndchan);
-    assertS(pdev);
+    VALIDATE(pdev);
 
     int chan_num = devmgr_GetChannelNumber(hndchan);
-    assertS(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
+    VALIDATE(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS);
 
     int cmd = MIDI_CONTROL_CHANGE;
     int short_msg = (chan_num - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);

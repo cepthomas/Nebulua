@@ -6,6 +6,9 @@
 #include "devmgr.h"
 
 
+// TODO1 client handle all ret  devmgr_XXX()
+
+
 //--------------------- Defs -----------------------------//
 
 // An opaque handle is used to identify channels between lua and c.
@@ -74,9 +77,8 @@ int devmgr_Init(DWORD_PTR midi_handler)
     }
     else
     {
-        stat = NEB_ERR_INTERNAL
+        stat = NEB_ERR_INTERNAL;
     }
-
 
     return stat;
 }
@@ -108,7 +110,8 @@ int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
 {
     int hndchan = 0; // default = invalid
 
-    if (pdev != NULL && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
+    if (pdev != NULL &&
+        chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
     {
         for (int i = 0; i < NUM_MIDI_DEVICES && hndchan == 0; i++)
         {
@@ -151,7 +154,9 @@ midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int hndchan)
     int chan_num = GET_CHAN_NUM(hndchan);
     int dev_index = GET_DEV_INDEX(hndchan);
 
-    if (hndchan > 0 && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS dev_index >= 0 && dev_index < NUM_MIDI_DEVICES)
+    if (hndchan > 0 &&
+        chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS &&
+        dev_index >= 0 && dev_index < NUM_MIDI_DEVICES)
     {
         if(_devices[dev_index].hnd_out > 0 && _devices[dev_index].channels[chan_num - 1])
         {

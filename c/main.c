@@ -42,15 +42,15 @@ static char p_cli_buf[CLI_BUFF_LEN];
 //---------------------- Private functions ------------------------//
 
 //
-static int p_InitScript(void);
+// static int p_InitScript(void);
 
-//
+// Start forever loop.
 static int p_Run(const char* fn);
 
-// Tick corresponding to bpm. Interrupt!
+// Tick corresponding to bpm. !!Interrupt!!
 static void p_MidiClockHandler(double msec);
 
-// Handle incoming messages. Interrupt!
+// Handle incoming messages. !!Interrupt!!
 static void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 // Blocking sleep.
@@ -58,6 +58,9 @@ static void p_Sleep(int msec);
 
 // Do what the cli says.
 static int p_ProcessCommand(const char* sin);
+
+// Examine status and log message if failed. Calls luaL_error() which doesn't return.
+static bool p_EvalStatus(int stat, const char* msg);
 
 
 //----------------------------------------------------//
@@ -76,20 +79,43 @@ int main(int argc, char* argv[])
     // Get args
     if(argc != 2)
     {
-        stat = NEB_ERR_BAD_APP_ARG;
-        common_EvalStatus(p_lmain, stat, "Invalid args");
+        printf("Invalid args"); // TODO2 usage?
     }
 
-    stat = devmgr_Init((DWORD_PTR)p_MidiInHandler);
-    // stat = p_InitMidiDevices();
-    common_EvalStatus(p_lmain, stat, "Failed to init midi");
+    // stat = p_InitScript();
+    // p_EvalStatus(stat, "Failed to init script");
 
-    stat = p_InitScript();
-    common_EvalStatus(p_lmain, stat, "Failed to init script");
+
+    // Init internal stuff.
+    p_lmain = luaL_newstate();  //chk null
+    // diag_EvalStack(p_lmain, 0);
+
+    // Load std libraries.
+    luaL_openlibs(p_lmain);  //no ret
+    // diag_EvalStack(p_lmain, 0);
+
+    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
+    luainterop_Load(p_lmain);  //no ret
+    // diag_EvalStack(p_lmain, 1);
+
+    // Pop the table off the stack as it interferes with calling the module functions.
+    lua_pop(p_lmain, 1);  //no ret
+    // diag_EvalStack(p_lmain, 0);
+
+    // Stopwatch.
+    stat = stopwatch_Init(); //0 ok
+    p_last_msec = stopwatch_TotalElapsedMsec();
+
+    // Tempo timer and interrupt - 1 msec resolution.
+    stat = ftimer_Init(p_MidiClockHandler, 1);  //0 ok
+    luainteropwork_SetTempo(60);  //no ret
+
+    stat = devmgr_Init((DWORD_PTR)p_MidiInHandler);
+    p_EvalStatus(stat, "Failed to init midi");
 
     ///// Run the application. Blocks forever.
     stat = p_Run(argv[1]);
-    common_EvalStatus(p_lmain, stat, "Run failed");
+    p_EvalStatus(stat, "Run failed");
 
     ///// Finished /////
     cli_WriteLine("Goodbye - come back soon!");
@@ -191,40 +217,6 @@ void p_Sleep(int msec)
 }
 
 
-//----------------------------------------------------//
-int p_InitScript(void)
-{
-    int stat = NEB_OK;
-
-    // Init internal stuff.
-    p_running = false;
-    p_lmain = luaL_newstate();
-    diag_EvalStack(p_lmain, 0);
-
-    // Load std libraries.
-    luaL_openlibs(p_lmain);
-    diag_EvalStack(p_lmain, 0);
-
-    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
-    luainterop_Load(p_lmain);
-    diag_EvalStack(p_lmain, 1);
-
-    // Pop the table off the stack as it interferes with calling the module functions.
-    lua_pop(p_lmain, 1);
-    diag_EvalStack(p_lmain, 0);
-
-    // Stopwatch.
-    stat = stopwatch_Init();
-    p_last_msec = stopwatch_TotalElapsedMsec();
-
-    // Tempo timer and interrupt - 1 msec resolution.
-    stat = ftimer_Init(p_MidiClockHandler, 1);
-    luainteropwork_SetTempo(60);
-
-    return stat;
-}
-
-
 //---------------------------------------------------//
 int p_Run(const char* fn)
 {
@@ -233,12 +225,12 @@ int p_Run(const char* fn)
     // Load/run the script/file.
     stat = luaL_loadfile(p_lmain, fn);
     // or: stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
-    common_EvalStatus(p_lmain, stat, "luaL_loadfile");
+    p_EvalStatus(stat, "luaL_loadfile");
     diag_EvalStack(p_lmain, 0);
 
     // Script setup.
     stat = luainterop_Setup(p_lmain);
-    common_EvalStatus(p_lmain, stat, "setup");
+    p_EvalStatus(stat, "setup");
     diag_EvalStack(p_lmain, 0);
 
     // Loop forever doing cli requests.
@@ -318,4 +310,34 @@ int p_ProcessCommand(const char* sin)
     }
 
     return stat;
+}
+
+//--------------------------------------------------------//
+bool p_EvalStatus(int stat, const char* info)
+{
+    bool has_error = false;
+    if (stat >= LUA_ERRRUN)
+    {
+        has_error = true;
+        const char* sstat = common_StatusToString(stat);
+
+        if (stat <= LUA_ERRFILE) // internal lua error
+        {
+            // Get error message on stack if provided.
+            if (lua_gettop(p_lmain) > 0)
+            {
+                luaL_error(p_lmain, "Status:%s info:%s errmsg:%s", sstat, info, lua_tostring(p_lmain, -1));
+            }
+            else
+            {
+                luaL_error(p_lmain, "Status:%s info:%s", sstat, info);
+            }
+        }
+        else // assume nebulua error
+        {
+            luaL_error(p_lmain, "Status:%s info:%s", sstat, info);
+        }
+    }
+
+    return has_error;
 }

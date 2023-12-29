@@ -1,9 +1,13 @@
 #ifndef LUAINTEROPWORK_H
 #define LUAINTEROPWORK_H
 
+#include "common.h"
+#include "luainterop.h"
 
 // Declaration of work functions for host functions called by lua.
-// See interop_spec.lua for api. TODO2 autogen this and/or make an md of api.
+// See interop_spec.lua for api. TODO1 autogen this and/or make an md of api.
+
+#define VALIDATE(expr) luainterop_SyntaxError(#expr)
 
 //--------------------------------------------------------//
 int luainteropwork_Log(int level, char* msg);
