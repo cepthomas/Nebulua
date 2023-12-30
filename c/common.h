@@ -14,75 +14,15 @@
 //----------------------- App defs -----------------------------//
 
 // App errors start after internal lua errors so they can be handled harmoniously.
-#define NEB_OK                  LUA_OK
+#define NEB_OK                  LUA_OK // synonym
 #define NEB_ERR_INTERNAL        10
 #define NEB_ERR_BAD_APP_ARG     11
 #define NEB_ERR_BAD_LUA_ARG     12
 #define NEB_ERR_BAD_MIDI_CFG    13
 #define NEB_ERR_SYNTAX          14
-// #define NEB_ERR_BAD_MIDI_IN     13
-// #define NEB_ERR_BAD_MIDI_OUT    14
-
-/////////////////////////////////////////////////////////////
-
-/*
-
-TODO1 main: init/run errors (fatal)  check all p_EvalStatus() msgs.
+#define NEB_ERR_MIDI            15
 
 
-TODOX luainteropwork (mainly) syntax errors - fatal
-#define assertS(expr) luainterop_SyntaxError(#expr);
-
-
-TODO1   luainterop.* add luainterop_SyntaxError(const char *fmt, ...)
-{
-    const char* sstat = common_StatusToString(NEB_ERR_SYNTAX);
-    snprintf(err_msg, sizeof(err_msg) - 1,  )
-}
->>> then check after interop call.
-
-
-TODO1   luainterop.* syntax errors (fatal)   --- improve the messages, call luainterop_SyntaxError()
-//---------------- Call lua functions from host -------------//
-int luainterop_Setup(lua_State* l)
-{
-    // Get function.
-    int ltype = lua_getglobal(l, "setup");
-    if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: setup"); };
-
-    // Do the actual call.
-    int lstat = luaex_docall(l, num_args, num_ret);
-    if (lstat >= LUA_ERRRUN) { luaL_error(l, "luaex_docall() failed: %d", lstat); }
-
-    // Get the results from the stack.
-    if (lua_tointeger(l, -1)) { ret = lua_tointeger(l, -1); }
-    else { luaL_error(l, "Return is not a int"); }
-}
-//---------------- Call host functions from Lua -------------//
-static int luainterop_CreateChannel(lua_State* l)
-{
-    // Get arguments
-    char* device;
-    if (lua_isstring(l, 1)) { device = lua_tostring(l, 1); }
-    else { luaL_error(l, "Bad arg type for device"); }
-
-    // Do the work. One result.
-    int ret = luainteropwork_CreateChannel(device, channum, patch); >>> may fail if !NEB_OK
-    lua_pushinteger(l, ret);
-    return 1;
-}
-*/
-
-// User syntax error - fatal.
-// #define assertS(expr) //luaL_error(lua_State* l, const char *fmt, ...)
-
-// internal fatal error
-// #define assertF(expr)
-
-// return failure, client deals with it.
-// #define assertR(expr, ret)
-
-// int common_DoError(lua_State* l, const char *fmt, ...);
 
 //----------------------- Midi defs -----------------------------//
 
@@ -132,6 +72,9 @@ typedef enum
 // @param[in] err Status to examine.
 // @return String or NULL if not valid.
 const char* common_StatusToString(int err);
+
+
+const char* common_MidiStatusToString(int mstat);
 
 /// Safe convert a string to double.
 /// @param str The input.

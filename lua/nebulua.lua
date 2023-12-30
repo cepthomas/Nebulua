@@ -50,7 +50,7 @@ function M.sleep(time)
 end
 
 
------------------------------TODO2 all event/data handling ----------------------
+-----------------------------TODO1 all event/data handling below ----------------------
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
@@ -227,7 +227,7 @@ end
 -- Process notes at this tick.
 -- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat) -- TODO2
+function M.do_step(send_stuff, bar, beat, subbeat)
     -- calc total subbeat
     -- get all 
     -- return status?

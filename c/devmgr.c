@@ -6,9 +6,6 @@
 #include "devmgr.h"
 
 
-// TODO1 client handle all ret  devmgr_XXX()
-
-
 //--------------------- Defs -----------------------------//
 
 // An opaque handle is used to identify channels between lua and c.

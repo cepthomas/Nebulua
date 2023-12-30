@@ -132,12 +132,12 @@ int luainterop_InputController(lua_State* l, int hndchan, int controller, int va
 //---------------- Call host functions from Lua -------------//
 
 // Host export function: Create an in or out midi channel.
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
 // Lua arg: device Midi device name
 // Lua arg: channum Midi channel number 1-16
 // Lua arg: patch Midi patch number (output channel only)
 // Lua return: int Channel handle or 0 if invalid
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
 static int luainterop_CreateChannel(lua_State* l)
 {
     // Get arguments
@@ -152,17 +152,17 @@ static int luainterop_CreateChannel(lua_State* l)
     else { luaL_error(l, "Bad arg type for patch"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_CreateChannel(device, channum, patch);
+    int ret = luainteropwork_CreateChannel(l, device, channum, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
 
 // Host export function: Script wants to log something.
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
 // Lua arg: level Log level
 // Lua arg: msg Log message
 // Lua return: int Status
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
 static int luainterop_Log(lua_State* l)
 {
     // Get arguments
@@ -174,16 +174,16 @@ static int luainterop_Log(lua_State* l)
     else { luaL_error(l, "Bad arg type for msg"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_Log(level, msg);
+    int ret = luainteropwork_Log(l, level, msg);
     lua_pushinteger(l, ret);
     return 1;
 }
 
 // Host export function: Script wants to change tempo.
-// Lua arg: bpm BPM
-// Lua return: int Status
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
+// Lua arg: bpm BPM
+// Lua return: int Status
 static int luainterop_SetTempo(lua_State* l)
 {
     // Get arguments
@@ -192,19 +192,19 @@ static int luainterop_SetTempo(lua_State* l)
     else { luaL_error(l, "Bad arg type for bpm"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SetTempo(bpm);
+    int ret = luainteropwork_SetTempo(l, bpm);
     lua_pushinteger(l, ret);
     return 1;
 }
 
 // Host export function: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
 // Lua arg: hndchan Output channel handle
 // Lua arg: notenum Note number
 // Lua arg: volume Volume between 0.0 and 1.0
 // Lua arg: dur Duration as bar.beat
 // Lua return: int Status
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
 static int luainterop_SendNote(lua_State* l)
 {
     // Get arguments
@@ -222,18 +222,18 @@ static int luainterop_SendNote(lua_State* l)
     else { luaL_error(l, "Bad arg type for dur"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SendNote(hndchan, notenum, volume, dur);
+    int ret = luainteropwork_SendNote(l, hndchan, notenum, volume, dur);
     lua_pushinteger(l, ret);
     return 1;
 }
 
 // Host export function: Send a controller immediately.
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
 // Lua arg: hndchan Output channel handle
 // Lua arg: controller Specific controller
 // Lua arg: value Payload.
 // Lua return: int Status
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
 static int luainterop_SendController(lua_State* l)
 {
     // Get arguments
@@ -248,7 +248,7 @@ static int luainterop_SendController(lua_State* l)
     else { luaL_error(l, "Bad arg type for value"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SendController(hndchan, controller, value);
+    int ret = luainteropwork_SendController(l, hndchan, controller, value);
     lua_pushinteger(l, ret);
     return 1;
 }

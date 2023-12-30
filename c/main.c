@@ -22,7 +22,6 @@
 #include "luainteropwork.h"
 
 
-
 //----------------------- Vars -----------------------------//
 
 // The main Lua thread - C code incl interrupts for mm/fast timer and midi events.
@@ -41,9 +40,6 @@ static char p_cli_buf[CLI_BUFF_LEN];
 
 //---------------------- Private functions ------------------------//
 
-//
-// static int p_InitScript(void);
-
 // Start forever loop.
 static int p_Run(const char* fn);
 
@@ -59,8 +55,8 @@ static void p_Sleep(int msec);
 // Do what the cli says.
 static int p_ProcessCommand(const char* sin);
 
-// Examine status and log message if failed. Calls luaL_error() which doesn't return.
-static bool p_EvalStatus(int stat, const char* msg);
+// Top level error handler. Logs and calls luaL_error() which doesn't return.
+static bool p_EvalStatus(int stat, const char* format, ...);
 
 
 //----------------------------------------------------//
@@ -79,39 +75,35 @@ int main(int argc, char* argv[])
     // Get args
     if(argc != 2)
     {
-        printf("Invalid args"); // TODO2 usage?
+        printf("Invalid args"); // TODO1 usage?
     }
 
-    // stat = p_InitScript();
-    // p_EvalStatus(stat, "Failed to init script");
-
-
     // Init internal stuff.
-    p_lmain = luaL_newstate();  //chk null
+    p_lmain = luaL_newstate();
     // diag_EvalStack(p_lmain, 0);
 
     // Load std libraries.
-    luaL_openlibs(p_lmain);  //no ret
+    luaL_openlibs(p_lmain);
     // diag_EvalStack(p_lmain, 0);
 
     // Load host funcs into lua space. This table gets pushed on the stack and into globals.
-    luainterop_Load(p_lmain);  //no ret
+    luainterop_Load(p_lmain);
     // diag_EvalStack(p_lmain, 1);
 
     // Pop the table off the stack as it interferes with calling the module functions.
-    lua_pop(p_lmain, 1);  //no ret
+    lua_pop(p_lmain, 1);
     // diag_EvalStack(p_lmain, 0);
 
     // Stopwatch.
-    stat = stopwatch_Init(); //0 ok
+    stopwatch_Init();
     p_last_msec = stopwatch_TotalElapsedMsec();
 
     // Tempo timer and interrupt - 1 msec resolution.
-    stat = ftimer_Init(p_MidiClockHandler, 1);  //0 ok
-    luainteropwork_SetTempo(60);  //no ret
+    ftimer_Init(p_MidiClockHandler, 1);
+    luainteropwork_SetTempo(p_lmain, 60);  //no ret
 
     stat = devmgr_Init((DWORD_PTR)p_MidiInHandler);
-    p_EvalStatus(stat, "Failed to init midi");
+    p_EvalStatus(stat, "Failed to init device manager");
 
     ///// Run the application. Blocks forever.
     stat = p_Run(argv[1]);
@@ -133,7 +125,7 @@ int main(int argc, char* argv[])
 //-------------------------------------------------------//
 void p_MidiClockHandler(double msec)
 {
-    // TODO2 process events
+    // TODO1 process events
     //  See lua.c for a way to treat C signals, which you may adapt to your interrupts.
 
 }
@@ -225,12 +217,12 @@ int p_Run(const char* fn)
     // Load/run the script/file.
     stat = luaL_loadfile(p_lmain, fn);
     // or: stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
-    p_EvalStatus(stat, "luaL_loadfile");
+    p_EvalStatus(stat, "luaL_loadfile() failed fn:%s", fn);
     diag_EvalStack(p_lmain, 0);
 
     // Script setup.
     stat = luainterop_Setup(p_lmain);
-    p_EvalStatus(stat, "setup");
+    p_EvalStatus(stat, "luainterop_Setup failed");
     diag_EvalStack(p_lmain, 0);
 
     // Loop forever doing cli requests.
@@ -282,7 +274,7 @@ int p_ProcessCommand(const char* sin)
                 p_running = false;
                 break;
 
-            case 'c': // TODO2 impl real commands
+            case 'c': // TODO1 impl real commands
                 if(oind == 3)
                 {
                     double x = -1;
@@ -313,12 +305,19 @@ int p_ProcessCommand(const char* sin)
 }
 
 //--------------------------------------------------------//
-bool p_EvalStatus(int stat, const char* info)
+bool p_EvalStatus(int stat, const char* format, ...)
 {
+    static char buff[100];
     bool has_error = false;
     if (stat >= LUA_ERRRUN)
     {
         has_error = true;
+
+        va_list args;
+        va_start(args, format);
+        vsnprintf(buff, sizeof(buff) - 1, format, args);
+        va_end(args);
+
         const char* sstat = common_StatusToString(stat);
 
         if (stat <= LUA_ERRFILE) // internal lua error
@@ -326,16 +325,16 @@ bool p_EvalStatus(int stat, const char* info)
             // Get error message on stack if provided.
             if (lua_gettop(p_lmain) > 0)
             {
-                luaL_error(p_lmain, "Status:%s info:%s errmsg:%s", sstat, info, lua_tostring(p_lmain, -1));
+                luaL_error(p_lmain, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(p_lmain, -1));
             }
             else
             {
-                luaL_error(p_lmain, "Status:%s info:%s", sstat, info);
+                luaL_error(p_lmain, "Status:%s info:%s", sstat, buff);
             }
         }
         else // assume nebulua error
         {
-            luaL_error(p_lmain, "Status:%s info:%s", sstat, info);
+            luaL_error(p_lmain, "Status:%s info:%s", sstat, buff);
         }
     }
 

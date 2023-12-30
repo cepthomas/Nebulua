@@ -47,7 +47,7 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
 
 
 //--------------------------------------------------------//
-int luainteropwork_CreateChannel(lua_State* l, const char* sys_dev_name, int chan_num, int patch)
+int luainteropwork_CreateChannel(lua_State* l, char* sys_dev_name, int chan_num, int patch)
 {
     int hndchan = 0;
 
