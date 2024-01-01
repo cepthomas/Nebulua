@@ -22,7 +22,7 @@ const char* common_StatusToString(int stat)
     {
         case NEB_OK: sstat = "NEB_OK"; break;
         case NEB_ERR_INTERNAL: sstat = "NEB_ERR_INTERNAL"; break;
-        case NEB_ERR_BAD_APP_ARG: sstat = "NEB_ERR_BAD_APP_ARG"; break;
+        case NEB_ERR_BAD_CLI_ARG: sstat = "NEB_ERR_BAD_CLI_ARG"; break;
         case NEB_ERR_BAD_LUA_ARG: sstat = "NEB_ERR_BAD_LUA_ARG"; break;
         case NEB_ERR_BAD_MIDI_CFG: sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
         case NEB_ERR_SYNTAX: sstat = "NEB_ERR_SYNTAX"; break;

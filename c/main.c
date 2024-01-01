@@ -22,6 +22,9 @@
 #include "luainteropwork.h"
 
 
+#define TEST
+
+
 //----------------------- Vars -----------------------------//
 
 // The main Lua thread - C code incl interrupts for mm/fast timer and midi events.
@@ -68,14 +71,38 @@ int main(int argc, char* argv[])
 {
     int stat = NEB_OK;
 
-    ///// Initialize /////
-    logger_Init(".\\nebulua_log.txt");
+    FILE* fp = fopen(".\\nebulua_log.txt", "a");
+    logger_Init(fp);
+    // logger_SetFilters(LVL_DEBUG, CAT_ALL);
+
+    // logger_Init(".\\nebulua_log.txt");
     logger_SetFilters(LVL_DEBUG);
 
-    // Get args
+    cli_Open();
+
+#ifdef TEST
+    // Some test code.
+    p_running = true;
+    cli_WriteLine("Tell 1");
+    cli_WriteLine("Tell 2 %d", fp);
+    do
+    {
+        bool ready = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
+        if(ready)
+        {
+            cli_WriteLine("Got %s", p_cli_buf);
+        }
+        p_Sleep(100);
+    } while (p_running);
+#endif
+
+
+    // Get args - just filename for now.
     if(argc != 2)
     {
-        printf("Invalid args"); // TODO1 usage?
+        //printf("1 Bad cmd line. Use nebulua <filename>");
+        cli_WriteLine("Bad cmd line. Use nebulua <file.lua>.");
+        exit(1);
     }
 
     // Init internal stuff.
@@ -119,6 +146,140 @@ int main(int argc, char* argv[])
     lua_close(p_lmain);
 
     return NEB_OK;
+}
+
+
+//---------------------------------------------------//
+int p_Run(const char* fn)
+{
+    int stat = NEB_OK;
+
+    // Load/run the script/file.
+    stat = luaL_loadfile(p_lmain, fn);
+    // or: stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
+    p_EvalStatus(stat, "luaL_loadfile() failed fn:%s", fn);
+    diag_EvalStack(p_lmain, 0);
+
+    // Script setup.
+    stat = luainterop_Setup(p_lmain);
+    p_EvalStatus(stat, "luainterop_Setup failed");
+    diag_EvalStack(p_lmain, 0);
+
+    // Loop forever doing cli requests.
+    p_running = true;
+    do
+    {
+        bool ready = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
+        if(ready)
+        {
+            stat = p_ProcessCommand(p_cli_buf);
+            if (stat != NEB_OK)
+            {
+                // Function took care of messages.
+            }
+        }
+        p_Sleep(100);
+    } while (p_running);
+
+    return stat;
+}
+
+
+//---------------------------------------------------//
+int p_ProcessCommand(const char* sin)
+{
+    int stat = NEB_OK;
+
+    // Chop up the command line into something suitable for getopt(). sin is assumed to be destructible.
+    #define MAX_NUM_OPTS 8
+    char* opts[MAX_NUM_OPTS];
+    int optcnt = 0;
+    char* tok = strtok(sin, " ");
+    while(tok != NULL && optcnt < MAX_NUM_OPTS)
+    {
+        opts[optcnt++] = tok;
+        tok = strtok(NULL, " ");
+    }
+
+    // If opterr is set to nonzero, then getopt prints an error message to the standard error stream if it
+    // encounters an unknown option character or an option with a missing required argument. This is the default behavior.
+    // If you set this variable to zero, getopt does not print any messages, but it still returns the character ? to indicate an error.
+    opterr = 0;
+
+    bool done = false;
+    bool valid = true;
+    while (!done && valid)
+    {
+        int c = getopt(optcnt, opts, "xt:");
+        switch (c)
+        {
+            case -1:
+                done = true;
+                break;
+
+            case 'x':
+                p_running = false;
+                break;
+
+            case 't':
+                int bpm = -1;
+                if(common_StrToInt(optarg, &bpm)) // optarg is set by getopt to point at the value of the option argument, for those options that accept arguments.
+                {
+                    luainteropwork_SetTempo(p_lmain, bpm);
+                }
+                else
+                {
+                    cli_WriteLine("Option -%c requires an integer argument.", c);
+                    valid = false;
+                }
+                break;
+
+            case '?':
+                // Error in cmd line.
+                // When getopt encounters an unknown option character or an option with a missing required argument, it stores that option
+                // character in int optopt. You can use this for providing your own diagnostic messages.
+                if (optopt == 't')
+                {
+                    cli_WriteLine("Option -%c requires an argument.", optopt);
+                }
+                else if(isprint(optopt))
+                {
+                    cli_WriteLine("Unknown option `-%c'.", optopt);
+                }
+                else
+                {
+                    cli_WriteLine("Unknown option character `\\x%x'.", optopt);
+                }
+
+                valid = false;
+                break;
+
+            default:
+                abort();
+        }
+    }
+
+    // Get non-opt args.
+    // optind is set by getopt to the index of the next element of the argv array to be processed. Once getopt has
+    // found all of the option arguments, you can use this variable to determine where the remaining non-option arguments begin.
+    // The initial value of this variable is 1.
+    if(valid)
+    {
+        for (int i = optind; i < optcnt; i++)
+        {
+            cli_WriteLine("Non-option argument: %s.", opts[i]);
+        }
+    }
+
+    if(!valid)
+    {
+        // Usage.
+        cli_WriteLine("x: exit");
+        cli_WriteLine("t bpm: set tempo");
+        stat = NEB_ERR_BAD_CLI_ARG;
+    }
+
+    return stat;
 }
 
 
@@ -208,101 +369,6 @@ void p_Sleep(int msec)
     nanosleep(&ts, NULL);
 }
 
-
-//---------------------------------------------------//
-int p_Run(const char* fn)
-{
-    int stat = NEB_OK;
-
-    // Load/run the script/file.
-    stat = luaL_loadfile(p_lmain, fn);
-    // or: stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
-    p_EvalStatus(stat, "luaL_loadfile() failed fn:%s", fn);
-    diag_EvalStack(p_lmain, 0);
-
-    // Script setup.
-    stat = luainterop_Setup(p_lmain);
-    p_EvalStatus(stat, "luainterop_Setup failed");
-    diag_EvalStack(p_lmain, 0);
-
-    // Loop forever doing cli requests.
-    p_running = true;
-    do
-    {
-        stat = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
-        if(stat == 0 && strlen(p_cli_buf) > 0)
-        {
-            // logger_Log(LVL_DEBUG, "|||got:%s", p_cli_buf);
-            stat = p_ProcessCommand(p_cli_buf);
-        }
-        p_Sleep(100);
-    } while (p_running);
-
-    return stat;
-}
-
-
-//---------------------------------------------------//
-int p_ProcessCommand(const char* sin)
-{
-    int stat = NEB_OK;
-
-    // What are the command line options. First one should be the actual command.
-    #define MAX_NUM_OPTS 8
-    char* opts[MAX_NUM_OPTS];
-    memset(opts, 0x00, sizeof(opts));
-    int oind = 0;
-
-    // Make writable copy and tokenize it.
-    char cp[strlen(sin) + 1];
-    strcpy(cp, sin);
-    char* token = strtok(cp, " ");
-
-    while(token != NULL && oind < MAX_NUM_OPTS)
-    {
-        opts[oind++] = token;
-        token = strtok(NULL, " ");
-    }
-
-    bool valid = false; // default
-    if(oind > 0)
-    {
-        switch(opts[0][0])
-        {
-            case 'x':
-                valid = true;
-                p_running = false;
-                break;
-
-            case 'c': // TODO1 impl real commands
-                if(oind == 3)
-                {
-                    double x = -1;
-                    double y = -1;
-                    double res = -1;
-                    if(common_StrToDouble(opts[1], &x) && common_StrToDouble(opts[2], &y))
-                    {
-                        //>>>interop_Calc(p_lscript, x, y, &res);
-                        cli_WriteLine("%g + %g = %g", x, y, res);
-                        valid = true;
-                    }
-                }
-                break;
-        }
-    }
-
-    if(!valid)
-    {
-        // usage
-        cli_WriteLine("Invalid cmd:%s ", sin);
-        cli_WriteLine("Try:");
-        cli_WriteLine("  exit: x");
-        cli_WriteLine("  tell script to blabla: c op1 op2");
-        stat = NEB_ERR_BAD_APP_ARG;
-    }
-
-    return stat;
-}
 
 //--------------------------------------------------------//
 bool p_EvalStatus(int stat, const char* format, ...)

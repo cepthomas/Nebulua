@@ -85,7 +85,7 @@ int devmgr_Init(DWORD_PTR midi_handler)
 int devmgr_Destroy()
 {
     int stat = NEB_OK;
-    for (int i = 0; i < NUM_MIDI_DEVICES; i++)//devmgr_Destroy()
+    for (int i = 0; i < NUM_MIDI_DEVICES; i++)
     {
         if (_devices[i].hnd_in > 0)
         {

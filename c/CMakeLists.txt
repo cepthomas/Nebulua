@@ -6,16 +6,18 @@ set(CMAKE_CXX_STANDARD 11)
 
 # TODO3 make generic or part of project ../lib
 set(LUA "C:/Program Files/Lua")
-set(C_SRC "C:/Dev/repos/Lua/LuaBagOfTricks/c")
+set(LBOT_C "C:/Dev/repos/Lua/LuaBagOfTricks/c")
 set(FTIMER "C:/Dev/repos/C/c_fast_timer/source")
+set(CBOT "C:/Dev/repos/C/c_bag_of_tricks/source")
 
 # needs -g to debug. TODO3 clean these up:
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")
 
 include_directories(
     ${LUA}/include
-    ${C_SRC}
+    ${LBOT_C}
     ${FTIMER}
+    # ${CBOT}
     )
 
 # Source files.
@@ -26,9 +28,10 @@ add_executable(nebulua
     devmgr.c
     luainterop.c
     luainteropwork.c
-    ${C_SRC}/diag.c
-    ${C_SRC}/logger.c
-    ${C_SRC}/luaex.c
+    ${LBOT_C}/diag.c
+    ${LBOT_C}/logger.c
+    ${LBOT_C}/luaex.c
+    # ${CBOT}/private/logger.c
     ${FTIMER}/private/ftimer.c
     ${FTIMER}/private/stopwatch.c
     )
