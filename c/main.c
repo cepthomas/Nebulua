@@ -25,17 +25,20 @@
 #define TEST
 
 
+
 //----------------------- Vars -----------------------------//
 
-// The main Lua thread - C code incl interrupts for mm/fast timer and midi events.
+// The main Lua thread.
 static lua_State* p_lmain;
 
-// The execution status.
-static bool p_running = false;
+// The script execution state.
+static bool p_script_running = false;
+
+// The app execution state.
+static bool p_app_running = true;
 
 // Last tick time.
 static double p_last_msec = 0;
-// static unsigned long p_last_usec;
 
 // CLI contents.
 static char p_cli_buf[CLI_BUFF_LEN];
@@ -73,16 +76,13 @@ int main(int argc, char* argv[])
 
     FILE* fp = fopen(".\\nebulua_log.txt", "a");
     logger_Init(fp);
-    // logger_SetFilters(LVL_DEBUG, CAT_ALL);
-
-    // logger_Init(".\\nebulua_log.txt");
     logger_SetFilters(LVL_DEBUG);
 
     cli_Open();
 
 #ifdef TEST
     // Some test code.
-    p_running = true;
+    bool alive = true;
     cli_WriteLine("Tell 1");
     cli_WriteLine("Tell 2 %d", fp);
     do
@@ -93,14 +93,13 @@ int main(int argc, char* argv[])
             cli_WriteLine("Got %s", p_cli_buf);
         }
         p_Sleep(100);
-    } while (p_running);
+    } while (alive);
 #endif
 
 
-    // Get args - just filename for now.
+    // Get arg -> script filename.
     if(argc != 2)
     {
-        //printf("1 Bad cmd line. Use nebulua <filename>");
         cli_WriteLine("Bad cmd line. Use nebulua <file.lua>.");
         exit(1);
     }
@@ -111,34 +110,30 @@ int main(int argc, char* argv[])
 
     // Load std libraries.
     luaL_openlibs(p_lmain);
-    // diag_EvalStack(p_lmain, 0);
 
     // Load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(p_lmain);
-    // diag_EvalStack(p_lmain, 1);
 
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(p_lmain, 1);
-    // diag_EvalStack(p_lmain, 0);
 
     // Stopwatch.
     stopwatch_Init();
     p_last_msec = stopwatch_TotalElapsedMsec();
 
-    // Tempo timer and interrupt - 1 msec resolution.
-    ftimer_Init(p_MidiClockHandler, 1);
-    luainteropwork_SetTempo(p_lmain, 60);  //no ret
+    // Tempo timer and interrupt.
+    ftimer_Init(p_MidiClockHandler, 1); // 1 msec resolution.
+    luainteropwork_SetTempo(p_lmain, 60);
 
     stat = devmgr_Init((DWORD_PTR)p_MidiInHandler);
     p_EvalStatus(stat, "Failed to init device manager");
 
-    ///// Run the application. Blocks forever.
+    // Run the application - blocks until done.
     stat = p_Run(argv[1]);
     p_EvalStatus(stat, "Run failed");
 
-    ///// Finished /////
+    // Finished. Clean up and go home.
     cli_WriteLine("Goodbye - come back soon!");
-    // Clean up and go home.
     ftimer_Run(0);
     ftimer_Destroy();
     cli_Destroy();
@@ -154,19 +149,19 @@ int p_Run(const char* fn)
 {
     int stat = NEB_OK;
 
-    // Load/run the script/file.
+    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack - or pushes an error message.
     stat = luaL_loadfile(p_lmain, fn);
-    // or: stat = luaL_dofile(p_lmain, fn); // lua_load pushes the compiled chunk as a Lua function on top of the stack. Otherwise, it pushes an error message.
     p_EvalStatus(stat, "luaL_loadfile() failed fn:%s", fn);
-    diag_EvalStack(p_lmain, 0);
+
+    // Run the script to init everything.
+    stat = lua_pcall(p_lmain, 0, LUA_MULTRET, 0);
+    p_EvalStatus(stat, "lua_pcall() failed fn:%s", fn);
 
     // Script setup.
     stat = luainterop_Setup(p_lmain);
-    p_EvalStatus(stat, "luainterop_Setup failed");
-    diag_EvalStack(p_lmain, 0);
+    p_EvalStatus(stat, "setup() failed");
 
     // Loop forever doing cli requests.
-    p_running = true;
     do
     {
         bool ready = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
@@ -175,11 +170,11 @@ int p_Run(const char* fn)
             stat = p_ProcessCommand(p_cli_buf);
             if (stat != NEB_OK)
             {
-                // Function took care of messages.
+                // p_ProcessCommand() took care of error handling.
             }
         }
         p_Sleep(100);
-    } while (p_running);
+    } while (p_app_running);
 
     return stat;
 }
@@ -190,40 +185,91 @@ int p_ProcessCommand(const char* sin)
 {
     int stat = NEB_OK;
 
-    // Chop up the command line into something suitable for getopt(). sin is assumed to be destructible.
-    #define MAX_NUM_OPTS 8
-    char* opts[MAX_NUM_OPTS];
-    int optcnt = 0;
-    char* tok = strtok(sin, " ");
-    while(tok != NULL && optcnt < MAX_NUM_OPTS)
+    // TODO2 make this generic. Some spec with list of entries:
+    //   - cmd string (aliases?)
+    //   - descr string
+    //   - optlist:
+    //      - opt string
+    //      - descr string
+    //      - type: S|I|F/D|N
+    //      - handlerDef  typedef void (*handlerDef)(?);
+    // ? C:\Dev\AL\harvester\xib-firmware\src\cli\cli_command_list.c
+    // ? C:\Dev\AL\caldwell\gen3procfirmware\src-application\cli\cli_command_list.c
+// typedef struct CliCommandInfo
+// {
+//     const char* name;               ///< Command name (all lower case)
+//     CliCommandPtr pCommand;         ///< Command function pointer
+//     int16_t minLevel;               ///< Minimum user level to see this command
+//     int16_t minArgs;                ///< Minimum number of args
+//     int16_t maxArgs;                ///< Maximum number of args
+//     const char* argList;            ///< Brief args description string
+//     const char* description;        ///< Brief command description
+// } CliCommandInfo;
+// typedef bool (*CliCommandPtr)(uint16_t argc, char* argv[], CliCommandData* pData);
+// bool cliLogLevelCmd(uint16_t argc, char* argv[], CliCommandData* pData)
+// {
+//     int16_t cliPort = pData->cliPort;
+//     if (argc >= 1)
+//     {
+//         if(argc == 2)
+//         {
+//             uint16_t level = toUInt16(argv[1], 0, 10);
+//             if (conversionError())
+//             {
+//                 serialWriteLine("invalid value", (uint16_t)cliPort);
+//             }
+//             else
+//             {
+//                 debugLogSetLevel(level);
+//             }
+//         }
+//         snprintf(pData->printBuf, CLI_PRINT_BUF_LENGTH, "Log output level = %d", debugLogGetLevel());
+//         serialWriteLine(pData->printBuf, (uint16_t)cliPort);
+//     }
+//     return true;
+// }
+
+    // t (123) - set tempo
+    // s|spacebar? - toggle script run
+    // x - exit
+    // monin (on|off) - monitor input
+    // monout (on|off) - monitor output
+    // k|kill - stop all midi
+    // r|rewind - set to 0
+    // c|compile - reload
+
+
+// https://www.gnu.org/software/libc/manual/html_node/Getopt.html
+
+
+    // Chop up the command line into something suitable for getopt().
+    #define MAX_NUM_ARGS 8
+    char* argv[MAX_NUM_ARGS];
+    int argc = 0;
+
+    // Make writable copy and tokenize it.
+    char cp[strlen(sin) + 1];
+    strcpy(cp, sin);
+    char* tok = strtok(cp, " ");
+    while(tok != NULL && argc < MAX_NUM_ARGS)
     {
-        opts[optcnt++] = tok;
+        argv[argc++] = tok;
         tok = strtok(NULL, " ");
     }
 
-    // If opterr is set to nonzero, then getopt prints an error message to the standard error stream if it
-    // encounters an unknown option character or an option with a missing required argument. This is the default behavior.
-    // If you set this variable to zero, getopt does not print any messages, but it still returns the character ? to indicate an error.
-    opterr = 0;
-
-    bool done = false;
-    bool valid = true;
-    while (!done && valid)
+    // Process the command and its options.
+    if (argc > 0)
     {
-        int c = getopt(optcnt, opts, "xt:");
-        switch (c)
+        // Do the command.
+        switch (argv[0])
         {
-            case -1:
-                done = true;
-                break;
-
             case 'x':
-                p_running = false;
+                p_app_running = false;
                 break;
 
             case 't':
                 int bpm = -1;
-                if(common_StrToInt(optarg, &bpm)) // optarg is set by getopt to point at the value of the option argument, for those options that accept arguments.
+                if(common_StrToInt(optarg, &bpm))
                 {
                     luainteropwork_SetTempo(p_lmain, bpm);
                 }
@@ -236,11 +282,9 @@ int p_ProcessCommand(const char* sin)
 
             case '?':
                 // Error in cmd line.
-                // When getopt encounters an unknown option character or an option with a missing required argument, it stores that option
-                // character in int optopt. You can use this for providing your own diagnostic messages.
                 if (optopt == 't')
                 {
-                    cli_WriteLine("Option -%c requires an argument.", optopt);
+                    cli_WriteLine("Option -%c missing argument.", optopt);
                 }
                 else if(isprint(optopt))
                 {
@@ -248,7 +292,68 @@ int p_ProcessCommand(const char* sin)
                 }
                 else
                 {
-                    cli_WriteLine("Unknown option character `\\x%x'.", optopt);
+                    cli_WriteLine("Unknown option `\\x%x'.", optopt);
+                }
+
+                valid = false;
+                break;
+
+            default:
+                abort();
+        }
+
+
+
+    }
+    // else ignore
+
+
+
+
+    // Suppress getopt() stderr messages.
+    opterr = 0;
+
+    bool done = false;
+    bool valid = true;
+    while (!done && valid)
+    {
+        int c = getopt(argc, argv, "xt:");
+        switch (c)
+        {
+            case -1:
+                done = true;
+                break;
+
+            case 'x':
+                p_app_running = false;
+                break;
+
+            case 't':
+                int bpm = -1;
+                if(common_StrToInt(optarg, &bpm))
+                {
+                    luainteropwork_SetTempo(p_lmain, bpm);
+                }
+                else
+                {
+                    cli_WriteLine("Option -%c requires an integer argument.", c);
+                    valid = false;
+                }
+                break;
+
+            case '?':
+                // Error in cmd line.
+                if (optopt == 't')
+                {
+                    cli_WriteLine("Option -%c missing argument.", optopt);
+                }
+                else if(isprint(optopt))
+                {
+                    cli_WriteLine("Unknown option `-%c'.", optopt);
+                }
+                else
+                {
+                    cli_WriteLine("Unknown option `\\x%x'.", optopt);
                 }
 
                 valid = false;
@@ -260,14 +365,11 @@ int p_ProcessCommand(const char* sin)
     }
 
     // Get non-opt args.
-    // optind is set by getopt to the index of the next element of the argv array to be processed. Once getopt has
-    // found all of the option arguments, you can use this variable to determine where the remaining non-option arguments begin.
-    // The initial value of this variable is 1.
     if(valid)
     {
-        for (int i = optind; i < optcnt; i++)
+        for (int i = optind; i < argc; i++)
         {
-            cli_WriteLine("Non-option argument: %s.", opts[i]);
+            cli_WriteLine("Non-option argument: %s.", argv[i]);
         }
     }
 
