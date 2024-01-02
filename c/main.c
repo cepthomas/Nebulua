@@ -21,9 +21,32 @@
 #include "luainterop.h"
 #include "luainteropwork.h"
 
+//----------------------- Definitions -----------------------//
 
 #define TEST
 
+//----------------------- Types -----------------------------//
+
+typedef int (*cli_command_handler_t)(int argc, char* argv[]);//, CliCommandData* pData);
+
+// typedef struct cli_command_arg
+// {
+//     const char* name;               ///< Arg name cmd|alias|alias
+//     const char* description;        ///< Brief arg description
+//     // const char type;        ///< S|I|F/D|N
+// } cli_command_arg_t;
+
+typedef struct cli_command
+{
+    const char* name;               ///< Command name
+    const char* description;        ///< Brief command description
+    cli_command_handler_t handler;         ///< Command function pointer
+    // int16_t minLevel;               ///< Minimum user level to see this command
+    // int16_t minArgs;                ///< Minimum number of args
+    // int16_t maxArgs;                ///< Maximum number of args
+    const char* args;            ///< Brief args description string
+    // const cli_command_arg arg_list[];
+} cli_command_t;
 
 
 //----------------------- Vars -----------------------------//
@@ -59,10 +82,115 @@ static void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DW
 static void p_Sleep(int msec);
 
 // Do what the cli says.
-static int p_ProcessCommand(const char* sin);
+static bool p_ProcessCommand(const char* sin);
 
 // Top level error handler. Logs and calls luaL_error() which doesn't return.
 static bool p_EvalStatus(int stat, const char* format, ...);
+
+
+///////////////////////////////////////////////////////////////////////////
+////////////////////////// cli ////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+// t (123) - set tempo
+// s|spacebar? - toggle script run
+// x - exit
+// monin (on|off) - monitor input
+// monout (on|off) - monitor output
+// k|kill - stop all midi
+// r|rewind - set to 0
+// c|compile - reload
+
+
+// case 'x':
+//     p_app_running = false;
+//     break;
+// case 't':
+//     int bpm = -1;
+//     if(common_StrToInt(optarg, &bpm))
+//     {
+//         luainteropwork_SetTempo(p_lmain, bpm);
+//     }
+//     else
+//     {
+//         cli_WriteLine("Option -%c requires an integer argument.", c);
+//         valid = false;
+//     }
+//     break;
+// case '?':
+//     // Error in cmd line.
+//     if (optopt == 't')
+//     {
+//         cli_WriteLine("Option -%c missing argument.", optopt);
+//     }
+//     else if(isprint(optopt))
+//     {
+//         cli_WriteLine("Unknown option `-%c'.", optopt);
+//     }
+//     else
+//     {
+//         cli_WriteLine("Unknown option `\\x%x'.", optopt);
+//     }
+//     valid = false;
+//     break;
+
+
+
+
+int user_command(int argc, char* argv[]) //, CliCommandData* pData)
+{
+    //int16_t cliPort = pData->cliPort;
+    if (argc >= 1)
+    {
+        if(argc == 2)
+        {
+            int level;
+            if (common_StrToInt(argv[1], &level))
+            {
+//                debugLogSetLevel(level);
+            }
+            else
+            {
+//                serialWriteLine("invalid value", (int)cliPort);
+            }
+        }
+
+        // snprintf(pData->printBuf, CLI_PRINT_BUF_LENGTH, "Log output level = %d", debugLogGetLevel());
+        // serialWriteLine(pData->printBuf, (int)cliPort);
+    }
+    return 0;
+}
+
+
+//
+static cli_command_t p_commands[] =
+{
+    {
+        .name        = "tempo",
+        .description = "Set a key indicator 0-2 on hid 0-1",
+        .handler    = user_command,
+        .args     = "(hid) (row) (col) (indicator) (off|on|slow|med|fast)",
+        // .argList     = 
+        // {
+        //     .name        = "bpm",
+        //     // .opts        = "arg1",
+        //     .description = "Aaaaaaarghhhh 40-240",
+        // },
+    },
+    {
+        .name        = "version",
+        .description = "Show firmware and CLI version",
+        .handler    = user_command,
+        .args     =  "[set|ramp|pulse] [PWM num] [val] (0-1000)",
+    },
+
+    // List terminator
+    { NULL,NULL, NULL, NULL}
+};
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 
 
 //----------------------------------------------------//
@@ -78,7 +206,7 @@ int main(int argc, char* argv[])
     logger_Init(fp);
     logger_SetFilters(LVL_DEBUG);
 
-    cli_Open();
+    cli_Open('s');
 
 #ifdef TEST
     // Some test code.
@@ -167,10 +295,10 @@ int p_Run(const char* fn)
         bool ready = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
         if(ready)
         {
-            stat = p_ProcessCommand(p_cli_buf);
-            if (stat != NEB_OK)
+            bool ok = p_ProcessCommand(p_cli_buf);
+            if (!ok)
             {
-                // p_ProcessCommand() took care of error handling.
+                // cli_ProcessCommand() took care of error handling.
             }
         }
         p_Sleep(100);
@@ -180,70 +308,17 @@ int p_Run(const char* fn)
 }
 
 
+
+
+
 //---------------------------------------------------//
-int p_ProcessCommand(const char* sin)
+bool p_ProcessCommand(const char* sin)
 {
-    int stat = NEB_OK;
-
-    // TODO2 make this generic. Some spec with list of entries:
-    //   - cmd string (aliases?)
-    //   - descr string
-    //   - optlist:
-    //      - opt string
-    //      - descr string
-    //      - type: S|I|F/D|N
-    //      - handlerDef  typedef void (*handlerDef)(?);
-    // ? C:\Dev\AL\harvester\xib-firmware\src\cli\cli_command_list.c
-    // ? C:\Dev\AL\caldwell\gen3procfirmware\src-application\cli\cli_command_list.c
-// typedef struct CliCommandInfo
-// {
-//     const char* name;               ///< Command name (all lower case)
-//     CliCommandPtr pCommand;         ///< Command function pointer
-//     int16_t minLevel;               ///< Minimum user level to see this command
-//     int16_t minArgs;                ///< Minimum number of args
-//     int16_t maxArgs;                ///< Maximum number of args
-//     const char* argList;            ///< Brief args description string
-//     const char* description;        ///< Brief command description
-// } CliCommandInfo;
-// typedef bool (*CliCommandPtr)(uint16_t argc, char* argv[], CliCommandData* pData);
-// bool cliLogLevelCmd(uint16_t argc, char* argv[], CliCommandData* pData)
-// {
-//     int16_t cliPort = pData->cliPort;
-//     if (argc >= 1)
-//     {
-//         if(argc == 2)
-//         {
-//             uint16_t level = toUInt16(argv[1], 0, 10);
-//             if (conversionError())
-//             {
-//                 serialWriteLine("invalid value", (uint16_t)cliPort);
-//             }
-//             else
-//             {
-//                 debugLogSetLevel(level);
-//             }
-//         }
-//         snprintf(pData->printBuf, CLI_PRINT_BUF_LENGTH, "Log output level = %d", debugLogGetLevel());
-//         serialWriteLine(pData->printBuf, (uint16_t)cliPort);
-//     }
-//     return true;
-// }
-
-    // t (123) - set tempo
-    // s|spacebar? - toggle script run
-    // x - exit
-    // monin (on|off) - monitor input
-    // monout (on|off) - monitor output
-    // k|kill - stop all midi
-    // r|rewind - set to 0
-    // c|compile - reload
-
-
-// https://www.gnu.org/software/libc/manual/html_node/Getopt.html
-
+    bool done = false;
+    bool valid = false;
 
     // Chop up the command line into something suitable for getopt().
-    #define MAX_NUM_ARGS 8
+    #define MAX_NUM_ARGS 20
     char* argv[MAX_NUM_ARGS];
     int argc = 0;
 
@@ -260,129 +335,88 @@ int p_ProcessCommand(const char* sin)
     // Process the command and its options.
     if (argc > 0)
     {
-        // Do the command.
-        switch (argv[0])
+        // Find and execute the command.
+        cli_command_t* pcmd = p_commands;
+        while (p_commands->name != NULL)
         {
-            case 'x':
-                p_app_running = false;
+            if (strcmp(p_commands->name, argv[0]))
+            {
+                valid = true;
+                int stat = (*p_commands->handler)(argc, argv);
+                p_EvalStatus(stat, "CLI function failed: %s", p_commands->name);
                 break;
-
-            case 't':
-                int bpm = -1;
-                if(common_StrToInt(optarg, &bpm))
-                {
-                    luainteropwork_SetTempo(p_lmain, bpm);
-                }
-                else
-                {
-                    cli_WriteLine("Option -%c requires an integer argument.", c);
-                    valid = false;
-                }
-                break;
-
-            case '?':
-                // Error in cmd line.
-                if (optopt == 't')
-                {
-                    cli_WriteLine("Option -%c missing argument.", optopt);
-                }
-                else if(isprint(optopt))
-                {
-                    cli_WriteLine("Unknown option `-%c'.", optopt);
-                }
-                else
-                {
-                    cli_WriteLine("Unknown option `\\x%x'.", optopt);
-                }
-
-                valid = false;
-                break;
-
-            default:
-                abort();
+            }
         }
 
-
-
-    }
-    // else ignore
-
-
-
-
-    // Suppress getopt() stderr messages.
-    opterr = 0;
-
-    bool done = false;
-    bool valid = true;
-    while (!done && valid)
-    {
-        int c = getopt(argc, argv, "xt:");
-        switch (c)
+        if (!valid)
         {
-            case -1:
-                done = true;
-                break;
-
-            case 'x':
-                p_app_running = false;
-                break;
-
-            case 't':
-                int bpm = -1;
-                if(common_StrToInt(optarg, &bpm))
-                {
-                    luainteropwork_SetTempo(p_lmain, bpm);
-                }
-                else
-                {
-                    cli_WriteLine("Option -%c requires an integer argument.", c);
-                    valid = false;
-                }
-                break;
-
-            case '?':
-                // Error in cmd line.
-                if (optopt == 't')
-                {
-                    cli_WriteLine("Option -%c missing argument.", optopt);
-                }
-                else if(isprint(optopt))
-                {
-                    cli_WriteLine("Unknown option `-%c'.", optopt);
-                }
-                else
-                {
-                    cli_WriteLine("Unknown option `\\x%x'.", optopt);
-                }
-
-                valid = false;
-                break;
-
-            default:
-                abort();
+            cli_WriteLine("Bad command: %s.", argv[0]);
+//>>>            p_Usage();
         }
     }
+    // else ignore?
 
-    // Get non-opt args.
-    if(valid)
-    {
-        for (int i = optind; i < argc; i++)
-        {
-            cli_WriteLine("Non-option argument: %s.", argv[i]);
-        }
-    }
+    // if(!valid)
+    // {
+    //     // Usage.
+    //     cli_WriteLine("x: exit");
+    //     cli_WriteLine("t bpm: set tempo");
+    // }
 
-    if(!valid)
-    {
-        // Usage.
-        cli_WriteLine("x: exit");
-        cli_WriteLine("t bpm: set tempo");
-        stat = NEB_ERR_BAD_CLI_ARG;
-    }
-
-    return stat;
+    return valid;
 }
+
+
+
+// //---------------------------------------------------//
+// int p_ProcessCommand(const char* sin)
+// {
+//     int stat = NEB_OK;
+//     // TODO2 make this generic. Some spec with list of entries:
+//     //   - cmd string (aliases?)
+//     //   - descr string
+//     //   - optlist:
+//     //      - opt string
+//     //      - descr string
+//     //      - type: S|I|F/D|N
+//     //      - handlerDef  typedef void (*handlerDef)(?);
+//     // ? C:\Dev\AL\harvester\xib-firmware\src\cli\cli_command_list.c
+//     // ? C:\Dev\AL\caldwell\gen3procfirmware\src-application\cli\cli_command_list.c
+// // typedef struct CliCommandInfo
+// // {
+// //     const char* name;               ///< Command name (all lower case)
+// //     CliCommandPtr pCommand;         ///< Command function pointer
+// //     int16_t minLevel;               ///< Minimum user level to see this command
+// //     int16_t minArgs;                ///< Minimum number of args
+// //     int16_t maxArgs;                ///< Maximum number of args
+// //     const char* argList;            ///< Brief args description string
+// //     const char* description;        ///< Brief command description
+// // } CliCommandInfo;
+// // typedef bool (*CliCommandPtr)(uint16_t argc, char* argv[], CliCommandData* pData);
+// // bool cliLogLevelCmd(uint16_t argc, char* argv[], CliCommandData* pData)
+// // {
+// //     int16_t cliPort = pData->cliPort;
+// //     if (argc >= 1)
+// //     {
+// //         if(argc == 2)
+// //         {
+// //             uint16_t level = toUInt16(argv[1], 0, 10);
+// //             if (conversionError())
+// //             {
+// //                 serialWriteLine("invalid value", (uint16_t)cliPort);
+// //             }
+// //             else
+// //             {
+// //                 debugLogSetLevel(level);
+// //             }
+// //         }
+// //         snprintf(pData->printBuf, CLI_PRINT_BUF_LENGTH, "Log output level = %d", debugLogGetLevel());
+// //         serialWriteLine(pData->printBuf, (uint16_t)cliPort);
+// //     }
+// //     return true;
+// // }
+
+
 
 
 //-------------------------------------------------------//
@@ -403,11 +437,11 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
     switch(wMsg)
     {
         case MIM_DATA:
-            int raw_msg = dwParam1; // packed MIDI message
-            int timestamp = dwParam2; // milliseconds since MidiInStart
-            BYTE bstatus = raw_msg & 0xFF;// MIDI status byte
-            BYTE bdata1 = (raw_msg >> 8) & 0xFF;// first MIDI data byte
-            BYTE bdata2 = (raw_msg >> 16) & 0xFF;// second MIDI data byte
+            int raw_msg = dwParam1;  // packed MIDI message
+            int timestamp = dwParam2;  // milliseconds since MidiInStart
+            BYTE bstatus = raw_msg & 0xFF;  // MIDI status byte
+            BYTE bdata1 = (raw_msg >> 8) & 0xFF;  // first MIDI data byte
+            BYTE bdata2 = (raw_msg >> 16) & 0xFF;  // second MIDI data byte
             int channel = -1;
             int hndchan = 0;
             midi_event_t evt;

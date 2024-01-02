@@ -4,18 +4,36 @@
 
 #include <stdbool.h>
 
-//---------------- Public API ----------------------//
+//---------------- Definitions ----------------------//
 
 // Max line.
 #define CLI_BUFF_LEN 128
 
 
+//---------------- Types ----------------------------//
+
+// ? C:\Dev\AL\harvester\xib-firmware\src\cli\cli_command_list.c
+// ? C:\Dev\AL\caldwell\gen3procfirmware\src-application\cli\cli_command_list.c
+
+
+
+
+// int cli_ProcessCommand(const char* sin);
+
+
+
 //---------------- Public Functions -----------------//
 
-// Open a cli (polled).
-// @param channel Specific channel.
-// @return Status.
-int cli_Open(void);
+// Open a cli using stdio.
+// @param type Stdio or telnet or ...
+// @param cmds Cli commands.
+// @return status 0=ok
+int cli_Open(char type);//, cli_command_t[] cmds);
+
+// Open a cli using telnet.
+// @param port Where to listen.
+// @return status 0=ok
+// int cli_OpenTelnet(char* port);
 
 // Clean up component resources.
 // @return Status.
@@ -31,5 +49,10 @@ bool cli_ReadLine(char* buff, int num);
 // @param buff Line to send to user.
 // @return Status.
 int cli_WriteLine(const char* format, ...);
+
+// Write a car to a cli.
+// @param c Char to send to user.
+// @return Status.
+int cli_WriteChar(char c);
 
 #endif // CLI_H

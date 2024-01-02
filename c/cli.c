@@ -9,7 +9,8 @@
 #include "cli.h"
 #include "common.h"
 
-// TODO3 uses FILE*/stdio, could add serial port, socket, etc. Make into a generic component?
+// TODO3 put this in lbot or cbot. Maybe split up IO and cmd processing.
+// TODO3 serial port, etc.
 // https://en.cppreference.com/w/c/io
 
 
@@ -19,27 +20,35 @@
 static char p_cli_buff[CLI_BUFF_LEN];
 
 // CLI propmpt.
-static const char* p_Prompt = "$";
+static char* p_Prompt = "";
 
-static FILE* p_CliIn;
-static FILE* p_CliOut;
+static bool p_Stdio = true;
 
+// static cli_command_t* p_cmds;
 
 //---------------- Public Implementation -----------------//
 
 //--------------------------------------------------------//
-int cli_Open(void)
+int cli_Open(char type) //, cli_command_t[] cmds)
 {
-    int stat = NEB_OK;
+    int stat = 0;
 
-    // p_CliIn = stdin;
-    // p_CliOut = stdout;
+    //p_cmds = cmds;
+
+    if (type == 's')
+    {
+        p_Stdio = true;
+        p_Prompt = "$";
+    }
+    else
+    {
+        p_Stdio = false;
+        p_Prompt = "";
+    }
 
     memset(p_cli_buff, 0, CLI_BUFF_LEN);
-
     // Prompt.
     cli_WriteLine("");
-
     return stat;
 }
 
@@ -47,7 +56,7 @@ int cli_Open(void)
 //--------------------------------------------------------//
 int cli_Destroy(void)
 {
-    int stat = NEB_OK;
+    int stat = 0;
 
     return stat;
 }
@@ -62,14 +71,28 @@ bool cli_ReadLine(char* buff, int num)
     buff[0] = 0;
 
     // Process each char.
-    char c;
-    // while ((c = fgetc(p_CliIn)) != EOF)
-    // if (fread(&c, 1, 1, p_CliIn) > 0)
-    if (_kbhit())
+    char c = -1;
+    bool done = false;
+
+    while (!done)
     {
-        char c = (char)_getch();
+        if (p_Stdio)
+        {
+            c = _kbhit() ? (char)_getch() : -1;
+        }
+        else // telnet
+        {
+            // while ((c = fgetc(p_CliIn)) != EOF)
+            // if (fread(&c, 1, 1, p_CliIn) > 0)
+            c = -1;
+        }
+
         switch(c)
         {
+            case -1:
+                done = true;
+                break;
+
             case '\n':
                 // Ignore.
                 break;
@@ -102,6 +125,7 @@ bool cli_ReadLine(char* buff, int num)
     return ready;
 }
 
+
 //--------------------------------------------------------//
 int cli_WriteLine(const char* format, ...)
 {
@@ -114,10 +138,186 @@ int cli_WriteLine(const char* format, ...)
     vsnprintf(buff, CLI_BUFF_LEN-1, format, args);
     va_end(args);
 
-    // fputs(buff, p_CliOut);
-    // fputs("\r\n", p_CliOut);
-    // fputs(p_Prompt, p_CliOut);
-    printf("%s\r\n>", buff);
+    if (p_Stdio)
+    {
+        printf("%s\r\n>", buff);
+    }
+    else // telnet
+    {
+        // fputs(buff, p_CliOut);
+        // fputs("\r\n", p_CliOut);
+        // fputs(p_Prompt, p_CliOut);
+    }
 
     return stat;    
 }
+
+
+//--------------------------------------------------------//
+int cli_WriteChar(char c)
+{
+    int stat = 0;
+
+    if (p_Stdio)
+    {
+        putchar(c);
+    }
+    else // telnet
+    {
+        // fputc();
+    }
+
+    return stat;    
+}
+
+
+
+
+
+// //---------------------------------------------------//
+// int cli_ProcessCommand(const char* sin)
+// {
+//     int stat = 0;
+
+//     // Chop up the command line into something suitable for getopt().
+//     #define MAX_NUM_ARGS 20
+//     char* argv[MAX_NUM_ARGS];
+//     int argc = 0;
+
+//     // Make writable copy and tokenize it.
+//     char cp[strlen(sin) + 1];
+//     strcpy(cp, sin);
+//     char* tok = strtok(cp, " ");
+//     while(tok != NULL && argc < MAX_NUM_ARGS)
+//     {
+//         argv[argc++] = tok;
+//         tok = strtok(NULL, " ");
+//     }
+
+//     // Process the command and its options.
+//     if (argc > 0)
+//     {
+//         // Do the command.
+//         switch (argv[0])
+//         {
+//             case 'x':
+//                 p_app_running = false;
+//                 break;
+
+//             case 't':
+//                 int bpm = -1;
+//                 if(common_StrToInt(optarg, &bpm))
+//                 {
+//                     luainteropwork_SetTempo(p_lmain, bpm);
+//                 }
+//                 else
+//                 {
+//                     cli_WriteLine("Option -%c requires an integer argument.", c);
+//                     valid = false;
+//                 }
+//                 break;
+
+//             case '?':
+//                 // Error in cmd line.
+//                 if (optopt == 't')
+//                 {
+//                     cli_WriteLine("Option -%c missing argument.", optopt);
+//                 }
+//                 else if(isprint(optopt))
+//                 {
+//                     cli_WriteLine("Unknown option `-%c'.", optopt);
+//                 }
+//                 else
+//                 {
+//                     cli_WriteLine("Unknown option `\\x%x'.", optopt);
+//                 }
+
+//                 valid = false;
+//                 break;
+
+//             default:
+//                 abort();
+//         }
+
+
+
+//     }
+//     // else ignore
+
+
+
+
+//     // Suppress getopt() stderr messages.
+//     opterr = 0;
+
+//     bool done = false;
+//     bool valid = true;
+//     while (!done && valid)
+//     {
+//         int c = getopt(argc, argv, "xt:");
+//         switch (c)
+//         {
+//             case -1:
+//                 done = true;
+//                 break;
+
+//             case 'x':
+//                 p_app_running = false;
+//                 break;
+
+//             case 't':
+//                 int bpm = -1;
+//                 if(common_StrToInt(optarg, &bpm))
+//                 {
+//                     luainteropwork_SetTempo(p_lmain, bpm);
+//                 }
+//                 else
+//                 {
+//                     cli_WriteLine("Option -%c requires an integer argument.", c);
+//                     valid = false;
+//                 }
+//                 break;
+
+//             case '?':
+//                 // Error in cmd line.
+//                 if (optopt == 't')
+//                 {
+//                     cli_WriteLine("Option -%c missing argument.", optopt);
+//                 }
+//                 else if(isprint(optopt))
+//                 {
+//                     cli_WriteLine("Unknown option `-%c'.", optopt);
+//                 }
+//                 else
+//                 {
+//                     cli_WriteLine("Unknown option `\\x%x'.", optopt);
+//                 }
+
+//                 valid = false;
+//                 break;
+
+//             default:
+//                 abort();
+//         }
+//     }
+
+//     // Get non-opt args.
+//     if(valid)
+//     {
+//         for (int i = optind; i < argc; i++)
+//         {
+//             cli_WriteLine("Non-option argument: %s.", argv[i]);
+//         }
+//     }
+
+//     if(!valid)
+//     {
+//         // Usage.
+//         cli_WriteLine("x: exit");
+//         cli_WriteLine("t bpm: set tempo");
+//         stat = NEB_ERR_BAD_CLI_ARG;
+//     }
+
+//     return stat;
+// }
+
