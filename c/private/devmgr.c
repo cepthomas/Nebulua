@@ -16,13 +16,11 @@
 #define GET_CHAN_NUM(hndchan) (hndchan & 0xFF)
 
 
-//------------------- Privates ---------------------------//
+//------------------- Vars ---------------------------//
 
 // Devices specified in the user script.
 static midi_device_t _devices[NUM_MIDI_DEVICES];
 
-
-//------------------- Publics ----------------------------//
 
 //--------------------------------------------------------//
 int devmgr_Init(DWORD_PTR midi_handler)

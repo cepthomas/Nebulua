@@ -13,7 +13,7 @@
 
 //---------------- Public API ----------------------//
 
-// App errors start after internal lua errors so they can be handled harmoniously.
+///// App errors start after internal lua errors so they can be handled harmoniously.
 #define NEB_OK                  LUA_OK // synonym
 #define NEB_ERR_INTERNAL        10
 #define NEB_ERR_BAD_CLI_ARG     11
@@ -24,7 +24,7 @@
 
 
 
-//----------------------- Midi defs -----------------------------//
+///// Midi defs
 
 // Only 4/4 time supported.
 #define BEATS_PER_BAR 4
@@ -64,8 +64,6 @@ typedef enum
     MIDI_META_EVENT = 0xFF,
 } midi_event_t;
 
-
-//----------------------- Functions -----------------------------//
 
 /// Convert a status to string.
 /// @param[in] err Status to examine.

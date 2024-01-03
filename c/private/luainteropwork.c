@@ -17,7 +17,7 @@
 
 // Definition of work functions for host functions called by lua.
 
-// Macro used to handle user syntax errors in the interop work functions. TODO3 put these somewhere?
+// Macro used to handle user syntax errors in the interop work functions. TODO3 put these somewhere else?
 #define VALS(expr, s) luaL_error(l, "%s: %s", #expr, s)
 #define VALI(expr, i) luaL_error(l, "%s: %d", #expr, i)
 #define VALF(expr, f) luaL_error(l, "%s: %f", #expr, f)

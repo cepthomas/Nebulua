@@ -9,24 +9,23 @@
 #include "cli.h"
 #include "common.h"
 
-// TODO3 put this in lbot or cbot. Maybe split up IO and cmd processing.
-// TODO3 serial port, etc.
-// https://en.cppreference.com/w/c/io
+// TODO3 put this in lbot or cbot.
+// TODO3 serial port, etc?  https://en.cppreference.com/w/c/io
 
 
 //---------------- Private ------------------------------//
 
-// CLI buffer to collect input chars.
+/// CLI buffer to collect input chars.
 static char p_cli_buff[CLI_BUFF_LEN];
 
-// CLI propmpt.
+/// CLI propmpt.
 static char* p_Prompt = "";
 
+/// TODO3 kludgy, fix.
 static bool p_Stdio = true;
 
-// static cli_command_t* p_cmds;
 
-//---------------- Public Implementation -----------------//
+//---------------- API Implementation -----------------//
 
 //--------------------------------------------------------//
 int cli_Open(char type) //, cli_command_t[] cmds)
@@ -169,155 +168,3 @@ int cli_WriteChar(char c)
 
     return stat;    
 }
-
-
-
-
-
-// //---------------------------------------------------//
-// int cli_ProcessCommand(const char* sin)
-// {
-//     int stat = 0;
-
-//     // Chop up the command line into something suitable for getopt().
-//     #define MAX_NUM_ARGS 20
-//     char* argv[MAX_NUM_ARGS];
-//     int argc = 0;
-
-//     // Make writable copy and tokenize it.
-//     char cp[strlen(sin) + 1];
-//     strcpy(cp, sin);
-//     char* tok = strtok(cp, " ");
-//     while(tok != NULL && argc < MAX_NUM_ARGS)
-//     {
-//         argv[argc++] = tok;
-//         tok = strtok(NULL, " ");
-//     }
-
-//     // Process the command and its options.
-//     if (argc > 0)
-//     {
-//         // Do the command.
-//         switch (argv[0])
-//         {
-//             case 'x':
-//                 p_app_running = false;
-//                 break;
-
-//             case 't':
-//                 int bpm = -1;
-//                 if(common_StrToInt(optarg, &bpm))
-//                 {
-//                     luainteropwork_SetTempo(p_lmain, bpm);
-//                 }
-//                 else
-//                 {
-//                     cli_WriteLine("Option -%c requires an integer argument.", c);
-//                     valid = false;
-//                 }
-//                 break;
-
-//             case '?':
-//                 // Error in cmd line.
-//                 if (optopt == 't')
-//                 {
-//                     cli_WriteLine("Option -%c missing argument.", optopt);
-//                 }
-//                 else if(isprint(optopt))
-//                 {
-//                     cli_WriteLine("Unknown option `-%c'.", optopt);
-//                 }
-//                 else
-//                 {
-//                     cli_WriteLine("Unknown option `\\x%x'.", optopt);
-//                 }
-
-//                 valid = false;
-//                 break;
-
-//             default:
-//                 abort();
-//         }
-
-
-
-//     }
-//     // else ignore
-
-
-
-
-//     // Suppress getopt() stderr messages.
-//     opterr = 0;
-
-//     bool done = false;
-//     bool valid = true;
-//     while (!done && valid)
-//     {
-//         int c = getopt(argc, argv, "xt:");
-//         switch (c)
-//         {
-//             case -1:
-//                 done = true;
-//                 break;
-
-//             case 'x':
-//                 p_app_running = false;
-//                 break;
-
-//             case 't':
-//                 int bpm = -1;
-//                 if(common_StrToInt(optarg, &bpm))
-//                 {
-//                     luainteropwork_SetTempo(p_lmain, bpm);
-//                 }
-//                 else
-//                 {
-//                     cli_WriteLine("Option -%c requires an integer argument.", c);
-//                     valid = false;
-//                 }
-//                 break;
-
-//             case '?':
-//                 // Error in cmd line.
-//                 if (optopt == 't')
-//                 {
-//                     cli_WriteLine("Option -%c missing argument.", optopt);
-//                 }
-//                 else if(isprint(optopt))
-//                 {
-//                     cli_WriteLine("Unknown option `-%c'.", optopt);
-//                 }
-//                 else
-//                 {
-//                     cli_WriteLine("Unknown option `\\x%x'.", optopt);
-//                 }
-
-//                 valid = false;
-//                 break;
-
-//             default:
-//                 abort();
-//         }
-//     }
-
-//     // Get non-opt args.
-//     if(valid)
-//     {
-//         for (int i = optind; i < argc; i++)
-//         {
-//             cli_WriteLine("Non-option argument: %s.", argv[i]);
-//         }
-//     }
-
-//     if(!valid)
-//     {
-//         // Usage.
-//         cli_WriteLine("x: exit");
-//         cli_WriteLine("t bpm: set tempo");
-//         stat = NEB_ERR_BAD_CLI_ARG;
-//     }
-
-//     return stat;
-// }
-

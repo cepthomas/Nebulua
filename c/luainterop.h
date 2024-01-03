@@ -17,33 +17,33 @@
 
 //---------------- Call lua functions from host -------------//
 
-// Lua export function: Called to initialize Nebulator stuff.
-// @param[in] l Internal lua state.
-// @return int Status
+/// Lua export function: Called to initialize Nebulator stuff.
+/// @param[in] l Internal lua state.
+/// @return int Status
 int luainterop_Setup(lua_State* l);
 
-// Lua export function: Called every fast timer increment.
-// @param[in] l Internal lua state.
-// @param[in] bar Which bar 0-N
-// @param[in] beat Which beat 0-3
-// @param[in] subbeat Which subbeat 0-7
-// @return int Status
+/// Lua export function: Called every fast timer increment.
+/// @param[in] l Internal lua state.
+/// @param[in] bar Which bar 0-N
+/// @param[in] beat Which beat 0-3
+/// @param[in] subbeat Which subbeat 0-7
+/// @return int Status
 int luainterop_Step(lua_State* l, int bar, int beat, int subbeat);
 
-// Lua export function: Called when input arrives.
-// @param[in] l Internal lua state.
-// @param[in] hndchan Input channel handle
-// @param[in] notenum Note number
-// @param[in] volume Volume between 0.0 and 1.0.
-// @return int Status
+/// Lua export function: Called when input arrives.
+/// @param[in] l Internal lua state.
+/// @param[in] hndchan Input channel handle
+/// @param[in] notenum Note number
+/// @param[in] volume Volume between 0.0 and 1.0.
+/// @return int Status
 int luainterop_InputNote(lua_State* l, int hndchan, int notenum, double volume);
 
-// Lua export function: Called when input arrives.
-// @param[in] l Internal lua state.
-// @param[in] hndchan Input channel handle
-// @param[in] controller Specific controller id
-// @param[in] value Payload
-// @return int Status
+/// Lua export function: Called when input arrives.
+/// @param[in] l Internal lua state.
+/// @param[in] hndchan Input channel handle
+/// @param[in] controller Specific controller id
+/// @param[in] value Payload
+/// @return int Status
 int luainterop_InputController(lua_State* l, int hndchan, int controller, int value);
 
 

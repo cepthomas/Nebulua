@@ -89,8 +89,16 @@ static bool p_EvalStatus(int stat, const char* format, ...);
 
 
 ///////////////////////////////////////////////////////////////////////////
-////////////////////////// cli ////////////////////////////////////////////
+////////////////////////// cli TODO1 ////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
+
+//??????
+// print("Usage: gen_interop.lua (-d) (-t) [-ch|-cs] [your_spec.lua] [your_outpath]")
+// print("  -ch generate c and h files")
+// print("  -cs generate c# file")
+// print("  -d enable debugger if available")
+// print("  -t use debugger terminal color")
+
 
 // t (123) - set tempo
 // s|spacebar? - toggle script run
@@ -101,7 +109,7 @@ static bool p_EvalStatus(int stat, const char* format, ...);
 // r|rewind - set to 0
 // c|compile - reload
 
-
+///// original with getopt:
 // case 'x':
 //     p_app_running = false;
 //     break;
@@ -135,29 +143,31 @@ static bool p_EvalStatus(int stat, const char* format, ...);
 //     break;
 
 
-
-
-int user_command(int argc, char* argv[]) //, CliCommandData* pData)
+void func_SetLevel(int l) { }
+int func_GetLevel(void) { return 99; }
+int user_command(int argc, char* argv[])
 {
-    //int16_t cliPort = pData->cliPort;
-    if (argc >= 1)
+    if (argc >= 1) // set
     {
         if(argc == 2)
         {
             int level;
             if (common_StrToInt(argv[1], &level))
             {
-//                debugLogSetLevel(level);
+                func_SetLevel(level);
             }
             else
             {
-//                serialWriteLine("invalid value", (int)cliPort);
+               cli_WriteLine("invalid value %d", level);
             }
         }
 
-        // snprintf(pData->printBuf, CLI_PRINT_BUF_LENGTH, "Log output level = %d", debugLogGetLevel());
-        // serialWriteLine(pData->printBuf, (int)cliPort);
     }
+    else // get
+    {
+        cli_WriteLine("Log output level = %d", func_GetLevel());
+    }
+
     return 0;
 }
 

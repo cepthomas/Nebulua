@@ -14,6 +14,7 @@ set(CBOT "C:/Dev/repos/C/c_bag_of_tricks/source")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")
 
 include_directories(
+    .
     ${LUA}/include
     ${LBOT_C}
     ${FTIMER}
