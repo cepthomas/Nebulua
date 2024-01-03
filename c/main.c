@@ -194,10 +194,11 @@ static cli_command_t p_commands[] =
 
 
 //----------------------------------------------------//
-// Main entry for the application. Process args and start system.
-// @param argc How many args.
-// @param argv The args.
-// @return Standard exit code.
+
+/// Main entry for the application. Process args and start system.
+/// @param argc How many args.
+/// @param argv The args.
+/// @return Standard exit code.
 int main(int argc, char* argv[])
 {
     int stat = NEB_OK;

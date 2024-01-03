@@ -5,11 +5,11 @@ local sx = require("stringex")
 -- Create the namespace/module.
 local M = {}
 
--- Definitions
+--- Definitions
 NOTES_PER_OCTAVE = 12
 
 
--- All the builtin chord defs.
+--- All the builtin chord defs.
 local chord_defs =
 {
 --  Chord    | Notes             | Description
@@ -43,7 +43,7 @@ local chord_defs =
     "5       | 1 5               | Power chord."
 }
 
--- All the builtin scale defs.
+--- All the builtin scale defs.
 local scale_defs =
 {
 --  Scale                    | Notes                        | Description                              | Lower tetrachord  | Upper tetrachord
@@ -96,7 +96,7 @@ local scale_defs =
     "Yo                      | 1 b3 4 5 b7                  | Yo scale                                 |                   |"
 }
 
--- All possible note names and aliases as offset from middle C.
+--- All possible note names and aliases as offset from middle C.
 local note_names =
 {
     ["C"]=0,  ["Db"]=1, ["D"]=2, ["Eb"]=3, ["E"]=4,  ["F"]=5,  ["Gb"]=6, ["G"]=7, ["Ab"]=8, ["A"]=9,  ["Bb"]=10, ["B"]=11,
@@ -104,7 +104,7 @@ local note_names =
     ["1"]=0,  ["2"]=1,  ["3"]=2, ["4"]=3,  ["5"]=4,  ["6"]=5,  ["7"]=6,  ["8"]=7, ["9"]=8,  ["10"]=9, ["11"]=1,  ["12"]=11
 }
 
--- Intervals as used in chord and scale defs.
+--- Intervals as used in chord and scale defs.
 local intervals =
 {
     ["1"]=0,   ["b2"]=1, ["2"]=2,  ["b3"]=3,  ["3"]=4,   ["4"]=5,    ["b5"]=6,  ["5"]=7, ["#5"]=8, ["b6"]=8, ["6"]=9, ["bb7"]=9,
@@ -113,7 +113,7 @@ local intervals =
 
 ------ Init stuff ------
 
--- The chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals as strings.
+--- The chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals as strings.
 M.chords_and_scales = {}
 
 for sc in scale_defs do
@@ -127,7 +127,7 @@ for sc in chord_defs do
 end
 
 -----------------------------------------------------------------------------
--- Add a named chord or scale definition.
+--- Add a named chord or scale definition.
 -- Description
 -- @param name string which
 -- @param notes string space separated note names
@@ -136,7 +136,7 @@ function M.create_notes(name, notes) --"MY_SCALE", "1 +3 4 -b7"
 end
 
 -----------------------------------------------------------------------------
--- Parse note or notes from input value. Could look like:
+--- Parse note or notes from input value. Could look like:
 --   F4 - named note
 --   Bb2.dim7 - named key/chord
 --   E#5.major - named key/scale
@@ -190,7 +190,7 @@ function M.get_notes_from_string(nstr)
 end
 
 -----------------------------------------------------------------------------
--- Convert note name into note number.
+--- Convert note name into note number.
 -- @param snote string The root of the note with optional +- octave shift.
 -- @return The number or nil if invalid.
 function M.note_name_to_number(snote)
@@ -212,7 +212,7 @@ function M.note_name_to_number(snote)
 end
 
 -----------------------------------------------------------------------------
--- Split a midi note number into root note and octave.
+--- Split a midi note number into root note and octave.
 -- @param notenum Absolute note number.
 -- @return ints of root, octave
 function M.split_note_number(notenum)
@@ -222,7 +222,7 @@ function M.split_note_number(notenum)
 end
 
 -----------------------------------------------------------------------------
--- Make markdown content from the definitions.
+--- Make markdown content from the definitions.
 -- @return list oof strings
 function M.format_doc()
     docs = {}

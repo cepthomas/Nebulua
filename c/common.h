@@ -11,7 +11,7 @@
 #include "lua.h"
 
 
-//----------------------- App defs -----------------------------//
+//---------------- Public API ----------------------//
 
 // App errors start after internal lua errors so they can be handled harmoniously.
 #define NEB_OK                  LUA_OK // synonym
@@ -42,7 +42,7 @@
 // Midi caps.
 #define MIDI_VAL_MAX 127
 
-// Midi events.
+/// Midi events.
 typedef enum
 {
     // Channel events 0x80-0x8F
@@ -65,17 +65,16 @@ typedef enum
 } midi_event_t;
 
 
-//----------------------- Publics -----------------------------//
+//----------------------- Functions -----------------------------//
 
-
-// Convert a status to string.
-// @param[in] err Status to examine.
-// @return String or NULL if not valid.
+/// Convert a status to string.
+/// @param[in] err Status to examine.
+/// @return String or NULL if not valid.
 const char* common_StatusToString(int err);
 
-// Convert a status to string.
-// @param[in] err Midi status to examine.
-// @return String or NULL if not valid.
+/// Convert a status to string.
+/// @param[in] err Midi status to examine.
+/// @return String or NULL if not valid.
 const char* common_MidiStatusToString(int mstat);
 
 /// Safe convert a string to double.

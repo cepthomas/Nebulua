@@ -1,5 +1,5 @@
 
--- Core generic functions for this app. Matches/requires the C libs.
+--- Core generic functions for this app. Matches/requires the C libs.
 
 
 local M = {}
@@ -9,10 +9,10 @@ local M = {}
 ---------------------------- okokokok -------------------------------
 ---------------------------- okokokok -------------------------------
 
--- Log levels - must match those in the host C code.
+--- Log levels - must match those in the host C code.
 M.LOG_LEVEL = { DBG = 1, INF = 2, ERR = 3 }
 
--- Convenience functions.
+--- Convenience functions.
 function M.error(msg) api.log(M.LOG_LEVEL.ERR, msg) end
 function M.info(msg)  api.log(M.LOG_LEVEL.INF, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DBG, msg) end
@@ -22,7 +22,7 @@ function M.debug(msg) api.log(M.LOG_LEVEL.DBG, msg) end
 ---------------------------- maybe -------------------------------
 ---------------------------- maybe -------------------------------
 
--- Creates a function that returns false until the arg is exceeded.
+--- Creates a function that returns false until the arg is exceeded.
 -- @param msec Number of milliseconds to wait.
 -- @return status Function that returns state of the timer.
 function M.delay_timer(msec)
@@ -56,7 +56,7 @@ end
 
 
 -----------------------------------------------------------------------------
--- Process all script info into discrete steps.
+--- Process all script info into discrete steps.
 -- @param name type desc
 -- @return list of step_info ordered by subbeat
 function M.process_all(sequences, sections)
@@ -93,7 +93,7 @@ end
 
 
 -----------------------------------------------------------------------------
--- Parse a pattern.
+--- Parse a pattern.
 -- @param notes_src like: [ "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" ]
 -- @return partially filled-in step_info list
 function parse_graphic_notes(notes_src)
@@ -185,7 +185,7 @@ function parse_graphic_notes(notes_src)
 end
 
 -----------------------------------------------------------------------------
--- Description
+--- Description
 -- @param notes_src like: [ 0.4, 44, 5, 0.4 ]
 -- @return partially filled-in type_info list
 function parse_explicit_notes(notes_src)
@@ -224,7 +224,7 @@ function parse_explicit_notes(notes_src)
 end
 
 -----------------------------------------------------------------------------
--- Process notes at this tick.
+--- Process notes at this tick.
 -- @param name type desc
 -- @return type desc
 function M.do_step(send_stuff, bar, beat, subbeat)
@@ -237,7 +237,7 @@ end
 
 
 -----------------------------------------------------------------------------
--- Construct a subbeat from beat.subbeat representation as a double.
+--- Construct a subbeat from beat.subbeat representation as a double.
 -- @param d number value to convert
 -- @return type desc
 function M.to_subbeats(dbeat)
@@ -264,7 +264,7 @@ return M
 --[[ old stuff TODO3
 
 
--- return table:
+--- return table:
 -- index = subbeat
 -- value = msg_info list to play
 function M.process_sequence(seq)

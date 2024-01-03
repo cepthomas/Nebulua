@@ -23,15 +23,14 @@ include_directories(
 # Source files.
 add_executable(nebulua
     main.c
-    common.c
-    cli.c
-    devmgr.c
-    luainterop.c
-    luainteropwork.c
-    ${LBOT_C}/diag.c
-    ${LBOT_C}/logger.c
-    ${LBOT_C}/luaex.c
-    # ${CBOT}/private/logger.c
+    ./private/common.c
+    ./private/cli.c
+    ./private/devmgr.c
+    ./private/luainterop.c
+    ./private/luainteropwork.c
+    ${LBOT_C}/private/diag.c
+    ${LBOT_C}/private/logger.c
+    ${LBOT_C}/private/luaex.c
     ${FTIMER}/private/ftimer.c
     ${FTIMER}/private/stopwatch.c
     )

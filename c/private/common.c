@@ -9,8 +9,9 @@
 
 #define BUFF_LEN 100
 
+//----------------------- Functions -----------------------------//
 
- // TODO3 put these formatters/parsers somewhere else?
+
 
 //--------------------------------------------------------//
 const char* common_StatusToString(int stat)
@@ -48,6 +49,7 @@ const char* common_MidiStatusToString(int mstat)
     static char buff[BUFF_LEN];
     if (mstat != MMSYSERR_NOERROR)
     {
+        // Get the lib supplied text.
         midiInGetErrorText(mstat, buff, BUFF_LEN);
         return buff;
     }
@@ -59,7 +61,7 @@ const char* common_MidiStatusToString(int mstat)
 
 
 //--------------------------------------------------------//
-bool common_StrToDouble(const char* str, double* val)
+bool common_StrToDouble(const char* str, double* val)// TODO1 put these formatters/parsers somewhere else?
 {
     bool valid = true;
     char* p;
@@ -82,7 +84,7 @@ bool common_StrToDouble(const char* str, double* val)
 
 
 //--------------------------------------------------------//
-bool common_StrToInt(const char* str, int* val)
+bool common_StrToInt(const char* str, int* val)// TODO1 put these formatters/parsers somewhere else?
 {
     bool valid = true;
     char* p;
