@@ -14,7 +14,7 @@ M.lua_export_funcs =
         lua_func_name = "setup",
         host_func_name = "Setup",
         description = "Called to initialize Nebulator stuff.",
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
     {
@@ -39,7 +39,7 @@ M.lua_export_funcs =
                 description = "Which subbeat 0-7"
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
     {
@@ -64,7 +64,7 @@ M.lua_export_funcs =
                 description = "Volume between 0.0 and 1.0."
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
     {
@@ -89,7 +89,7 @@ M.lua_export_funcs =
                 description = "Payload"
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
 }
@@ -140,7 +140,7 @@ M.host_export_funcs =
                 description = "Log message"
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
     {
@@ -155,7 +155,7 @@ M.host_export_funcs =
                 description = "BPM"
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
     {
@@ -185,7 +185,7 @@ M.host_export_funcs =
                 description = "Duration as bar.beat"
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
     {
@@ -210,7 +210,7 @@ M.host_export_funcs =
                 description = "Payload."
             },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "LUA_STATUS" }
     },
 
 }

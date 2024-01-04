@@ -75,17 +75,5 @@ const char* common_StatusToString(int err);
 /// @return String or NULL if not valid.
 const char* common_MidiStatusToString(int mstat);
 
-/// Safe convert a string to double.
-/// @param str The input.
-/// @param val The output.
-/// @return Valid conversion.
-bool common_StrToDouble(const char* str, double* val);
-
-/// Safe convert a string to integer.
-/// @param str The input.
-/// @param val The output.
-/// @return Valid conversion.
-bool common_StrToInt(const char* str, int* val);
-
 
 #endif // NEB_COMMON_H

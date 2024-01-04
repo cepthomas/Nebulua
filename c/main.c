@@ -21,194 +21,75 @@
 #include "luainterop.h"
 #include "luainteropwork.h"
 
+
 //----------------------- Definitions -----------------------//
 
 #define TEST
 
 //----------------------- Types -----------------------------//
 
-typedef int (*cli_command_handler_t)(int argc, char* argv[]);//, CliCommandData* pData);
+typedef int (*cli_command_handler_t)(int argc, char* argv[]);
 
-// typedef struct cli_command_arg
-// {
-//     const char* name;               ///< Arg name cmd|alias|alias
-//     const char* description;        ///< Brief arg description
-//     // const char type;        ///< S|I|F/D|N
-// } cli_command_arg_t;
-
-typedef struct cli_command
-{
-    const char* name;               ///< Command name
-    const char* description;        ///< Brief command description
-    cli_command_handler_t handler;         ///< Command function pointer
-    // int16_t minLevel;               ///< Minimum user level to see this command
-    // int16_t minArgs;                ///< Minimum number of args
-    // int16_t maxArgs;                ///< Maximum number of args
-    const char* args;            ///< Brief args description string
-    // const cli_command_arg arg_list[];
+typedef struct cli_command {
+    cli_command_handler_t handler;
+    const char* long_name;
+    const char* short_name;
+    // const char* description;
+    // const char* args;
 } cli_command_t;
 
 
 //----------------------- Vars -----------------------------//
 
 // The main Lua thread.
-static lua_State* p_lmain;
+static lua_State* _l;
 
 // The script execution state.
-static bool p_script_running = false;
+static bool _script_running = false;
 
 // The app execution state.
-static bool p_app_running = true;
+static bool _app_running = true;
 
 // Last tick time.
-static double p_last_msec = 0;
+static double _last_msec = 0;
 
 // CLI contents.
-static char p_cli_buf[CLI_BUFF_LEN];
+static char _cli_buf[CLI_BUFF_LEN];
+
+// Current tempo.
+static int _bpm;
+
+// The cli commands.
+static const cli_command_t _commands[];
 
 
-//---------------------- Private functions ------------------------//
+//---------------------- Functions ------------------------//
 
 // Start forever loop.
-static int p_Run(const char* fn);
+static int _Run(const char* fn);
 
 // Tick corresponding to bpm. !!Interrupt!!
-static void p_MidiClockHandler(double msec);
+static void _MidiClockHandler(double msec);
 
 // Handle incoming messages. !!Interrupt!!
-static void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 // Blocking sleep.
-static void p_Sleep(int msec);
-
-// Do what the cli says.
-static bool p_ProcessCommand(const char* sin);
+static void _Sleep(int msec);
 
 // Top level error handler. Logs and calls luaL_error() which doesn't return.
-static bool p_EvalStatus(int stat, const char* format, ...);
+static bool _EvalStatus(int stat, const char* format, ...);
 
+// Safe convert a string to double.
+static bool _StrToDouble(const char* str, double* val, double min, double max);
 
-///////////////////////////////////////////////////////////////////////////
-////////////////////////// cli TODO1 ////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-
-//??????
-// print("Usage: gen_interop.lua (-d) (-t) [-ch|-cs] [your_spec.lua] [your_outpath]")
-// print("  -ch generate c and h files")
-// print("  -cs generate c# file")
-// print("  -d enable debugger if available")
-// print("  -t use debugger terminal color")
-
-
-// t (123) - set tempo
-// s|spacebar? - toggle script run
-// x - exit
-// monin (on|off) - monitor input
-// monout (on|off) - monitor output
-// k|kill - stop all midi
-// r|rewind - set to 0
-// c|compile - reload
-
-///// original with getopt:
-// case 'x':
-//     p_app_running = false;
-//     break;
-// case 't':
-//     int bpm = -1;
-//     if(common_StrToInt(optarg, &bpm))
-//     {
-//         luainteropwork_SetTempo(p_lmain, bpm);
-//     }
-//     else
-//     {
-//         cli_WriteLine("Option -%c requires an integer argument.", c);
-//         valid = false;
-//     }
-//     break;
-// case '?':
-//     // Error in cmd line.
-//     if (optopt == 't')
-//     {
-//         cli_WriteLine("Option -%c missing argument.", optopt);
-//     }
-//     else if(isprint(optopt))
-//     {
-//         cli_WriteLine("Unknown option `-%c'.", optopt);
-//     }
-//     else
-//     {
-//         cli_WriteLine("Unknown option `\\x%x'.", optopt);
-//     }
-//     valid = false;
-//     break;
-
-
-void func_SetLevel(int l) { }
-int func_GetLevel(void) { return 99; }
-int user_command(int argc, char* argv[])
-{
-    if (argc >= 1) // set
-    {
-        if(argc == 2)
-        {
-            int level;
-            if (common_StrToInt(argv[1], &level))
-            {
-                func_SetLevel(level);
-            }
-            else
-            {
-               cli_WriteLine("invalid value %d", level);
-            }
-        }
-
-    }
-    else // get
-    {
-        cli_WriteLine("Log output level = %d", func_GetLevel());
-    }
-
-    return 0;
-}
-
-
-//
-static cli_command_t p_commands[] =
-{
-    {
-        .name        = "tempo",
-        .description = "Set a key indicator 0-2 on hid 0-1",
-        .handler    = user_command,
-        .args     = "(hid) (row) (col) (indicator) (off|on|slow|med|fast)",
-        // .argList     = 
-        // {
-        //     .name        = "bpm",
-        //     // .opts        = "arg1",
-        //     .description = "Aaaaaaarghhhh 40-240",
-        // },
-    },
-    {
-        .name        = "version",
-        .description = "Show firmware and CLI version",
-        .handler    = user_command,
-        .args     =  "[set|ramp|pulse] [PWM num] [val] (0-1000)",
-    },
-
-    // List terminator
-    { NULL,NULL, NULL, NULL}
-};
-
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
+// Safe convert a string to integer.
+static bool _StrToInt(const char* str, int* val, int min, int max);
 
 
 //----------------------------------------------------//
 
 /// Main entry for the application. Process args and start system.
-/// @param argc How many args.
-/// @param argv The args.
-/// @return Standard exit code.
 int main(int argc, char* argv[])
 {
     int stat = NEB_OK;
@@ -226,12 +107,12 @@ int main(int argc, char* argv[])
     cli_WriteLine("Tell 2 %d", fp);
     do
     {
-        bool ready = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
+        bool ready = cli_ReadLine(_cli_buf, CLI_BUFF_LEN);
         if(ready)
         {
-            cli_WriteLine("Got %s", p_cli_buf);
+            cli_WriteLine("Got %s", _cli_buf);
         }
-        p_Sleep(100);
+        _Sleep(100);
     } while (alive);
 #endif
 
@@ -244,32 +125,32 @@ int main(int argc, char* argv[])
     }
 
     // Init internal stuff.
-    p_lmain = luaL_newstate();
-    // diag_EvalStack(p_lmain, 0);
+    _l = luaL_newstate();
+    // diag_EvalStack(_l, 0);
 
     // Load std libraries.
-    luaL_openlibs(p_lmain);
+    luaL_openlibs(_l);
 
     // Load host funcs into lua space. This table gets pushed on the stack and into globals.
-    luainterop_Load(p_lmain);
+    luainterop_Load(_l);
 
     // Pop the table off the stack as it interferes with calling the module functions.
-    lua_pop(p_lmain, 1);
+    lua_pop(_l, 1);
 
     // Stopwatch.
     stopwatch_Init();
-    p_last_msec = stopwatch_TotalElapsedMsec();
+    _last_msec = stopwatch_TotalElapsedMsec();
 
     // Tempo timer and interrupt.
-    ftimer_Init(p_MidiClockHandler, 1); // 1 msec resolution.
-    luainteropwork_SetTempo(p_lmain, 60);
+    ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
+    luainteropwork_SetTempo(_l, 60);
 
-    stat = devmgr_Init((DWORD_PTR)p_MidiInHandler);
-    p_EvalStatus(stat, "Failed to init device manager");
+    stat = devmgr_Init((DWORD_PTR)_MidiInHandler);
+    _EvalStatus(stat, "Failed to init device manager");
 
     // Run the application - blocks until done.
-    stat = p_Run(argv[1]);
-    p_EvalStatus(stat, "Run failed");
+    stat = _Run(argv[1]);
+    _EvalStatus(stat, "Run failed");
 
     // Finished. Clean up and go home.
     cli_WriteLine("Goodbye - come back soon!");
@@ -277,161 +158,82 @@ int main(int argc, char* argv[])
     ftimer_Destroy();
     cli_Destroy();
     devmgr_Destroy();
-    lua_close(p_lmain);
+    lua_close(_l);
 
     return NEB_OK;
 }
 
 
 //---------------------------------------------------//
-int p_Run(const char* fn)
+int _Run(const char* fn)
 {
     int stat = NEB_OK;
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack - or pushes an error message.
-    stat = luaL_loadfile(p_lmain, fn);
-    p_EvalStatus(stat, "luaL_loadfile() failed fn:%s", fn);
+    stat = luaL_loadfile(_l, fn);
+    _EvalStatus(stat, "luaL_loadfile() failed fn:%s", fn);
 
     // Run the script to init everything.
-    stat = lua_pcall(p_lmain, 0, LUA_MULTRET, 0);
-    p_EvalStatus(stat, "lua_pcall() failed fn:%s", fn);
+    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+    _EvalStatus(stat, "lua_pcall() failed fn:%s", fn);
 
     // Script setup.
-    stat = luainterop_Setup(p_lmain);
-    p_EvalStatus(stat, "setup() failed");
+    stat = luainterop_Setup(_l);
+    _EvalStatus(stat, "setup() failed");
 
     // Loop forever doing cli requests.
     do
     {
-        bool ready = cli_ReadLine(p_cli_buf, CLI_BUFF_LEN);
+        bool ready = cli_ReadLine(_cli_buf, CLI_BUFF_LEN);
         if(ready)
         {
-            bool ok = p_ProcessCommand(p_cli_buf);
-            if (!ok)
+            // bool ok = _ProcessCommand(_cli_buf);
+            bool done = false;
+            bool valid = false;
+
+            // Chop up the command line into args.
+            #define MAX_NUM_ARGS 20
+            char* argv[MAX_NUM_ARGS];
+            int argc = 0;
+
+            // Make writable copy and tokenize it.
+            char cp[strlen(_cli_buf) + 1];
+            strcpy(cp, _cli_buf);
+            char* tok = strtok(cp, " ");
+            while(tok != NULL && argc < MAX_NUM_ARGS)
             {
-                // cli_ProcessCommand() took care of error handling.
+                argv[argc++] = tok;
+                tok = strtok(NULL, " ");
             }
+
+            // Process the command and its options.
+            if (argc > 0)
+            {
+                // Find and execute the command.
+                cli_command_t* pcmd = _commands;
+                while (_commands->handler != NULL)
+                {
+                    if (strcmp(_commands->short_name, argv[0]) || strcmp(_commands->long_name, argv[0]))
+                    {
+                        valid = true;
+                        // Execute the command.
+                        int stat = (*_commands->handler)(argc, argv);
+                        // cmd handles this _EvalStatus(stat, "CLI function failed: %s", _commands->name);
+                        break;
+                    }
+                }
+            }
+            // else assume fat fingers.
         }
-        p_Sleep(100);
-    } while (p_app_running);
+        _Sleep(100);
+    } while (_app_running);
 
     return stat;
 }
 
 
-
-
-
-//---------------------------------------------------//
-bool p_ProcessCommand(const char* sin)
-{
-    bool done = false;
-    bool valid = false;
-
-    // Chop up the command line into something suitable for getopt().
-    #define MAX_NUM_ARGS 20
-    char* argv[MAX_NUM_ARGS];
-    int argc = 0;
-
-    // Make writable copy and tokenize it.
-    char cp[strlen(sin) + 1];
-    strcpy(cp, sin);
-    char* tok = strtok(cp, " ");
-    while(tok != NULL && argc < MAX_NUM_ARGS)
-    {
-        argv[argc++] = tok;
-        tok = strtok(NULL, " ");
-    }
-
-    // Process the command and its options.
-    if (argc > 0)
-    {
-        // Find and execute the command.
-        cli_command_t* pcmd = p_commands;
-        while (p_commands->name != NULL)
-        {
-            if (strcmp(p_commands->name, argv[0]))
-            {
-                valid = true;
-                int stat = (*p_commands->handler)(argc, argv);
-                p_EvalStatus(stat, "CLI function failed: %s", p_commands->name);
-                break;
-            }
-        }
-
-        if (!valid)
-        {
-            cli_WriteLine("Bad command: %s.", argv[0]);
-//>>>            p_Usage();
-        }
-    }
-    // else ignore?
-
-    // if(!valid)
-    // {
-    //     // Usage.
-    //     cli_WriteLine("x: exit");
-    //     cli_WriteLine("t bpm: set tempo");
-    // }
-
-    return valid;
-}
-
-
-
-// //---------------------------------------------------//
-// int p_ProcessCommand(const char* sin)
-// {
-//     int stat = NEB_OK;
-//     // TODO2 make this generic. Some spec with list of entries:
-//     //   - cmd string (aliases?)
-//     //   - descr string
-//     //   - optlist:
-//     //      - opt string
-//     //      - descr string
-//     //      - type: S|I|F/D|N
-//     //      - handlerDef  typedef void (*handlerDef)(?);
-//     // ? C:\Dev\AL\harvester\xib-firmware\src\cli\cli_command_list.c
-//     // ? C:\Dev\AL\caldwell\gen3procfirmware\src-application\cli\cli_command_list.c
-// // typedef struct CliCommandInfo
-// // {
-// //     const char* name;               ///< Command name (all lower case)
-// //     CliCommandPtr pCommand;         ///< Command function pointer
-// //     int16_t minLevel;               ///< Minimum user level to see this command
-// //     int16_t minArgs;                ///< Minimum number of args
-// //     int16_t maxArgs;                ///< Maximum number of args
-// //     const char* argList;            ///< Brief args description string
-// //     const char* description;        ///< Brief command description
-// // } CliCommandInfo;
-// // typedef bool (*CliCommandPtr)(uint16_t argc, char* argv[], CliCommandData* pData);
-// // bool cliLogLevelCmd(uint16_t argc, char* argv[], CliCommandData* pData)
-// // {
-// //     int16_t cliPort = pData->cliPort;
-// //     if (argc >= 1)
-// //     {
-// //         if(argc == 2)
-// //         {
-// //             uint16_t level = toUInt16(argv[1], 0, 10);
-// //             if (conversionError())
-// //             {
-// //                 serialWriteLine("invalid value", (uint16_t)cliPort);
-// //             }
-// //             else
-// //             {
-// //                 debugLogSetLevel(level);
-// //             }
-// //         }
-// //         snprintf(pData->printBuf, CLI_PRINT_BUF_LENGTH, "Log output level = %d", debugLogGetLevel());
-// //         serialWriteLine(pData->printBuf, (uint16_t)cliPort);
-// //     }
-// //     return true;
-// // }
-
-
-
-
 //-------------------------------------------------------//
-void p_MidiClockHandler(double msec)
+void _MidiClockHandler(double msec)
 {
     // TODO1 process events
     //  See lua.c for a way to treat C signals, which you may adapt to your interrupts.
@@ -440,7 +242,7 @@ void p_MidiClockHandler(double msec)
 
 
 //--------------------------------------------------------//
-void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
     // Input midi event -- this is in an interrupt handler! It is inited in devmgr_Init().
     // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
@@ -480,11 +282,11 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
                     case MIDI_NOTE_ON:
                     case MIDI_NOTE_OFF:
                         double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
-                        luainterop_InputNote(p_lmain, hndchan, bdata1, volume);                            
+                        luainterop_InputNote(_l, hndchan, bdata1, volume);
                         break;
 
                     case MIDI_CONTROL_CHANGE:
-                        luainterop_InputController(p_lmain, hndchan, bdata1, bdata2);
+                        luainterop_InputController(_l, hndchan, bdata1, bdata2);
                         break;
 
                     case MIDI_PITCH_WHEEL_CHANGE:
@@ -507,8 +309,199 @@ void p_MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR
 
 
 //--------------------------------------------------------//
-// Blocking sleep.
-void p_Sleep(int msec)
+int _TempoCmd(int argc, char* argv[])
+{
+    int stat = NEB_OK;
+    switch (argc)
+    {
+        case 0: // usage
+            cli_WriteLine("tempo|t: get or set the tempo");
+            cli_WriteLine("    (bpm): tempo 40-240");
+            break;
+
+        case 1: // get
+            cli_WriteLine("tempo: %d", _bpm);
+            break;
+
+        case 2: // set
+            int t;
+            if(_StrToInt(argv[1], &t, 40, 240))
+            {
+                _bpm = t;
+                luainteropwork_SetTempo(_l, _bpm);
+            }
+            else
+            {
+               cli_WriteLine("invalid tempo: %d", argv[1]);
+               stat = NEB_ERR_BAD_CLI_ARG;
+            }
+            break;
+
+        default:
+            cli_WriteLine("invalid command args");
+            stat = NEB_ERR_BAD_CLI_ARG;
+            break;
+    }
+
+    return stat;
+}
+
+//--------------------------------------------------------//
+int _RunCmd(int argc, char* argv[])
+{
+    int stat = NEB_OK;
+    switch (argc)
+    {
+        case 0: // usage
+            cli_WriteLine("run|spacebar: toggle running the script");
+            break;
+
+        case 1: // no args
+            _script_running = !_script_running;
+            break;
+
+        default:
+            cli_WriteLine("invalid command args");
+            stat = NEB_ERR_BAD_CLI_ARG;
+            break;
+    }
+
+    return stat;
+}
+
+
+//--------------------------------------------------------//
+int _ExitCmd(int argc, char* argv[])
+{
+    int stat = NEB_OK;
+    switch (argc)
+    {
+        case 0: // usage
+            cli_WriteLine("exit|x: exit the application");
+            break;
+
+        case 1: // no args
+            _app_running = !_app_running;
+            break;
+
+        default:
+            cli_WriteLine("invalid command args");
+            stat = NEB_ERR_BAD_CLI_ARG;
+            break;
+    }
+
+    return stat;
+}
+
+
+//--------------------------------------------------------//
+int _MonCmd(int argc, char* argv[])
+{
+    int stat = NEB_OK;
+    switch (argc)
+    {
+        case 0: // usage
+            cli_WriteLine("monitor|m: monitor midi traffic");
+            cli_WriteLine("    (in|out|bi|off): action");
+            break;
+
+        case 2: // set
+            if (strcmp(argv[1], "in") == 0) // do something with these
+            {
+            }
+            else if (strcmp(argv[1], "out") == 0)
+            {
+            }
+            else if (strcmp(argv[1], "bi") == 0)
+            {
+            }
+            else if (strcmp(argv[1], "off") == 0)
+            {
+            }
+            else
+            {
+               cli_WriteLine("invalid option: %s", argv[1]);
+               stat = NEB_ERR_BAD_CLI_ARG;
+            }
+            break;
+
+        default:
+            cli_WriteLine("invalid command args");
+            stat = NEB_ERR_BAD_CLI_ARG;
+            break;
+    }
+
+    return stat;
+}
+
+
+//--------------------------------------------------------//
+int _KillCmd(int argc, char* argv[])
+{
+    int stat = NEB_OK;
+    switch (argc)
+    {
+        case 0: // usage
+            cli_WriteLine("kill|k: stop all midi");
+            break;
+
+        case 1: // no args
+            // TODO3 do something
+            break;
+
+        default:
+            cli_WriteLine("invalid command args");
+            stat = NEB_ERR_BAD_CLI_ARG;
+            break;
+    }
+
+    return stat;
+}
+
+
+//--------------------------------------------------------//
+int _PositionCmd(int argc, char* argv[])
+{
+    // p|position (where) - set to where or 0 or tell current TODO1
+    int stat = NEB_OK;
+
+    return stat;
+}
+
+
+//--------------------------------------------------------//
+int _ReloadCmd(int argc, char* argv[]) // TODO3
+{
+    // l|re/load - script
+    int stat = NEB_OK;
+
+    return stat;
+}
+
+
+//--------------------------------------------------------//
+int _Usage(int argc, char* argv[])
+{
+    int stat = NEB_OK;
+
+    cli_WriteLine("help|?: explain it all");
+
+    cli_command_t* pcmd = _commands;
+    while (_commands->handler != NULL)
+    {
+        // Don't call this function or recursive death.
+        if (_commands->handler != _Usage)
+        {
+            (*_commands->handler)(0, NULL);
+        }
+    }
+
+    return stat;
+}
+
+
+//--------------------------------------------------------//
+void _Sleep(int msec)
 {
     struct timespec ts;
     ts.tv_sec = msec / 1000;
@@ -518,7 +511,7 @@ void p_Sleep(int msec)
 
 
 //--------------------------------------------------------//
-bool p_EvalStatus(int stat, const char* format, ...)
+bool _EvalStatus(int stat, const char* format, ...)
 {
     static char buff[100];
     bool has_error = false;
@@ -536,20 +529,91 @@ bool p_EvalStatus(int stat, const char* format, ...)
         if (stat <= LUA_ERRFILE) // internal lua error
         {
             // Get error message on stack if provided.
-            if (lua_gettop(p_lmain) > 0)
+            if (lua_gettop(_l) > 0)
             {
-                luaL_error(p_lmain, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(p_lmain, -1));
+                luaL_error(_l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(_l, -1));
             }
             else
             {
-                luaL_error(p_lmain, "Status:%s info:%s", sstat, buff);
+                luaL_error(_l, "Status:%s info:%s", sstat, buff);
             }
         }
         else // assume nebulua error
         {
-            luaL_error(p_lmain, "Status:%s info:%s", sstat, buff);
+            luaL_error(_l, "Status:%s info:%s", sstat, buff);
         }
     }
 
     return has_error;
 }
+
+
+//--------------------------------------------------------//
+bool _StrToDouble(const char* str, double* val, double min, double max)
+{
+    bool valid = true;
+    char* p;
+
+    errno = 0;
+    *val = strtof(str, &p);
+    if(errno == ERANGE)
+    {
+        // Mag is too large.
+        valid = false;
+    }
+    else if(p == str)
+    {
+        // Bad string.
+        valid = false;
+    }
+    else if(*val < min || *val > max)
+    {
+        // Out of range.
+        valid = false;
+    }
+
+    return valid;
+}
+
+
+//--------------------------------------------------------//
+bool _StrToInt(const char* str, int* val, int min, int max)
+{
+    bool valid = true;
+    char* p;
+
+    errno = 0;
+    *val = strtol(str, &p, 10);
+    if(errno == ERANGE)
+    {
+        // Mag is too large.
+        valid = false;
+    }
+    else if(p == str)
+    {
+        // Bad string.
+        valid = false;
+    }
+    else if(*val < min || *val > max)
+    {
+        // Out of range.
+        valid = false;
+    }
+
+    return valid;
+}
+
+
+//--------------------------------------------------------//
+static const cli_command_t _commands[] =
+{
+    { _Usage,        "help",       "?"   },
+    { _ExitCmd,      "exit",       "x"   },
+    { _RunCmd,       "run",        " "   },
+    { _TempoCmd,     "tempo",      "t"   },
+    { _MonCmd,       "monitor",    "m"   },
+    { _KillCmd,      "kill",       "k"   },
+    { _PositionCmd,  "position",   "p"   },
+    { _ReloadCmd,    "reload",     "l"   },
+    { NULL,          NULL,         NULL  }
+};

@@ -9,8 +9,8 @@
 #include "cli.h"
 #include "common.h"
 
-// TODO3 put this in lbot or cbot.
-// TODO3 serial port, etc?  https://en.cppreference.com/w/c/io
+// TODO1 put this in lbot or cbot (actually refactor all).
+// serial port, etc?  https://en.cppreference.com/w/c/io
 
 
 //---------------- Private ------------------------------//
@@ -21,7 +21,7 @@ static char p_cli_buff[CLI_BUFF_LEN];
 /// CLI propmpt.
 static char* p_Prompt = "";
 
-/// TODO3 kludgy, fix.
+/// TODO1 kludgy, fix.
 static bool p_Stdio = true;
 
 
