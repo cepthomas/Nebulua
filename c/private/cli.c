@@ -7,9 +7,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "cli.h"
-#include "common.h"
+#include "nebcommon.h"
 
-// TODO1 put this in lbot or cbot (actually refactor all).
+// TODO2 put this in lbot or cbot (actually refactor all).
 // serial port, etc?  https://en.cppreference.com/w/c/io
 
 
@@ -21,7 +21,7 @@ static char p_cli_buff[CLI_BUFF_LEN];
 /// CLI propmpt.
 static char* p_Prompt = "";
 
-/// TODO1 kludgy, fix.
+/// TODO2 kludgy, fix.
 static bool p_Stdio = true;
 
 

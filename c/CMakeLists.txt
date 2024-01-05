@@ -24,13 +24,13 @@ include_directories(
 # Source files.
 add_executable(nebulua
     main.c
-    ./private/common.c
+    ./private/nebcommon.c
     ./private/cli.c
     ./private/devmgr.c
     ./private/luainterop.c
     ./private/luainteropwork.c
+    ./private/logger.c
     ${LBOT_C}/private/diag.c
-    ${LBOT_C}/private/logger.c
     ${LBOT_C}/private/luaex.c
     ${FTIMER}/private/ftimer.c
     ${FTIMER}/private/stopwatch.c

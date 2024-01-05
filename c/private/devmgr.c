@@ -2,7 +2,7 @@
 #include <string.h>
 #include "logger.h"
 #include "diag.h"
-#include "common.h"
+#include "nebcommon.h"
 #include "devmgr.h"
 
 

@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "logger.h"
-#include "common.h"
+#include "nebcommon.h"
 #include "diag.h"
 
 

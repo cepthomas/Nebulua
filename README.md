@@ -1,6 +1,9 @@
 # Nebulua
 An experimental version of Nebulator using Lua as the script flavor.
 
+Copy stuff from Nebulator\README.md
+
+
 
 field types:
 S = string
