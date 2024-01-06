@@ -11,96 +11,6 @@
 // #include "lua.h"
 
 
-///// Midi defs
-
-// ///// constants
-// // Internal/app resolution aka DeltaTicksPerQuarterNote or subbeats per beat.
-// int InternalPPQ = 32;
-// // Only 4/4 time supported.
-// int BeatsPerBar = 4;
-// // Convenience.
-// int SubbeatsPerBeat = InternalPPQ;
-// // Convenience.
-// int SubeatsPerBar = InternalPPQ * BeatsPerBar;
-///// bar vars - all zero-based.
-// int TotalSubbeats = 0;
-// int TotalBeats = TotalSubbeats / SubbeatsPerBeat;
-// // The bar number.
-// int Bar = TotalSubbeats / SubeatsPerBar;
-// // The beat number in the bar.
-// int Beat = TotalSubbeats / SubbeatsPerBeat % BeatsPerBar;
-// // The subbeat in the beat.
-// int Subbeat = TotalSubbeats % SubbeatsPerBeat;
-///// app vars
-// readonly double Tempo;
-// double InternalPeriod()
-// {
-//     double secPerBeat = 60.0 / Tempo;
-//     double msecPerT = 1000 * secPerBeat / SubbeatsPerBeat;
-//     return msecPerT;
-// }
-
-// int RoundedInternalPeriod()
-// {
-//     double msecPerT = InternalPeriod();
-//     int period = msecPerT > 1.0 ? (int)Math.Round(msecPerT) : 1;
-//     return period;
-// }
-
-// double InternalToMsec(int t)
-// {
-//     double msec = InternalPeriod() * t;
-//     return msec;
-// }
-
-
-// TODO1 these are not actually midi.
-// Only 4/4 time supported.
-#define BEATS_PER_BAR 4
-
-// Internal/app resolution aka DeltaTicksPerQuarterNote or subbeats per beat.
-#define INTERNAL_PPQ 32
-
-// Convenience.
-#define SUBBEATS_PER_BEAT INTERNAL_PPQ
-
-// Convenience.
-#define SUBEATS_PER_BAR SUBBEATS_PER_BEAT * BEATS_PER_BAR
-
-// Total.
-#define TOTAL_BEATS(total_subbeats) total_subbeats / SUBBEATS_PER_BEAT
-
-// The bar number.
-#define BAR(total_subbeats) total_subbeats / SUBEATS_PER_BAR
-
-// The beat number in the bar.
-#define BEAT(total_subbeats) total_subbeats / SUBBEATS_PER_BEAT % BEATS_PER_BAR
-
-// // The subbeat in the beat.
-#define SUBBEAT(total_subbeats) total_subbeats % SUBBEATS_PER_BEAT
-
-
-double InternalPeriod()
-{
-    double secPerBeat = 60.0 / Tempo;
-    double msecPerT = 1000 * secPerBeat / SubbeatsPerBeat;
-    return msecPerT;
-}
-
-int RoundedInternalPeriod()
-{
-    double msecPerT = InternalPeriod();
-    int period = msecPerT > 1.0 ? (int)Math.Round(msecPerT) : 1;
-    return period;
-}
-
-double InternalToMsec(int t)
-{
-    double msec = InternalPeriod() * t;
-    return msec;
-}
-
-
 // Midi caps.
 #define MIDI_VAL_MIN 0
 
@@ -128,34 +38,6 @@ typedef enum
     MIDI_AUTO_SENSING = 0xFE,
     MIDI_META_EVENT = 0xFF,
 } midi_event_t;
-
-
-
-
-// // Resolution for midi file events aka DeltaTicksPerQuarterNote - not needed unless doing file IO
-// readonly int MidiFilePpq_F;
-// ///// MidiTimeConverter
-// long InternalToMidi_F(int t)
-// {
-//     long mtime = t * MidiFilePpq_F / SubbeatsPerBeat;
-//     return mtime;
-// }
-// int MidiToInternal_F(long t)
-// {
-//     long itime = t * SubbeatsPerBeat / MidiFilePpq_F;
-//     return (int)itime;
-// }
-// double MidiToSec_F(int t)
-// {
-//     double msec = MidiPeriod_F() * t / 1000.0;
-//     return msec;
-// }
-// double MidiPeriod_F()
-// {
-//     double secPerBeat = 60.0 / Tempo;
-//     double msecPerT = 1000 * secPerBeat / MidiFilePpq_F;
-//     return msecPerT;
-// }
 
 
 #endif // MIDI_H

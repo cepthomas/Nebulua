@@ -17,11 +17,13 @@
 #include "stopwatch.h"
 // application
 #include "nebcommon.h"
+#include "midi.h"
 #include "cli.h"
 #include "devmgr.h"
 #include "luainterop.h"
 #include "luainteropwork.h"
 
+// TODO1 need some unit tests.
 
 //----------------------- Definitions -----------------------//
 
@@ -47,6 +49,7 @@ typedef struct cli_command
     cli_command_handler_t handler;
     cli_command_desc_t desc;
 } cli_command_t;
+
 
 //----------------------- Vars - app ---------------------------//
 
@@ -272,7 +275,7 @@ void _MidiClockHandler(double msec)
 
     EnterCriticalSection(&_critical_section);
 
-    // TODO2 calculate these.
+    // TODO1 calculate these.
     int bar;
     int beat;
     int subbeat;
@@ -389,7 +392,7 @@ int _TempoCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 }
 
 //--------------------------------------------------------//
-int _RunCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 need to handle the single space bar directly.
+int _RunCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO3 also single space bar?
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -410,7 +413,7 @@ int _ExitCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
-        _app_running = !_app_running;
+        _app_running = false;
         stat = NEB_OK;
     }
 
@@ -419,13 +422,13 @@ int _ExitCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _MonCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
+int _MonCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do something with these
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
     if (argc == 2) // set
     {
-        if (strcmp(argv[1], "in") == 0) // do something with these
+        if (strcmp(argv[1], "in") == 0)
         {
         stat = NEB_OK;
         }
@@ -453,13 +456,12 @@ int _MonCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
+int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do something
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
     if (argc == 1) // no args
     {
-        // TODO2 do something
         stat = NEB_OK;
     }
 
@@ -468,7 +470,7 @@ int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
+int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do something
 {
     // p|position (where) - 
     int stat = NEB_ERR_BAD_CLI_ARG;
@@ -487,7 +489,7 @@ int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _ReloadCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO2
+int _ReloadCmd(cli_command_desc_t* pdesc, int argc, char* argv[])// TODO1 do something
 {
     // l|re/load - script
     int stat = NEB_ERR_BAD_CLI_ARG;
@@ -637,7 +639,7 @@ static const cli_command_t _commands[] =
 {
     { _Usage,        { "help",       "?",   "explain it all",                         "" } },
     { _ExitCmd,      { "exit",       "x",   "exit the application",                   "" } },
-    { _RunCmd,       { "run",        " ",   "toggle running the script",              "" } },
+    { _RunCmd,       { "run",        "r",   "toggle running the script",              "" } },
     { _TempoCmd,     { "tempo",      "t",   "get or set the tempo",                   "(bpm): tempo 40-240" } },
     { _MonCmd,       { "monitor",    "m",   "monitor midi traffic",                   "(in|out|bi|off): action" } },
     { _KillCmd,      { "kill",       "k",   "stop all midi",                          "" } },

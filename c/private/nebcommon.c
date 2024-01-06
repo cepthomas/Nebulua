@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
 #include "logger.h"
 #include "nebcommon.h"
 #include "diag.h"
@@ -9,6 +10,28 @@
 
 #define BUFF_LEN 100
 
+//--------------------------------------------------------//
+double common_InternalPeriod(int tempo)
+{
+    double sec_per_beat = 60.0 / tempo;
+    double msec_per_subbeat = 1000 * sec_per_beat / SUBEATS_PER_BAR;
+    return msec_per_subbeat;
+}
+
+//--------------------------------------------------------//
+int common_RoundedInternalPeriod(int tempo)
+{
+    double msec_per_subbeat = common_InternalPeriod(tempo);
+    int period = msec_per_subbeat > 1.0 ? (int)round(msec_per_subbeat) : 1;
+    return period;
+}
+
+//--------------------------------------------------------//
+double common_InternalToMsec(int tempo, int subbeat)
+{
+    double msec = common_InternalPeriod(tempo) * subbeat;
+    return msec;
+}
 
 //--------------------------------------------------------//
 const char* common_StatusToString(int stat)
