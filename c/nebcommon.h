@@ -38,16 +38,16 @@
 #define SUBEATS_PER_BAR SUBBEATS_PER_BEAT * BEATS_PER_BAR
 
 /// Total.
-#define TOTAL_BEATS(subbeats) subbeats / SUBBEATS_PER_BEAT
+#define TOTAL_BEATS(subbeat) subbeat / SUBBEATS_PER_BEAT
 
 /// The bar number.
-#define BAR(subbeats) subbeats / SUBEATS_PER_BAR
+#define BAR(subbeat) subbeat / SUBEATS_PER_BAR
 
 /// The beat number in the bar.
-#define BEAT(subbeats) subbeats / SUBBEATS_PER_BEAT % BEATS_PER_BAR
+#define BEAT(subbeat) subbeat / SUBBEATS_PER_BEAT % BEATS_PER_BAR
 
 /// The subbeat in the beat.
-#define SUBBEAT(subbeats) subbeats % SUBBEATS_PER_BEAT
+#define SUBBEAT(subbeat) subbeat % SUBBEATS_PER_BEAT
 
 /// Calculate period for tempo.
 /// @param[in] tempo
@@ -64,8 +64,6 @@ int common_RoundedInternalPeriod(int tempo);
 /// @param[in] subbeat
 /// @return msec
 double common_InternalToMsec(int tempo, int subbeat);
-
-
 
 
 //----------------------- Utilities -----------------------------//

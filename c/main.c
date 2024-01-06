@@ -74,14 +74,19 @@ static const cli_command_t _commands[];
 // Script access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
 static CRITICAL_SECTION _critical_section; 
 
+static bool _mon_input = false;
+static bool _mon_output = false;
 
 //----------------------- Vars - script ------------------------//
 
 // Current tempo in bpm.
 static int _tempo = 100;
 
-// Current tick.
-static int _subbeat = 0;
+// Current subbeat.
+static int _position = 0;
+
+// Length of composition in subbeats.
+static int _length = 0;
 
 
 //---------------------- Functions ------------------------//
@@ -275,13 +280,13 @@ void _MidiClockHandler(double msec)
 
     EnterCriticalSection(&_critical_section);
 
-    // TODO1 calculate these.
-    int bar;
-    int beat;
-    int subbeat;
+    int bar = BAR(_position);
+    int beat = BEAT(_position);
+    int subbeat = SUBBEAT(_position);
 
     stat = luainterop_Step(_l, bar, beat, subbeat);
-    _EvalStatus(stat, "luainterop_Step() failed");
+    
+    _position++;
 
     LeaveCriticalSection(&_critical_section);
 }
@@ -422,7 +427,7 @@ int _ExitCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _MonCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do something with these
+int _MonCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -430,24 +435,23 @@ int _MonCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do somet
     {
         if (strcmp(argv[1], "in") == 0)
         {
-        stat = NEB_OK;
+            _mon_input = !_mon_input;
+            stat = NEB_OK;
         }
         else if (strcmp(argv[1], "out") == 0)
         {
-        stat = NEB_OK;
-        }
-        else if (strcmp(argv[1], "bi") == 0)
-        {
-        stat = NEB_OK;
+            _mon_output = !_mon_output;
+            stat = NEB_OK;
         }
         else if (strcmp(argv[1], "off") == 0)
         {
-        stat = NEB_OK;
+            _mon_input = false;
+            _mon_output = false;
+            stat = NEB_OK;
         }
         else
         {
            cli_WriteLine("invalid option: %s", argv[1]);
-           stat = NEB_ERR_BAD_CLI_ARG;
         }
     }
 
@@ -456,12 +460,13 @@ int _MonCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do somet
 
 
 //--------------------------------------------------------//
-int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do something
+int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
     if (argc == 1) // no args
     {
+        // TODO1 send kill to all midi outputs
         stat = NEB_OK;
     }
 
@@ -470,16 +475,19 @@ int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do some
 
 
 //--------------------------------------------------------//
-int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do something
+int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 {
     // p|position (where) - 
     int stat = NEB_ERR_BAD_CLI_ARG;
 
     if (argc == 1) // get
     {
-
+        int bar = BAR(_position);
+        int beat = BEAT(_position);
+        int subbeat = SUBBEAT(_position);
+        cli_WriteLine("position: %d.%d.%d", bar, beat, subbeat);
     }
-    else if (argc == 2) // set
+    else if (argc == 2) // set TODO1 can be 1.2.3 or 1.2 or 1
     {
         
     }
@@ -489,7 +497,7 @@ int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 do 
 
 
 //--------------------------------------------------------//
-int _ReloadCmd(cli_command_desc_t* pdesc, int argc, char* argv[])// TODO1 do something
+int _ReloadCmd(cli_command_desc_t* pdesc, int argc, char* argv[])// TODO2 do something
 {
     // l|re/load - script
     int stat = NEB_ERR_BAD_CLI_ARG;
@@ -641,7 +649,7 @@ static const cli_command_t _commands[] =
     { _ExitCmd,      { "exit",       "x",   "exit the application",                   "" } },
     { _RunCmd,       { "run",        "r",   "toggle running the script",              "" } },
     { _TempoCmd,     { "tempo",      "t",   "get or set the tempo",                   "(bpm): tempo 40-240" } },
-    { _MonCmd,       { "monitor",    "m",   "monitor midi traffic",                   "(in|out|bi|off): action" } },
+    { _MonCmd,       { "monitor",    "m",   "toggle monitor midi traffic",            "(in|out|off): action" } },
     { _KillCmd,      { "kill",       "k",   "stop all midi",                          "" } },
     { _PositionCmd,  { "position",   "p",   "set position to where or tell current",  "(where): beat" } },
     { _ReloadCmd,    { "reload",     "l",   "re/load current script",                 "" } },
