@@ -14,7 +14,7 @@
 #include "diag.h"
 #include "logger.h"
 #include "ftimer.h"
-#include "stopwatch.h"
+#include "timeanalyzer.h"
 // application
 #include "nebcommon.h"
 #include "midi.h"
@@ -65,16 +65,16 @@ static bool _app_running = true;
 // Last tick time.
 static double _last_msec = 0.0;
 
-// CLI contents.
-static char _cli_buf[CLI_BUFF_LEN];
-
 // Forward reference.
 static const cli_command_t _commands[];
 
-// Script access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
+// Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
 static CRITICAL_SECTION _critical_section; 
 
+// Monitor midi input.
 static bool _mon_input = false;
+
+// Monitor midi output.
 static bool _mon_output = false;
 
 //----------------------- Vars - script ------------------------//
@@ -124,8 +124,10 @@ int main(int argc, char* argv[])
     logger_Init(fp);
     logger_SetFilters(LVL_DEBUG);
 
-    // Initialize the critical section one time only. Lock until init done.
+    // Initialize the critical section.
     InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
+
+    // Lock access to lua context until init done.
     EnterCriticalSection(&_critical_section); 
 
     cli_Open('s');
@@ -137,10 +139,10 @@ int main(int argc, char* argv[])
     cli_WriteLine("Tell 2 %d", fp);
     do
     {
-        bool ready = cli_ReadLine(_cli_buf, CLI_BUFF_LEN);
-        if(ready)
+        const char* line = cli_ReadLine();
+        if(line != NULL)
         {
-            cli_WriteLine("Got %s", _cli_buf);
+            cli_WriteLine("Got %s", line);
         }
         _Sleep(100);
     } while (alive);
@@ -166,9 +168,10 @@ int main(int argc, char* argv[])
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
 
-    // Stopwatch.
-    stopwatch_Init();
-    _last_msec = stopwatch_TotalElapsedMsec();
+    // // Stopwatch.
+    // stopwatch_Init();
+    // _last_msec = stopwatch_TotalElapsedMsec();
+    timeanalyzer_Init();
 
     // Tempo timer and interrupt.
     ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
@@ -219,8 +222,8 @@ int _Run(void)
     // Loop forever doing cli requests.
     do
     {
-        bool ready = cli_ReadLine(_cli_buf, CLI_BUFF_LEN);
-        if(ready)
+        const char* line = cli_ReadLine();
+        if(line != NULL)
         {
             bool valid = false;
 
@@ -230,8 +233,8 @@ int _Run(void)
             int argc = 0;
 
             // Make writable copy and tokenize it.
-            char cp[strlen(_cli_buf) + 1];
-            strcpy(cp, _cli_buf);
+            char cp[strlen(line) + 1];
+            strcpy(cp, line);
             char* tok = strtok(cp, " ");
             while(tok != NULL && argc < MAX_NUM_ARGS)
             {
@@ -249,9 +252,12 @@ int _Run(void)
                     if (strcmp(pcmd->desc.short_name, argv[0]) || strcmp(pcmd->desc.long_name, argv[0]))
                     {
                         valid = true;
+                        // Lock access to lua context.
+                        EnterCriticalSection(&_critical_section); 
                         // Execute the command.
                         int stat = (*pcmd->handler)(&(pcmd->desc), argc, argv);
-                        // cmd handles this _EvalStatus(stat, "CLI function failed: %s", pcmd->desc.name);
+                        // cmd handles _EvalStatus(stat, "CLI function failed: %s", pcmd->desc.name);
+                        LeaveCriticalSection(&_critical_section); 
                         break;
                     }
                 }
@@ -278,16 +284,12 @@ void _MidiClockHandler(double msec)
 
     int stat = NEB_OK;
 
+    _last_msec = msec;
+
+    // Lock access to lua context.
     EnterCriticalSection(&_critical_section);
-
-    int bar = BAR(_position);
-    int beat = BEAT(_position);
-    int subbeat = SUBBEAT(_position);
-
-    stat = luainterop_Step(_l, bar, beat, subbeat);
-    
+    stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUBBEAT(_position));
     _position++;
-
     LeaveCriticalSection(&_critical_section);
 }
 
@@ -300,7 +302,6 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 
     int stat = NEB_OK;
 
-    EnterCriticalSection(&_critical_section); 
 
     switch(wMsg)
     {
@@ -336,14 +337,20 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                 {
                     case MIDI_NOTE_ON:
                     case MIDI_NOTE_OFF:
+                        // Lock access to lua context.
+                        EnterCriticalSection(&_critical_section); 
                         double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
                         stat = luainterop_InputNote(_l, hndchan, bdata1, volume);
                         _EvalStatus(stat, "luainterop_InputNote() failed");
+                        LeaveCriticalSection(&_critical_section);
                         break;
 
                     case MIDI_CONTROL_CHANGE:
+                        // Lock access to lua context.
+                        EnterCriticalSection(&_critical_section); 
                         stat = luainterop_InputController(_l, hndchan, bdata1, bdata2);
                         _EvalStatus(stat, "luainterop_InputController() failed");
+                        LeaveCriticalSection(&_critical_section);
                         break;
 
                     case MIDI_PITCH_WHEEL_CHANGE:
@@ -362,8 +369,6 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
         default:
             break;
     }
-
-    LeaveCriticalSection(&_critical_section);
 };
 
 
@@ -466,7 +471,8 @@ int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
-        // TODO1 send kill to all midi outputs
+        // TODO3 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
+        // luainteropwork_SendController(_l, hndchan, AllNotesOff=123, 0);
         stat = NEB_OK;
     }
 
@@ -482,14 +488,57 @@ int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        int bar = BAR(_position);
-        int beat = BEAT(_position);
-        int subbeat = SUBBEAT(_position);
-        cli_WriteLine("position: %d.%d.%d", bar, beat, subbeat);
+        cli_WriteLine("position: %d.%d.%d", BAR(_position), BEAT(_position), SUBBEAT(_position));
     }
-    else if (argc == 2) // set TODO1 can be 1.2.3 or 1.2 or 1
+    else if (argc == 2) // set TODO1 !! can be 1.2.3 or 1.2 or 1
     {
-        
+
+
+//         int bar = 0;
+//         int beat = 0;
+//         int subbeat = 0;
+
+// static int _position = 0;
+// static int _length = 0;
+
+        int position = 0;
+
+        int v;
+        char* tok = strtok(argv[1], ".");
+        if (tok != NULL)
+        {
+            valid = _StrToInt(tok, &v, 0, 9999);
+            if (valid)
+            {
+                position += v * SUBEATS_PER_BAR;
+            }
+        }
+
+        tok = strtok(argv[1], ".");
+        if (tok != NULL)
+        {
+            valid = _StrToInt(tok, &v, 0, BEATS_PER_BAR-1);
+            if (valid)
+            {
+                position += v * SUBEATS_PER_BEAT;
+            }
+        }
+
+        tok = strtok(argv[1], ".");
+        if (tok != NULL)
+        {
+            valid = _StrToInt(tok, &v, 0, SUBEATS_PER_BAR-1);
+            if (valid)
+            {
+                position += v;
+            }
+        }
+
+        if (valid)
+        {
+
+
+        }
     }
 
     return stat;

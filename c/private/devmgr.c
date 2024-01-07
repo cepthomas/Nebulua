@@ -170,7 +170,7 @@ midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name)
 
     int hndchan = 0; // default = invalid
 
-    // Look through devices list for this device.//midi_device_t* devmgr_Get(sys_dev_name, channel)
+    // Look through devices list for this device.
     for (int i = 0; i < NUM_MIDI_DEVICES && pdev == NULL; i++)
     {
         if (strcmp(sys_dev_name, _devices[i].sys_dev_name) == 0)

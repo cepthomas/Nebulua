@@ -15,37 +15,47 @@
 
 //---------------- Private ------------------------------//
 
+/// Max line.
+#define CLI_BUFF_LEN 128
+
 /// CLI buffer to collect input chars.
-static char p_cli_buff[CLI_BUFF_LEN];
+static char _cli_buff[CLI_BUFF_LEN];
 
-/// CLI propmpt.
-static char* p_Prompt = "";
+/// 
+static bool _line_done = false;
 
-/// TODO2 kludgy, fix.
-static bool p_Stdio = true;
+/// Buff status. -1 means empty.
+static int _buff_index = -1;
+
+/// CLI prompt.
+static char* _prompt = "";
+
+/// TODO2 kludgy, fix. See sock.c
+static bool _stdio = true;
 
 
 //---------------- API Implementation -----------------//
 
 //--------------------------------------------------------//
-int cli_Open(char type) //, cli_command_t[] cmds)
+int cli_Open(char type)
 {
     int stat = 0;
-
-    //p_cmds = cmds;
+    _line_done = false;
+    _buff_index = -1;
 
     if (type == 's')
     {
-        p_Stdio = true;
-        p_Prompt = "$";
+        _stdio = true;
+        _prompt = "$";
     }
     else
     {
-        p_Stdio = false;
-        p_Prompt = "";
+        _stdio = false;
+        _prompt = "";
     }
 
-    memset(p_cli_buff, 0, CLI_BUFF_LEN);
+    memset(_cli_buff, 0, CLI_BUFF_LEN);
+
     // Prompt.
     cli_WriteLine("");
     return stat;
@@ -62,7 +72,82 @@ int cli_Destroy(void)
 
 
 //--------------------------------------------------------//
-bool cli_ReadLine(char* buff, int num)
+const char* cli_ReadLine(void)
+{
+    const char* ret = NULL;
+
+    if (_line_done) // reset from last go-around?
+    {
+        // Clear buffer.
+        memset(_cli_buff, 0, CLI_BUFF_LEN);
+        _line_done = false;
+        _buff_index = 0;
+    }
+
+
+    // Process each available char.
+    char c = -1;
+    bool done = false;
+
+    while (!done && ret == NULL)
+    {
+        if (_stdio)
+        {
+            c = _kbhit() ? (char)_getch() : -1;
+        }
+        else // telnet - see sock.c
+        {
+            // while ((c = fgetc(p_CliIn)) != EOF)
+            // if (fread(&c, 1, 1, p_CliIn) > 0)
+            c = -1;
+        }
+
+        switch(c)
+        {
+            case -1:
+                done = true;
+                break;
+
+            case '\n':
+                // Ignore.
+                break;
+
+            case '\r':
+                // Echo return.
+                cli_WriteLine("");
+
+                // Line done.
+                ret = _cli_buff;
+                _line_done = true;
+
+                // Echo prompt.
+                //cli_WriteLine("");
+                break;
+
+            default:
+                // Echo char.
+                putchar(c);
+                
+                // Save it.
+                _cli_buff[_buff_index++] = c;
+
+                // Check for overrun.
+                if (_buff_index >= CLI_BUFF_LEN - 1)
+                {
+                    // Truncate.
+                    ret = _cli_buff;
+                    _line_done = true;
+                }
+                break;
+        }
+    }
+
+    return ret;
+}
+
+
+//--------------------------------------------------------//
+bool cli_ReadLine_orig(char* buff, int num)
 {
     bool ready = false;
 
@@ -75,7 +160,7 @@ bool cli_ReadLine(char* buff, int num)
 
     while (!done)
     {
-        if (p_Stdio)
+        if (_stdio)
         {
             c = _kbhit() ? (char)_getch() : -1;
         }
@@ -101,11 +186,11 @@ bool cli_ReadLine(char* buff, int num)
                 cli_WriteLine("");
 
                 // Copy to client buff. Should be 0 terminated.
-                strncpy(buff, p_cli_buff, num);
+                strncpy(buff, _cli_buff, num);
                 ready = true;
 
                 // Clear buffer.
-                memset(p_cli_buff, 0, CLI_BUFF_LEN);
+                memset(_cli_buff, 0, CLI_BUFF_LEN);
 
                 // Echo prompt.
                 //cli_WriteLine("");
@@ -116,7 +201,7 @@ bool cli_ReadLine(char* buff, int num)
                 putchar(c);
                 
                 // Save it.
-                p_cli_buff[strlen(p_cli_buff)] = c;
+                _cli_buff[strlen(_cli_buff)] = c;
                 break;
         }
     }
@@ -137,7 +222,7 @@ int cli_WriteLine(const char* format, ...)
     vsnprintf(buff, CLI_BUFF_LEN-1, format, args);
     va_end(args);
 
-    if (p_Stdio)
+    if (_stdio)
     {
         printf("%s\r\n>", buff);
     }
@@ -145,7 +230,7 @@ int cli_WriteLine(const char* format, ...)
     {
         // fputs(buff, p_CliOut);
         // fputs("\r\n", p_CliOut);
-        // fputs(p_Prompt, p_CliOut);
+        // fputs(_prompt, p_CliOut);
     }
 
     return stat;    
@@ -157,7 +242,7 @@ int cli_WriteChar(char c)
 {
     int stat = 0;
 
-    if (p_Stdio)
+    if (_stdio)
     {
         putchar(c);
     }
