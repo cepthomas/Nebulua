@@ -106,12 +106,6 @@ static void _Sleep(int msec);
 // Top level error handler. Logs and calls luaL_error() which doesn't return.
 static bool _EvalStatus(int stat, const char* format, ...);
 
-// Safe convert a string to double.
-static bool _StrToDouble(const char* str, double* val, double min, double max);
-
-// Safe convert a string to integer.
-static bool _StrToInt(const char* str, int* val, int min, int max);
-
 
 //----------------------------------------------------//
 
@@ -302,7 +296,6 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 
     int stat = NEB_OK;
 
-
     switch(wMsg)
     {
         case MIM_DATA:
@@ -385,7 +378,7 @@ int _TempoCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
     else if (argc == 2) // set
     {
         int t;
-        if(_StrToInt(argv[1], &t, 40, 240))
+        if(common_ParseInt(argv[1], &t, 40, 240))
         {
             _tempo = t;
             luainteropwork_SetTempo(_l, _tempo);
@@ -401,8 +394,9 @@ int _TempoCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
     return stat;
 }
 
+
 //--------------------------------------------------------//
-int _RunCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO3 also single space bar?
+int _RunCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 also single space bar?
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -471,7 +465,7 @@ int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
-        // TODO3 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
+        // TODO1 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
         // luainteropwork_SendController(_l, hndchan, AllNotesOff=123, 0);
         stat = NEB_OK;
     }
@@ -483,61 +477,24 @@ int _KillCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 //--------------------------------------------------------//
 int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 {
-    // p|position (where) - 
     int stat = NEB_ERR_BAD_CLI_ARG;
 
     if (argc == 1) // get
     {
-        cli_WriteLine("position: %d.%d.%d", BAR(_position), BEAT(_position), SUBBEAT(_position));
+        cli_WriteLine(common_FormatBarTime(_position));
+        stat = NEB_OK;
     }
-    else if (argc == 2) // set TODO1 !! can be 1.2.3 or 1.2 or 1
+    else if (argc == 2)
     {
-
-
-//         int bar = 0;
-//         int beat = 0;
-//         int subbeat = 0;
-
-// static int _position = 0;
-// static int _length = 0;
-
-        int position = 0;
-
-        int v;
-        char* tok = strtok(argv[1], ".");
-        if (tok != NULL)
+        int position = common_ParseBarTime(argv[1]);
+        if (position < 0)
         {
-            valid = _StrToInt(tok, &v, 0, 9999);
-            if (valid)
-            {
-                position += v * SUBEATS_PER_BAR;
-            }
+           cli_WriteLine("invalid position: %s", argv[1]);
         }
-
-        tok = strtok(argv[1], ".");
-        if (tok != NULL)
+        else
         {
-            valid = _StrToInt(tok, &v, 0, BEATS_PER_BAR-1);
-            if (valid)
-            {
-                position += v * SUBEATS_PER_BEAT;
-            }
-        }
-
-        tok = strtok(argv[1], ".");
-        if (tok != NULL)
-        {
-            valid = _StrToInt(tok, &v, 0, SUBEATS_PER_BAR-1);
-            if (valid)
-            {
-                position += v;
-            }
-        }
-
-        if (valid)
-        {
-
-
+            _position = position >= _length ? _length : position;
+            cli_WriteLine(common_FormatBarTime(_position));
         }
     }
 
@@ -546,12 +503,11 @@ int _PositionCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _ReloadCmd(cli_command_desc_t* pdesc, int argc, char* argv[])// TODO2 do something
+int _ReloadCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 {
-    // l|re/load - script
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 1) // no args
+    if (argc == 1) // no args  TODO2 do something
     {
 
     }
@@ -611,7 +567,7 @@ bool _EvalStatus(int stat, const char* format, ...)
         vsnprintf(buff, sizeof(buff) - 1, format, args);
         va_end(args);
 
-        const char* sstat = common_StatusToString(stat);
+        const char* sstat = common_FormatNebStatus(stat);
 
         if (stat <= LUA_ERRFILE) // internal lua error
         {
@@ -634,61 +590,6 @@ bool _EvalStatus(int stat, const char* format, ...)
     return has_error;
 }
 
-
-//--------------------------------------------------------//
-bool _StrToDouble(const char* str, double* val, double min, double max)
-{
-    bool valid = true;
-    char* p;
-
-    errno = 0;
-    *val = strtof(str, &p);
-    if (errno == ERANGE)
-    {
-        // Mag is too large.
-        valid = false;
-    }
-    else if (p == str)
-    {
-        // Bad string.
-        valid = false;
-    }
-    else if (*val < min || *val > max)
-    {
-        // Out of range.
-        valid = false;
-    }
-
-    return valid;
-}
-
-
-//--------------------------------------------------------//
-bool _StrToInt(const char* str, int* val, int min, int max)
-{
-    bool valid = true;
-    char* p;
-
-    errno = 0;
-    *val = strtol(str, &p, 10);
-    if (errno == ERANGE)
-    {
-        // Mag is too large.
-        valid = false;
-    }
-    else if (p == str)
-    {
-        // Bad string.
-        valid = false;
-    }
-    else if (*val < min || *val > max)
-    {
-        // Out of range.
-        valid = false;
-    }
-
-    return valid;
-}
 
 //--------------------------------------------------------//
 // Map commands to handlers.

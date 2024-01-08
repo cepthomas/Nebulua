@@ -4,13 +4,13 @@ project(nebulua)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
-# TODO3 make generic or part of project ../lib
+# TODO2 make generic or part of project ../lib
 set(LUA "C:/Program Files/Lua")
 set(LBOT_C "C:/Dev/repos/Lua/LuaBagOfTricks/c")
 set(FTIMER "C:/Dev/repos/C/c_fast_timer/source")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks/source")
 
-# needs -g to debug. TODO3 clean these up:
+# needs -g to debug. TODO2 clean these up:
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall \
     -Wno-unused-function -Wno-uninitialized \
     -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")

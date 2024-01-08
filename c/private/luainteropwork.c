@@ -20,7 +20,7 @@
 
 // Definition of work functions for host functions called by lua.
 
-// Macro used to handle user syntax errors in the interop work functions. TODO3 put these somewhere else?
+// Macro used to handle user syntax errors in the interop work functions. TODO2 put these somewhere else?
 #define VALS(expr, s) luaL_error(l, "%s: %s", #expr, s)
 #define VALI(expr, i) luaL_error(l, "%s: %d", #expr, i)
 #define VALF(expr, f) luaL_error(l, "%s: %f", #expr, f)
@@ -67,7 +67,7 @@ int luainteropwork_CreateChannel(lua_State* l, char* sys_dev_name, int chan_num,
     // Send patch now.
     int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
     int mstat = midiOutShortMsg(pdev->hnd_out, short_msg);
-    VALS(mstat == MMSYSERR_NOERROR, common_MidiStatusToString(mstat));
+    VALS(mstat == MMSYSERR_NOERROR, common_FormatMidiStatus(mstat));
 
     return hndchan;
 }
@@ -91,7 +91,7 @@ int luainteropwork_SendNote(lua_State* l, int hndchan, int note_num, double volu
     int velocity = (int)(volume * MIDI_VAL_MAX);
     int short_msg = (chan_num - 1) + cmd + ((byte)note_num << 8) + ((byte)velocity << 16);
     int mstat = midiOutShortMsg(pdev->hnd_out, short_msg);
-    VALS(mstat == MMSYSERR_NOERROR, common_MidiStatusToString(mstat));
+    VALS(mstat == MMSYSERR_NOERROR, common_FormatMidiStatus(mstat));
 
     return 0;
 }
@@ -113,7 +113,7 @@ int luainteropwork_SendController(lua_State* l, int hndchan, int ctlr, int value
     int cmd = MIDI_CONTROL_CHANGE;
     int short_msg = (chan_num - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);
     int mstat = midiOutShortMsg(pdev->hnd_out, short_msg);
-    VALS(mstat == MMSYSERR_NOERROR, common_MidiStatusToString(mstat));
+    VALS(mstat == MMSYSERR_NOERROR, common_FormatMidiStatus(mstat));
 
     return 0;
 }

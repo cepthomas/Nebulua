@@ -30,7 +30,7 @@ static int _buff_index = -1;
 /// CLI prompt.
 static char* _prompt = "";
 
-/// TODO2 kludgy, fix. See sock.c
+/// TODO1 kludgy, fix. See sock.c
 static bool _stdio = true;
 
 

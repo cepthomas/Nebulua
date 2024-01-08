@@ -34,7 +34,7 @@ double common_InternalToMsec(int tempo, int subbeat)
 }
 
 //--------------------------------------------------------//
-const char* common_StatusToString(int stat)
+const char* common_FormatNebStatus(int stat)
 {
     const char* sstat = NULL;
     static char buff[BUFF_LEN];
@@ -64,7 +64,7 @@ const char* common_StatusToString(int stat)
 
 
 //--------------------------------------------------------//
-const char* common_MidiStatusToString(int mstat)
+const char* common_FormatMidiStatus(int mstat)
 {
     static char buff[BUFF_LEN];
     if (mstat != MMSYSERR_NOERROR)
@@ -77,4 +77,105 @@ const char* common_MidiStatusToString(int mstat)
     {
         return NULL;
     }
+}
+
+
+//--------------------------------------------------------//
+const char* common_FormatBarTime(int position)
+{
+    static char buff[BUFF_LEN];
+    snprintf(buff, BUFF_LEN, "position: %d.%d.%d", BAR(position), BEAT(position), SUBBEAT(position));
+    return buff;
+}
+
+
+//--------------------------------------------------------//
+int common_ParseBarTime(const char* sbt)
+{
+    int position = 0;
+    bool valid = false;
+    int v;
+    char* tok = strtok(sbt, ".");
+    if (tok != NULL)
+    {
+        valid = common_ParseInt(tok, &v, 0, 9999);
+        if (!valid) goto ng;
+        position += v * SUBEATS_PER_BAR;
+    }
+
+    tok = strtok(NULL, ".");
+    if (tok != NULL)
+    {
+        valid = common_ParseInt(tok, &v, 0, BEATS_PER_BAR-1);
+        if (!valid) goto ng;
+        position += v * SUBBEATS_PER_BEAT;
+    }
+
+    tok = strtok(NULL, ".");
+    if (tok != NULL)
+    {
+        valid = common_ParseInt(tok, &v, 0, SUBEATS_PER_BAR-1);
+        if (!valid) goto ng;
+        position += v;
+    }
+
+    return position;
+ng:
+    return -1;
+}
+
+
+//--------------------------------------------------------//
+bool common_ParseDouble(const char* str, double* val, double min, double max)
+{
+    bool valid = true;
+    char* p;
+
+    errno = 0;
+    *val = strtof(str, &p);
+    if (errno == ERANGE)
+    {
+        // Mag is too large.
+        valid = false;
+    }
+    else if (p == str)
+    {
+        // Bad string.
+        valid = false;
+    }
+    else if (*val < min || *val > max)
+    {
+        // Out of range.
+        valid = false;
+    }
+
+    return valid;
+}
+
+
+//--------------------------------------------------------//
+bool common_ParseInt(const char* str, int* val, int min, int max)
+{
+    bool valid = true;
+    char* p;
+
+    errno = 0;
+    *val = strtol(str, &p, 10);
+    if (errno == ERANGE)
+    {
+        // Mag is too large.
+        valid = false;
+    }
+    else if (p == str)
+    {
+        // Bad string.
+        valid = false;
+    }
+    else if (*val < min || *val > max)
+    {
+        // Out of range.
+        valid = false;
+    }
+
+    return valid;
 }

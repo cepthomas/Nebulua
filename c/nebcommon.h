@@ -51,12 +51,12 @@
 
 /// Calculate period for tempo.
 /// @param[in] tempo
-/// @return msec per subbeat.
+/// @return msec per subbeat
 double common_InternalPeriod(int tempo);
 
 /// Calculate integer period >= 1 for tempo.
 /// @param[in] tempo
-/// @return rounded msec per subbeat.
+/// @return rounded msec per subbeat
 int common_RoundedInternalPeriod(int tempo);
 
 /// Convert subbeat to time.
@@ -69,14 +69,40 @@ double common_InternalToMsec(int tempo, int subbeat);
 //----------------------- Utilities -----------------------------//
 
 /// Convert a status to string.
-/// @param[in] err Status to examine.
-/// @return String or NULL if not valid.
-const char* common_StatusToString(int err);
+/// @param[in] stat Status to examine
+/// @return String or NULL if not valid
+const char* common_FormatNebStatus(int stat);
 
 /// Convert a status to string.
-/// @param[in] err Midi status to examine.
-/// @return String or NULL if not valid.
-const char* common_MidiStatusToString(int mstat);
+/// @param[in] mstat Midi status to examine
+/// @return String or NULL if not valid
+const char* common_FormatMidiStatus(int mstat);
+
+/// Convert a string bar time to absolute position.
+/// @param[in] sbt time string can be "1.2.3" or "1.2" or "1".
+/// @return String or -1 if not valid.
+int common_ParseBarTime(const char* sbt);
+
+/// Convert a position to string bar time.
+/// @param[in] position
+/// @return string
+const char* common_FormatBarTime(int position);
+
+/// Safe convert a string to double with bounds checking.
+/// @param[in] str to parse
+/// @param[out] val answer
+/// @param[in] min limit inclusive
+/// @param[in] max limit inclusive
+/// @return success
+bool common_ParseDouble(const char* str, double* val, double min, double max);
+
+/// Safe convert a string to int with bounds checking.
+/// @param[in] str to parse
+/// @param[out] val answer
+/// @param[in] min limit inclusive
+/// @param[in] max limit inclusive
+/// @return success
+bool common_ParseInt(const char* str, int* val, int min, int max);
 
 
 #endif // NEBCOMMON_H

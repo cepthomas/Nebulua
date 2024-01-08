@@ -13,7 +13,7 @@ make
 cd ..
 cd ..
 
-rem TODO3 Final build. This really should be done by CMake but it's kind of a pain.
+rem TODO2 Final build. This really should be done by CMake but it's kind of a pain.
 rem copy source\lua\*.lua build
 
 rem pause

@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-// TODO3 harmonize with cbot version.
+// TODO2 harmonize with cbot version.
 
 //---------------- Public API ----------------------//
 
