@@ -5,7 +5,10 @@
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <synchapi.h>
+#include <synchapi.h>   mimgw64 only but CMake is MinGW (32)
+https://github.com/meganz/mingw-std-threads/issues/63
+
+
 // lua
 #include "lua.h"
 #include "lualib.h"
@@ -116,7 +119,7 @@ int main(int argc, char* argv[])
 
     FILE* fp = fopen(".\\nebulua_log.txt", "a");
     logger_Init(fp);
-    logger_SetFilters(LVL_DEBUG);
+    logger_SetFilters(LVL_DEBUG, CAT_ALL);
 
     // Initialize the critical section.
     InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);

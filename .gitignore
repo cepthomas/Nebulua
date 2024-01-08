@@ -399,3 +399,4 @@ FodyWeavers.xsd
 
 # Mine.
 c/build/*
+/c/test/build

@@ -29,7 +29,7 @@
 //--------------------------------------------------------//
 int luainteropwork_Log(lua_State* l, int level, char* msg)
 {
-    logger_Log(level, msg);
+    logger_Log(level, CAT_USER, -1, msg);
     return 0;
 }
 

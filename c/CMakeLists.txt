@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(nebulua)
 
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_CXX_STANDARD 11)
 
 # TODO2 make generic or part of project ../lib
 set(LUA "C:/Program Files/Lua")
@@ -20,7 +20,7 @@ include_directories(
     ${LUA}/include
     ${LBOT_C}
     ${FTIMER}
-    # ${CBOT}
+    ${CBOT}
     )
 
 # Source files.
@@ -31,7 +31,7 @@ add_executable(nebulua
     ./private/devmgr.c
     ./private/luainterop.c
     ./private/luainteropwork.c
-    ./private/logger.c
+    ${CBOT}/private/logger.c
     ${LBOT_C}/private/diag.c
     ${LBOT_C}/private/luaex.c
     ${FTIMER}/private/ftimer.c
