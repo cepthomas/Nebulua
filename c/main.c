@@ -5,8 +5,10 @@
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <synchapi.h>   mimgw64 only but CMake is MinGW (32)
-https://github.com/meganz/mingw-std-threads/issues/63
+#include <synchapi.h>
+// mimgw64 only but CMake is MinGW (32)
+// https://stackoverflow.com/questions/51509173/how-can-i-make-cmake-use-mingw-w64-gcc-g
+// https://github.com/meganz/mingw-std-threads/issues/63
 
 
 // lua
@@ -298,68 +300,70 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
     // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
 
     int stat = NEB_OK;
-
-    switch(wMsg)
+    switch (wMsg)
     {
         case MIM_DATA:
-            int raw_msg = dwParam1;  // packed MIDI message
-            int timestamp = dwParam2;  // milliseconds since MidiInStart
-            BYTE bstatus = raw_msg & 0xFF;  // MIDI status byte
-            BYTE bdata1 = (raw_msg >> 8) & 0xFF;  // first MIDI data byte
-            BYTE bdata2 = (raw_msg >> 16) & 0xFF;  // second MIDI data byte
-            int channel = -1;
-            int hndchan = 0;
-            midi_event_t evt;
-
-            if ((bstatus & 0xF0) == 0xF0)
             {
-                // System events.
-                evt = (midi_event_t)bstatus;
-            }
-            else
-            {
-                // Channel events.
-                evt = (midi_event_t)(bstatus & 0xF0);
-                channel = (bstatus & 0x0F) + 1;
-            }
+                int raw_msg = dwParam1;                // packed MIDI message
+                int timestamp = dwParam2;              // milliseconds since MidiInStart
+                byte bstatus = raw_msg & 0xFF;         // MIDI status byte
+                byte bdata1 = (raw_msg >> 8) & 0xFF;   // first MIDI data byte
+                byte bdata2 = (raw_msg >> 16) & 0xFF;  // second MIDI data byte
+                int channel = -1;
+                int hndchan = 0;
+                midi_event_t evt;
 
-            // Validate midiin device and channel number as registered by user.
-            midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle(hMidiIn);
-            hndchan = devmgr_GetChannelHandle(pdev, channel);
-
-            if (hndchan > 0)
-            {
-                switch (evt)
+                if ((bstatus & 0xF0) == 0xF0)
                 {
-                    case MIDI_NOTE_ON:
-                    case MIDI_NOTE_OFF:
-                        // Lock access to lua context.
-                        EnterCriticalSection(&_critical_section); 
-                        double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
-                        stat = luainterop_InputNote(_l, hndchan, bdata1, volume);
-                        _EvalStatus(stat, "luainterop_InputNote() failed");
-                        LeaveCriticalSection(&_critical_section);
-                        break;
-
-                    case MIDI_CONTROL_CHANGE:
-                        // Lock access to lua context.
-                        EnterCriticalSection(&_critical_section); 
-                        stat = luainterop_InputController(_l, hndchan, bdata1, bdata2);
-                        _EvalStatus(stat, "luainterop_InputController() failed");
-                        LeaveCriticalSection(&_critical_section);
-                        break;
-
-                    case MIDI_PITCH_WHEEL_CHANGE:
-                        // PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
-                        break;
-
-                    // Ignore other events for now.
-                    default:
-                        break;
+                    // System events.
+                    evt = (midi_event_t)bstatus;
                 }
-                break;
+                else
+                {
+                    // Channel events.
+                    evt = (midi_event_t)(bstatus & 0xF0);
+                    channel = (bstatus & 0x0F) + 1;
+                }
+
+                // Validate midiin device and channel number as registered by user.
+                midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle(hMidiIn);
+                hndchan = devmgr_GetChannelHandle(pdev, channel);
+
+                if (hndchan > 0)
+                {
+                    switch (evt)
+                    {
+                        case MIDI_NOTE_ON:
+                        case MIDI_NOTE_OFF:
+                            // Lock access to lua context.
+                            EnterCriticalSection(&_critical_section); 
+                            double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
+                            stat = luainterop_InputNote(_l, hndchan, bdata1, volume);
+                            _EvalStatus(stat, "luainterop_InputNote() failed");
+                            LeaveCriticalSection(&_critical_section);
+                            break;
+
+                        case MIDI_CONTROL_CHANGE:
+                            // Lock access to lua context.
+                            EnterCriticalSection(&_critical_section); 
+                            stat = luainterop_InputController(_l, hndchan, bdata1, bdata2);
+                            _EvalStatus(stat, "luainterop_InputController() failed");
+                            LeaveCriticalSection(&_critical_section);
+                            break;
+
+                        case MIDI_PITCH_WHEEL_CHANGE:
+                            // PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
+                            break;
+
+                        // Ignore other events for now.
+                        default:
+                            break;
+                    }
+                    break;
+                }
+                // else ignore
             }
-            // else ignore
+            break;
 
         // Ignore other messages for now.
         default:
@@ -399,7 +403,7 @@ int _TempoCmd(cli_command_desc_t* pdesc, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _RunCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 also single space bar?
+int _RunCmd(cli_command_desc_t* pdesc, int argc, char* argv[]) // TODO1 also single space bar? maybe immediate for all single keys?
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
