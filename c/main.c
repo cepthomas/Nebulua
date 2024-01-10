@@ -32,7 +32,6 @@
 
 //----------------------- Definitions -----------------------//
 
-#define TEST
 
 //----------------------- Types -----------------------------//
 
@@ -70,17 +69,20 @@ static bool _app_running = true;
 // Last tick time.
 static double _last_msec = 0.0;
 
-// Forward reference.
-static const cli_command_t _commands[];
-
-// Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
-static CRITICAL_SECTION _critical_section; 
-
 // Monitor midi input.
 static bool _mon_input = false;
 
 // Monitor midi output.
 static bool _mon_output = false;
+
+// Forward reference.
+static const cli_command_t _commands[];
+
+// Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
+static CRITICAL_SECTION _critical_section; 
+#define ENTER_CRITICAL_SECTION EnterCriticalSection(&_critical_section)
+#define EXIT_CRITICAL_SECTION  LeaveCriticalSection(&_critical_section)
+
 
 //----------------------- Vars - script ------------------------//
 
@@ -123,29 +125,7 @@ int main(int argc, char* argv[])
     logger_Init(fp);
     logger_SetFilters(LVL_DEBUG, CAT_ALL);
 
-    // Initialize the critical section.
-    InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
-
-    // Lock access to lua context until init done.
-    EnterCriticalSection(&_critical_section); 
-
     cli_Open('s');
-
-#ifdef TEST
-    // Some test code.
-    bool alive = true;
-    cli_WriteLine("Tell 1");
-    cli_WriteLine("Tell 2 %d", fp);
-    do
-    {
-        const char* line = cli_ReadLine();
-        if(line != NULL)
-        {
-            cli_WriteLine("Got %s", line);
-        }
-        _Sleep(100);
-    } while (alive);
-#endif
 
     // Get arg -> script filename.
     if(argc != 2)
@@ -153,6 +133,11 @@ int main(int argc, char* argv[])
         cli_WriteLine("Bad cmd line. Use nebulua <file.lua>.");
         exit(1);
     }
+
+    // Initialize the critical section. It is used to synchronize access to lua context.
+    InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
+
+    ENTER_CRITICAL_SECTION; 
 
     ///// Init internal stuff. /////
     _l = luaL_newstate();
@@ -193,10 +178,9 @@ int main(int argc, char* argv[])
     stat = luainterop_Setup(_l);
     _EvalStatus(stat, "luainterop_Setup() failed");
 
-    // Good to go now.
-    LeaveCriticalSection(&_critical_section);
+    ///// Good to go now. /////
+    EXIT_CRITICAL_SECTION;
 
-    // Run blocks until done.
     stat = _Run();
     _EvalStatus(stat, "Run failed");
 
@@ -252,11 +236,11 @@ int _Run(void)
                     {
                         valid = true;
                         // Lock access to lua context.
-                        EnterCriticalSection(&_critical_section); 
+                        ENTER_CRITICAL_SECTION; 
                         // Execute the command.
                         int stat = (*pcmd->handler)(&(pcmd->desc), argc, argv);
                         // cmd handles _EvalStatus(stat, "CLI function failed: %s", pcmd->desc.name);
-                        LeaveCriticalSection(&_critical_section); 
+                        EXIT_CRITICAL_SECTION; 
                         break;
                     }
                 }
@@ -286,10 +270,10 @@ void _MidiClockHandler(double msec)
     _last_msec = msec;
 
     // Lock access to lua context.
-    EnterCriticalSection(&_critical_section);
+    ENTER_CRITICAL_SECTION;
     stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUBBEAT(_position));
     _position++;
-    LeaveCriticalSection(&_critical_section);
+    EXIT_CRITICAL_SECTION;
 }
 
 
@@ -336,19 +320,19 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                         case MIDI_NOTE_ON:
                         case MIDI_NOTE_OFF:
                             // Lock access to lua context.
-                            EnterCriticalSection(&_critical_section); 
+                            ENTER_CRITICAL_SECTION; 
                             double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
                             stat = luainterop_InputNote(_l, hndchan, bdata1, volume);
                             _EvalStatus(stat, "luainterop_InputNote() failed");
-                            LeaveCriticalSection(&_critical_section);
+                            EXIT_CRITICAL_SECTION;
                             break;
 
                         case MIDI_CONTROL_CHANGE:
                             // Lock access to lua context.
-                            EnterCriticalSection(&_critical_section); 
+                            ENTER_CRITICAL_SECTION; 
                             stat = luainterop_InputController(_l, hndchan, bdata1, bdata2);
                             _EvalStatus(stat, "luainterop_InputController() failed");
-                            LeaveCriticalSection(&_critical_section);
+                            EXIT_CRITICAL_SECTION;
                             break;
 
                         case MIDI_PITCH_WHEEL_CHANGE:
