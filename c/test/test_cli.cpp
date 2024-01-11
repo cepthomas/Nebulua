@@ -6,32 +6,20 @@
 
 extern "C"
 {
-#include "common.h"
+#include "cli.h"
 #include "logger.h"
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(LOGGER_FILE, "Test logger to file.")
+UT_SUITE(CLI_SILLY, "Test cli.")
 {
-    // Turn on all.
-    UT_EQUAL(logger_SetFilters(LVL_DEBUG, CAT_ALL), 0);
+    int x = 1;
+    int y = 2;
 
-    // Start logging stuff.
-    LOG_ERROR(CAT_INIT, "This should be an ERROR 99:%d", 99);
+    UT_EQUAL(x, y);
 
-    sleep(1);
-    LOG_INFO(CAT_DESTROY, "INFO One second later... :%d", 555);
-
-    sleep(1);
-    LOG_DEBUG(CAT_LOOK, "DEBUG Two seconds later... :%d", 71717);
-
-    // Specific filters.
-    UT_EQUAL(logger_SetFilters(LVL_INFO, CAT_LOOK), 0);
-
-    LOG_INFO(CAT_DESTROY, "This should not appear");
-    LOG_INFO(CAT_LOOK, "This should appear");
-    LOG_ERROR(CAT_LOOK, "This should appear");
+    LOG_INFO(CAT_INIT, "Hello!");
 
     return 0;
 }    

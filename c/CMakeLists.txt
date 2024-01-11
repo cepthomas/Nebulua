@@ -1,3 +1,7 @@
+
+# Build the nebulua app or its unit tests.
+# This is a 64 bit build. PATH must include ...\mingw64\bin.
+
 cmake_minimum_required(VERSION 3.5)
 project(nebulua)
 
@@ -5,18 +9,11 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
 
-# if(NOT DEFINED DO_TEST)
-#     message(FATAL_ERROR "No target selected")
-# else()
-#     message(STATUS "DO_TEST set to ${DO_TEST}")
-# endif()
-
-
-# TODO2 fix these paths.
-set(LUA "C:/Program Files/Lua")
+# TODO1 fix these paths. Or use built libs?
+set(LUA    "C:/Lua")
 set(LBOT_C "C:/Dev/repos/Lua/LuaBagOfTricks/c")
 set(FTIMER "C:/Dev/repos/C/c_fast_timer/source")
-set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
+set(CBOT   "C:/Dev/repos/C/c_bag_of_tricks")
 
 # needs -g to debug. TODO2 clean these up:
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall \
@@ -25,7 +22,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall \
 
 # Header files.
 if(DEFINED DO_TEST)
-    
+
     include_directories(
         .
         ..
@@ -43,6 +40,7 @@ if(DEFINED DO_TEST)
         )
 
 else()
+
     include_directories(
         .
         ${LUA}/include
@@ -65,10 +63,10 @@ else()
         ${FTIMER}/private/stopwatch.c
         ${FTIMER}/private/timeanalyzer.c
         )
+
 endif()
 
-
-# Libs.
+# Libs. 64 bit build.
 target_link_libraries(nebulua
     ${LUA}/Win64/lua54.dll
     libwinmm.a

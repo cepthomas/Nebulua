@@ -1,5 +1,4 @@
 
-cls
 echo off
 
 :: Script to run Nebulua unit tests.
@@ -9,5 +8,3 @@ set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;C:\Dev\repos\Audio\Nebulua\
 
 :: Run the unit tests. test_defs.lua  test_nebulua.lua
 lua C:\Dev\repos\Lua\LuaBagOfTricks\pnut_runner.lua test_nebulua.lua
-
-pause
