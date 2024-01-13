@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <math.h>
 #include "logger.h"
-//#include "diag.h"
 #include "luautils.h"
 #include "nebcommon.h"
 
@@ -107,7 +106,7 @@ int nebcommon_ParseBarTime(const char* sbt)
     if (tok != NULL)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, 9999);
-        if (!valid) goto ng;
+        if (!valid) goto nogood;
         position += v * SUBEATS_PER_BAR;
     }
 
@@ -115,7 +114,7 @@ int nebcommon_ParseBarTime(const char* sbt)
     if (tok != NULL)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, BEATS_PER_BAR-1);
-        if (!valid) goto ng;
+        if (!valid) goto nogood;
         position += v * SUBBEATS_PER_BEAT;
     }
 
@@ -123,12 +122,12 @@ int nebcommon_ParseBarTime(const char* sbt)
     if (tok != NULL)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, SUBEATS_PER_BAR-1);
-        if (!valid) goto ng;
+        if (!valid) goto nogood;
         position += v;
     }
 
     return position;
-ng:
+nogood:
     return -1;
 }
 

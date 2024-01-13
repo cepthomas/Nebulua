@@ -26,6 +26,7 @@ if(DEFINED DO_TEST)
         ${LUA}/include
         ${CBOT}/source
         ${CBOT}/pnut
+        ${EMBL}/source
         )
 
     add_executable(nebulua
@@ -34,6 +35,7 @@ if(DEFINED DO_TEST)
         ./private/cli.c
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source/private/logger.c
+        ${EMBL}/source/private/luautils.c
         )
 
 else()
@@ -42,7 +44,7 @@ else()
         .
         ${LUA}/include
         ${CBOT}/source
-        ${EMBL}/source/c
+        ${EMBL}/source
         ${LBOT}
         ${FTMR}
         )
@@ -55,8 +57,8 @@ else()
         ./private/luainterop.c
         ./private/luainteropwork.c
         ${CBOT}/source/private/logger.c
-        ${EMBL}/source/c/luautils.c
-        ${EMBL}/source/c/luaex.c
+        ${EMBL}/source/private/luautils.c
+        ${EMBL}/source/private/luaex.c
         # ${LBOT}/private/diag.c
         # ${LBOT}/private/luaex.c
         ${FTMR}/private/ftimer.c
