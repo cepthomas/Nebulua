@@ -14,15 +14,14 @@ int main()
     std::vector<std::string> whichSuites;
 
     // TODO1 Add tests:
-    // cli
+    // cli (in cbot test)TODO-REF
     // devmgr
     // interop/work?
     // nebcommon
     // main??
-    // test for timeanalyzer (in cbot test)
-    // any lbot stuff?
+    // test for timeanalyzer (in cbot test)TODO-REF
 
-    // files fir.
+    // add test files dir.
 
     whichSuites.emplace_back("CLI");
 

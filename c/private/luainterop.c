@@ -141,7 +141,7 @@ int luainterop_InputController(lua_State* l, int hndchan, int controller, int va
 static int luainterop_CreateChannel(lua_State* l)
 {
     // Get arguments
-    char* device;
+    const char* device;
     if (lua_isstring(l, 1)) { device = lua_tostring(l, 1); }
     else { luaL_error(l, "Bad arg type for device"); }
     int channum;
@@ -162,14 +162,14 @@ static int luainterop_CreateChannel(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: level Log level
 // Lua arg: msg Log message
-// Lua return: int Status
+// Lua return: int LUA_STATUS
 static int luainterop_Log(lua_State* l)
 {
     // Get arguments
     int level;
     if (lua_isinteger(l, 1)) { level = lua_tointeger(l, 1); }
     else { luaL_error(l, "Bad arg type for level"); }
-    char* msg;
+    const char* msg;
     if (lua_isstring(l, 2)) { msg = lua_tostring(l, 2); }
     else { luaL_error(l, "Bad arg type for msg"); }
 
@@ -183,7 +183,7 @@ static int luainterop_Log(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: bpm BPM
-// Lua return: int Status
+// Lua return: int LUA_STATUS
 static int luainterop_SetTempo(lua_State* l)
 {
     // Get arguments
@@ -204,7 +204,7 @@ static int luainterop_SetTempo(lua_State* l)
 // Lua arg: notenum Note number
 // Lua arg: volume Volume between 0.0 and 1.0
 // Lua arg: dur Duration as bar.beat
-// Lua return: int Status
+// Lua return: int LUA_STATUS
 static int luainterop_SendNote(lua_State* l)
 {
     // Get arguments
@@ -233,7 +233,7 @@ static int luainterop_SendNote(lua_State* l)
 // Lua arg: hndchan Output channel handle
 // Lua arg: controller Specific controller
 // Lua arg: value Payload.
-// Lua return: int Status
+// Lua return: int LUA_STATUS
 static int luainterop_SendController(lua_State* l)
 {
     // Get arguments

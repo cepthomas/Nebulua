@@ -9,8 +9,11 @@
 #include "cli.h"
 #include "nebcommon.h"
 
-// TODO2 put this in lbot or cbot (actually refactor all).
-// serial port, etc?  https://en.cppreference.com/w/c/io
+
+// TODO-REF refactor and put in cbot:
+//  - also handle like single space bar? maybe immediate for all single keys?
+//  - Chop up the command line into args and return those.
+//  - handle sock.c, serial port, etc?  https://en.cppreference.com/w/c/io
 
 
 //---------------- Private ------------------------------//
@@ -30,7 +33,7 @@ static int _buff_index = -1;
 /// CLI prompt.
 static char* _prompt = "";
 
-/// TODO1 kludgy, fix. See sock.c
+/// ---- kludgy, fix
 static bool _stdio = true;
 
 

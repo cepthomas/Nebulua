@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include "logger.h"
-#include "diag.h"
 #include "nebcommon.h"
 #include "devmgr.h"
 
@@ -39,7 +38,7 @@ int devmgr_Init(DWORD_PTR midi_handler)
         {
             MIDIINCAPS caps_in;
             MMRESULT res = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
-
+            if (res != 0) { }
             HMIDIIN hmidi_in;
             // dev_index => dwInstance;
             res = midiInOpen(&hmidi_in, i, midi_handler, (DWORD_PTR)dev_index, CALLBACK_FUNCTION);
@@ -59,6 +58,7 @@ int devmgr_Init(DWORD_PTR midi_handler)
             // http://msdn.microsoft.com/en-us/library/dd798469%28VS.85%29.aspx
             MIDIOUTCAPS caps_out;
             MMRESULT res = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
+            if (res != 0) { }
 
             HMIDIOUT hmidi_out;
             // http://msdn.microsoft.com/en-us/library/dd798476%28VS.85%29.aspx
@@ -166,9 +166,7 @@ midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int hndchan)
 //--------------------------------------------------------//
 midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name)
 {
-    midi_device_t* pdev = NULL;
-
-    int hndchan = 0; // default = invalid
+    midi_device_t* pdev = NULL; // default = invalid
 
     // Look through devices list for this device.
     for (int i = 0; i < NUM_MIDI_DEVICES && pdev == NULL; i++)

@@ -8,17 +8,13 @@ project(nebulua)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
+set(LUA  "C:/Lua")
+set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks/c")
+set(FTMR "C:/Dev/repos/C/c_fast_timer/source")
+set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
 
-# TODO1 fix these paths. Or use built libs?
-set(LUA    "C:/Lua")
-set(LBOT_C "C:/Dev/repos/Lua/LuaBagOfTricks/c")
-set(FTIMER "C:/Dev/repos/C/c_fast_timer/source")
-set(CBOT   "C:/Dev/repos/C/c_bag_of_tricks")
-
-# needs -g to debug. TODO2 clean these up:
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall \
-    -Wno-unused-function -Wno-uninitialized \
-    -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
+# -Wno-unused-function -Wno-uninitialized -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")
 
 # Header files.
 if(DEFINED DO_TEST)
@@ -44,8 +40,8 @@ else()
     include_directories(
         .
         ${LUA}/include
-        ${LBOT_C}
-        ${FTIMER}
+        ${LBOT}
+        ${FTMR}
         ${CBOT}/source
         )
 
@@ -57,11 +53,11 @@ else()
         ./private/luainterop.c
         ./private/luainteropwork.c
         ${CBOT}/source/private/logger.c
-        ${LBOT_C}/private/diag.c
-        ${LBOT_C}/private/luaex.c
-        ${FTIMER}/private/ftimer.c
-        ${FTIMER}/private/stopwatch.c
-        ${FTIMER}/private/timeanalyzer.c
+        ${LBOT}/private/diag.c
+        ${LBOT}/private/luaex.c
+        ${FTMR}/private/ftimer.c
+        ${FTMR}/private/stopwatch.c
+        ${FTMR}/private/timeanalyzer.c
         )
 
 endif()

@@ -13,5 +13,5 @@ make
 
 popd
 
-:: Copy lua files to output. This really should be done by CMake but it's kind of a pain.
+:: Copy lua files to output.
 copy lua\*.lua c\build\

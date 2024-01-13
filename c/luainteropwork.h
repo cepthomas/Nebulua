@@ -13,14 +13,14 @@
 /// @param[in] channum Midi channel number 1-16
 /// @param[in] patch Midi patch number (output channel only)
 /// @return Channel handle or 0 if invalid
-int luainteropwork_CreateChannel(lua_State* l, char* device, int channum, int patch);
+int luainteropwork_CreateChannel(lua_State* l, const char* device, int channum, int patch);
 
 /// Script wants to log something.
 /// @param[in] l Internal lua state.
 /// @param[in] level Log level
 /// @param[in] msg Log message
 /// @return LUA_STATUS
-int luainteropwork_Log(lua_State* l, int level, char* msg);
+int luainteropwork_Log(lua_State* l, int level, const char* msg);
 
 /// Script wants to change tempo.
 /// @param[in] l Internal lua state.

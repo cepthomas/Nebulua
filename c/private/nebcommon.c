@@ -4,8 +4,8 @@
 #include <errno.h>
 #include <math.h>
 #include "logger.h"
-#include "nebcommon.h"
 #include "diag.h"
+#include "nebcommon.h"
 
 
 //--------------------- Defs -----------------------------//
@@ -13,7 +13,7 @@
 #define BUFF_LEN 100
 
 //--------------------------------------------------------//
-double common_InternalPeriod(int tempo)
+double nebcommon_InternalPeriod(int tempo)
 {
     double sec_per_beat = 60.0 / tempo;
     double msec_per_subbeat = 1000 * sec_per_beat / SUBEATS_PER_BAR;
@@ -21,22 +21,22 @@ double common_InternalPeriod(int tempo)
 }
 
 //--------------------------------------------------------//
-int common_RoundedInternalPeriod(int tempo)
+int nebcommon_RoundedInternalPeriod(int tempo)
 {
-    double msec_per_subbeat = common_InternalPeriod(tempo);
+    double msec_per_subbeat = nebcommon_InternalPeriod(tempo);
     int period = msec_per_subbeat > 1.0 ? (int)round(msec_per_subbeat) : 1;
     return period;
 }
 
 //--------------------------------------------------------//
-double common_InternalToMsec(int tempo, int subbeat)
+double nebcommon_InternalToMsec(int tempo, int subbeat)
 {
-    double msec = common_InternalPeriod(tempo) * subbeat;
+    double msec = nebcommon_InternalPeriod(tempo) * subbeat;
     return msec;
 }
 
 //--------------------------------------------------------//
-const char* common_FormatNebStatus(int stat)
+const char* nebcommon_FormatNebStatus(int stat)
 {
     const char* sstat = NULL;
     static char buff[BUFF_LEN];
@@ -66,7 +66,7 @@ const char* common_FormatNebStatus(int stat)
 
 
 //--------------------------------------------------------//
-const char* common_FormatMidiStatus(int mstat)
+const char* nebcommon_FormatMidiStatus(int mstat)
 {
     static char buff[BUFF_LEN];
     if (mstat != MMSYSERR_NOERROR)
@@ -83,7 +83,7 @@ const char* common_FormatMidiStatus(int mstat)
 
 
 //--------------------------------------------------------//
-const char* common_FormatBarTime(int position)
+const char* nebcommon_FormatBarTime(int position)
 {
     static char buff[BUFF_LEN];
     snprintf(buff, BUFF_LEN, "position: %d.%d.%d", BAR(position), BEAT(position), SUBBEAT(position));
@@ -92,15 +92,20 @@ const char* common_FormatBarTime(int position)
 
 
 //--------------------------------------------------------//
-int common_ParseBarTime(const char* sbt)
+int nebcommon_ParseBarTime(const char* sbt)
 {
     int position = 0;
     bool valid = false;
     int v;
-    char* tok = strtok(sbt, ".");
+
+    // Make writable copy and tokenize it.
+    char cp[strlen(sbt) + 1];
+    strcpy(cp, sbt);
+
+    char* tok = strtok(cp, ".");
     if (tok != NULL)
     {
-        valid = common_ParseInt(tok, &v, 0, 9999);
+        valid = nebcommon_ParseInt(tok, &v, 0, 9999);
         if (!valid) goto ng;
         position += v * SUBEATS_PER_BAR;
     }
@@ -108,7 +113,7 @@ int common_ParseBarTime(const char* sbt)
     tok = strtok(NULL, ".");
     if (tok != NULL)
     {
-        valid = common_ParseInt(tok, &v, 0, BEATS_PER_BAR-1);
+        valid = nebcommon_ParseInt(tok, &v, 0, BEATS_PER_BAR-1);
         if (!valid) goto ng;
         position += v * SUBBEATS_PER_BEAT;
     }
@@ -116,7 +121,7 @@ int common_ParseBarTime(const char* sbt)
     tok = strtok(NULL, ".");
     if (tok != NULL)
     {
-        valid = common_ParseInt(tok, &v, 0, SUBEATS_PER_BAR-1);
+        valid = nebcommon_ParseInt(tok, &v, 0, SUBEATS_PER_BAR-1);
         if (!valid) goto ng;
         position += v;
     }
@@ -128,7 +133,7 @@ ng:
 
 
 //--------------------------------------------------------//
-bool common_ParseDouble(const char* str, double* val, double min, double max)
+bool nebcommon_ParseDouble(const char* str, double* val, double min, double max)
 {
     bool valid = true;
     char* p;
@@ -156,7 +161,7 @@ bool common_ParseDouble(const char* str, double* val, double min, double max)
 
 
 //--------------------------------------------------------//
-bool common_ParseInt(const char* str, int* val, int min, int max)
+bool nebcommon_ParseInt(const char* str, int* val, int min, int max)
 {
     bool valid = true;
     char* p;

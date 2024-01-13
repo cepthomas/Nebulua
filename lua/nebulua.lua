@@ -50,7 +50,7 @@ function M.sleep(time)
 end
 
 
------------------------------TODO1 all event/data handling below ----------------------
+-----------------------------TODO-EVT all event/data handling below ----------------------
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
@@ -261,7 +261,7 @@ end
 return M
 
 
---[[ old stuff to recycle? TODO1
+--[[ old stuff to recycle? TODO-EVT
 
 
 --- return table:

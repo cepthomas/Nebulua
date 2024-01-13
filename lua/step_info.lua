@@ -1,6 +1,6 @@
 
 
--- TODO1 event class may be useful.
+-- TODO-EVT event class may be useful.
 -- fields?
 --     ///<summary>The collection of playable events for this channel and pattern. Key is the internal subbeat/time.</summary>
 --     readonly Dictionary<int, List<MidiEvent>> _events = new();
