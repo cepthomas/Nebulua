@@ -9,9 +9,10 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
 set(LUA  "C:/Lua")
-set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks/c")
+# set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks/c")
 set(FTMR "C:/Dev/repos/C/c_fast_timer/source")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
+set(EMBL "C:/Dev/repos/C/c_emb_lua")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 # -Wno-unused-function -Wno-uninitialized -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")
@@ -40,9 +41,10 @@ else()
     include_directories(
         .
         ${LUA}/include
+        ${CBOT}/source
+        ${EMBL}/source/c
         ${LBOT}
         ${FTMR}
-        ${CBOT}/source
         )
 
     add_executable(nebulua
@@ -53,8 +55,10 @@ else()
         ./private/luainterop.c
         ./private/luainteropwork.c
         ${CBOT}/source/private/logger.c
-        ${LBOT}/private/diag.c
-        ${LBOT}/private/luaex.c
+        ${EMBL}/source/c/luautils.c
+        ${EMBL}/source/c/luaex.c
+        # ${LBOT}/private/diag.c
+        # ${LBOT}/private/luaex.c
         ${FTMR}/private/ftimer.c
         ${FTMR}/private/stopwatch.c
         ${FTMR}/private/timeanalyzer.c

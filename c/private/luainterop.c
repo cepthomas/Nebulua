@@ -11,10 +11,11 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-#include "luaex.h"
 
 #include "luainterop.h"
 #include "luainteropwork.h"
+#include "luaex.h"
+
 
 //---------------- Call lua functions from host -------------//
 

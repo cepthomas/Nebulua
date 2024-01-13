@@ -4,7 +4,8 @@
 #include <errno.h>
 #include <math.h>
 #include "logger.h"
-#include "diag.h"
+//#include "diag.h"
+#include "luautils.h"
 #include "nebcommon.h"
 
 
@@ -50,7 +51,7 @@ const char* nebcommon_FormatNebStatus(int stat)
         case NEB_ERR_BAD_MIDI_CFG: sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
         case NEB_ERR_SYNTAX: sstat = "NEB_ERR_SYNTAX"; break;
         case NEB_ERR_MIDI: sstat = "NEB_ERR_MIDI"; break;
-        default: sstat = diag_LuaStatusToString(stat); break; // lua status?
+        default: strncpy(buff, luautils_LuaStatusToString(stat), BUFF_LEN); break; // lua status?
     }
 
     if (sstat == NULL)
