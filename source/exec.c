@@ -118,7 +118,7 @@ int exec_Main(int argc, char* argv[])
     logger_Init(fp);
     logger_SetFilters(LVL_DEBUG, CAT_ALL);
 
-    cli_Open('s');
+    cli_OpenStdio();
 
     // Initialize the critical section. It is used to synchronize access to lua context.
     InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
