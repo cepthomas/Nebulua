@@ -1,11 +1,11 @@
 
 echo off
 
-if not exist .\c\build_test mkdir .\c\build_test
-rem mkdir .\c\build_test
-rem del /F /Q .\c\build_test\*.*
+if not exist build_test mkdir build_test
+rem mkdir build_test
+rem del /F /Q build_test\*.*
 
-pushd .\c\build_test
+pushd build_test
 
 :: Build the c app.
 cmake -G "MinGW Makefiles" -DDO_TEST=1 ..

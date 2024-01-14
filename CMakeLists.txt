@@ -8,7 +8,7 @@ project(nebulua)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
-# TODO2 make into libs maybe:
+# TODO2 make cleaner or into libs:
 set(LUA  "C:/Lua")
 set(FTMR "C:/Dev/repos/C/c_fast_timer")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
@@ -21,8 +21,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 if(DO_TEST)
 
     include_directories(
-        .
-        ..
+        source
+        test
         ${LUA}/include
         ${CBOT}/source
         ${CBOT}/pnut
@@ -30,7 +30,7 @@ if(DO_TEST)
         )
 
     add_executable(nebulua
-        cli.c
+        source/cli.c
         test/main.cpp
         test/test_cli.cpp
         ${CBOT}/pnut/pnut.cpp
@@ -41,7 +41,7 @@ if(DO_TEST)
 else()
 
     include_directories(
-        .
+        source
         ${LUA}/include
         ${CBOT}/source
         ${EMBL}/source
@@ -49,13 +49,13 @@ else()
         )
 
     add_executable(nebulua
-        main.c
-        exec.c
-        nebcommon.c
-        cli.c
-        devmgr.c
-        luainterop.c
-        luainteropwork.c
+        source/main.c
+        source/exec.c
+        source/nebcommon.c
+        source/cli.c
+        source/devmgr.c
+        source/luainterop.c
+        source/luainteropwork.c
         ${CBOT}/source/private/logger.c
         ${EMBL}/source/private/luautils.c
         ${EMBL}/source/private/luaex.c

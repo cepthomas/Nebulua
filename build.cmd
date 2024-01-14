@@ -2,10 +2,10 @@
 echo off
 cls
 
-if not exist .\c\build mkdir .\c\build
-rem del /F /Q .\c\build\*.*
+if not exist build mkdir build
+rem del /F /Q build\*.*
 
-pushd .\c\build
+pushd build
 
 :: Build the app.
 cmake -G "MinGW Makefiles" ..
@@ -14,4 +14,4 @@ make
 popd
 
 :: Copy lua files to output.
-copy lua\*.lua c\build\
+copy lua\*.lua build
