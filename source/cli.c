@@ -10,21 +10,16 @@
 
 
 // TODO1 refactor and put in cbot plus these:
-//  - also handle e.g. immediate single space bar.
-//  - Chop up the command line into args and return those.
-//  - handle sock.c, serial port, etc?  https://en.cppreference.com/w/c/io
-//  - unit test
+// TOCO1 handle e.g. immediate single space bar.
+// TODO1 unit test
 
 //---------------- Private ------------------------------//
 
-/// Max line.
+/// Max raw line.
 #define CLI_BUFF_LEN 128
 
 /// CLI buffer to collect input chars.
-static char _cli_buff[CLI_BUFF_LEN];
-
-/// 
-static bool _line_done = false;
+static char _cli_buff[MAX_CLI_ARGS * MAX_CLI_ARG_LEN];
 
 /// Buff status. -1 means empty.
 static int _buff_index = -1;
@@ -32,7 +27,7 @@ static int _buff_index = -1;
 /// CLI prompt.
 static char* _prompt = "";
 
-/// ---- kludgy, fix. enum?
+/// TODO1 kludgy, fix. enum? sock.c, serial port
 static bool _stdio = true;
 
 
@@ -42,7 +37,6 @@ static bool _stdio = true;
 int cli_Open(char type)
 {
     int stat = 0;
-    _line_done = false;
     _buff_index = -1;
 
     if (type == 's')
@@ -74,38 +68,17 @@ int cli_Destroy(void)
 
 
 //--------------------------------------------------------//
-const char* cli_ReadLine(void)
+const bool cli_ReadLine(cli_args_t* args)
 {
-    const char* ret = NULL;
+    bool line_done = false;
+    char* serr = NULL;
 
-    if (_line_done) // reset from last go-around?
-    {
-        // Clear buffer.
-        memset(_cli_buff, 0, CLI_BUFF_LEN);
-        _line_done = false;
-        _buff_index = 0;
-    }
 
-    // // Chop up the command line into args.
-    // #define MAX_NUM_ARGS 20
-    // const char* argv[MAX_NUM_ARGS];
-    // int argc = 0;
-
-    // // Make writable copy and tokenize it.
-    // char cp[strlen(line) + 1];
-    // strcpy(cp, line);
-    // char* tok = strtok(cp, " ");
-    // while(tok != NULL && argc < MAX_NUM_ARGS)
-    // {
-    //     argv[argc++] = tok;
-    //     tok = strtok(NULL, " ");
-    // }
-
-    // Process each available char.
+    // Process each new char.
     char c = -1;
-    bool done = false;
+    bool process_done = false;
 
-    while (!done && ret == NULL)
+    while (!process_done)// && ret == false)
     {
         if (_stdio)
         {
@@ -121,7 +94,7 @@ const char* cli_ReadLine(void)
         switch(c)
         {
             case -1:
-                done = true;
+                process_done = true;
                 break;
 
             case '\n':
@@ -132,9 +105,8 @@ const char* cli_ReadLine(void)
                 // Echo return.
                 cli_WriteLine("");
 
-                // Line done.
-                ret = _cli_buff;
-                _line_done = true;
+                // Line process_done.
+                line_done = true;
 
                 // Echo prompt.
                 //cli_WriteLine("");
@@ -151,14 +123,53 @@ const char* cli_ReadLine(void)
                 if (_buff_index >= CLI_BUFF_LEN - 1)
                 {
                     // Notify.
-                    ret = _cli_buff;
-                    _line_done = true;
+                    serr = "Command line too long";
+                    line_done = true;
                 }
                 break;
         }
+
+        if (line_done)
+        {
+            memset(args, 0, sizeof(cli_args_t));
+
+            if (serr == NULL)
+            {
+                int argc = 0;
+
+                // Chop up the raw command line into args.
+                char* tok = strtok(_cli_buff, " ");
+                while(tok != NULL && argc < MAX_CLI_ARGS && serr == NULL)
+                {
+                    if (strlen(tok) >= MAX_CLI_ARG_LEN)
+                    {
+                        serr = "Argument too long";
+                    }
+                    else
+                    {
+                        strncpy(args->arg_values[argc], tok, MAX_CLI_ARG_LEN-1);
+                        argc++;
+                        tok = strtok(NULL, " ");
+                    }
+                }
+            }
+
+            if (serr != NULL)
+            {
+                strncpy(args->arg_values[0], serr, MAX_CLI_ARG_LEN-1);
+                args->arg_count = 0;
+            }
+
+            // Clear buffer.
+            memset(_cli_buff, 0, CLI_BUFF_LEN);
+            line_done = false;
+            _buff_index = 0;
+
+        }
+
     }
 
-    return ret;
+    return line_done;
 }
 
 
