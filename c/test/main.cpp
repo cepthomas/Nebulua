@@ -13,15 +13,10 @@ int main()
     // Run the requested tests.
     std::vector<std::string> whichSuites;
 
-    // TODO1 Add tests:
-    // cli (in cbot test)TODO-REF
-    // devmgr
-    // interop/work?
-    // nebcommon
+    // TODO1 Add tests: devmgr  interop/work  nebcommon
     // main??
-    // test for timeanalyzer (in cbot test)TODO-REF
 
-    // add test files dir.
+    // add test files dir?
 
     whichSuites.emplace_back("CLI");
 

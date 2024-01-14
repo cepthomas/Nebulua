@@ -10,11 +10,11 @@
 #include "nebcommon.h"
 
 
-// TODO-REF refactor and put in cbot plus these:
+// TODO1 refactor and put in cbot plus these:
 //  - also handle like single space bar? maybe immediate for all single keys?
 //  - Chop up the command line into args and return those.
 //  - handle sock.c, serial port, etc?  https://en.cppreference.com/w/c/io
-
+//  - unit test
 
 //---------------- Private ------------------------------//
 
