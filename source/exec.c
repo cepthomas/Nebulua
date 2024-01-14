@@ -277,7 +277,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                 }
                 else
                 {
-                    // Channel events.
+                    // Specific channel events.
                     evt = (midi_event_t)(bstatus & 0xF0);
                     channel = (bstatus & 0x0F) + 1;
                 }
@@ -473,7 +473,7 @@ int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
     if (args->arg_count == 1) // no args
     {
-        // TODO2 do something
+        // TODO2 do something to reload script
     }
 
     return stat;

@@ -8,7 +8,7 @@ project(nebulua)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
-# TODO2 make cleaner or into libs:
+# TODO-B make cleaner or into libs:
 set(LUA  "C:/Lua")
 set(FTMR "C:/Dev/repos/C/c_fast_timer")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
