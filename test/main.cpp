@@ -18,7 +18,7 @@ int main()
 
     // add test files dir?
 
-    whichSuites.emplace_back("CLI");
+    whichSuites.emplace_back("NCOM");
 
     // Init system before running tests.
     // FILE* fp = fopen("log_test.txt", "w");

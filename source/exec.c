@@ -38,7 +38,7 @@ typedef struct cli_command_desc
 } cli_command_desc_t;
 
 // Cli command handler.
-typedef int (* const cli_command_handler_t)(const cli_command_desc_t* pcmd, int argc, const char* argv[]);
+typedef int (* const cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t* args);
 
 // Map a cli commands.
 typedef struct cli_command
@@ -185,44 +185,30 @@ int exec_Main(int argc, char* argv[])
 int _Run(void)
 {
     int stat = NEB_OK;
+    cli_args_t cli_args;
 
     // Loop forever doing cli requests.
     do
     {
-        const char* line = cli_ReadLine();
-        if(line != NULL)
+        if(cli_ReadLine(&cli_args))
         {
             bool valid = false;
 
-            // Chop up the command line into args.
-            #define MAX_NUM_ARGS 20
-            const char* argv[MAX_NUM_ARGS];
-            int argc = 0;
-
-            // Make writable copy and tokenize it.
-            char cp[strlen(line) + 1];
-            strcpy(cp, line);
-            char* tok = strtok(cp, " ");
-            while(tok != NULL && argc < MAX_NUM_ARGS)
-            {
-                argv[argc++] = tok;
-                tok = strtok(NULL, " ");
-            }
-
             // Process the command and its options.
-            if (argc > 0)
+            if (cli_args.arg_count > 0)
             {
                 // Find and execute the command.
                 const cli_command_t* pcmd = _commands;
                 while (pcmd->handler != NULL)
                 {
-                    if (strcmp(pcmd->desc.short_name, argv[0]) || strcmp(pcmd->desc.long_name, argv[0]))
+                    if (strcmp(pcmd->desc.short_name, cli_args.arg_values[0]) || strcmp(pcmd->desc.long_name, cli_args.arg_values[0]))
                     {
                         valid = true;
                         // Lock access to lua context.
                         ENTER_CRITICAL_SECTION; 
-                        // Execute the command. It handles any errors so this does not need to call _EvalStatus(...).
-                        (*pcmd->handler)(&(pcmd->desc), argc, argv);
+                        // Execute the command. They handle any errors internally.
+                        stat = (*pcmd->handler)(&(pcmd->desc), &cli_args);
+                        _EvalStatus(stat, "handler failed: %s", pcmd->desc.long_name);
                         EXIT_CRITICAL_SECTION; 
                         break;
                     }
@@ -233,7 +219,10 @@ int _Run(void)
                     cli_WriteLine("invalid command");
                 }
             }
-            // else assume fat fingers.
+            else // error
+            {
+                cli_WriteLine(cli_args.arg_values[0]);
+            }
         }
         _Sleep(100);
     } while (_app_running);
@@ -341,26 +330,26 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 
 
 //--------------------------------------------------------//
-int _TempoCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _TempoCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 1) // get
+    if (args->arg_count == 1) // get
     {
         cli_WriteLine("tempo: %d", _tempo);
         stat = NEB_OK;
     }
-    else if (argc == 2) // set
+    else if (args->arg_count == 2) // set
     {
         int t;
-        if(nebcommon_ParseInt(argv[1], &t, 40, 240))
+        if(nebcommon_ParseInt(args->arg_values[1], &t, 40, 240))
         {
             _tempo = t;
             luainteropwork_SetTempo(_l, _tempo);
         }
         else
         {
-           cli_WriteLine("invalid tempo: %d", argv[1]);
+           cli_WriteLine("invalid tempo: %d", args->arg_values[1]);
            stat = NEB_ERR_BAD_CLI_ARG;
         }
         stat = NEB_OK;
@@ -371,11 +360,11 @@ int _TempoCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
 
 
 //--------------------------------------------------------//
-int _RunCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _RunCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 1) // no args
+    if (args->arg_count == 1) // no args
     {
         _script_running = !_script_running;
         stat = NEB_OK;
@@ -386,11 +375,11 @@ int _RunCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
 
 
 //--------------------------------------------------------//
-int _ExitCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _ExitCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 1) // no args
+    if (args->arg_count == 1) // no args
     {
         _app_running = false;
         stat = NEB_OK;
@@ -401,23 +390,23 @@ int _ExitCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
 
 
 //--------------------------------------------------------//
-int _MonCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _MonCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 2) // set
+    if (args->arg_count == 2) // set
     {
-        if (strcmp(argv[1], "in") == 0)
+        if (strcmp(args->arg_values[1], "in") == 0)
         {
             _mon_input = !_mon_input;
             stat = NEB_OK;
         }
-        else if (strcmp(argv[1], "out") == 0)
+        else if (strcmp(args->arg_values[1], "out") == 0)
         {
             _mon_output = !_mon_output;
             stat = NEB_OK;
         }
-        else if (strcmp(argv[1], "off") == 0)
+        else if (strcmp(args->arg_values[1], "off") == 0)
         {
             _mon_input = false;
             _mon_output = false;
@@ -425,7 +414,7 @@ int _MonCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
         }
         else
         {
-           cli_WriteLine("invalid option: %s", argv[1]);
+           cli_WriteLine("invalid option: %s", args->arg_values[1]);
         }
     }
 
@@ -434,11 +423,11 @@ int _MonCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
 
 
 //--------------------------------------------------------//
-int _KillCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 1) // no args
+    if (args->arg_count == 1) // no args
     {
         // TODO2 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
         // luainteropwork_SendController(_l, hndchan, AllNotesOff=123, 0);
@@ -450,21 +439,21 @@ int _KillCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
 
 
 //--------------------------------------------------------//
-int _PositionCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _PositionCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 1) // get
+    if (args->arg_count == 1) // get
     {
         cli_WriteLine(nebcommon_FormatBarTime(_position));
         stat = NEB_OK;
     }
-    else if (argc == 2)
+    else if (args->arg_count == 2)
     {
-        int position = nebcommon_ParseBarTime(argv[1]);
+        int position = nebcommon_ParseBarTime(args->arg_values[1]);
         if (position < 0)
         {
-           cli_WriteLine("invalid position: %s", argv[1]);
+           cli_WriteLine("invalid position: %s", args->arg_values[1]);
         }
         else
         {
@@ -478,11 +467,11 @@ int _PositionCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
 
 
 //--------------------------------------------------------//
-int _ReloadCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (argc == 1) // no args
+    if (args->arg_count == 1) // no args
     {
         // TODO2 do something
     }
@@ -492,7 +481,7 @@ int _ReloadCmd(const cli_command_desc_t* pdesc, int argc, const char* argv[])
 
 
 //--------------------------------------------------------//
-int _Usage(const cli_command_desc_t* pdesc, int argc, const char* argv[])
+int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args)
 {
     int stat = NEB_OK;
 

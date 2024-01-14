@@ -6,13 +6,13 @@
 
 extern "C"
 {
-#include "cli.h"
+#include "nebcommon.h"
 #include "logger.h"
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(CLI_SILLY, "Test cli.")
+UT_SUITE(NCOM_SILLY, "Test stuff.")
 {
     int x = 1;
     int y = 2;

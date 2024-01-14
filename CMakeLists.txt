@@ -30,9 +30,9 @@ if(DO_TEST)
         )
 
     add_executable(nebulua
-        source/cli.c
+        source/nebcommon.c
         test/main.cpp
-        test/test_cli.cpp
+        test/test_nebcommon.cpp
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source/private/logger.c
         ${EMBL}/source/private/luautils.c
@@ -52,11 +52,11 @@ else()
         source/main.c
         source/exec.c
         source/nebcommon.c
-        source/cli.c
         source/devmgr.c
         source/luainterop.c
         source/luainteropwork.c
         ${CBOT}/source/private/logger.c
+        ${CBOT}/source/private/cli.c
         ${EMBL}/source/private/luautils.c
         ${EMBL}/source/private/luaex.c
         ${FTMR}/source/private/ftimer.c
