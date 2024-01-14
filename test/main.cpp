@@ -13,7 +13,7 @@ int main()
     // Run the requested tests.
     std::vector<std::string> whichSuites;
 
-    // TODO1 Add tests: devmgr  interop/work  nebcommon
+    // TODO1 Add tests: devmgr  interop/work  nebcommon  exec
     // main??
 
     // add test files dir?

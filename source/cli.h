@@ -28,12 +28,12 @@ const char* cli_ReadLine(void);
 
 /// Write a line to a cli.
 /// @param buff Line to send to user.
-/// @return Status.
+/// @return status 0=ok
 int cli_WriteLine(const char* format, ...);
 
 /// Write a car to a cli.
 /// @param c Char to send to user.
-/// @return Status.
+/// @return status 0=ok
 int cli_WriteChar(char c);
 
 #endif // CLI_H

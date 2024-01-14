@@ -7,11 +7,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "cli.h"
-#include "nebcommon.h"
 
 
 // TODO1 refactor and put in cbot plus these:
-//  - also handle like single space bar? maybe immediate for all single keys?
+//  - also handle e.g. immediate single space bar.
 //  - Chop up the command line into args and return those.
 //  - handle sock.c, serial port, etc?  https://en.cppreference.com/w/c/io
 //  - unit test
@@ -33,7 +32,7 @@ static int _buff_index = -1;
 /// CLI prompt.
 static char* _prompt = "";
 
-/// ---- kludgy, fix
+/// ---- kludgy, fix. enum?
 static bool _stdio = true;
 
 
@@ -87,6 +86,20 @@ const char* cli_ReadLine(void)
         _buff_index = 0;
     }
 
+    // // Chop up the command line into args.
+    // #define MAX_NUM_ARGS 20
+    // const char* argv[MAX_NUM_ARGS];
+    // int argc = 0;
+
+    // // Make writable copy and tokenize it.
+    // char cp[strlen(line) + 1];
+    // strcpy(cp, line);
+    // char* tok = strtok(cp, " ");
+    // while(tok != NULL && argc < MAX_NUM_ARGS)
+    // {
+    //     argv[argc++] = tok;
+    //     tok = strtok(NULL, " ");
+    // }
 
     // Process each available char.
     char c = -1;
@@ -137,7 +150,7 @@ const char* cli_ReadLine(void)
                 // Check for overrun.
                 if (_buff_index >= CLI_BUFF_LEN - 1)
                 {
-                    // Truncate.
+                    // Notify.
                     ret = _cli_buff;
                     _line_done = true;
                 }
@@ -150,73 +163,9 @@ const char* cli_ReadLine(void)
 
 
 //--------------------------------------------------------//
-bool cli_ReadLine_orig(char* buff, int num)
-{
-    bool ready = false;
-
-    // Default.
-    buff[0] = 0;
-
-    // Process each char.
-    char c = -1;
-    bool done = false;
-
-    while (!done)
-    {
-        if (_stdio)
-        {
-            c = _kbhit() ? (char)_getch() : -1;
-        }
-        else // telnet
-        {
-            // while ((c = fgetc(p_CliIn)) != EOF)
-            // if (fread(&c, 1, 1, p_CliIn) > 0)
-            c = -1;
-        }
-
-        switch(c)
-        {
-            case -1:
-                done = true;
-                break;
-
-            case '\n':
-                // Ignore.
-                break;
-
-            case '\r':
-                // Echo return.
-                cli_WriteLine("");
-
-                // Copy to client buff. Should be 0 terminated.
-                strncpy(buff, _cli_buff, num);
-                ready = true;
-
-                // Clear buffer.
-                memset(_cli_buff, 0, CLI_BUFF_LEN);
-
-                // Echo prompt.
-                //cli_WriteLine("");
-                break;
-
-            default:
-                // Echo char.
-                putchar(c);
-                
-                // Save it.
-                _cli_buff[strlen(_cli_buff)] = c;
-                break;
-        }
-    }
-
-    return ready;
-}
-
-
-//--------------------------------------------------------//
 int cli_WriteLine(const char* format, ...)
 {
-    int stat = NEB_OK;
+    int stat = 0;
 
     static char buff[CLI_BUFF_LEN];
 
