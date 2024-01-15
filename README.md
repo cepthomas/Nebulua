@@ -1,7 +1,8 @@
-# Nebulua
+# Nebulua TODO2 Copy stuff from Nebulator\README.md
+
+
 An experimental version of Nebulator using Lua as the script flavor.
 
-Copy stuff from Nebulator\README.md
 
 
 
@@ -50,8 +51,8 @@ It demonstrates:
 - Run build.cmd to make the executables.
 
 # Files
-- [Conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/CONVENTIONS.md).
-- [Modular model](https://github.com/cepthomas/c_modular).
+X- [Conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/CONVENTIONS.md).
+X- [Modular model](https://github.com/cepthomas/c_modular).
 - `c` folder:
     - main.c - Entry stub calls exec.
     - exec.c/h - Does all the top-level work.

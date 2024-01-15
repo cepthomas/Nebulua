@@ -1,21 +1,20 @@
 
 # Build the nebulua app or its unit tests.
-# This is a 64 bit build. PATH must include ...\mingw64\bin.
+# This is a Windows 64 bit build. PATH must include ...\mingw64\bin.
 
 cmake_minimum_required(VERSION 3.5)
 project(nebulua)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_C_STANDARD 99)
+# set(CMAKE_CXX_STANDARD 11)
 
-# TODO-B make cleaner or into libs:
 set(LUA  "C:/Lua")
 set(FTMR "C:/Dev/repos/C/c_fast_timer")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
 set(EMBL "C:/Dev/repos/C/c_emb_lua")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
-# -Wno-unused-function -Wno-uninitialized -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-but-set-variable -Wno-discarded-qualifiers")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 # Header files.
 if(DO_TEST)
@@ -66,8 +65,5 @@ else()
 
 endif()
 
-# Libs. 64 bit build.
-target_link_libraries(nebulua
-    ${LUA}/Win64/lua54.dll
-    libwinmm.a
-    )
+# Libs.
+target_link_libraries(nebulua ${LUA}/Win64/lua54.dll  libwinmm.a)

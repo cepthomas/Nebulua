@@ -3,6 +3,9 @@
 
 // Stub for entry. Mainly to make testing easier.
 
+C:\Dev\repos\Lua\Nebulua\build.cmd
+rem copy lua\*.lua build
+
 int exec_Main(int argc, char* argv[]);
 
 int main(int argc, char* argv[])

@@ -12,6 +12,3 @@ cmake -G "MinGW Makefiles" ..
 make
 
 popd
-
-:: Copy lua files to output.
-copy lua\*.lua build
