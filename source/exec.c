@@ -473,7 +473,9 @@ int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
     if (args->arg_count == 1) // no args
     {
-        // TODO2 do something to reload script
+        // TODO2 do something to reload script =>
+        // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
+        // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
     }
 
     return stat;

@@ -21,7 +21,7 @@ pushd lua\test\
 :: Set the lua path.
 set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;C:\Dev\repos\Audio\Nebulua\lua\?.lua;C:\Dev\repos\Audio\Nebulua\lua\test\?.lua;
 
-:: TODO-T Run the unit tests. test_defs.lua  test_nebulua.lua
+:: TODO2 Run the unit tests. test_defs.lua  test_nebulua.lua
 rem lua C:\Dev\repos\Lua\LuaBagOfTricks\pnut_runner.lua test_nebulua.lua
 
 popd

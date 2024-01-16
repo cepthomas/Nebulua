@@ -1,10 +1,6 @@
-# Nebulua TODO2 Copy stuff from Nebulator\README.md
-
+# Nebulua TODO3 Copy some stuff from Nebulator\README.md
 
 An experimental version of Nebulator using Lua as the script flavor.
-
-
-
 
 field types:
 S = string
@@ -27,12 +23,6 @@ E = expression?
 -- List format:
 -- times are beat.subbeat where beat is 0-N subbeat is 0-7
 -- note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
-
-
-Reload:
-- https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
-- https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
-
 
 
 

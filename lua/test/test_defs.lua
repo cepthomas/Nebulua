@@ -1,5 +1,5 @@
 
--- Unit tests for music_defs.lua and midi_defs.lua. TODO-T
+-- Unit tests for music_defs.lua and midi_defs.lua. TODO2
 
 local ut = require("utils")
 
