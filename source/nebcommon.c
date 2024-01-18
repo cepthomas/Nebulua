@@ -7,10 +7,9 @@
 #include "lua.h"
 // cbot
 // application
-#include "luautils.h" //TODO1 don't include emb lua...
+#include "luautils.h" //TODO1 don't include emb lua... luautils and luaex
 #include "nebcommon.h"
 
-// TODO1 put fast timer in cbot. Maybe a cbot api h?
 
 //--------------------- Defs -----------------------------//
 

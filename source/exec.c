@@ -19,9 +19,6 @@
 
 //----------------------- Definitions -----------------------//
 
-
-//----------------------- Types -----------------------------//
-
 // Cli command descriptor.
 typedef struct cli_command_desc
 {
