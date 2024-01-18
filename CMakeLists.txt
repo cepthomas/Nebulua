@@ -1,7 +1,7 @@
 
 # Build the nebulua app or its unit tests.
 # This is a Windows 64 bit build. PATH must include ...\mingw64\bin.
-# TODO3 Need a build/package/release.
+# TODO2 Need a build/package/release.
 
 
 cmake_minimum_required(VERSION 3.5)

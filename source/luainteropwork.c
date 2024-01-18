@@ -1,20 +1,17 @@
-#include <windows.h>
+// system
 #include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
 #include <math.h>
 // lua
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
-// app
-#include "midi.h"
+// cbot
 #include "logger.h"
 #include "ftimer.h"
+// application
+#include "midi.h"
 #include "nebcommon.h"
 #include "devmgr.h"
-#include "luainterop.h"
 #include "luainteropwork.h"
 
 

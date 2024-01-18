@@ -1,6 +1,11 @@
-#include <stdarg.h>
+// system
+#include <windows.h>
+// #include <stdarg.h>
 #include <string.h>
+// lua
+// cbot
 #include "logger.h"
+// application
 #include "nebcommon.h"
 #include "devmgr.h"
 

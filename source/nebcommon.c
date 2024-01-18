@@ -1,12 +1,16 @@
-#include <stdarg.h>
-#include <string.h>
+// system
+#include <windows.h>
 #include <stdio.h>
-#include <errno.h>
+#include <stdlib.h>
 #include <math.h>
-#include "logger.h"
-#include "luautils.h"
+// lua
+#include "lua.h"
+// cbot
+// application
+#include "luautils.h" //TODO1 don't include emb lua...
 #include "nebcommon.h"
 
+// TODO1 put fast timer in cbot. Maybe a cbot api h?
 
 //--------------------- Defs -----------------------------//
 

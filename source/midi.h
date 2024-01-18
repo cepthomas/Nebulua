@@ -1,16 +1,6 @@
 #ifndef MIDI_H
 #define MIDI_H
 
-// #include <windows.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <stdbool.h>
-// #include <string.h>
-// #include <time.h>
-// #include <unistd.h>
-// #include "lua.h"
-
-
 // Midi caps.
 #define MIDI_VAL_MIN 0
 

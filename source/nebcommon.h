@@ -1,14 +1,12 @@
 #ifndef NEBCOMMON_H
 #define NEBCOMMON_H
 
-#include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
+// system
 #include <stdbool.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
+// lua
 #include "lua.h"
+// cbot
+// application
 
 
 //----------------------- Definitions -----------------------//

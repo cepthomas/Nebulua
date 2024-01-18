@@ -1,14 +1,11 @@
 #ifndef DEVMGR_H
 #define DEVMGR_H
 
+// system
 #include <windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include "lua.h"
+// lua
+// cbot
+// application
 
 
 //---------------- Public API ----------------------//
