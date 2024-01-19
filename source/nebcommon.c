@@ -7,7 +7,7 @@
 #include "lua.h"
 // cbot
 // application
-#include "luautils.h" //TODO1 don't include emb lua... luautils and luaex
+#include "luautils.h"
 #include "nebcommon.h"
 
 

@@ -1,9 +1,5 @@
-// system
 #include <stdio.h>
 #include <stdlib.h>
-// lua
-// cbot
-// application
 
 // Stub for entry. Mainly to make testing easier.
 int exec_Main(int argc, char* argv[]);

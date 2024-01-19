@@ -3,7 +3,7 @@ echo off
 
 :: Convert spec into interop library.
 
-:: Set the lua path.
+:: Set the lua path. TODO1 fix hardcoded paths - submodule?.
 set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;
 
 :: Args.

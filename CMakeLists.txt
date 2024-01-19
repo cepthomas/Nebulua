@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 set(LUA  "C:/Lua")
 set(FTMR "C:/Dev/repos/C/c_fast_timer")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
-set(EMBL "C:/Dev/repos/C/c_emb_lua")
+set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks")
 
 # Header files.
 if(DO_TEST)
@@ -26,16 +26,16 @@ if(DO_TEST)
         ${LUA}/include
         ${CBOT}/source
         ${CBOT}/pnut
-        ${EMBL}/source
+        ${LBOT}/source
         )
 
     add_executable(nebulua
         source/nebcommon.c
         test/main.cpp
         test/test_nebcommon.cpp
+        ${LBOT}/source/luautils.c
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source/private/logger.c
-        ${EMBL}/source/private/luautils.c
         )
 
 else()
@@ -44,7 +44,7 @@ else()
         source
         ${LUA}/include
         ${CBOT}/source
-        ${EMBL}/source
+        ${LBOT}/source
         ${FTMR}/source
         )
 
@@ -55,10 +55,10 @@ else()
         source/devmgr.c
         source/luainterop.c
         source/luainteropwork.c
+        ${LBOT}/source/luautils.c
+        ${LBOT}/source/luaex.c
         ${CBOT}/source/private/logger.c
         ${CBOT}/source/private/cli.c
-        ${EMBL}/source/private/luautils.c
-        ${EMBL}/source/private/luaex.c
         ${FTMR}/source/private/ftimer.c
         ${FTMR}/source/private/stopwatch.c
         ${FTMR}/source/private/timeanalyzer.c

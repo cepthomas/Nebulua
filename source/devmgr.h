@@ -1,11 +1,7 @@
 #ifndef DEVMGR_H
 #define DEVMGR_H
 
-// system
 #include <windows.h>
-// lua
-// cbot
-// application
 
 
 //---------------- Public API ----------------------//

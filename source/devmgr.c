@@ -1,6 +1,5 @@
 // system
 #include <windows.h>
-// #include <stdarg.h>
 #include <string.h>
 // lua
 // cbot
