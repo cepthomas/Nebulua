@@ -39,33 +39,33 @@ double nebcommon_InternalToMsec(int tempo, int subbeat)
 }
 
 //--------------------------------------------------------//
-const char* nebcommon_FormatNebStatus(int stat)
-{
-    const char* sstat = NULL;
-    static char buff[BUFF_LEN];
+// const char* nebcommon_FormatNebStatus(int stat)
+// {
+//     const char* sstat = NULL;
+//     static char buff[BUFF_LEN];
 
-    switch(stat)
-    {
-        case NEB_OK: sstat = "NEB_OK"; break;
-        case NEB_ERR_INTERNAL: sstat = "NEB_ERR_INTERNAL"; break;
-        case NEB_ERR_BAD_CLI_ARG: sstat = "NEB_ERR_BAD_CLI_ARG"; break;
-        case NEB_ERR_BAD_LUA_ARG: sstat = "NEB_ERR_BAD_LUA_ARG"; break;
-        case NEB_ERR_BAD_MIDI_CFG: sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
-        case NEB_ERR_SYNTAX: sstat = "NEB_ERR_SYNTAX"; break;
-        case NEB_ERR_MIDI: sstat = "NEB_ERR_MIDI"; break;
-        default: strncpy(buff, luautils_LuaStatusToString(stat), BUFF_LEN); break; // lua status?
-    }
+//     switch(stat)
+//     {
+//         case NEB_OK: sstat = "NEB_OK"; break;
+//         case NEB_ERR_INTERNAL: sstat = "NEB_ERR_INTERNAL"; break;
+//         case NEB_ERR_BAD_CLI_ARG: sstat = "NEB_ERR_BAD_CLI_ARG"; break;
+//         case NEB_ERR_BAD_LUA_ARG: sstat = "NEB_ERR_BAD_LUA_ARG"; break;
+//         case NEB_ERR_BAD_MIDI_CFG: sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
+//         case NEB_ERR_SYNTAX: sstat = "NEB_ERR_SYNTAX"; break;
+//         case NEB_ERR_MIDI: sstat = "NEB_ERR_MIDI"; break;
+//         default: strncpy(buff, luautils_LuaStatusToString(stat), BUFF_LEN); break; // lua status?
+//     }
 
-    if (sstat == NULL)
-    {
-        snprintf(buff, BUFF_LEN - 1, "STAT%d", stat);
-        return buff;
-    }
-    else
-    {
-        return sstat;
-    }
-}
+//     if (sstat == NULL)
+//     {
+//         snprintf(buff, BUFF_LEN - 1, "STAT%d", stat);
+//         return buff;
+//     }
+//     else
+//     {
+//         return sstat;
+//     }
+// }
 
 
 //--------------------------------------------------------//

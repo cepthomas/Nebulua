@@ -5,6 +5,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 // cbot
+#include "cbot.h"
 #include "logger.h"
 #include "cli.h"
 #include "ftimer.h"
@@ -31,7 +32,7 @@ typedef struct cli_command_desc
 // Cli command handler.
 typedef int (* const cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t* args);
 
-// Map a cli commands.
+// Map a cli command.
 typedef struct cli_command
 {
     const cli_command_handler_t handler;
@@ -94,7 +95,7 @@ static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWO
 // Blocking sleep.
 static void _Sleep(int msec);
 
-// Top level error handler. Logs and calls luaL_error() which doesn't return.
+// Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
 static bool _EvalStatus(int stat, const char* format, ...);
 
 
@@ -104,12 +105,15 @@ static bool _EvalStatus(int stat, const char* format, ...);
 int exec_Main(int argc, char* argv[])
 {
     int stat = NEB_OK;
+    int cbot_stat;
 
     FILE* fp = fopen("nebulua_log.txt", "a");
-    logger_Init(fp);
+    cbot_stat = logger_Init(fp);
+    _EvalStatus(cbot_stat, "Failed to init logger");
     logger_SetFilters(LVL_DEBUG, CAT_ALL);
 
-    cli_OpenStdio();
+    cbot_stat = cli_OpenStdio();
+    _EvalStatus(cbot_stat, "Failed to open cli");
 
     // Initialize the critical section. It is used to synchronize access to lua context.
     InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
@@ -130,10 +134,12 @@ int exec_Main(int argc, char* argv[])
     lua_pop(_l, 1);
 
     // Diagnostic.
-    timeanalyzer_Init();
+    cbot_stat = timeanalyzer_Init(50);
+    _EvalStatus(cbot_stat, "Failed to init timeanalyzer");
 
     // Tempo timer and interrupt.
-    ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
+    cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
+    _EvalStatus(cbot_stat, "Failed to init ftimer");
     luainteropwork_SetTempo(_l, 60);
 
     stat = devmgr_Init((DWORD_PTR)_MidiInHandler);
@@ -168,7 +174,7 @@ int exec_Main(int argc, char* argv[])
     devmgr_Destroy();
     lua_close(_l);
 
-    return NEB_OK;
+    return 0;
 }
 
 
@@ -176,13 +182,18 @@ int exec_Main(int argc, char* argv[])
 int _Run(void)
 {
     int stat = NEB_OK;
+    int cbot_stat;
     cli_args_t cli_args;
 
     // Loop forever doing cli requests.
-    do
+    while (_app_running)
     {
-        if(cli_ReadLine(&cli_args))
+        cbot_stat = cli_ReadLine(&cli_args);
+        _EvalStatus(cbot_stat, "Failed to cli_ReadLine");
+
+        switch (cbot_stat)
         {
+        case CBOT_ERR_NO_ERR: // something to do
             bool valid = false;
 
             // Process the command and its options.
@@ -209,21 +220,26 @@ int _Run(void)
                 {
                     cli_WriteLine("invalid command");
                 }
-            }
-            else // error
-            {
-                cli_WriteLine(cli_args.arg_values[0]);
-            }
+            break;
+
+        case ENODATA: // nothing to do
+            break;
+
+        default: // error TODO1
+            cbot_stat = cli_WriteLine(cli_args.arg_values[0]);
+            _EvalStatus(cbot_stat, "cli_WriteLine() error");
+            break;
         }
+
         _Sleep(100);
-    } while (_app_running);
+    }
 
     return stat;
 }
 
 
 //-------------------------------------------------------//
-void _MidiClockHandler(double msec)
+static void _MidiClockHandler(double msec)
 {
     // Process events -- this is in an interrupt handler!
     // msec is since last time.
@@ -234,7 +250,7 @@ void _MidiClockHandler(double msec)
     int stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUBBEAT(_position));
     if (stat != NEB_OK)
     {
-        // TODO2 do something non-fatal?
+        // TODO-NEB do something non-fatal?
     }
     _position++;
     EXIT_CRITICAL_SECTION;
@@ -333,7 +349,7 @@ int _TempoCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
     else if (args->arg_count == 2) // set
     {
         int t;
-        if(nebcommon_ParseInt(args->arg_values[1], &t, 40, 240))
+        if (nebcommon_ParseInt(args->arg_values[1], &t, 40, 240))
         {
             _tempo = t;
             luainteropwork_SetTempo(_l, _tempo);
@@ -420,7 +436,7 @@ int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
     if (args->arg_count == 1) // no args
     {
-        // TODO2 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
+        // TODO-NEB send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
         // luainteropwork_SendController(_l, hndchan, AllNotesOff=123, 0);
         stat = NEB_OK;
     }
@@ -464,7 +480,7 @@ int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
     if (args->arg_count == 1) // no args
     {
-        // TODO2 do something to reload script =>
+        // TODO-NEB do something to reload script =>
         // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
         // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
     }
@@ -517,6 +533,7 @@ bool _EvalStatus(int stat, const char* format, ...)
 {
     static char buff[100];
     bool has_error = false;
+
     if (stat >= LUA_ERRRUN)
     {
         has_error = true;
@@ -526,11 +543,40 @@ bool _EvalStatus(int stat, const char* format, ...)
         vsnprintf(buff, sizeof(buff)-1, format, args);
         va_end(args);
 
-        const char* sstat = nebcommon_FormatNebStatus(stat);
-
-        if (stat <= LUA_ERRFILE) // internal lua error
+        // const char* sstat = nebcommon_FormatNebStatus(stat);
+        const char* sstat = NULL;
+        char err_buff[16];
+        switch(stat)
         {
-            // Get error message on stack if provided.
+            // generic
+            // case 0:                         sstat = "NO_ERR"; break;
+            // lua
+            // case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
+            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
+            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
+            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
+            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
+            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
+            // cbot
+            case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
+            case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
+            case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
+            case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
+            // app
+            case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
+            case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
+            case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
+            case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
+            case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
+            case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
+            default:                        snprintf(err_buff, sizeof(err_buff)-1, "ERR_%d", stat); break;
+        }
+
+        sstat = (sstat == NULL) ? err_buff : sstat;
+
+        if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
+        {
+            // 
             if (lua_gettop(_l) > 0)
             {
                 luaL_error(_l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(_l, -1));
@@ -540,7 +586,7 @@ bool _EvalStatus(int stat, const char* format, ...)
                 luaL_error(_l, "Status:%s info:%s", sstat, buff);
             }
         }
-        else // assume nebulua error
+        else // cbot or nebulua error
         {
             luaL_error(_l, "Status:%s info:%s", sstat, buff);
         }

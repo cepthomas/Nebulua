@@ -1,6 +1,5 @@
 #include <cstdio>
 #include <cstring>
-#include <unistd.h>
 
 #include "pnut.h"
 

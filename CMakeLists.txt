@@ -13,7 +13,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 set(LUA  "C:/Lua")
-set(FTMR "C:/Dev/repos/C/c_fast_timer")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
 set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks")
 
@@ -45,7 +44,6 @@ else()
         ${LUA}/include
         ${CBOT}/source
         ${LBOT}/source
-        ${FTMR}/source
         )
 
     add_executable(nebulua
@@ -59,9 +57,9 @@ else()
         ${LBOT}/source/luaex.c
         ${CBOT}/source/private/logger.c
         ${CBOT}/source/private/cli.c
-        ${FTMR}/source/private/ftimer.c
-        ${FTMR}/source/private/stopwatch.c
-        ${FTMR}/source/private/timeanalyzer.c
+        ${CBOT}/source/private/ftimer.c
+        ${CBOT}/source/private/stopwatch.c
+        ${CBOT}/source/private/timeanalyzer.c
         )
 
 endif()

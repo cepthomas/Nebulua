@@ -1,4 +1,4 @@
-# Nebulua TODO2 Copy some stuff from Nebulator\README.md
+# Nebulua TODO-NEB Copy some stuff from Nebulator\README.md
 
 An experimental version of Nebulator using Lua as the script flavor.
 

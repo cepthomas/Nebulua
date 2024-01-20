@@ -3,12 +3,9 @@ echo off
 
 :: Convert spec into interop library.
 
-:: Set the lua path. TODO1 fix hardcoded paths - submodule?.
-set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;
-
 :: Args.
 set spec_fn=%~dp0%interop_spec.lua
-set out_path=%~dp0%c
+set out_path=%~dp0%source
 rem echo %spec_fn%
 rem echo %out_path%
 
@@ -16,7 +13,7 @@ rem echo %out_path%
 pushd "..\..\Lua\LuaBagOfTricks"
 lua gen_interop.lua -ch -d -t %spec_fn% %out_path%
 
-:: Relocate to preferred destination.
-mv -f %out_path%\luainterop.c %out_path%\private
+rem :: Relocate to preferred destination.
+rem mv -f %out_path%\luainterop.c %out_path%\private
 
 popd
