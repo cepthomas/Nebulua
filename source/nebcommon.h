@@ -66,11 +66,6 @@ double nebcommon_InternalToMsec(int tempo, int subbeat);
 
 //----------------------- Utilities -----------------------------//
 
-// /// Convert a status to string.
-// /// @param[in] stat Status to examine
-// /// @return String or NULL if not valid
-// const char* nebcommon_FormatNebStatus(int stat);
-
 /// Convert a status to string.
 /// @param[in] mstat Midi status to examine
 /// @return String or NULL if not valid

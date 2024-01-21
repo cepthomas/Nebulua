@@ -61,7 +61,7 @@ static bool _mon_input = false;
 static bool _mon_output = false;
 
 // Forward reference.
-static const cli_command_t _commands[];
+static cli_command_t _commands[];
 
 // Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
 static CRITICAL_SECTION _critical_section; 
@@ -182,7 +182,7 @@ int exec_Main(int argc, char* argv[])
 int _Run(void)
 {
     int stat = NEB_OK;
-    int cbot_stat;
+    int cbot_stat = CBOT_ERR_NO_ERR;
     cli_args_t cli_args;
 
     // Loop forever doing cli requests.
@@ -220,12 +220,13 @@ int _Run(void)
                 {
                     cli_WriteLine("invalid command");
                 }
+            }
             break;
 
         case ENODATA: // nothing to do
             break;
 
-        default: // error TODO1
+        default: // error
             cbot_stat = cli_WriteLine(cli_args.arg_values[0]);
             _EvalStatus(cbot_stat, "cli_WriteLine() error");
             break;
@@ -239,7 +240,7 @@ int _Run(void)
 
 
 //-------------------------------------------------------//
-static void _MidiClockHandler(double msec)
+void _MidiClockHandler(double msec)
 {
     // Process events -- this is in an interrupt handler!
     // msec is since last time.
@@ -598,7 +599,7 @@ bool _EvalStatus(int stat, const char* format, ...)
 
 //--------------------------------------------------------//
 // Map commands to handlers.
-static const cli_command_t _commands[] =
+static cli_command_t _commands[] =
 {
     { _Usage,        { "help",       "?",   "explain it all",                         "" } },
     { _ExitCmd,      { "exit",       "x",   "exit the application",                   "" } },

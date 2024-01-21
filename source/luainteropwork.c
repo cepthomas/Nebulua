@@ -40,7 +40,7 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
     double msec_per_subbeat = 1000 * sec_per_beat / SUBEATS_PER_BAR;
     int period = msec_per_subbeat > 1.0 ? round(msec_per_subbeat) : 1;
 
-    int cbot_stat = ftimer_Run(period);
+    ftimer_Run(period);
 
     return 0;
 }
