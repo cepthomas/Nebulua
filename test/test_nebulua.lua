@@ -1,5 +1,5 @@
 
--- Unit tests for nebulua.lua.  TODO-NEB
+-- Unit tests for nebulua.lua.  TODO1-NEB
 
 local ut = require("utils")
 local si = require("step_info")
@@ -32,23 +32,6 @@ function M.suite_step_info(pn)
 
     note1 = StepNote(1234, 99)
     pn.UT_EQUAL(note1, "Ut")
-
--- fido = StepNote('Fido')
--- felix = StepController('Felix', 'Tabby')
-
-
-
-    -- pn.UT_INFO("Verify that this info line appears in the report file.")
-    -- pn.UT_ERROR("Verify that this error line appears in the report file.")
-
-    -- pn.UT_TRUE(2 + 2 == 4) -- pass
-    -- pn.UT_TRUE(2 + 2 == 5) -- fail
-
-    -- pn.UT_FALSE(2 + 2 == 4) -- fail
-    -- pn.UT_FALSE(2 + 2 == 5) -- pass
-
-    -- pn.UT_NIL(nil) -- pass
-    -- pn.UT_NIL(2) -- fail
 
 end
 

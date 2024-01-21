@@ -251,7 +251,7 @@ void _MidiClockHandler(double msec)
     int stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUBBEAT(_position));
     if (stat != NEB_OK)
     {
-        // TODO-NEB do something non-fatal?
+        // TODO1-NEB do something non-fatal?
     }
     _position++;
     EXIT_CRITICAL_SECTION;
@@ -437,7 +437,7 @@ int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
     if (args->arg_count == 1) // no args
     {
-        // TODO-NEB send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
+        // TODO1-NEB send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
         // luainteropwork_SendController(_l, hndchan, AllNotesOff=123, 0);
         stat = NEB_OK;
     }
@@ -481,7 +481,7 @@ int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
     if (args->arg_count == 1) // no args
     {
-        // TODO-NEB do something to reload script =>
+        // TODO1-NEB do something to reload script =>
         // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
         // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
     }
