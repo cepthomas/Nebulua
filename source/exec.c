@@ -544,15 +544,14 @@ bool _EvalStatus(int stat, const char* format, ...)
         vsnprintf(buff, sizeof(buff)-1, format, args);
         va_end(args);
 
-        // const char* sstat = nebcommon_FormatNebStatus(stat);
         const char* sstat = NULL;
         char err_buff[16];
         switch(stat)
         {
             // generic
-            // case 0:                         sstat = "NO_ERR"; break;
+            case 0:                         sstat = "NO_ERR"; break;
             // lua
-            // case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
+            case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
             case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
             case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
             case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
@@ -577,7 +576,6 @@ bool _EvalStatus(int stat, const char* format, ...)
 
         if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
         {
-            // 
             if (lua_gettop(_l) > 0)
             {
                 luaL_error(_l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(_l, -1));
@@ -591,6 +589,8 @@ bool _EvalStatus(int stat, const char* format, ...)
         {
             luaL_error(_l, "Status:%s info:%s", sstat, buff);
         }
+
+        //  maybe? const char* strerrorname_np(int errnum), const char* strerrordesc_np(int errnum);
     }
 
     return has_error;

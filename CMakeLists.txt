@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 set(LUA  "C:/Lua")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
-set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks")
+
 
 # Header files.
 if(DO_TEST)
@@ -25,14 +25,12 @@ if(DO_TEST)
         ${LUA}/include
         ${CBOT}/source
         ${CBOT}/pnut
-        ${LBOT}/source
         )
 
     add_executable(nebulua
         source/nebcommon.c
         test/main.cpp
         test/test_nebcommon.cpp
-        ${LBOT}/source/luautils.c
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source/private/logger.c
         )
@@ -43,7 +41,6 @@ else()
         source
         ${LUA}/include
         ${CBOT}/source
-        ${LBOT}/source
         )
 
     add_executable(nebulua
@@ -53,8 +50,7 @@ else()
         source/devmgr.c
         source/luainterop.c
         source/luainteropwork.c
-        ${LBOT}/source/luautils.c
-        ${LBOT}/source/luaex.c
+        source/luaex.c
         ${CBOT}/source/private/logger.c
         ${CBOT}/source/private/cli.c
         ${CBOT}/source/private/ftimer.c

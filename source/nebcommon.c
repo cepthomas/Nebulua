@@ -7,7 +7,6 @@
 #include "lua.h"
 // cbot
 // application
-#include "luautils.h"
 #include "nebcommon.h"
 
 
@@ -23,6 +22,7 @@ double nebcommon_InternalPeriod(int tempo)
     return msec_per_subbeat;
 }
 
+
 //--------------------------------------------------------//
 int nebcommon_RoundedInternalPeriod(int tempo)
 {
@@ -30,6 +30,7 @@ int nebcommon_RoundedInternalPeriod(int tempo)
     int period = msec_per_subbeat > 1.0 ? (int)round(msec_per_subbeat) : 1;
     return period;
 }
+
 
 //--------------------------------------------------------//
 double nebcommon_InternalToMsec(int tempo, int subbeat)
