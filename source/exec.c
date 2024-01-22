@@ -134,7 +134,7 @@ int exec_Main(int argc, char* argv[])
     lua_pop(_l, 1);
 
     // Diagnostic.
-    cbot_stat = timeanalyzer_Init(50);
+    cbot_stat = timeanalyzer_Init(50); // TODO2 need to measure
     _EvalStatus(cbot_stat, "Failed to init timeanalyzer");
 
     // Tempo timer and interrupt.

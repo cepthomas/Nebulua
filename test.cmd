@@ -20,5 +20,5 @@ popd
 
 :do_lua
 :: Run lua tests.
-set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;C:\Dev\repos\Audio\Nebulua\lua\?.lua;C:\Dev\repos\Audio\Nebulua\lua\test\?.lua;
+set LUA_PATH=;;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;
 lua C:\Dev\repos\Lua\LuaBagOfTricks\pnut_runner.lua  test_nebulua.lua  test_defs.lua

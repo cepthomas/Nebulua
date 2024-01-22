@@ -69,8 +69,9 @@ function setup()
     math.randomseed(os.time())
 
     -- Load her up.
-    local steps = {}
-    steps = neb.process_all(sequences, sections)
+    -- local steps = {}
+    -- steps = neb.process_all(sequences, sections)
+    neb.process_all(sequences, sections)
 
     api.set_tempo(100)
 
@@ -139,9 +140,9 @@ end
 
 ------------------------- Composition ---------------------------------------
 
--- ? volumes could be an optional user map instead of linear range.
-drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
-drum_vol_range = { 5.0, 9.5 }
+-- -- TODO2? volumes could be an optional user map instead of linear range.
+-- drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
+-- drum_vol_range = { 5.0, 9.5 }
 
 
 
@@ -153,10 +154,11 @@ ride = drum.RideCymbal1
 crash = drum.CrashCymbal2
 mtom = drum.HiMidTom
 
+-- WHAT_TO_PLAY is a string or integer or function.
 
 sequences =
 {
-    graphical_seq =
+    graphical_seq = -- these are 8 beats long - end with WHAT_TO_PLAY.
     {
         -- |........|........|........|........|........|........|........|........|
         { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
@@ -166,13 +168,14 @@ sequences =
         { "|        |        |        |5---    |        |        |        |5-8---  |",  func1 }
     },
 
-    list_seq =
+    list_seq = -- these are terminator beats long - seq[2] is WHAT_TO_PLAY.
     {
         { 0.0, "C2",    7, 0.1 },
         { 0.0,  bdrum,  4, 0.1 },
         { 0.4,  44,     5, 0.1 },
         { 4.0,  func1,  7, 1.0 },
-        { 7.4, "A#2",   7, 0.1 } 
+        { 7.4, "A#2",   7, 0.1 },
+        { 8.0, "",      0, 0.0 }   -- terminator -> length
     },
 
     keys_verse =
@@ -250,7 +253,7 @@ sequences =
         { 7.0, crash, 8 }
     },
 
-    dynamic =
+    dyno_func =
     {
         { 0.0, "G3",  5, 0.5 },
         { 1.0, "A3",  5, 0.5 },
@@ -265,24 +268,24 @@ sections =
 {
     beginning =
     {
-        { keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+        { hkeys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
+        { hdrums, drums_verse, drums_verse, drums_verse, drums_verse },
+        { hbass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
     }
     
     middle =
     {
-        { keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
-        { drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
-        { bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-        { synth,   synth_chorus, nil,          synth_chorus, dynamic }
+        { hkeys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
+        { hdrums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
+        { hbass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
+        { hsynth,   synth_chorus, nil,          synth_chorus, dyno_func }
     },
 
     ending =
     {
-        { keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+        { hkeys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
+        { hdrums, drums_verse, drums_verse, drums_verse, drums_verse },
+        { hbass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
     }
 }
 

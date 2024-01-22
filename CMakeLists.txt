@@ -1,11 +1,14 @@
-
 # Build the nebulua app or its unit tests.
-# This is a Windows 64 bit build. PATH must include ...\mingw64\bin.
 # TODO2 Need a build/package/release.
 
-
 cmake_minimum_required(VERSION 3.5)
+
 project(nebulua)
+
+# This is a Windows 64 bit build. PATH must include \your\path\mingw64\bin.
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "Project must be built for 64 bit")
+endif()
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
