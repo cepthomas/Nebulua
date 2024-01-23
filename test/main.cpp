@@ -13,19 +13,17 @@ int main()
     // Run the requested tests.
     std::vector<std::string> whichSuites;
 
-    // TODO1-NEB Add tests for: devmgr  interop/work  nebcommon  exec
-    // main??
+    // tests for exec, interopwork??   
 
-    // add test files dir?
-
-    whichSuites.emplace_back("NCOM");
+    whichSuites.emplace_back("NEBCOM");
+    whichSuites.emplace_back("DEVMGR");
 
     // Init system before running tests.
-    // FILE* fp = fopen("log_test.txt", "w");
+    // FILE* fp = fopen("log_test_out.txt", "w");
     // logger_Init(fp);
     logger_Init(stdout);
-
     tm.RunSuites(whichSuites, 'r'); // 'r' for readable, 'x' for xml
+    // close(fp);
 
     return 0;
 }

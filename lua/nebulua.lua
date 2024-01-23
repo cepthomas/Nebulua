@@ -1,5 +1,19 @@
 
 --- Core generic functions for this app. Matches/requires the C libs.
+-- glossary
+-- int hndchan  (dev_index << 8 | chan_num)
+-- int controller (id)
+-- int value (ctlr)
+-- int notenum
+-- double volume
+-- int velocity
+-- int bar (absolute/total)
+-- int beat (in bar)
+-- int subbeat (in beat)
+-- int subbeats (absolute/total - in sequence/section/composition)
+-- WHAT_TO_PLAY is a integer or function. string is converted to integer(s)
+-- SB_REL_X (subbeats) is integer when to play relative
+-- VEL velocity. volume is converted to integer. 0 means note off.
 
 
 local M = {}
@@ -14,37 +28,26 @@ function M.info(msg)  api.log(M.LOG_LEVEL.INFO, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DEBUG, msg) end
 
 
+-- index is sequence name, value is table of subbeats:steps.
+-- local _step_infos = {}
+-- {
+--     sequence1 = 
+--     {
+--         subbeat1 = { StepInfo, StepInfo, ... },
+--         subbeat2 = { StepInfo, StepInfo, ... },
+--         -- ...
+--     },
+--     sequence2 = 
+--     {
+--         subbeat3 = { StepInfo, StepInfo, ... },
+--         subbeat4 = { StepInfo, StepInfo, ... },
+--         -- ...
+--     },
+--     -- ...
+-- }
 
--- WHAT_TO_PLAY is a string or integer or function.
--- STEP_TYPE = { NONE = 0, NOTE = 1, CONTROLLER = 2, PATCH = 3, FUNCTION = 4 }
--- SB_REL_ (subbeats) is integer when to play relative
--- VOL_VEL volume or velocity. 0
-
-
--- index is sequencename, value is steps list.
-local _seq_step_infos =
-{
-    graphical_seq = 
-    {
-        SB_REL_1 =
-        {
-            { WHAT_TO_PLAY, VOL_VEL },
-            { WHAT_TO_PLAY, VOL_VEL },
-            { WHAT_TO_PLAY, VOL_VEL },
-            { WHAT_TO_PLAY, VOL_VEL },
-        },
-        SB_REL_2 =
-        {
-            { WHAT_TO_PLAY, VOL/VEL },
-            -- ...
-        },
-        -- ...
-    }
-}
-
-    graphical_seq = -- these are 8 beats long - end with WHAT_TO_PLAY.
-    list_seq = -- these are terminator beats long - seq[2] is WHAT_TO_PLAY.
-
+-- index is section name, value is list of sequence names (or ???).
+local _sections = {}
 -- sections =
 -- {
 --     sectionname =
@@ -52,24 +55,6 @@ local _seq_step_infos =
 --         { chanhandle, sequence,     nil,          function,     ... },
 --     },
 -- }
-
-w = {x=0, y=0, label="console"}
-
--- list_seq = -- these are terminator beats long - seq[2] is WHAT_TO_PLAY.
--- {
---     { 0.0, "C2",    7, 0.1 },
---     { 0.0,  bdrum,  4, 0.1 },
---     { 0.4,  44,     5, 0.1 },
---     { 4.0,  func1,  7, 1.0 },
---     { 7.4, "A#2",   7, 0.1 },
---     { 8.0, "",      0, 0.0 }   -- terminator -> length
--- },
-
-
-
-
--- index is section name, value is list of sequence names.
-local _sections = {}
 
 
 -----------------------------------------------------------------------------
@@ -108,16 +93,7 @@ function M.process_all(sequences, sections)
     table.sort(seq_step_infos, function (left, right) return left.subbeat < right.subbeat end)
 
     -- Process sections.
-    -- sections =
-    -- {
-    --     sectionname =
-    --     {
-    --         { chanhandle, sequence,     nil,          function,     ... },
-    --     },
-    -- }
     _sections = sections
-
-    -- return seq_step_infos
 end
 
 
@@ -253,10 +229,10 @@ function parse_explicit_notes(notes_src)
 end
 
 -----------------------------------------------------------------------------
---- Process notes at this tick.
+--- Process notes at this time.
 -- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat)
+function M.do_step(send_stuff, bar, beat, subbeat) -- TODO1
     -- calc total subbeat
     -- get all 
     -- return status?

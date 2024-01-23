@@ -71,7 +71,7 @@ int luainteropwork_CreateChannel(lua_State* l, const char* device, int chan_num,
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendNote(lua_State* l, int hndchan, int note_num, double volume, double dur) // TODO1-NEB if dur>0 add note off
+int luainteropwork_SendNote(lua_State* l, int hndchan, int note_num, double volume, double dur)
 {
     VALI(hndchan > 0, hndchan);
     VALI(note_num >= 0 && note_num < MIDI_VAL_MAX, note_num);

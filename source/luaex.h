@@ -3,7 +3,8 @@
 
 #include "lua.h"
 
-/// Extra/extended lua stuff to support this application.
+/// Extra/extended lua stuff to support this application. Copy/paste from LuaBagOfTricks.
+
 
 /// Interface to lua_pcall() with error message function. Used to run all function chunks.
 /// Modeled after docall(...).

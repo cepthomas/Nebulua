@@ -98,7 +98,7 @@ function step(bar, beat, subbeat)
 end
 
 -----------------------------------------------------------------------------
--- Handlers for input events.
+-- Handlers for input note events.
 function input_note(channel, note, vel) -> hndchan
     log.info("input_note") -- string.format("%s", variable_name), channel, note, vel)
 
@@ -110,7 +110,7 @@ function input_note(channel, note, vel) -> hndchan
 end
 
 -----------------------------------------------------------------------------
--- Handlers for input events.
+-- Handlers for input controller events.
 function input_controller(channel, ctlid, value)
     log.info("input_controller") --, channel, ctlid, value)
 end
@@ -118,10 +118,15 @@ end
 ----------------------- User lua functions -------------------------
 
 -----------------------------------------------------------------------------
--- Calc something and play it.
-local function func1()
+-- Called from sequence.
+local function seq_func(bar, beat, subbeat)
     local notenum = math.random(0, #alg_scale)
     api.send_note("synth", alg_scale[notenum], 0.7, 0.5)
+end
+
+-- Called from section.
+function section_func(bar, beat, subbeat)
+    -- do something
 end
 
 -----------------------------------------------------------------------------
@@ -140,13 +145,14 @@ end
 
 ------------------------- Composition ---------------------------------------
 
--- -- TODO2? volumes could be an optional user map instead of linear range.
+-- -- TODO3 volumes could be an optional user map instead of linear range.
 -- drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
 -- drum_vol_range = { 5.0, 9.5 }
 
 
 
 -----------------------------------------------------------------------------
+-- aliases
 snare = drum.AcousticSnare
 bdrum = drum.AcousticBassDrum
 hhcl = drum.ClosedHiHat
@@ -165,17 +171,17 @@ sequences =
         { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
         { "|7-------|--      |        |        |7-------|--      |        |        |",  snare },
         { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
-        { "|        |        |        |5---    |        |        |        |5-8---  |",  func1 }
+        { "|        |        |        |5---    |        |        |        |5-8---  |",  seq_func }
     },
 
     list_seq = -- these are terminator beats long - seq[2] is WHAT_TO_PLAY.
     {
-        { 0.0, "C2",    7, 0.1 },
-        { 0.0,  bdrum,  4, 0.1 },
-        { 0.4,  44,     5, 0.1 },
-        { 4.0,  func1,  7, 1.0 },
-        { 7.4, "A#2",   7, 0.1 },
-        { 8.0, "",      0, 0.0 }   -- terminator -> length
+        { 0.0, "C2",        7, 0.1 },
+        { 0.0,  bdrum,      4, 0.1 },
+        { 0.4,  44,         5, 0.1 },
+        { 4.0,  seq_func,   7, 1.0 },
+        { 7.4, "A#2",       7, 0.1 },
+        { 8.0, "",          0, 0.0 }   -- ?? terminator -> length
     },
 
     keys_verse =
@@ -253,7 +259,7 @@ sequences =
         { 7.0, crash, 8 }
     },
 
-    dyno_func =
+    something_else =
     {
         { 0.0, "G3",  5, 0.5 },
         { 1.0, "A3",  5, 0.5 },
@@ -278,7 +284,7 @@ sections =
         { hkeys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
         { hdrums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
         { hbass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-        { hsynth,   synth_chorus, nil,          synth_chorus, dyno_func }
+        { hsynth,   synth_chorus, nil,          synth_chorus, section_func }
     },
 
     ending =
