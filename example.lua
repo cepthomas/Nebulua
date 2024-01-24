@@ -56,7 +56,7 @@ local alg_scale = md.get_notes("G3.Algerian")
 local chord_notes = md.get_notes("C4.o7")
 
 -- Create custom scale.
-md.create_notes("MY_SCALE", "1 +3 4 -b7")
+md.create_definition("MY_SCALE", "1 +3 4 -b7")
 local my_scale_notes = md.get_notes("B4.MY_SCALE")
 
 

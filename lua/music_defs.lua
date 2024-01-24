@@ -5,8 +5,12 @@ local sx = require("stringex")
 -- Create the namespace/module.
 local M = {}
 
+-- ut.config_error_handling(true, true)
+
 --- Definitions
 NOTES_PER_OCTAVE = 12
+MIDDLE_C4 = 60
+DEFAULT_OCTAVE = 4 -- middle C
 
 
 --- All the builtin chord defs.
@@ -107,90 +111,100 @@ local note_names =
 --- Intervals as used in chord and scale defs.
 local intervals =
 {
-    ["1"]=0,   ["b2"]=1, ["2"]=2,  ["b3"]=3,  ["3"]=4,   ["4"]=5,    ["b5"]=6,  ["5"]=7, ["#5"]=8, ["b6"]=8, ["6"]=9, ["bb7"]=9,
-    ["b7"]=10, ["7"]=11, ["9"]=14, ["#9"]=15, ["11"]=17, ["#11"]=18, ["13"]=21
+    ["1"]=0,  ["#1"]=1, ["b2"]=1, ["2"]=2,  ["#2"]=3,  ["b3"]=3,  ["3"]=4, ["b4"]=4, ["4"]=5,
+    ["#4"]=6,  ["b5"]=6,  ["5"]=7, ["#5"]=8, ["b6"]=8, ["6"]=9, ["bb7"]=9,
+    ["#6"]=10, ["b7"]=10, ["7"]=11, ["8"]=12, ["9"]=14, ["#9"]=15, ["11"]=17, ["#11"]=18, ["13"]=21
 }
 
------- Init stuff ------
+--- The chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals.
+M.definitions = {}
 
---- The chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals as strings.
-M.chords_and_scales = {}
-
-for _, sc in ipairs(scale_defs) do
-    local parts = sx.strsplit(sc, "|")
-    M.chords_and_scales[parts[1]] = sx.strsplit(parts[2], " ")
-end
-
-for _, sc in ipairs(chord_defs) do
-    local parts = sx.strsplit(sc, "|")
-    M.chords_and_scales[parts[1]] = sx.strsplit(parts[2], " ")
-end
 
 -----------------------------------------------------------------------------
---- Add a named chord or scale definition. Doesn't check for validity - that's done in get_notes_from_string().
+--- Add a named chord or scale definition.
 -- Like "MY_SCALE", "1 +3 4 -b7"
 -- @param name string which
--- @param notes string space separated note names
-function M.create_notes(name, notes)
-    M.chords_and_scales[name] = sx.strsplit(notes, " ")
+-- @param intervals string space separated interval names
+-- @return intervals or nil,string if invalid.
+function M.create_definition(name, intervals)
+    local sints = sx.strsplit(intervals, " ", true)
+    local iints = {}
+    for _, sint in ipairs(sints) do
+        iint = M.interval_name_to_number(sint)
+        if iint ~= nil then
+            table.insert(iints, iint)
+        else
+            return nil, "Oops bad interval ".. sint .. " in " .. name
+        end
+    end
+    if #iints > 0 then
+        M.definitions[name] = iints
+    else
+        return nil, "Oops bad def: ".. name
+    end
+
+    return iints   
 end
 
 -----------------------------------------------------------------------------
 --- Parse note or notes from input value. Could look like:
 --   F4 - named note
---   Bb2.dim7 - named key/chord
---   E#5.major - named key/scale
---   A3.MY_SCALE - user defined key/chord or scale
+--   Bb2.dim7 - named key.chord
+--   E#5.major - named key.scale
+--   A3.MY_SCALE - user defined key.chord-or-scale
 -- @param nstr string Standard string to parse.
--- @return List of note numbers or nil if invalid nstr.
+-- @return List of note numbers or nil,string if invalid nstr.
 function M.get_notes_from_string(nstr)
-    local notes = {}
+    local notes = nil
+    local serr = ""
 
     -- Break it up.
-    local parts = sx.strsplit(nstr, ".")
+    local parts = sx.strsplit(nstr, ".", true)
     local snote = parts[1]
-    local scon = parts[2] -- may be nil
-
-    -- Start with root and octave.
-    local soct = snote[#snote]
-    local octave = tonumber(soct)
-    if not octave then -- not specified
-        octave = 4 -- default is middle C
-    else -- trim octave
-        snote = snote.sub(1, #snote - 1)
-    end
-    local root_note_num = M.note_name_to_number(snote)
-
-    -- Transpose octave.
-    root_note_num = root_note_num + (octave + 1) * NOTES_PER_OCTAVE
-
-    if scon then
-        -- It's a chord or scale. Determine the constituents.
-        local const_intervals = M.chords_and_scales[scon]
-        if const_intervals then
-            for cint in const_intervals do
-                local nint = intervals[cint]
-                if nint then
-                    table.insert(notes, nint + root_note_num)
-                else
-                    -- error
-                    return nil
-                end
-            end
-        else
-            -- error
-            return nil
+    local c_or_s = parts[2] -- chord-name or scale-name or nil
+    if snote ~= nil then
+        -- Capture root (0-based) and octave (1-based). 
+        local soct = snote:sub(#snote, -1)
+        local octave = tonumber(soct)
+        if not octave then -- not specified
+            octave = DEFAULT_OCTAVE
+        else -- trim original note
+            snote = snote:sub(1, #snote - 1)
         end
-    else
-        -- Just the root.
-        table.insert(notes, root_note_num)
+
+        local note_num = M.note_name_to_number(snote)
+
+        if note_num ~= nil then
+            notes = {}
+
+            -- Transpose octave.
+            -- note_num = note_num + (octave - 1) * NOTES_PER_OCTAVE
+            abs_note_num = note_num + MIDDLE_C4 - (DEFAULT_OCTAVE - octave) * NOTES_PER_OCTAVE
+
+            if c_or_s ~= nil then
+                -- It's a chord or scale.
+                local intervals = M.definitions[c_or_s]
+                if intervals ~= nil then
+                    for _, cint in ipairs(intervals) do
+                        table.insert(notes, cint + abs_note_num)
+                    end
+                else
+                    serr = 'intervals error'
+                    notes = nil
+                end
+            else
+                -- Just the root.
+                table.insert(notes, abs_note_num)
+            end
+        end
     end
 
-    return notes
+    return notes, serr
 end
 
 -----------------------------------------------------------------------------
 --- Convert note name into note number offset from middle C.
+--  Could be F4 Bb2+ E#5-
 -- @param snote string The root of the note with optional +- octave shift. TODO3 multiple octaves?
 -- @return The number or nil if invalid.
 function M.note_name_to_number(snote)
@@ -208,7 +222,6 @@ function M.note_name_to_number(snote)
             snote = snote:sub(2)
         end
         inote = note_names[snote]
-
         -- Adjust for octave shift.
         if inote and up then inote = inote + NOTES_PER_OCTAVE end
         if inote and dn then inote = inote - NOTES_PER_OCTAVE end
@@ -218,15 +231,43 @@ function M.note_name_to_number(snote)
 end
 
 -----------------------------------------------------------------------------
+--- Convert interval name into number.
+-- @param sinterval string The interval name with optional +- octave shift. TODO3 multiple octaves?
+-- @return The number or nil if invalid.
+function M.interval_name_to_number(sinterval)
+    local iinterval = nil
+
+    if sinterval ~= nil then
+        local ch1 = sinterval:sub(1, 1)
+        local up = false
+        local dn = false
+        if ch1 == '+' then
+            up = true
+            sinterval = sinterval:sub(2)
+        elseif ch1 == '-' then
+            dn = true
+            sinterval = sinterval:sub(2)
+        end
+        iinterval = intervals[sinterval]
+        -- Adjust for octave shift.
+        if iinterval and up then iinterval = iinterval + NOTES_PER_OCTAVE end
+        if iinterval and dn then iinterval = iinterval - NOTES_PER_OCTAVE end
+    end
+
+    return iinterval
+end
+
+
+-----------------------------------------------------------------------------
 --- Split a midi note number into root note and octave.
--- @param notenum Absolute note number.
+-- @param note_num Absolute note number.
 -- @return ints of root, octave or nil if invalid
-function M.split_note_number(notenum)
+function M.split_note_number(note_num)
     local root = nil
     local octave = nil
-    if notenum ~= nil then
-        root = notenum % NOTES_PER_OCTAVE
-        octave = (notenum // NOTES_PER_OCTAVE) + 1
+    if note_num ~= nil then
+        root = note_num % NOTES_PER_OCTAVE
+        octave = (note_num // NOTES_PER_OCTAVE) + 1
     end        
     return root, octave
 end
@@ -256,6 +297,15 @@ function M.format_doc()
     return docs
 end
 
+
+------ Init stuff ---------------------------------------------------------------------
+
+for _, coll in ipairs({ scale_defs, chord_defs }) do
+    for _, sc in ipairs(coll) do
+        local parts = sx.strsplit(sc, "|", true)
+        M.create_definition(parts[1], parts[2])
+    end
+end    
 
 -- Return the module.
 return M
