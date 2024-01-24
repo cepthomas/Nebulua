@@ -5,9 +5,9 @@ local M = {}
 
 
 -- Log(int? level, string? msg)
--- SendNote(string? inst, int? notenum, double? volume, double? dur)
--- SendNoteOn(string? inst, int? notenum, double? volume)
--- SendNoteOff(string? inst, int? notenum)
+-- SendNote(string? inst, int? note_num, double? volume, double? dur)
+-- SendNoteOn(string? inst, int? note_num, double? volume)
+-- SendNoteOff(string? inst, int? note_num)
 -- SendController(string? inst, int? ctlr, int? value)
 -- SendPatch(string? inst, int? patch)
 

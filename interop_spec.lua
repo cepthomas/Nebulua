@@ -49,12 +49,12 @@ M.lua_export_funcs =
         args =
         {
             {
-                name = "hndchan",
+                name = "chan_hnd",
                 type = "I",
                 description = "Input channel handle"
             },
             {
-                name = "notenum",
+                name = "note_num",
                 type = "I",
                 description = "Note number"
             },
@@ -74,7 +74,7 @@ M.lua_export_funcs =
         args =
         {
             {
-                name = "hndchan",
+                name = "chan_hnd",
                 type = "I",
                 description = "Input channel handle"
             },
@@ -165,12 +165,12 @@ M.host_export_funcs =
         args =
         {
             {
-                name = "hndchan",
+                name = "chan_hnd",
                 type = "I",
                 description = "Output channel handle"
             },
             {
-                name = "notenum",
+                name = "note_num",
                 type = "I",
                 description = "Note number"
             },
@@ -195,7 +195,7 @@ M.host_export_funcs =
         args =
         {
             {
-                name = "hndchan",
+                name = "chan_hnd",
                 type = "I",
                 description = "Output channel handle"
             },

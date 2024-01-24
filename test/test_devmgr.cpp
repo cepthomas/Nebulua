@@ -5,57 +5,54 @@
 
 extern "C"
 {
+#include "nebcommon.h"
 #include "devmgr.h"
 #include "logger.h"
 }
 
-/* TODO1-TEST test these:
-
-/// Initialize the component.
-/// @return Status.
-int devmgr_Init();
-
-/// Clean up component resources.
-/// @return Status.
-int devmgr_Destroy();
-
-/// Request for device using win midi handle.
-/// @param[in] hMidiIn System midi handle.
-/// @return midi_device_t The device or NULL if invalid.
-midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn);
-
-/// Request for device for channel handle.
-/// @param[in] hndchan Channel handle.
-/// @return midi_device_t The device or NULL if invalid.
-midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int hndchan);
-
-/// Request for device with name.
-/// @param[in] sys_dev_name Device name.
-/// @return midi_device_t The device or NULL if invalid.
-midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name);
-
-/// Request for channel number on the device.
-/// @param[in] pdev Device.
-/// @param[in] chan_num Chanel number 1-16.
-/// @return int Channel handle or 0 if invalid.
-int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num);
-
-/// Request for channel number for channel handle.
-/// @param[in] hndchan Channel handle.
-/// @return int Channel number 1-16 or 0 if invalid.
-int devmgr_GetChannelNumber(int hndchan);
-
-*/
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(DEVMGR_SILLY, "Test stuff.")
+UT_SUITE(DEVMGR_MAIN, "Test device manager.")
 {
-    int x = 1;
-    int y = 2;
+    int stat = 0;
 
-    UT_EQUAL(x, y);
+    stat = devmgr_Init();
+    UT_EQUAL(stat, NEB_OK);
 
-    LOG_INFO(CAT_INIT, "Hello!");
+    /// Request for device using win midi handle.
+    /// @param[in] hMidiIn System midi handle.
+    /// @return midi_device_t The device or NULL if invalid.
+    midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle((HMIDIIN)999);
+    UT_EQUAL(pdev, (void*)NULL);
+
+    /// Request for device for channel handle.
+    /// @param[in] chan_hnd Channel handle.
+    /// @return midi_device_t The device or NULL if invalid.
+    pdev = devmgr_GetOutputDeviceFromChannelHandle(999);
+    UT_EQUAL(pdev, (void*)NULL);
+
+    /// Request for device with name.
+    /// @param[in] sys_dev_name Device name.
+    /// @return midi_device_t The device or NULL if invalid.
+    pdev = devmgr_GetDeviceFromName("aaaaaaa");
+    UT_EQUAL(pdev, (void*)NULL);
+
+    /// Request for channel number on the device.
+    /// @param[in] pdev Device.
+    /// @param[in] chan_num Chanel number 1-16.
+    /// @return int Channel handle or 0 if invalid.
+    int chan_hnd = devmgr_GetChannelHandle(pdev, 999);
+    UT_EQUAL(chan_hnd, 999);
+
+    /// Request for channel number for channel handle.
+    /// @param[in] chan_hnd Channel handle.
+    /// @return int Channel number 1-16 or 0 if invalid.
+    int chan_num = devmgr_GetChannelNumber(999);
+    UT_EQUAL(chan_num, 999);
+
+
+    stat = devmgr_Destroy();
+    UT_EQUAL(stat, NEB_OK);
 
     return 0;
 }    

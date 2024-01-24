@@ -1,5 +1,5 @@
 
--- Unit tests for music_defs.lua. TODO1-TEST
+-- Unit tests for music_defs.lua.
 
 local md = require("music_defs")
 local ut = require("utils")

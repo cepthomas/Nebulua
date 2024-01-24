@@ -120,8 +120,8 @@ end
 -----------------------------------------------------------------------------
 -- Called from sequence.
 local function seq_func(bar, beat, subbeat)
-    local notenum = math.random(0, #alg_scale)
-    api.send_note("synth", alg_scale[notenum], 0.7, 0.5)
+    local note_num = math.random(0, #alg_scale)
+    api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
 end
 
 -- Called from section.
@@ -131,14 +131,14 @@ end
 
 -----------------------------------------------------------------------------
 -- Make a noise.
-local function boing(notenum)
+local function boing(note_num)
     local boinged = false;
 
     log.info("boing")
-    if notenum == 0 then
-        notenum = Random(30, 80)
+    if note_num == 0 then
+        note_num = Random(30, 80)
         boinged = true
-        api.send_note("synth", notenum, VEL, 1.0)
+        api.send_note("synth", note_num, VEL, 1.0)
     end
     return boinged
 end

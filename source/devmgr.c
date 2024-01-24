@@ -15,8 +15,8 @@
 // It's a unique int formed by packing the index (0-based) of the device in _devices
 // with the channel number (1-based).
 #define MAKE_HANDLE(dev_index, chan_num) ((dev_index << 8) | (chan_num))
-#define GET_DEV_INDEX(hndchan) ((hndchan >> 8) & 0xFF)
-#define GET_CHAN_NUM(hndchan) (hndchan & 0xFF)
+#define GET_DEV_INDEX(chan_hnd) ((chan_hnd >> 8) & 0xFF)
+#define GET_CHAN_NUM(chan_hnd) (chan_hnd & 0xFF)
 
 
 //------------------- Vars ---------------------------//
@@ -107,21 +107,21 @@ int devmgr_Destroy()
 //--------------------------------------------------------//
 int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
 {
-    int hndchan = 0; // default = invalid
+    int chan_hnd = 0; // default = invalid
 
     if (pdev != NULL &&
         chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
     {
-        for (int i = 0; i < NUM_MIDI_DEVICES && hndchan == 0; i++)
+        for (int i = 0; i < NUM_MIDI_DEVICES && chan_hnd == 0; i++)
         {
             if (_devices[i].hnd_in == pdev->hnd_in && _devices[i].channels[chan_num - 1]) // test for -1
             {
-                hndchan = MAKE_HANDLE(i, chan_num);
+                chan_hnd = MAKE_HANDLE(i, chan_num);
             }
         }
     }
 
-    return hndchan;
+    return chan_hnd;
 }
 
 
@@ -146,14 +146,14 @@ midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn)
 
 
 //--------------------------------------------------------//
-midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int hndchan)
+midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int chan_hnd)
 {
     midi_device_t* pdev = NULL;
 
-    int chan_num = GET_CHAN_NUM(hndchan);
-    int dev_index = GET_DEV_INDEX(hndchan);
+    int chan_num = GET_CHAN_NUM(chan_hnd);
+    int dev_index = GET_DEV_INDEX(chan_hnd);
 
-    if (hndchan > 0 &&
+    if (chan_hnd > 0 &&
         chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS &&
         dev_index >= 0 && dev_index < NUM_MIDI_DEVICES)
     {
@@ -187,8 +187,8 @@ midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name)
 
 
 //--------------------------------------------------------//
-int devmgr_GetChannelNumber(int hndchan)
+int devmgr_GetChannelNumber(int chan_hnd)
 {
-    int chan_num = GET_CHAN_NUM(hndchan);
+    int chan_num = GET_CHAN_NUM(chan_hnd);
     return chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS ? chan_num : 0;
 }

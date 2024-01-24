@@ -71,7 +71,7 @@ int luainterop_Step(lua_State* l, int bar, int beat, int subbeat)
     return ret;
 }
 
-int luainterop_InputNote(lua_State* l, int hndchan, int notenum, double volume)
+int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     int num_args = 0;
     int num_ret = 1;
@@ -81,9 +81,9 @@ int luainterop_InputNote(lua_State* l, int hndchan, int notenum, double volume)
     if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: input_note"); };
 
     // Push arguments.
-    lua_pushinteger(l, hndchan);
+    lua_pushinteger(l, chan_hnd);
     num_args++;
-    lua_pushinteger(l, notenum);
+    lua_pushinteger(l, note_num);
     num_args++;
     lua_pushnumber(l, volume);
     num_args++;
@@ -100,7 +100,7 @@ int luainterop_InputNote(lua_State* l, int hndchan, int notenum, double volume)
     return ret;
 }
 
-int luainterop_InputController(lua_State* l, int hndchan, int controller, int value)
+int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int value)
 {
     int num_args = 0;
     int num_ret = 1;
@@ -110,7 +110,7 @@ int luainterop_InputController(lua_State* l, int hndchan, int controller, int va
     if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: input_controller"); };
 
     // Push arguments.
-    lua_pushinteger(l, hndchan);
+    lua_pushinteger(l, chan_hnd);
     num_args++;
     lua_pushinteger(l, controller);
     num_args++;
@@ -201,20 +201,20 @@ static int luainterop_SetTempo(lua_State* l)
 // Host export function: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: hndchan Output channel handle
-// Lua arg: notenum Note number
+// Lua arg: chan_hnd Output channel handle
+// Lua arg: note_num Note number
 // Lua arg: volume Volume between 0.0 and 1.0
 // Lua arg: dur Duration as bar.beat
 // Lua return: int LUA_STATUS
 static int luainterop_SendNote(lua_State* l)
 {
     // Get arguments
-    int hndchan;
-    if (lua_isinteger(l, 1)) { hndchan = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Bad arg type for hndchan"); }
-    int notenum;
-    if (lua_isinteger(l, 2)) { notenum = lua_tointeger(l, 2); }
-    else { luaL_error(l, "Bad arg type for notenum"); }
+    int chan_hnd;
+    if (lua_isinteger(l, 1)) { chan_hnd = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Bad arg type for chan_hnd"); }
+    int note_num;
+    if (lua_isinteger(l, 2)) { note_num = lua_tointeger(l, 2); }
+    else { luaL_error(l, "Bad arg type for note_num"); }
     double volume;
     if (lua_isnumber(l, 3)) { volume = lua_tonumber(l, 3); }
     else { luaL_error(l, "Bad arg type for volume"); }
@@ -223,7 +223,7 @@ static int luainterop_SendNote(lua_State* l)
     else { luaL_error(l, "Bad arg type for dur"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SendNote(l, hndchan, notenum, volume, dur);
+    int ret = luainteropwork_SendNote(l, chan_hnd, note_num, volume, dur);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -231,16 +231,16 @@ static int luainterop_SendNote(lua_State* l)
 // Host export function: Send a controller immediately.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: hndchan Output channel handle
+// Lua arg: chan_hnd Output channel handle
 // Lua arg: controller Specific controller
 // Lua arg: value Payload.
 // Lua return: int LUA_STATUS
 static int luainterop_SendController(lua_State* l)
 {
     // Get arguments
-    int hndchan;
-    if (lua_isinteger(l, 1)) { hndchan = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Bad arg type for hndchan"); }
+    int chan_hnd;
+    if (lua_isinteger(l, 1)) { chan_hnd = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Bad arg type for chan_hnd"); }
     int controller;
     if (lua_isinteger(l, 2)) { controller = lua_tointeger(l, 2); }
     else { luaL_error(l, "Bad arg type for controller"); }
@@ -249,7 +249,7 @@ static int luainterop_SendController(lua_State* l)
     else { luaL_error(l, "Bad arg type for value"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SendController(l, hndchan, controller, value);
+    int ret = luainteropwork_SendController(l, chan_hnd, controller, value);
     lua_pushinteger(l, ret);
     return 1;
 }

@@ -32,8 +32,10 @@ if(DO_TEST)
 
     add_executable(nebulua
         source/nebcommon.c
+        source/devmgr.c
         test/main.cpp
         test/test_nebcommon.cpp
+        test/test_devmgr.cpp
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source/private/logger.c
         )

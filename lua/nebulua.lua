@@ -1,10 +1,10 @@
 
 --- Core generic functions for this app. Matches/requires the C libs.
 -- glossary
--- int hndchan  (dev_index << 8 | chan_num)
+-- int chan_hnd  (dev_index << 8 | chan_num)
 -- int controller (id)
 -- int value (ctlr)
--- int notenum
+-- int note_num
 -- double volume
 -- int velocity
 -- int bar (absolute/total)
@@ -183,7 +183,7 @@ function parse_graphic_notes(notes_src)
         if func then
             si = { step_type=STEP_TYPE.FUNCTION, subbeat=when, function=func, volume=volmod, duration=dur }
         else
-            si = { step_type=STEP_TYPE.NOTE, subbeat=when, notenum=src, volume=volmod, duration=dur }
+            si = { step_type=STEP_TYPE.NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
         end
         table.insert(step_infos, si)
     end
@@ -211,7 +211,7 @@ function parse_explicit_notes(notes_src)
 
     if tnote == "number" then
         -- use as is
-        si = { step_type=STEP_TYPE.NOTE, subbeat=start, notenum=src, volume=volume / 10 }
+        si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=src, volume=volume / 10 }
         table.insert(step_infos, si)
     elseif tnote == "function" then
         -- use as is
@@ -220,7 +220,7 @@ function parse_explicit_notes(notes_src)
     elseif tnote == "string" then
         local notes = md.get_notes(src)
         for n in notes do
-            si = { step_type=STEP_TYPE.NOTE, subbeat=start, notenum=n, volume=volume / 10 }
+            si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=n, volume=volume / 10 }
             table.insert(step_infos, si)
     else
         step_infos = nil

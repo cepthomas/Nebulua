@@ -49,7 +49,7 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
 //--------------------------------------------------------//
 int luainteropwork_CreateChannel(lua_State* l, const char* device, int chan_num, int patch)
 {
-    int hndchan = 0;
+    int chan_hnd = 0;
 
     VALS(device != NULL, device);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
@@ -58,30 +58,30 @@ int luainteropwork_CreateChannel(lua_State* l, const char* device, int chan_num,
     midi_device_t* pdev = devmgr_GetDeviceFromName(device);
     VALS(pdev != NULL, device);
 
-    hndchan = devmgr_GetChannelHandle(pdev, chan_num);
-    VALI(hndchan > 0, chan_num);
+    chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
+    VALI(chan_hnd > 0, chan_num);
 
     // Send patch now.
     int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
     int mstat = midiOutShortMsg(pdev->hnd_out, short_msg);
     VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
 
-    return hndchan;
+    return chan_hnd;
 }
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendNote(lua_State* l, int hndchan, int note_num, double volume, double dur)
+int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume, double dur)
 {
-    VALI(hndchan > 0, hndchan);
+    VALI(chan_hnd > 0, chan_hnd);
     VALI(note_num >= 0 && note_num < MIDI_VAL_MAX, note_num);
     VALF(volume >= 0.0 && volume <= 1.0, volume);
     VALF(dur >= 0.0 && dur <= 100.0, dur);
 
-    midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(hndchan);
-    VALI(pdev != NULL, hndchan);
+    midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(chan_hnd);
+    VALI(pdev != NULL, chan_hnd);
 
-    int chan_num = devmgr_GetChannelNumber(hndchan);
+    int chan_num = devmgr_GetChannelNumber(chan_hnd);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
 
     int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
@@ -95,17 +95,17 @@ int luainteropwork_SendNote(lua_State* l, int hndchan, int note_num, double volu
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendController(lua_State* l, int hndchan, int ctlr, int value)
+int luainteropwork_SendController(lua_State* l, int chan_hnd, int ctlr, int value)
 {
-    VALI(hndchan > 0, hndchan);
+    VALI(chan_hnd > 0, chan_hnd);
     VALI(ctlr >= 0 && ctlr < MIDI_VAL_MAX, ctlr);
     VALI(value >= 0 && value < MIDI_VAL_MAX, value);
 
-    midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(hndchan);
-    VALI(pdev != NULL, hndchan);
+    midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(chan_hnd);
+    VALI(pdev != NULL, chan_hnd);
 
-    int chan_num = devmgr_GetChannelNumber(hndchan);
-    VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, hndchan);
+    int chan_num = devmgr_GetChannelNumber(chan_hnd);
+    VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_hnd);
 
     int cmd = MIDI_CONTROL_CHANGE;
     int short_msg = (chan_num - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);

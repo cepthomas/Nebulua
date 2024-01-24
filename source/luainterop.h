@@ -32,19 +32,19 @@ int luainterop_Step(lua_State* l, int bar, int beat, int subbeat);
 
 /// Lua export function: Called when input arrives.
 /// @param[in] l Internal lua state.
-/// @param[in] hndchan Input channel handle
-/// @param[in] notenum Note number
+/// @param[in] chan_hnd Input channel handle
+/// @param[in] note_num Note number
 /// @param[in] volume Volume between 0.0 and 1.0.
 /// @return int LUA_STATUS
-int luainterop_InputNote(lua_State* l, int hndchan, int notenum, double volume);
+int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
 /// Lua export function: Called when input arrives.
 /// @param[in] l Internal lua state.
-/// @param[in] hndchan Input channel handle
+/// @param[in] chan_hnd Input channel handle
 /// @param[in] controller Specific controller id
 /// @param[in] value Payload
 /// @return int LUA_STATUS
-int luainterop_InputController(lua_State* l, int hndchan, int controller, int value);
+int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int value);
 
 
 ///// Infrastructure.

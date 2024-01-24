@@ -275,7 +275,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                 byte bdata1 = (raw_msg >> 8) & 0xFF;   // first MIDI data byte
                 byte bdata2 = (raw_msg >> 16) & 0xFF;  // second MIDI data byte
                 int channel = -1;
-                int hndchan = 0;
+                int chan_hnd = 0;
                 midi_event_t evt;
 
                 if ((bstatus & 0xF0) == 0xF0)
@@ -292,9 +292,9 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 
                 // Validate midiin device and channel number as registered by user.
                 midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle(hMidiIn);
-                hndchan = devmgr_GetChannelHandle(pdev, channel);
+                chan_hnd = devmgr_GetChannelHandle(pdev, channel);
 
-                if (hndchan > 0)
+                if (chan_hnd > 0)
                 {
                     switch (evt)
                     {
@@ -303,7 +303,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                             // Lock access to lua context.
                             ENTER_CRITICAL_SECTION; 
                             double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
-                            stat = luainterop_InputNote(_l, hndchan, bdata1, volume);
+                            stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume);
                             _EvalStatus(stat, "luainterop_InputNote() failed");
                             EXIT_CRITICAL_SECTION;
                             break;
@@ -311,7 +311,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                         case MIDI_CONTROL_CHANGE:
                             // Lock access to lua context.
                             ENTER_CRITICAL_SECTION; 
-                            stat = luainterop_InputController(_l, hndchan, bdata1, bdata2);
+                            stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2);
                             _EvalStatus(stat, "luainterop_InputController() failed");
                             EXIT_CRITICAL_SECTION;
                             break;
@@ -438,7 +438,7 @@ int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
     if (args->arg_count == 1) // no args
     {
         // TODO2 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
-        // luainteropwork_SendController(_l, hndchan, AllNotesOff=123, 0);
+        // luainteropwork_SendController(_l, chan_hnd, AllNotesOff=123, 0);
         stat = NEB_OK;
     }
 
