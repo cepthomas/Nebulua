@@ -38,11 +38,11 @@ local midi_in = "xxx zzz"
 local midi_out = "abc 123"
 
 -- Channels
-local hkeys  = create_channel(midi_out, 1, inst.AcousticGrandPiano)
-local hbass  = create_channel(midi_out, 2, inst.AcousticBass)
-local hsynth = create_channel(midi_out, 3, inst.Lead1Square)
-local hdrums = create_channel(midi_out, 10, kit.Jazz)
-local hinp1  = create_channel(midi_in, 2)
+local hkeys  = create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
+local hbass  = create_output_channel(midi_out, 2, inst.AcousticBass)
+local hsynth = create_output_channel(midi_out, 3, inst.Lead1Square)
+local hdrums = create_output_channel(midi_out, 10, kit.Jazz)
+local hinp1  = create_input_channel(midi_in, 2)
 -- etc
 
 ------------------------- Vars ----------------------------------------

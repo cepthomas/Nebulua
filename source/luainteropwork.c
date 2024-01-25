@@ -47,7 +47,25 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
 
 
 //--------------------------------------------------------//
-int luainteropwork_CreateChannel(lua_State* l, const char* device, int chan_num, int patch)
+int luainteropwork_CreateInputChannel(lua_State* l, const char* device, int chan_num)
+{
+    int chan_hnd = 0;
+
+    VALS(device != NULL, device);
+    VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
+
+    midi_input_device_t* pdev = devmgr_GetInputDeviceFromName(device);
+    VALS(pdev != NULL, device);
+
+    chan_hnd = devmgr_GetInputChannelHandle(pdev, chan_num);
+    VALI(chan_hnd > 0, chan_num);
+
+    return chan_hnd;
+}
+
+
+//--------------------------------------------------------//
+int luainteropwork_CreateOutputChannel(lua_State* l, const char* device, int chan_num, int patch)
 {
     int chan_hnd = 0;
 
@@ -55,11 +73,10 @@ int luainteropwork_CreateChannel(lua_State* l, const char* device, int chan_num,
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
     VALI(patch >= 0 && patch < MIDI_VAL_MAX, patch);
 
-    midi_device_t* pdev = devmgr_GetDeviceFromName(device);
+    midi_output_device_t* pdev = devmgr_GetOutputDeviceFromName(device);
     VALS(pdev != NULL, device);
-    VALI(pdev->type, MIDI_OUTPUT);
 
-    chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
+    chan_hnd = devmgr_GetOutputChannelHandle(pdev, chan_num);
     VALI(chan_hnd > 0, chan_num);
 
     // Send patch now.
@@ -79,9 +96,8 @@ int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double vol
     VALF(volume >= 0.0 && volume <= 1.0, volume);
     VALF(dur >= 0.0 && dur <= 100.0, dur);
 
-    midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(chan_hnd);
+    midi_output_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(chan_hnd);
     VALI(pdev != NULL, chan_hnd);
-    VALI(pdev->type, MIDI_OUTPUT);
 
     int chan_num = devmgr_GetChannelNumber(chan_hnd);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
@@ -103,9 +119,8 @@ int luainteropwork_SendController(lua_State* l, int chan_hnd, int ctlr, int valu
     VALI(ctlr >= 0 && ctlr < MIDI_VAL_MAX, ctlr);
     VALI(value >= 0 && value < MIDI_VAL_MAX, value);
 
-    midi_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(chan_hnd);
+    midi_output_device_t* pdev = devmgr_GetOutputDeviceFromChannelHandle(chan_hnd);
     VALI(pdev != NULL, chan_hnd);
-    VALI(pdev->type, MIDI_OUTPUT);
 
     int chan_num = devmgr_GetChannelNumber(chan_hnd);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_hnd);

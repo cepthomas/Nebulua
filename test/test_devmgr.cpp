@@ -10,17 +10,23 @@ extern "C"
 #include "logger.h"
 }
 
+
+// Midi Input:  name:"loopMIDI Port" index:0 handle:0000000000000000
+// Midi Output:  name:"Microsoft GS Wavetable Synth" index:0 handle:0000000000000000 channels:
+
+
 //--------------------------------------------------------//
 static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
     // Input midi event -- this is in an interrupt handler!
     // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
+
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(DEVMGR_MAIN, "Test device manager.")
+UT_SUITE(DEVMGR_MAIN, "Test device manager. TODO1")
 {
     int stat = 0;
 
@@ -29,39 +35,26 @@ UT_SUITE(DEVMGR_MAIN, "Test device manager.")
 
     devmgr_Dump();
 
+    midi_input_device_t* pindev = devmgr_GetInputDeviceFromMidiHandle((HMIDIIN)999);
+    UT_EQUAL(pindev, (void*)NULL);
 
+    pindev = devmgr_GetInputDeviceFromName("aaaaaaa");
+    UT_EQUAL(pindev, (void*)NULL);
 
-    /// Request for device using win midi handle.
-    /// @param[in] hMidiIn System midi handle.
-    /// @return midi_device_t The device or NULL if invalid.
-    midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle((HMIDIIN)999);
-    UT_EQUAL(pdev, (void*)NULL);
-
-    /// Request for device for channel handle.
-    /// @param[in] chan_hnd Channel handle.
-    /// @return midi_device_t The device or NULL if invalid.
-    pdev = devmgr_GetOutputDeviceFromChannelHandle(999);
-    UT_EQUAL(pdev, (void*)NULL);
-
-    /// Request for device with name.
-    /// @param[in] sys_dev_name Device name.
-    /// @return midi_device_t The device or NULL if invalid.
-    pdev = devmgr_GetDeviceFromName("aaaaaaa");
-    UT_EQUAL(pdev, (void*)NULL);
-
-    /// Request for channel number on the device.
-    /// @param[in] pdev Device.
-    /// @param[in] chan_num Chanel number 1-16.
-    /// @return int Channel handle or 0 if invalid.
-    int chan_hnd = devmgr_GetChannelHandle(pdev, 999);
+    int chan_hnd = devmgr_GetInputChannelHandle(pindev, 999);
     UT_EQUAL(chan_hnd, 999);
 
-    /// Request for channel number for channel handle.
-    /// @param[in] chan_hnd Channel handle.
-    /// @return int Channel number 1-16 or 0 if invalid.
+    midi_output_device_t* poutdev = devmgr_GetOutputDeviceFromChannelHandle(999);
+    UT_EQUAL(poutdev, (void*)NULL);
+
+    poutdev = devmgr_GetOutputDeviceFromName("aaaaaaa");
+    UT_EQUAL(poutdev, (void*)NULL);
+
+    chan_hnd = devmgr_GetOutputChannelHandle(poutdev, 999);
+    UT_EQUAL(chan_hnd, 999);
+
     int chan_num = devmgr_GetChannelNumber(999);
     UT_EQUAL(chan_num, 999);
-
 
     stat = devmgr_Destroy();
     UT_EQUAL(stat, NEB_OK);

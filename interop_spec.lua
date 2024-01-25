@@ -99,9 +99,9 @@ M.host_export_funcs =
 {
 
     {
-        lua_func_name = "create_channel",
-        host_func_name = "CreateChannel",
-        description = "Create an in or out midi channel.",
+        lua_func_name = "create_output_channel",
+        host_func_name = "CreateOutputChannel",
+        description = "Create an output midi channel.",
         args =
         {
             {
@@ -117,7 +117,27 @@ M.host_export_funcs =
             {
                 name = "patch",
                 type = "I",
-                description = "Midi patch number (output channel only)"
+                description = "Midi patch number"
+            },
+        },
+        ret = { type = "I", description = "Channel handle or 0 if invalid" }
+    },
+
+    {
+        lua_func_name = "create_input_channel",
+        host_func_name = "CreateInputChannel",
+        description = "Create an input midi channel.",
+        args =
+        {
+            {
+                name = "device",
+                type = "S",
+                description = "Midi device name"
+            },
+            {
+                name = "channum",
+                type = "I",
+                description = "Midi channel number 1-16"
             },
         },
         ret = { type = "I", description = "Channel handle or 0 if invalid" }

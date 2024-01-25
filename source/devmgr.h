@@ -6,24 +6,27 @@
 
 //---------------- Public API ----------------------//
 
-// Arbitrary cap.
-#define NUM_MIDI_DEVICES 16
+// Arbitrary cap each direction.
+#define NUM_MIDI_DEVICES 8
 
 // Midi cap per device.
 #define NUM_MIDI_CHANNELS 16
 
-#define MIDI_INPUT 1
-#define MIDI_OUTPUT 2
-
-/// Internal device management. TODO2 make opaque?
+/// Internal device management. TODO2 make these opaque?
 typedef struct
 {
     char sys_dev_name[MAXPNAMELEN];     // from system enumeration
-    int sys_dev_index;                  // from system enumeration
     bool channels[NUM_MIDI_CHANNELS];   // true if created by script, 0-based
-    int type;                           // 0=none
-    HANDLE handle;                      // > 0 if valid and open
-} midi_device_t;
+    HMIDIIN handle;                     // > 0 if valid and open
+} midi_input_device_t;
+
+/// Internal device management.
+typedef struct
+{
+    char sys_dev_name[MAXPNAMELEN];     // from system enumeration
+    bool channels[NUM_MIDI_CHANNELS];   // true if created by script, 0-based
+    HMIDIOUT handle;                    // > 0 if valid and open
+} midi_output_device_t;
 
 
 /// Midi input handler.
@@ -40,24 +43,35 @@ int devmgr_Destroy();
 
 /// Request for device using win midi handle.
 /// @param[in] hMidiIn System midi handle.
-/// @return midi_device_t The device or NULL if invalid.
-midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn);
+/// @return midi_input_device_t The device or NULL if invalid.
+midi_input_device_t* devmgr_GetInputDeviceFromMidiHandle(HMIDIIN hMidiIn);
 
 /// Request for device for channel handle.
 /// @param[in] chan_hnd Channel handle.
-/// @return midi_device_t The device or NULL if invalid.
-midi_device_t* devmgr_GetOutputDeviceFromChannelHandle(int chan_hnd);
+/// @return midi_output_device_t The device or NULL if invalid.
+midi_output_device_t* devmgr_GetOutputDeviceFromChannelHandle(int chan_hnd);
 
 /// Request for device with name.
 /// @param[in] sys_dev_name Device name.
-/// @return midi_device_t The device or NULL if invalid.
-midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name);
+/// @return midi_output_device_t The device or NULL if invalid.
+midi_input_device_t* devmgr_GetInputDeviceFromName(const char* sys_dev_name);
+
+/// Request for device with name.
+/// @param[in] sys_dev_name Device name.
+/// @return midi_output_device_t The device or NULL if invalid.
+midi_output_device_t* devmgr_GetOutputDeviceFromName(const char* sys_dev_name);
 
 /// Request for channel number on the device.
 /// @param[in] pdev Device.
 /// @param[in] chan_num Chanel number 1-16.
 /// @return int Channel handle or 0 if invalid.
-int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num);
+int devmgr_GetInputChannelHandle(midi_input_device_t* pdev, int chan_num);
+
+/// Request for channel number on the device.
+/// @param[in] pdev Device.
+/// @param[in] chan_num Chanel number 1-16.
+/// @return int Channel handle or 0 if invalid.
+int devmgr_GetOutputChannelHandle(midi_output_device_t* pdev, int chan_num);
 
 /// Request for channel number for channel handle.
 /// @param[in] chan_hnd Channel handle.
