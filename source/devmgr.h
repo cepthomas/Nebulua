@@ -12,21 +12,27 @@
 // Midi cap per device.
 #define NUM_MIDI_CHANNELS 16
 
+#define MIDI_INPUT 1
+#define MIDI_OUTPUT 2
 
-/// Internal device management.
+/// Internal device management. TODO2 make opaque?
 typedef struct
 {
-    char sys_dev_name[MAXPNAMELEN]; // from system enumeration
-    int sys_dev_index; // from system enumeration
-    bool channels[NUM_MIDI_CHANNELS]; // true if created by script, 0-based
-    HMIDIIN hnd_in;
-    HMIDIOUT hnd_out;
+    char sys_dev_name[MAXPNAMELEN];     // from system enumeration
+    int sys_dev_index;                  // from system enumeration
+    bool channels[NUM_MIDI_CHANNELS];   // true if created by script, 0-based
+    int type;                           // 0=none
+    HANDLE handle;                      // > 0 if valid and open
 } midi_device_t;
 
 
+/// Midi input handler.
+typedef void (* midi_input_handler_t)(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+
 /// Initialize the component.
+/// @param[in] Midi input handler.
 /// @return Status.
-int devmgr_Init();
+int devmgr_Init(midi_input_handler_t midi_input_handler);
 
 /// Clean up component resources.
 /// @return Status.
@@ -57,5 +63,8 @@ int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num);
 /// @param[in] chan_hnd Channel handle.
 /// @return int Channel number 1-16 or 0 if invalid.
 int devmgr_GetChannelNumber(int chan_hnd);
+
+/// Diagnostic. TODO2 remove.
+void devmgr_Dump();
 
 #endif // DEVMGR_H

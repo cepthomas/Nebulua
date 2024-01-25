@@ -86,10 +86,10 @@ static int _length = 0;
 // Forever loop.
 static int _Run(void);
 
-// Tick corresponding to bpm. !!Interrupt!!
+// Tick corresponding to bpm. !!From Interrupt!!
 static void _MidiClockHandler(double msec);
 
-// Handle incoming messages. !!Interrupt!!
+// Handle incoming messages. !!From Interrupt!!
 static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 // Blocking sleep.
@@ -142,7 +142,7 @@ int exec_Main(int argc, char* argv[])
     _EvalStatus(cbot_stat, "Failed to init ftimer");
     luainteropwork_SetTempo(_l, 60);
 
-    stat = devmgr_Init((DWORD_PTR)_MidiInHandler);
+    stat = devmgr_Init(_MidiInHandler);
     _EvalStatus(stat, "Failed to init device manager");
 
     ///// Load and run the application. /////

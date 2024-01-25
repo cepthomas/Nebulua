@@ -10,14 +10,26 @@ extern "C"
 #include "logger.h"
 }
 
+//--------------------------------------------------------//
+static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+{
+    // Input midi event -- this is in an interrupt handler!
+    // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
+}
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(DEVMGR_MAIN, "Test device manager.")
 {
     int stat = 0;
 
-    stat = devmgr_Init();
+    stat = devmgr_Init(_MidiInHandler);
     UT_EQUAL(stat, NEB_OK);
+
+    devmgr_Dump();
+
+
 
     /// Request for device using win midi handle.
     /// @param[in] hMidiIn System midi handle.

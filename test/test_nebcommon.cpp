@@ -70,7 +70,7 @@ UT_SUITE(NEBCOM_SILLY, "Test stuff.")
 
     UT_EQUAL(x, y);
 
-    LOG_INFO(CAT_INIT, "Hello!");
+    // LOG_INFO(CAT_INIT, "Hello!");
 
     return 0;
 }    
