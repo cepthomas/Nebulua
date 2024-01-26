@@ -291,8 +291,8 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                 }
 
                 // Validate midiin device and channel number as registered by user.
-                midi_input_device_t* pdev = devmgr_GetInputDeviceFromMidiHandle(hMidiIn);
-                chan_hnd = devmgr_GetInputChannelHandle(pdev, channel);
+                midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle(hMidiIn);
+                chan_hnd = devmgr_GetChannelHandle(pdev, channel);
 
                 if (chan_hnd > 0)
                 {

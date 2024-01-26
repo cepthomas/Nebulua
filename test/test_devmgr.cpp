@@ -35,22 +35,22 @@ UT_SUITE(DEVMGR_MAIN, "Test device manager. TODO1")
 
     devmgr_Dump();
 
-    midi_input_device_t* pindev = devmgr_GetInputDeviceFromMidiHandle((HMIDIIN)999);
+    midi_device_t* pindev = devmgr_GetDeviceFromMidiHandle((HMIDIIN)999);
     UT_EQUAL(pindev, (void*)NULL);
 
-    pindev = devmgr_GetInputDeviceFromName("aaaaaaa");
+    pindev = devmgr_GetDeviceFromName("aaaaaaa");
     UT_EQUAL(pindev, (void*)NULL);
 
-    int chan_hnd = devmgr_GetInputChannelHandle(pindev, 999);
+    int chan_hnd = devmgr_GetChannelHandle(pindev, 999);
     UT_EQUAL(chan_hnd, 999);
 
-    midi_output_device_t* poutdev = devmgr_GetOutputDeviceFromChannelHandle(999);
+    midi_device_t* poutdev = devmgr_GetDeviceFromChannelHandle(999);
     UT_EQUAL(poutdev, (void*)NULL);
 
-    poutdev = devmgr_GetOutputDeviceFromName("aaaaaaa");
+    poutdev = devmgr_GetDeviceFromName("aaaaaaa");
     UT_EQUAL(poutdev, (void*)NULL);
 
-    chan_hnd = devmgr_GetOutputChannelHandle(poutdev, 999);
+    chan_hnd = devmgr_GetChannelHandle(poutdev, 999);
     UT_EQUAL(chan_hnd, 999);
 
     int chan_num = devmgr_GetChannelNumber(999);

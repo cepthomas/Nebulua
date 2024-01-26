@@ -13,12 +13,12 @@ extern "C"
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(NEBCOM_MAIN, "Test common.")
 {
-    int x = 1;
-    int y = 2;
+    // int x = 1;
+    // int y = 2;
 
     // UT_EQUAL(x, y);
 
-// TODO1-TEST test these:
+// TODO1 test these:
 // double nebcommon_InternalPeriod(int tempo);
 // int nebcommon_RoundedInternalPeriod(int tempo);
 // double nebcommon_InternalToMsec(int tempo, int subbeat);
