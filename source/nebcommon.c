@@ -33,9 +33,9 @@ int nebcommon_RoundedInternalPeriod(int tempo)
 
 
 //--------------------------------------------------------//
-double nebcommon_InternalToMsec(int tempo, int subbeat)
+double nebcommon_InternalToMsec(int tempo, int subbeats)
 {
-    double msec = nebcommon_InternalPeriod(tempo) * subbeat;
+    double msec = nebcommon_InternalPeriod(tempo) * subbeats;
     return msec;
 }
 
@@ -58,10 +58,10 @@ const char* nebcommon_FormatMidiStatus(int mstat)
 
 
 //--------------------------------------------------------//
-const char* nebcommon_FormatBarTime(int position)
+const char* nebcommon_FormatBarTime(int subbeats)
 {
     static char buff[BUFF_LEN];
-    snprintf(buff, BUFF_LEN, "position: %d.%d.%d", BAR(position), BEAT(position), SUBBEAT(position));
+    snprintf(buff, BUFF_LEN, "%d.%d.%d", BAR(subbeats), BEAT(subbeats), SUBBEAT(subbeats));
     return buff;
 }
 

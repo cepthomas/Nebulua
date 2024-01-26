@@ -334,7 +334,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
         default:
             break;
     }
-};
+}
 
 
 //--------------------------------------------------------//

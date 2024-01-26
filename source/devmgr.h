@@ -39,7 +39,7 @@ int devmgr_Init(midi_input_handler_t midi_input_handler);
 /// @return Status.
 int devmgr_Destroy();
 
-/// Open a midi input or output.
+/// Laxy open a midi input or output. If it's already open this is ignored.
 /// @param[in] pdev midi_device_t.
 /// @return Status.
 int devmgr_OpenMidi(midi_device_t* pdev);

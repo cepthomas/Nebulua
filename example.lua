@@ -34,8 +34,8 @@ log.info("=============== go go go =======================")
 -- }
 
 -- Devices
-local midi_in = "xxx zzz"
-local midi_out = "abc 123"
+local midi_in = "loopMIDI Port"
+local midi_out = "Microsoft GS Wavetable Synth"
 
 -- Channels
 local hkeys  = create_output_channel(midi_out, 1, inst.AcousticGrandPiano)

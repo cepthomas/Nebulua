@@ -256,6 +256,7 @@ int devmgr_OpenMidi(midi_device_t* pdev)
                         stat = NEB_OK;
                     }
                 }
+                // else ignore.
                 break; // done
             }
             else if (pdev == _output_devices + i)
@@ -280,6 +281,7 @@ int devmgr_OpenMidi(midi_device_t* pdev)
 
     return stat;
 }
+
 
 //--------------------------------------------------------//
 void devmgr_Dump()

@@ -20,6 +20,7 @@
 #define NEB_ERR_SYNTAX          14
 #define NEB_ERR_MIDI            15
 
+#define UNUSED(x)   ((void)(x))
 
 //----------------------- Timing -----------------------------//
 
@@ -36,7 +37,7 @@
 #define SUBEATS_PER_BAR SUBBEATS_PER_BEAT / BEATS_PER_BAR
 
 /// Total.
-#define TOTAL_BEATS(subbeat) subbeat / SUBBEATS_PER_BEAT
+#define TOTAL_BEATS(subbeats) subbeats / SUBBEATS_PER_BEAT
 
 /// The bar number.
 #define BAR(subbeat) subbeat / SUBEATS_PER_BAR
@@ -57,11 +58,11 @@ double nebcommon_InternalPeriod(int tempo);
 /// @return rounded msec per subbeat
 int nebcommon_RoundedInternalPeriod(int tempo);
 
-/// Convert subbeat to time.
+/// Convert subbeats to time.
 /// @param[in] tempo
-/// @param[in] subbeat
+/// @param[in] subbeats
 /// @return msec
-double nebcommon_InternalToMsec(int tempo, int subbeat);
+double nebcommon_InternalToMsec(int tempo, int subbeats);
 
 
 //----------------------- Utilities -----------------------------//
