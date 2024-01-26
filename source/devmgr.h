@@ -39,6 +39,11 @@ int devmgr_Init(midi_input_handler_t midi_input_handler);
 /// @return Status.
 int devmgr_Destroy();
 
+/// Open a midi input or output.
+/// @param[in] pdev midi_device_t.
+/// @return Status.
+int devmgr_OpenMidi(midi_device_t* pdev);
+
 /// Request for device by name.
 /// @param[in] sys_dev_name Device name.
 /// @return midi_device_t The device or NULL if invalid.

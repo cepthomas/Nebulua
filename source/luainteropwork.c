@@ -47,16 +47,20 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
 
 
 //--------------------------------------------------------//
-int luainteropwork_CreateInputChannel(lua_State* l, const char* device, int chan_num)
+int luainteropwork_CreateInputChannel(lua_State* l, const char* sys_dev_name, int chan_num)
 {
     int chan_hnd = 0;
 
-    VALS(device != NULL, device);
+    VALS(sys_dev_name != NULL, sys_dev_name);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
 
-    midi_device_t* pdev = devmgr_GetDeviceFromName(device);
-    VALS(pdev != NULL, device);
+    midi_device_t* pdev = devmgr_GetDeviceFromName(sys_dev_name);
+    VALS(pdev != NULL, sys_dev_name);
 
+    int stat = devmgr_OpenMidi(pdev);
+    VALI(stat == NEB_OK, 0);
+    UNUSED(stat);
+    
     chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
     VALI(chan_hnd > 0, chan_num);
 
@@ -65,16 +69,20 @@ int luainteropwork_CreateInputChannel(lua_State* l, const char* device, int chan
 
 
 //--------------------------------------------------------//
-int luainteropwork_CreateOutputChannel(lua_State* l, const char* device, int chan_num, int patch)
+int luainteropwork_CreateOutputChannel(lua_State* l, const char* sys_dev_name, int chan_num, int patch)
 {
     int chan_hnd = 0;
 
-    VALS(device != NULL, device);
+    VALS(sys_dev_name != NULL, sys_dev_name);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
     VALI(patch >= 0 && patch < MIDI_VAL_MAX, patch);
 
-    midi_device_t* pdev = devmgr_GetDeviceFromName(device);
-    VALS(pdev != NULL, device);
+    midi_device_t* pdev = devmgr_GetDeviceFromName(sys_dev_name);
+    VALS(pdev != NULL, sys_dev_name);
+
+    int stat = devmgr_OpenMidi(pdev);
+    VALI(stat == NEB_OK, 0);
+    UNUSED(stat);
 
     chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
     VALI(chan_hnd > 0, chan_num);
