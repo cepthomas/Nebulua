@@ -1,6 +1,8 @@
 
 # Nebulua TODO2 Copy some stuff from Nebulator\README.md
 
+win only, not unicode.
+
 An experimental version of Nebulator using Lua as the script flavor.
 
 field types:
