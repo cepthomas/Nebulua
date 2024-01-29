@@ -18,9 +18,9 @@
 // Definition of work functions for host functions called by lua.
 
 // Macro used to handle user syntax errors in the interop work functions.
-#define VALS(expr, s) luaL_error(l, "%s: %s", #expr, s)
-#define VALI(expr, i) luaL_error(l, "%s: %d", #expr, i)
-#define VALF(expr, f) luaL_error(l, "%s: %f", #expr, f)
+#define VALS(expr, s) if (!(expr)) { luaL_error(l, "%s: %s", #expr, s); }
+#define VALI(expr, i) if (!(expr)) { luaL_error(l, "%s: %d", #expr, i); }
+#define VALF(expr, f) if (!(expr)) { luaL_error(l, "%s: %f", #expr, f); }
 
 
 //--------------------------------------------------------//
@@ -37,8 +37,8 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
     VALI(bpm >= 30 && bpm <= 240, bpm);
 
     double sec_per_beat = 60.0 / bpm;
-    double msec_per_subbeat = 1000 * sec_per_beat / SUBEATS_PER_BAR;
-    int period = msec_per_subbeat > 1.0 ? round(msec_per_subbeat) : 1;
+    double msec_per_subbeat = 1000 * sec_per_beat / SUBBEATS_PER_BEAT;
+    int period = msec_per_subbeat > 1.0 ? (int)round(msec_per_subbeat) : 1;
 
     ftimer_Run(period);
 

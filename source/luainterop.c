@@ -17,6 +17,12 @@
 #include "luaex.h"
 
 
+#ifdef _WIN32
+// Ignore some generated code warnings
+#pragma warning( disable : 6001 4244 4703 )
+#endif
+
+
 //---------------- Call lua functions from host -------------//
 
 //--------------------------------------------------------//

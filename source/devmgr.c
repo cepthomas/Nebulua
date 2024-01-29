@@ -1,5 +1,6 @@
 // system
 #include <windows.h>
+#include <stdlib.h>
 #include <string.h>
 // lua
 // cbot
@@ -33,6 +34,37 @@ static midi_input_handler_t _midi_input_handler;
 
 //------------------- Functions ---------------------------//
 
+//#include <stdlib.h>
+//length = wcstombs(mbstring, wcstring, N);
+//Where:
+//char* mbstring;
+//points to an area of memory where "wcstombs" can store the resulting multibyte character string.
+//const wchar_t* wcstring;
+//points to the wide character string that is to be converted.
+//size_t N;
+//gives the maximum number of bytes that can be held by the multibyte string.
+
+
+static const char* _Conv(char* s)
+{
+    return s;
+}
+
+//static const char* _Conv(wchar_t* wcstring)
+//{
+//    static char buff[100];
+//    int len = wcstombs(buff, wcstring, 100-1);
+//    if (len < 100 - 1)
+//    {
+//        return buff;
+//    }
+//    else
+//    {
+//        return "Ooooops";
+//    }
+//}
+
+
 //--------------------------------------------------------//
 int devmgr_Init(midi_input_handler_t midi_input_handler)
 {
@@ -56,7 +88,7 @@ int devmgr_Init(midi_input_handler_t midi_input_handler)
             if (mmres == MMSYSERR_NOERROR)
             {
                 // Save the device info.
-                strncpy(_input_devices[i].sys_dev_name, caps_in.szPname, MAXPNAMELEN - 1);
+                strncpy(_input_devices[i].sys_dev_name, _Conv(caps_in.szPname), MAXPNAMELEN - 1);
                 _input_devices[i].handle = INACTIVE_DEV; // exists but not opened
             }
         }
@@ -69,7 +101,7 @@ int devmgr_Init(midi_input_handler_t midi_input_handler)
     // Outputs.
     if (num_out <= NUM_MIDI_DEVICES)
     {
-        for (int i = 0; i < num_out; i++, i++)
+        for (UINT i = 0; i < num_out; i++, i++)
         {
             // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midioutgetdevcaps
             MIDIOUTCAPS caps_out;
@@ -77,7 +109,7 @@ int devmgr_Init(midi_input_handler_t midi_input_handler)
             if (mmres == MMSYSERR_NOERROR)
             {
                 // Save the device info.
-                strncpy(_output_devices[i].sys_dev_name, caps_out.szPname, MAXPNAMELEN);
+                strncpy(_output_devices[i].sys_dev_name, _Conv(caps_out.szPname), MAXPNAMELEN);
                 _output_devices[i].handle = INACTIVE_DEV; // exists but not opened
             }
         }

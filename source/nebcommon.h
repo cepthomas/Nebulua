@@ -34,13 +34,13 @@
 #define SUBBEATS_PER_BEAT INTERNAL_PPQ
 
 /// Convenience.
-#define SUBEATS_PER_BAR SUBBEATS_PER_BEAT / BEATS_PER_BAR
+#define SUBBEATS_PER_BAR SUBBEATS_PER_BEAT * BEATS_PER_BAR
 
 /// Total.
 #define TOTAL_BEATS(subbeats) subbeats / SUBBEATS_PER_BEAT
 
 /// The bar number.
-#define BAR(subbeat) subbeat / SUBEATS_PER_BAR
+#define BAR(subbeat) subbeat / SUBBEATS_PER_BAR
 
 /// The beat number in the bar.
 #define BEAT(subbeat) subbeat / SUBBEATS_PER_BEAT % BEATS_PER_BAR
@@ -48,33 +48,33 @@
 /// The subbeat in the beat.
 #define SUBBEAT(subbeat) subbeat % SUBBEATS_PER_BEAT
 
-/// Calculate period for tempo.
-/// @param[in] tempo
-/// @return msec per subbeat
-double nebcommon_InternalPeriod(int tempo);
+// /// Calculate period for tempo.
+// /// @param[in] tempo
+// /// @return msec per subbeat
+// double nebcommon_InternalPeriod(int tempo);
 
-/// Calculate integer period >= 1 for tempo.
-/// @param[in] tempo
-/// @return rounded msec per subbeat
-int nebcommon_RoundedInternalPeriod(int tempo);
+// /// Calculate integer period >= 1 for tempo.
+// /// @param[in] tempo
+// /// @return rounded msec per subbeat
+// int nebcommon_RoundedInternalPeriod(int tempo);
 
-/// Convert subbeats to time.
-/// @param[in] tempo
-/// @param[in] subbeats
-/// @return msec
-double nebcommon_InternalToMsec(int tempo, int subbeats);
+// /// Convert subbeats to time.
+// /// @param[in] tempo
+// /// @param[in] subbeats
+// /// @return msec
+// double nebcommon_InternalToMsec(int tempo, int subbeats);
 
 
 //----------------------- Utilities -----------------------------//
 
 /// Convert a status to string.
 /// @param[in] mstat Midi status to examine
-/// @return String or NULL if not valid
+/// @return String empty if status is ok
 const char* nebcommon_FormatMidiStatus(int mstat);
 
 /// Convert a string bar time to absolute position.
 /// @param[in] sbt time string can be "1.2.3" or "1.2" or "1".
-/// @return String or -1 if not valid.
+/// @return int subbeats
 int nebcommon_ParseBarTime(const char* sbt);
 
 /// Convert a position to string bar time.

@@ -14,46 +14,48 @@
 
 #define BUFF_LEN 100
 
-//--------------------------------------------------------//
-double nebcommon_InternalPeriod(int tempo)
-{
-    double sec_per_beat = 60.0 / tempo;
-    double msec_per_subbeat = 1000 * sec_per_beat / SUBEATS_PER_BAR;
-    return msec_per_subbeat;
-}
+// //--------------------------------------------------------//
+// double nebcommon_InternalPeriod(int tempo)
+// {
+//     double sec_per_beat = 60.0 / tempo;
+//     double msec_per_subbeat = 1000 * sec_per_beat / SUBBEATS_PER_BAR;
+//     return msec_per_subbeat;
+// }
 
 
-//--------------------------------------------------------//
-int nebcommon_RoundedInternalPeriod(int tempo)
-{
-    double msec_per_subbeat = nebcommon_InternalPeriod(tempo);
-    int period = msec_per_subbeat > 1.0 ? (int)round(msec_per_subbeat) : 1;
-    return period;
-}
+// //--------------------------------------------------------//
+// int nebcommon_RoundedInternalPeriod(int tempo)
+// {
+//     double msec_per_subbeat = nebcommon_InternalPeriod(tempo);
+//     int period = msec_per_subbeat > 1.0 ? (int)round(msec_per_subbeat) : 1;
+//     return period;
+// }
 
 
-//--------------------------------------------------------//
-double nebcommon_InternalToMsec(int tempo, int subbeats)
-{
-    double msec = nebcommon_InternalPeriod(tempo) * subbeats;
-    return msec;
-}
+// //--------------------------------------------------------//
+// double nebcommon_InternalToMsec(int tempo, int subbeats)
+// {
+//     double msec = nebcommon_InternalPeriod(tempo) * subbeats;
+//     return msec;
+// }
 
 
 //--------------------------------------------------------//
 const char* nebcommon_FormatMidiStatus(int mstat)
 {
     static char buff[BUFF_LEN];
+    buff[0] = 0;
     if (mstat != MMSYSERR_NOERROR)
     {
         // Get the lib supplied text.
         midiInGetErrorText(mstat, buff, BUFF_LEN);
-        return buff;
+        if (strlen(buff) == 0)
+        {
+            sprintf(buff, "MidiStatus:%d", mstat);
+        }
     }
-    else
-    {
-        return NULL;
-    }
+
+    return buff;
 }
 
 
@@ -69,20 +71,20 @@ const char* nebcommon_FormatBarTime(int subbeats)
 //--------------------------------------------------------//
 int nebcommon_ParseBarTime(const char* sbt)
 {
-    int position = 0;
+    int subbeats = 0;
     bool valid = false;
     int v;
 
     // Make writable copy and tokenize it.
-    char cp[strlen(sbt) + 1];
-    strcpy(cp, sbt);
+    char cp[32];
+    strncpy(cp, sbt, sizeof(cp));
 
     char* tok = strtok(cp, ".");
     if (tok != NULL)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, 9999);
         if (!valid) goto nogood;
-        position += v * SUBEATS_PER_BAR;
+        subbeats += v * SUBBEATS_PER_BAR;
     }
 
     tok = strtok(NULL, ".");
@@ -90,18 +92,19 @@ int nebcommon_ParseBarTime(const char* sbt)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, BEATS_PER_BAR-1);
         if (!valid) goto nogood;
-        position += v * SUBBEATS_PER_BEAT;
+        subbeats += v * SUBBEATS_PER_BEAT;
     }
 
     tok = strtok(NULL, ".");
     if (tok != NULL)
     {
-        valid = nebcommon_ParseInt(tok, &v, 0, SUBEATS_PER_BAR-1);
+        valid = nebcommon_ParseInt(tok, &v, 0, SUBBEATS_PER_BAR-1);
         if (!valid) goto nogood;
-        position += v;
+        subbeats += v;
     }
 
-    return position;
+    return subbeats;
+    
 nogood:
     return -1;
 }

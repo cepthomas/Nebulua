@@ -60,14 +60,38 @@ static bool _mon_input = false;
 // Monitor midi output.
 static bool _mon_output = false;
 
-// Forward reference.
-static cli_command_t _commands[];
+//// Forward reference.
+//static cli_command_t _commands[];
 
 // Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
-static CRITICAL_SECTION _critical_section; 
+static CRITICAL_SECTION _critical_section;
 #define ENTER_CRITICAL_SECTION EnterCriticalSection(&_critical_section)
 #define EXIT_CRITICAL_SECTION  LeaveCriticalSection(&_critical_section)
 
+int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _ExitCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _RunCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _TempoCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _MonCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _PositionCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+
+
+//--------------------------------------------------------//
+// Map commands to handlers.
+static cli_command_t _commands[] =
+{
+    { _Usage,        { "help",       "?",   "explain it all",                         "" } },
+    { _ExitCmd,      { "exit",       "x",   "exit the application",                   "" } },
+    { _RunCmd,       { "run",        "r",   "toggle running the script",              "" } },
+    { _TempoCmd,     { "tempo",      "t",   "get or set the tempo",                   "(bpm): tempo 40-240$[color]: blue" } },
+    { _MonCmd,       { "monitor",    "m",   "toggle monitor midi traffic",            "(in|out|off): action" } },
+    { _KillCmd,      { "kill",       "k",   "stop all midi",                          "" } },
+    { _PositionCmd,  { "position",   "p",   "set position to where or tell current",  "(where): beat" } },
+    { _ReloadCmd,    { "reload",     "l",   "re/load current script",                 "" } },
+    { NULL,          { NULL, NULL, NULL, NULL } }
+};
 
 //----------------------- Vars - script ------------------------//
 
@@ -118,7 +142,7 @@ int exec_Main(int argc, char* argv[])
     // Initialize the critical section. It is used to synchronize access to lua context.
     InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
 
-    ENTER_CRITICAL_SECTION; 
+    ENTER_CRITICAL_SECTION;
 
     ///// Init internal stuff. /////
     _l = luaL_newstate();
@@ -207,11 +231,11 @@ int _Run(void)
                     {
                         valid = true;
                         // Lock access to lua context.
-                        ENTER_CRITICAL_SECTION; 
+                        ENTER_CRITICAL_SECTION;
                         // Execute the command. They handle any errors internally.
                         stat = (*pcmd->handler)(&(pcmd->desc), &cli_args);
                         _EvalStatus(stat, "handler failed: %s", pcmd->desc.long_name);
-                        EXIT_CRITICAL_SECTION; 
+                        EXIT_CRITICAL_SECTION;
                         break;
                     }
                 }
@@ -267,72 +291,72 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
     int stat = NEB_OK;
     switch (wMsg)
     {
-        case MIM_DATA:
+    case MIM_DATA:
+    {
+        DWORD_PTR raw_msg = dwParam1;           // packed MIDI message
+        // uint timestamp = dwParam2;           // milliseconds since MidiInStart
+        byte bstatus = raw_msg & 0xFF;          // MIDI status byte
+        byte bdata1 = (raw_msg >> 8) & 0xFF;    // first MIDI data byte
+        byte bdata2 = (raw_msg >> 16) & 0xFF;   // second MIDI data byte
+        int channel = -1;
+        int chan_hnd = 0;
+        midi_event_t evt;
+
+        if ((bstatus & 0xF0) == 0xF0)
+        {
+            // System events.
+            evt = (midi_event_t)bstatus;
+        }
+        else
+        {
+            // Specific channel events.
+            evt = (midi_event_t)(bstatus & 0xF0);
+            channel = (bstatus & 0x0F) + 1;
+        }
+
+        // Validate midiin device and channel number as registered by user.
+        midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle(hMidiIn);
+        chan_hnd = devmgr_GetChannelHandle(pdev, channel);
+
+        if (chan_hnd > 0)
+        {
+            switch (evt)
             {
-                int raw_msg = dwParam1;                // packed MIDI message
-                // int timestamp = dwParam2;              // milliseconds since MidiInStart
-                byte bstatus = raw_msg & 0xFF;         // MIDI status byte
-                byte bdata1 = (raw_msg >> 8) & 0xFF;   // first MIDI data byte
-                byte bdata2 = (raw_msg >> 16) & 0xFF;  // second MIDI data byte
-                int channel = -1;
-                int chan_hnd = 0;
-                midi_event_t evt;
+            case MIDI_NOTE_ON:
+            case MIDI_NOTE_OFF:
+                // Lock access to lua context.
+                ENTER_CRITICAL_SECTION;
+                double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
+                stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume);
+                _EvalStatus(stat, "luainterop_InputNote() failed");
+                EXIT_CRITICAL_SECTION;
+                break;
 
-                if ((bstatus & 0xF0) == 0xF0)
-                {
-                    // System events.
-                    evt = (midi_event_t)bstatus;
-                }
-                else
-                {
-                    // Specific channel events.
-                    evt = (midi_event_t)(bstatus & 0xF0);
-                    channel = (bstatus & 0x0F) + 1;
-                }
+            case MIDI_CONTROL_CHANGE:
+                // Lock access to lua context.
+                ENTER_CRITICAL_SECTION;
+                stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2);
+                _EvalStatus(stat, "luainterop_InputController() failed");
+                EXIT_CRITICAL_SECTION;
+                break;
 
-                // Validate midiin device and channel number as registered by user.
-                midi_device_t* pdev = devmgr_GetDeviceFromMidiHandle(hMidiIn);
-                chan_hnd = devmgr_GetChannelHandle(pdev, channel);
+            case MIDI_PITCH_WHEEL_CHANGE:
+                // PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
+                break;
 
-                if (chan_hnd > 0)
-                {
-                    switch (evt)
-                    {
-                        case MIDI_NOTE_ON:
-                        case MIDI_NOTE_OFF:
-                            // Lock access to lua context.
-                            ENTER_CRITICAL_SECTION; 
-                            double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
-                            stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume);
-                            _EvalStatus(stat, "luainterop_InputNote() failed");
-                            EXIT_CRITICAL_SECTION;
-                            break;
-
-                        case MIDI_CONTROL_CHANGE:
-                            // Lock access to lua context.
-                            ENTER_CRITICAL_SECTION; 
-                            stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2);
-                            _EvalStatus(stat, "luainterop_InputController() failed");
-                            EXIT_CRITICAL_SECTION;
-                            break;
-
-                        case MIDI_PITCH_WHEEL_CHANGE:
-                            // PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
-                            break;
-
-                        // Ignore other events for now.
-                        default:
-                            break;
-                    }
-                    break;
-                }
-                // else ignore
+                // Ignore other events for now.
+            default:
+                break;
             }
             break;
+        }
+        // else ignore
+    }
+    break;
 
-        // Ignore other messages for now.
-        default:
-            break;
+    // Ignore other messages for now.
+    default:
+        break;
     }
 }
 
@@ -357,8 +381,8 @@ int _TempoCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
         }
         else
         {
-           cli_WriteLine("invalid tempo: %d", args->arg_values[1]);
-           stat = NEB_ERR_BAD_CLI_ARG;
+            cli_WriteLine("invalid tempo: %d", args->arg_values[1]);
+            stat = NEB_ERR_BAD_CLI_ARG;
         }
         stat = NEB_OK;
     }
@@ -422,7 +446,7 @@ int _MonCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
         }
         else
         {
-           cli_WriteLine("invalid option: %s", args->arg_values[1]);
+            cli_WriteLine("invalid option: %s", args->arg_values[1]);
         }
     }
 
@@ -461,7 +485,7 @@ int _PositionCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
         int position = nebcommon_ParseBarTime(args->arg_values[1]);
         if (position < 0)
         {
-           cli_WriteLine("invalid position: %s", args->arg_values[1]);
+            cli_WriteLine("invalid position: %s", args->arg_values[1]);
         }
         else
         {
@@ -503,10 +527,10 @@ int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args)
         if (strlen(pdesciter->args) > 0)
         {
             // Maybe multiline args. Make writable copy and tokenize it.
-            char cp[strlen(pdesciter->args) + 1];
-            strcpy(cp, pdesciter->args);
+            char cp[128];
+            strncpy(cp, pdesciter->args, sizeof(cp));
             char* tok = strtok(cp, "$");
-            while(tok != NULL)
+            while (tok != NULL)
             {
                 cli_WriteLine("    %s", tok);
                 tok = strtok(NULL, "$");
@@ -522,10 +546,13 @@ int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args)
 //--------------------------------------------------------//
 void _Sleep(int msec)
 {
-    struct timespec ts;
-    ts.tv_sec = msec / 1000;
-    ts.tv_nsec = (msec % 1000) * 1000000;
+#ifdef _WIN32
+    Sleep(msec);
+#else // mingw
+    struct timespec ts = { (int)(msec / 1000), (msec % 1000) * 1000000 };
     nanosleep(&ts, NULL);
+#endif
+
 }
 
 
@@ -541,35 +568,35 @@ bool _EvalStatus(int stat, const char* format, ...)
 
         va_list args;
         va_start(args, format);
-        vsnprintf(buff, sizeof(buff)-1, format, args);
+        vsnprintf(buff, sizeof(buff) - 1, format, args);
         va_end(args);
 
         const char* sstat = NULL;
         char err_buff[16];
-        switch(stat)
+        switch (stat)
         {
             // generic
-            case 0:                         sstat = "NO_ERR"; break;
+        case 0:                         sstat = "NO_ERR"; break;
             // lua
-            case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
-            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
-            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
-            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
-            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
-            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
+        case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
+        case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
+        case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
+        case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
+        case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
+        case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
             // cbot
-            case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
-            case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
-            case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
-            case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
+        case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
+        case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
+        case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
+        case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
             // app
-            case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
-            case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
-            case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
-            case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
-            case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
-            case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
-            default:                        snprintf(err_buff, sizeof(err_buff)-1, "ERR_%d", stat); break;
+        case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
+        case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
+        case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
+        case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
+        case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
+        case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
+        default:                        snprintf(err_buff, sizeof(err_buff) - 1, "ERR_%d", stat); break;
         }
 
         sstat = (sstat == NULL) ? err_buff : sstat;
@@ -596,18 +623,3 @@ bool _EvalStatus(int stat, const char* format, ...)
     return has_error;
 }
 
-
-//--------------------------------------------------------//
-// Map commands to handlers.
-static cli_command_t _commands[] =
-{
-    { _Usage,        { "help",       "?",   "explain it all",                         "" } },
-    { _ExitCmd,      { "exit",       "x",   "exit the application",                   "" } },
-    { _RunCmd,       { "run",        "r",   "toggle running the script",              "" } },
-    { _TempoCmd,     { "tempo",      "t",   "get or set the tempo",                   "(bpm): tempo 40-240$[color]: blue" } },
-    { _MonCmd,       { "monitor",    "m",   "toggle monitor midi traffic",            "(in|out|off): action" } },
-    { _KillCmd,      { "kill",       "k",   "stop all midi",                          "" } },
-    { _PositionCmd,  { "position",   "p",   "set position to where or tell current",  "(where): beat" } },
-    { _ReloadCmd,    { "reload",     "l",   "re/load current script",                 "" } },
-    { NULL,          { NULL, NULL, NULL, NULL } }
-};
