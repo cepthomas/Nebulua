@@ -6,6 +6,8 @@ extern "C"
 #include "logger.h"
 }
 
+// Main for unit testing.
+
 int main()
 {
     TestManager& tm = TestManager::Instance();

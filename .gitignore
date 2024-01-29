@@ -1,6 +1,11 @@
-/c/build
-/c/build_test
-/build
-/build_test
+
 /vs/.vs
 /vs/x64
+/build_app/.vs
+/build_app/x64
+/build_app/Nebulua.vcxproj.user
+/build_test/.vs
+/build_test/x64
+/build_test/NebuluaTest.vcxproj.user
+/build_mingw/build
+/build_mingw/build_test

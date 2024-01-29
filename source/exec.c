@@ -546,7 +546,7 @@ int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args)
 //--------------------------------------------------------//
 void _Sleep(int msec)
 {
-#ifdef _WIN32
+#if defined(_MSC_VER)
     Sleep(msec);
 #else // mingw
     struct timespec ts = { (int)(msec / 1000), (msec % 1000) * 1000000 };

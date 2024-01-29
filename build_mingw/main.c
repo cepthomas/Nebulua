@@ -1,12 +1,12 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 // Stub for entry. Mainly to make testing easier.
 int exec_Main(int argc, char* argv[]);
 
+
 int main(int argc, char* argv[])
 {
-
     // Check args.
     if(argc != 2)
     {

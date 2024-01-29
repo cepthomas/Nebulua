@@ -23,19 +23,19 @@ set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
 if(DO_TEST)
 
     include_directories(
-        source
-        test
+        ../source
+        ../test
         ${LUA}/include
         ${CBOT}/source
         ${CBOT}/pnut
         )
 
     add_executable(nebulua
-        source/nebcommon.c
-        source/devmgr.c
-        test/main.cpp
-        test/test_nebcommon.cpp
-        test/test_devmgr.cpp
+        main.cpp
+        ../source/nebcommon.c
+        ../source/devmgr.c
+        ../test/test_nebcommon.cpp
+        ../test/test_devmgr.cpp
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source/private/logger.c
         )
@@ -43,19 +43,19 @@ if(DO_TEST)
 else()
 
     include_directories(
-        source
+        ../source
         ${LUA}/include
         ${CBOT}/source
         )
 
     add_executable(nebulua
-        source/main.c
-        source/exec.c
-        source/nebcommon.c
-        source/devmgr.c
-        source/luainterop.c
-        source/luainteropwork.c
-        source/luaex.c
+        main.c
+        ../source/exec.c
+        ../source/nebcommon.c
+        ../source/devmgr.c
+        ../source/luainterop.c
+        ../source/luainteropwork.c
+        ../source/luaex.c
         ${CBOT}/source/private/logger.c
         ${CBOT}/source/private/cli.c
         ${CBOT}/source/private/ftimer.c
