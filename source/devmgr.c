@@ -19,14 +19,17 @@
 #define GET_DEV_INDEX(chan_hnd) ((chan_hnd >> 8) & 0xFF)
 #define GET_CHAN_NUM(chan_hnd) (chan_hnd & 0xFF)
 
+// First half are input, second half are output.
+#define NUM_MIDI_DEVICES 16
+
+// Midi cap per device.
+#define NUM_MIDI_CHANNELS 16
+
 
 //------------------- Vars ---------------------------//
 
 // Devices specified in the user script.
-static midi_device_t _output_devices[NUM_MIDI_DEVICES];
-
-// Devices specified in the user script.
-static midi_device_t _input_devices[NUM_MIDI_DEVICES];
+static midi_device_t _devices[NUM_MIDI_DEVICES];
 
 // The common input event handler.
 static midi_input_handler_t _midi_input_handler;
@@ -34,62 +37,31 @@ static midi_input_handler_t _midi_input_handler;
 
 //------------------- Functions ---------------------------//
 
-//#include <stdlib.h>
-//length = wcstombs(mbstring, wcstring, N);
-//Where:
-//char* mbstring;
-//points to an area of memory where "wcstombs" can store the resulting multibyte character string.
-//const wchar_t* wcstring;
-//points to the wide character string that is to be converted.
-//size_t N;
-//gives the maximum number of bytes that can be held by the multibyte string.
-
-
-static const char* _Conv(char* s)
-{
-    return s;
-}
-
-//static const char* _Conv(wchar_t* wcstring)
-//{
-//    static char buff[100];
-//    int len = wcstombs(buff, wcstring, 100-1);
-//    if (len < 100 - 1)
-//    {
-//        return buff;
-//    }
-//    else
-//    {
-//        return "Ooooops";
-//    }
-//}
-
-
 //--------------------------------------------------------//
 int devmgr_Init(midi_input_handler_t midi_input_handler)
 {
-    int stat = NEB_OK; //C:\Dev\repos\Lua\Nebulua\source\devmgr.c:31
+    int stat = NEB_OK;
 
     _midi_input_handler = midi_input_handler;
 
-    memset(_input_devices, 0, sizeof(_input_devices));
-    memset(_output_devices, 0, sizeof(_output_devices));
+    memset(_devices, 0, sizeof(_devices));
     UINT num_in = midiInGetNumDevs();
     UINT num_out = midiOutGetNumDevs();
 
     // Inputs.
-    if (midi_input_handler > 0 && num_in <= NUM_MIDI_DEVICES)
+    if (midi_input_handler > 0 && num_in <= NUM_MIDI_DEVICES / 2)
     {
         for (UINT i = 0; i < num_in; i++)
         {
+            midi_device_t* pdev = _devices + i;
             // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midiingetdevcaps
             MIDIINCAPS caps_in;
             MMRESULT mmres = midiInGetDevCaps(i, &caps_in, sizeof(caps_in));
             if (mmres == MMSYSERR_NOERROR)
             {
                 // Save the device info.
-                strncpy(_input_devices[i].sys_dev_name, _Conv(caps_in.szPname), MAXPNAMELEN - 1);
-                _input_devices[i].handle = INACTIVE_DEV; // exists but not opened
+                strncpy(pdev->sys_dev_name, caps_in.szPname, MAXPNAMELEN - 1);
+                pdev->handle = INACTIVE_DEV; // exists but not opened
             }
         }
     }
@@ -99,18 +71,19 @@ int devmgr_Init(midi_input_handler_t midi_input_handler)
     }
 
     // Outputs.
-    if (num_out <= NUM_MIDI_DEVICES)
+    if (num_out <= NUM_MIDI_DEVICES / 2)
     {
         for (UINT i = 0; i < num_out; i++, i++)
         {
+            midi_device_t* pdev = _devices + NUM_MIDI_DEVICES / 2 + i;
             // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midioutgetdevcaps
             MIDIOUTCAPS caps_out;
             MMRESULT mmres = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
             if (mmres == MMSYSERR_NOERROR)
             {
                 // Save the device info.
-                strncpy(_output_devices[i].sys_dev_name, _Conv(caps_out.szPname), MAXPNAMELEN);
-                _output_devices[i].handle = INACTIVE_DEV; // exists but not opened
+                strncpy(pdev->sys_dev_name, caps_out.szPname, MAXPNAMELEN);
+                pdev->handle = INACTIVE_DEV; // exists but not opened
             }
         }
     }
@@ -128,26 +101,25 @@ int devmgr_Destroy()
 {
     int stat = NEB_OK;
     
-    for (int i = 0; i < NUM_MIDI_DEVICES; i++)
+    for (int i = 0; i < NUM_MIDI_DEVICES / 2; i++)
     {
-        if (_input_devices[i].handle > 0)
+        if (_devices[i].handle > 0)
         {
-            midiInStop(_input_devices[i].handle);
-            midiInClose(_input_devices[i].handle); 
+            midiInStop(_devices[i].handle);
+            midiInClose(_devices[i].handle);
         }
     }
     
-    for (int i = 0; i < NUM_MIDI_DEVICES; i++)
+    for (int i = NUM_MIDI_DEVICES / 2; i < NUM_MIDI_DEVICES; i++)
     {
-        if (_output_devices[i].handle > 0)
+        if (_devices[i].handle > 0)
         {
-             midiOutClose(_output_devices[i].handle);
+             midiOutClose(_devices[i].handle);
         }
     }
 
     // Clear.
-    memset(_input_devices, 0, sizeof(_input_devices));
-    memset(_output_devices, 0, sizeof(_output_devices));
+    memset(_devices, 0, sizeof(_devices));
 
     return stat;
 }
@@ -163,14 +135,9 @@ int devmgr_RegisterChannel(midi_device_t* pdev, int chan_num)
     {
         for (int i = 0; i < NUM_MIDI_DEVICES && chan_hnd == 0; i++)
         {
-            if (_input_devices[i].handle == pdev->handle)
+            if (_devices[i].handle == pdev->handle)
             {
-                _input_devices[i].channels[chan_num - 1] = true;
-                chan_hnd = MAKE_HANDLE(i, chan_num);
-            }
-            else if (_output_devices[i].handle == pdev->handle)
-            {
-                _output_devices[i].channels[chan_num - 1] = true;
+                _devices[i].channels[chan_num - 1] = true;
                 chan_hnd = MAKE_HANDLE(i, chan_num);
             }
         }
@@ -192,8 +159,7 @@ int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
     {
         for (int i = 0; i < NUM_MIDI_DEVICES && chan_hnd == 0; i++)
         {
-            if ((_input_devices[i].handle == pdev->handle && _input_devices[i].channels[chan_num - 1]) ||
-                (_output_devices[i].handle == pdev->handle && _output_devices[i].channels[chan_num - 1]))
+            if (_devices[i].handle == pdev->handle && _devices[i].channels[chan_num - 1])
             {
                 chan_hnd = MAKE_HANDLE(i, chan_num);
             }
@@ -211,11 +177,11 @@ midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn)
 
     if (hMidiIn > 0)
     {
-        for (int i = 0; i < NUM_MIDI_DEVICES && pdev == NULL; i++)
+        for (int i = 0; i < NUM_MIDI_DEVICES / 2 && pdev == NULL; i++) // input only
         {
-            if (_input_devices[i].handle == hMidiIn) // input only
+            if (_devices[i].handle == hMidiIn)
             {
-                pdev = _input_devices + i;
+                pdev = _devices + i;
             }
         }
     }
@@ -235,13 +201,12 @@ midi_device_t* devmgr_GetDeviceFromChannelHandle(int chan_hnd)
     if (chan_hnd > 0 &&
         chan_num >= 1 &&
         chan_num <= NUM_MIDI_CHANNELS &&
-        dev_index >= 0 &&
+        dev_index > NUM_MIDI_DEVICES / 2 &&  // output only
         dev_index < NUM_MIDI_DEVICES)
     {
-        if( _output_devices[dev_index].handle > 0 &&  // output only
-            _output_devices[dev_index].channels[chan_num - 1])
+        if( _devices[dev_index].handle > 0 && _devices[dev_index].channels[chan_num - 1])
         {
-            pdev = _output_devices + dev_index;
+            pdev = _devices + dev_index;
         }
     }
 
@@ -257,14 +222,9 @@ midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name)
     // Look through devices list for this device.
     for (int i = 0; i < NUM_MIDI_DEVICES && pdev == NULL; i++)
     {
-        if (strcmp(sys_dev_name, _input_devices[i].sys_dev_name) == 0)
+        if (strcmp(sys_dev_name, _devices[i].sys_dev_name) == 0)
         {
-            pdev = _input_devices + i;
-            break; // done
-        }
-        else if (strcmp(sys_dev_name, _output_devices[i].sys_dev_name) == 0)
-        {
-            pdev = _output_devices + i;
+            pdev = _devices + i;
             break; // done
         }
     }
@@ -292,10 +252,21 @@ int devmgr_OpenMidi(midi_device_t* pdev)
         // Look through devices list for this device.
         for (int i = 0; i < NUM_MIDI_DEVICES; i++)
         {
-            if (pdev == _input_devices + i)
+            if (pdev == _devices + i && pdev->handle == INACTIVE_DEV) // Open it if not already.
             {
-                // Open it if not already.
-                if (pdev->handle == INACTIVE_DEV)
+                if (i >= NUM_MIDI_DEVICES / 2) // output
+                {
+                    // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midioutopen
+                    HMIDIOUT hmidi_out;
+                    mmres = midiOutOpen(&hmidi_out, (i - NUM_MIDI_DEVICES / 2), 0, 0, 0);
+                    if (mmres == MMSYSERR_NOERROR)
+                    {
+                        // Save the device info.
+                        pdev->handle = hmidi_out;
+                        stat = NEB_OK;
+                    }
+                }
+                else // input
                 {
                     HMIDIIN hmidi_in;
                     // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midiinopen
@@ -312,25 +283,6 @@ int devmgr_OpenMidi(midi_device_t* pdev)
                         stat = NEB_OK;
                     }
                 }
-                // else ignore.
-                break; // done
-            }
-            else if (pdev == _output_devices + i)
-            {
-                // Open it if not already.
-                if (pdev->handle == INACTIVE_DEV)
-                {
-                    // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midioutopen
-                    HMIDIOUT hmidi_out;
-                    mmres = midiOutOpen(&hmidi_out, i, 0, 0, 0);
-                    if (mmres == MMSYSERR_NOERROR)
-                    {
-                        // Save the device info.
-                        pdev->handle = hmidi_out;
-                        stat = NEB_OK;
-                    }
-                }
-                break; // done
             }
         }
     }
@@ -345,25 +297,10 @@ void devmgr_Dump()
     // Inputs.
     for (int i = 0; i < NUM_MIDI_DEVICES; i++)
     {
-        midi_device_t* pdev = _input_devices + i;
+        midi_device_t* pdev = _devices + i;
+        const char* dir = i >= NUM_MIDI_DEVICES / 2 ? "Output" : "Input";
 
-        printf("Midi Input %d:  name:%s handle:%p channels: ", i, pdev->sys_dev_name, pdev->handle);
-        for (int c = 0; c < NUM_MIDI_CHANNELS; c++)
-        {
-            if (pdev->channels[c])
-            {
-                printf("%2x ", c);
-            }
-        }
-        printf("\n");
-    }
-
-    // Outputs.
-    for (int i = 0; i < NUM_MIDI_DEVICES; i++)
-    {
-        midi_device_t* pdev = _output_devices + i;
-
-        printf("Midi Output %d: name:%s handle:%p channels: ", i, pdev->sys_dev_name, pdev->handle);
+        printf("Midi %s %d:  name:%s handle:%p channels: ", dir, i, pdev->sys_dev_name, pdev->handle);
         for (int c = 0; c < NUM_MIDI_CHANNELS; c++)
         {
             if (pdev->channels[c])

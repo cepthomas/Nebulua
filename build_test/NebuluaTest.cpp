@@ -17,7 +17,7 @@ int main()
 
     // TODO2 tests for exec, interopwork??   
 
-//    whichSuites.emplace_back("NEBCOM");
+    whichSuites.emplace_back("NEBCOM");
     whichSuites.emplace_back("DEVMGR");
 
     // Init system before running tests.

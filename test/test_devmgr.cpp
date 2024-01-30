@@ -41,6 +41,9 @@ UT_SUITE(DEVMGR_MAIN, "Test device manager.")
     // devmgr_Dump();
 
     ///// Inputs.
+    pindev = devmgr_GetDeviceFromName("invalid");
+    UT_EQUAL(pindev, INVALID_DEV);
+
     pindev = devmgr_GetDeviceFromName(_my_midi_in1);
     UT_NOT_NULL(pindev);
 
@@ -67,26 +70,32 @@ UT_SUITE(DEVMGR_MAIN, "Test device manager.")
 
 
     ///// Outputs.
+    poutdev = devmgr_GetDeviceFromName("invalid");
+    UT_EQUAL(poutdev, INVALID_DEV);
+
     poutdev = devmgr_GetDeviceFromName(_my_midi_out1);
-    UT_GREATER(poutdev, INACTIVE_DEV);
+    UT_NOT_NULL(poutdev);
 
     stat = devmgr_OpenMidi(poutdev);
     UT_EQUAL(stat, NEB_OK);
 
+    poutdev = devmgr_GetDeviceFromName(_my_midi_out1);
+    UT_GREATER(poutdev, INACTIVE_DEV);
+
     chan_hnd = devmgr_RegisterChannel(poutdev, 6);
-    UT_EQUAL(chan_hnd, 6);
+    UT_EQUAL(chan_hnd, 0x0806);
 
     chan_hnd = devmgr_GetChannelHandle(poutdev, 999);
     UT_EQUAL(chan_hnd, 0);
 
     chan_hnd = devmgr_GetChannelHandle(poutdev, 6);
-    UT_EQUAL(chan_hnd, 0X0006);//X 0
+    UT_EQUAL(chan_hnd, 0x0806);
 
     poutdev = devmgr_GetDeviceFromChannelHandle(999);
     UT_EQUAL(poutdev, NULL_PTR);
 
     ///// Done.
-    // devmgr_Dump();
+    //devmgr_Dump();
 
     stat = devmgr_Destroy();
     UT_EQUAL(stat, NEB_OK);
