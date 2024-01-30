@@ -63,7 +63,11 @@ const char* nebcommon_FormatMidiStatus(int mstat)
 const char* nebcommon_FormatBarTime(int subbeats)
 {
     static char buff[BUFF_LEN];
-    snprintf(buff, BUFF_LEN, "%d.%d.%d", BAR(subbeats), BEAT(subbeats), SUBBEAT(subbeats));
+    int bar = BAR(subbeats);
+    int beat = BEAT(subbeats);
+    int subbeat = SUBBEAT(subbeats);
+    snprintf(buff, BUFF_LEN, "%d.%d.%d", bar, beat, subbeat);
+
     return buff;
 }
 
@@ -98,7 +102,7 @@ int nebcommon_ParseBarTime(const char* sbt)
     tok = strtok(NULL, ".");
     if (tok != NULL)
     {
-        valid = nebcommon_ParseInt(tok, &v, 0, SUBBEATS_PER_BAR-1);
+        valid = nebcommon_ParseInt(tok, &v, 0, SUBBEATS_PER_BEAT-1);
         if (!valid) goto nogood;
         subbeats += v;
     }

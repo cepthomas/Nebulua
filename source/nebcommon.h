@@ -21,32 +21,34 @@
 #define NEB_ERR_MIDI            15
 
 #define UNUSED(x)   ((void)(x))
+#define NULL_PTR    ((void*)NULL)
+
 
 //----------------------- Timing -----------------------------//
 
 /// Only 4/4 time supported.
 #define BEATS_PER_BAR 4
 
-/// Internal/app resolution aka DeltaTicksPerQuarterNote or subbeats per beat.
-#define INTERNAL_PPQ 32
+/// Internal/app resolution aka DeltaTicksPerQuarterNote. was 32?
+#define INTERNAL_PPQ 8
 
 /// Convenience.
 #define SUBBEATS_PER_BEAT INTERNAL_PPQ
 
 /// Convenience.
-#define SUBBEATS_PER_BAR SUBBEATS_PER_BEAT * BEATS_PER_BAR
+#define SUBBEATS_PER_BAR (SUBBEATS_PER_BEAT * BEATS_PER_BAR)
 
 /// Total.
-#define TOTAL_BEATS(subbeats) subbeats / SUBBEATS_PER_BEAT
+#define TOTAL_BEATS(subbeats) (subbeats / SUBBEATS_PER_BEAT)
 
 /// The bar number.
-#define BAR(subbeat) subbeat / SUBBEATS_PER_BAR
+#define BAR(subbeats) (subbeats / SUBBEATS_PER_BAR)
 
 /// The beat number in the bar.
-#define BEAT(subbeat) subbeat / SUBBEATS_PER_BEAT % BEATS_PER_BAR
+#define BEAT(subbeats) (subbeats / SUBBEATS_PER_BEAT % BEATS_PER_BAR)
 
 /// The subbeat in the beat.
-#define SUBBEAT(subbeat) subbeat % SUBBEATS_PER_BEAT
+#define SUBBEAT(subbeats) (subbeats % SUBBEATS_PER_BEAT)
 
 // /// Calculate period for tempo.
 // /// @param[in] tempo

@@ -26,7 +26,7 @@ static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWO
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(DEVMGR_MAIN, "Test device manager. TODO1")
+UT_SUITE(DEVMGR_MAIN, "Test device manager.")
 {
     int stat = 0;
     midi_device_t* pindev;
@@ -48,33 +48,42 @@ UT_SUITE(DEVMGR_MAIN, "Test device manager. TODO1")
     UT_EQUAL(stat, NEB_OK);
 
     chan_hnd = devmgr_GetChannelHandle(pindev, 1);
-    UT_EQUAL(chan_hnd, 1);//0
+    UT_EQUAL(chan_hnd, 0);
+
+    chan_hnd = devmgr_RegisterChannel(pindev, 1);
+    UT_EQUAL(chan_hnd, 1);
+
+    chan_hnd = devmgr_GetChannelHandle(pindev, 1);
+    UT_EQUAL(chan_hnd, 1);
 
     ptemp = devmgr_GetDeviceFromMidiHandle((HMIDIIN)999); // invalid
     UT_NULL(ptemp);
 
-    ptemp = devmgr_GetDeviceFromMidiHandle((HMIDIIN)1); // valid
-    UT_EQUAL(ptemp, pindev);//Xxxxxx
+    ptemp = devmgr_GetDeviceFromMidiHandle((HMIDIIN)pindev->handle); // valid
+    UT_EQUAL(ptemp, pindev);
 
-    chan_num = devmgr_GetChannelNumber(0X1234);
-    UT_EQUAL(chan_num, 0X34);//52
+    chan_num = devmgr_GetChannelNumber(0X1205);
+    UT_EQUAL(chan_num, 5);
 
 
     ///// Outputs.
     poutdev = devmgr_GetDeviceFromName(_my_midi_out1);
-    UT_GREATER(poutdev, INACTIVE_DEV);//0x7ff7627cf1a0
+    UT_GREATER(poutdev, INACTIVE_DEV);
 
     stat = devmgr_OpenMidi(poutdev);
     UT_EQUAL(stat, NEB_OK);
 
-    chan_hnd = devmgr_GetChannelHandle(poutdev, 999);
-    UT_EQUAL(chan_hnd, 999);//0
+    chan_hnd = devmgr_RegisterChannel(poutdev, 6);
+    UT_EQUAL(chan_hnd, 6);
 
-    chan_num = devmgr_GetChannelNumber(chan_hnd);
-    UT_EQUAL(chan_num, 999);//0
+    chan_hnd = devmgr_GetChannelHandle(poutdev, 999);
+    UT_EQUAL(chan_hnd, 0);
+
+    chan_hnd = devmgr_GetChannelHandle(poutdev, 6);
+    UT_EQUAL(chan_hnd, 0X0006);//X 0
 
     poutdev = devmgr_GetDeviceFromChannelHandle(999);
-    UT_EQUAL(poutdev, (void*)NULL);
+    UT_EQUAL(poutdev, NULL_PTR);
 
     ///// Done.
     // devmgr_Dump();

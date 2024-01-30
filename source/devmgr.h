@@ -44,28 +44,34 @@ int devmgr_Destroy();
 /// @return Status.
 int devmgr_OpenMidi(midi_device_t* pdev);
 
-/// Request for device by name.
+/// Get device by name.
 /// @param[in] sys_dev_name Device name.
 /// @return midi_device_t The device or NULL if invalid.
 midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name);
 
-/// Request for device using win32 midi handle. Input only.
+/// Get device using win32 midi handle. Input only.
 /// @param[in] hMidiIn System midi handle.
 /// @return midi_device_t The device or NULL if invalid.
 midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn);
 
-/// Request for device for channel handle. Output only.
+/// Get device for channel handle. Output devices only.
 /// @param[in] chan_hnd Channel handle.
 /// @return midi_device_t The device or NULL if invalid.
 midi_device_t* devmgr_GetDeviceFromChannelHandle(int chan_hnd);
 
-/// Request for channel handle for the device.
+/// Register channel for the device.
 /// @param[in] pdev Device.
-/// @param[in] chan_num Chanel number 1-16.
+/// @param[in] chan_num Channel number 1-16.
+/// @return int Channel handle or 0 if invalid.
+int devmgr_RegisterChannel(midi_device_t* pdev, int chan_num);
+
+/// Get channel handle for the device.
+/// @param[in] pdev Device.
+/// @param[in] chan_num Channel number 1-16.
 /// @return int Channel handle or 0 if invalid.
 int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num);
 
-/// Request for channel number for channel handle.
+/// Get channel number for channel handle.
 /// @param[in] chan_hnd Channel handle.
 /// @return int Channel number 1-16 or 0 if invalid.
 int devmgr_GetChannelNumber(int chan_hnd);

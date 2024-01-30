@@ -12,7 +12,7 @@ extern "C"
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(NEBCOM_MAIN, "Test common. TODO1")
+UT_SUITE(NEBCOM_MAIN, "Test nebulua common.")
 {
     // double dper = nebcommon_InternalPeriod(178);
     // UT_EQUAL(dper, 1.1111);
@@ -38,12 +38,11 @@ UT_SUITE(NEBCOM_MAIN, "Test common. TODO1")
     bt = nebcommon_ParseBarTime("49.55.8");
     UT_EQUAL(bt, -1);
     bt = nebcommon_ParseBarTime("111.3.88");
-    UT_EQUAL(bt, -1);//X 14392
+    UT_EQUAL(bt, -1);
     bt = nebcommon_ParseBarTime("invalid");
     UT_EQUAL(bt, -1);
-
     const char* sbt = nebcommon_FormatBarTime(12345);
-    UT_STR_EQUAL(sbt, "96.1.25");//X 1540.1.25
+    UT_STR_EQUAL(sbt, "385.3.1");
 
     double dval;
     int ival;

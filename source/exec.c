@@ -30,7 +30,7 @@ typedef struct cli_command_desc
 } cli_command_desc_t;
 
 // Cli command handler.
-typedef int (* const cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t* args);
+typedef int (* cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t* args);
 
 // Map a cli command.
 typedef struct cli_command
@@ -521,7 +521,7 @@ int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args)
 
     const cli_command_t* pcmditer = _commands;
     const cli_command_desc_t* pdesciter = &(pcmditer->desc);
-    while (_commands->handler != (void*)NULL)
+    while (_commands->handler != NULL_PTR)
     {
         cli_WriteLine("%s|%s: %s", pdesciter->long_name, pdesciter->short_name, pdesciter->desc);
         if (strlen(pdesciter->args) > 0)

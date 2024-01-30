@@ -152,6 +152,32 @@ int devmgr_Destroy()
     return stat;
 }
 
+//--------------------------------------------------------//
+int devmgr_RegisterChannel(midi_device_t* pdev, int chan_num)
+{
+    int chan_hnd = 0; // default = invalid
+
+    if (pdev != NULL &&
+        chan_num >= 1 &&
+        chan_num <= NUM_MIDI_CHANNELS)
+    {
+        for (int i = 0; i < NUM_MIDI_DEVICES && chan_hnd == 0; i++)
+        {
+            if (_input_devices[i].handle == pdev->handle)
+            {
+                _input_devices[i].channels[chan_num - 1] = true;
+                chan_hnd = MAKE_HANDLE(i, chan_num);
+            }
+            else if (_output_devices[i].handle == pdev->handle)
+            {
+                _output_devices[i].channels[chan_num - 1] = true;
+                chan_hnd = MAKE_HANDLE(i, chan_num);
+            }
+        }
+    }
+
+    return chan_hnd;
+}
 
 //--------------------------------------------------------//
 int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
@@ -166,10 +192,8 @@ int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num)
     {
         for (int i = 0; i < NUM_MIDI_DEVICES && chan_hnd == 0; i++)
         {
-            if ((_input_devices[i].handle == pdev->handle &&
-                _input_devices[i].channels[chan_num - 1]) ||
-                (_output_devices[i].handle == pdev->handle &&
-                _output_devices[i].channels[chan_num - 1]))
+            if ((_input_devices[i].handle == pdev->handle && _input_devices[i].channels[chan_num - 1]) ||
+                (_output_devices[i].handle == pdev->handle && _output_devices[i].channels[chan_num - 1]))
             {
                 chan_hnd = MAKE_HANDLE(i, chan_num);
             }

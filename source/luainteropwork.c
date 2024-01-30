@@ -88,9 +88,12 @@ int luainteropwork_CreateOutputChannel(lua_State* l, const char* sys_dev_name, i
     VALI(chan_hnd > 0, chan_num);
 
     // Send patch now.
-    int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
-    int mstat = midiOutShortMsg(pdev->handle, short_msg);
-    VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+    if (pdev != NULL_PTR)
+    {
+        int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
+        int mstat = midiOutShortMsg(pdev->handle, short_msg);
+        VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+    }
 
     return chan_hnd;
 }
@@ -110,11 +113,14 @@ int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double vol
     int chan_num = devmgr_GetChannelNumber(chan_hnd);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
 
-    int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
-    int velocity = (int)(volume * MIDI_VAL_MAX);
-    int short_msg = (chan_num - 1) + cmd + ((byte)note_num << 8) + ((byte)velocity << 16);
-    int mstat = midiOutShortMsg(pdev->handle, short_msg);
-    VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+    if (pdev != NULL_PTR)
+    {
+        int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
+        int velocity = (int)(volume * MIDI_VAL_MAX);
+        int short_msg = (chan_num - 1) + cmd + ((byte)note_num << 8) + ((byte)velocity << 16);
+        int mstat = midiOutShortMsg(pdev->handle, short_msg);
+        VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+    }
 
     return 0;
 }
@@ -133,10 +139,13 @@ int luainteropwork_SendController(lua_State* l, int chan_hnd, int ctlr, int valu
     int chan_num = devmgr_GetChannelNumber(chan_hnd);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_hnd);
 
-    int cmd = MIDI_CONTROL_CHANGE;
-    int short_msg = (chan_num - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);
-    int mstat = midiOutShortMsg(pdev->handle, short_msg);
-    VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+    if (pdev != NULL_PTR)
+    {
+        int cmd = MIDI_CONTROL_CHANGE;
+        int short_msg = (chan_num - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);
+        int mstat = midiOutShortMsg(pdev->handle, short_msg);
+        VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+    }
 
     return 0;
 }
