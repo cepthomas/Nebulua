@@ -1,5 +1,4 @@
 # Build the nebulua app or its unit tests.
-# TODO2 Need a build/package/release.
 
 cmake_minimum_required(VERSION 3.5)
 

@@ -5,7 +5,15 @@ win only, not unicode.
 
 An experimental version of Nebulator using Lua as the script flavor.
 
-field types:
+## timing
+DeltaTicksPerQuarterNote aka subbeats per beat = 8
+Gives 32nd note resolution.
+Fast timer resolution set to 1 msec.
+int bpm = 40 -> 188 msec period.
+int bpm = 240 -> 31 msec period.
+
+
+## field types:
 S = string
 N = number
 I = integer
@@ -18,7 +26,7 @@ X = bar time(Number?)
 E = expression?
 
 
----- sequences
+## sequences
 -- Graphical format:
 -- "|7-------|" is one beat with 8 subbeats
 -- note velocity is 1-9 (map) or - which means sustained
@@ -29,7 +37,7 @@ E = expression?
 
 
 
-# c_emb_lua xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# take some of this from c_emb_lua
 A minimal example of a C embedded executable with lua script processor.
 It demonstrates:
 - Coroutines - one state for the C side and one for the script side.
@@ -38,12 +46,14 @@ It demonstrates:
 - Simulated embedded system with a hardware level, CLI for control, and exec loop running everything.
 - Rudimentary error handling model - more required.
 
-# Build
+
+## Build
 - Pure C99 which should compile anywhere, including small embedded systems - basically anywhere you can compile lua.
 - A VS Code workspace using mingw and CMake is supplied. Your PATH needs to include mingw.
 - Run build.cmd to make the executables.
 
-# Files
+
+## Files
 X- [Conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/CONVENTIONS.md).
 X- [Modular model](https://github.com/cepthomas/c_modular).
 - `c` folder:
@@ -58,6 +68,7 @@ X- [Modular model](https://github.com/cepthomas/c_modular).
     - utils.lua - Used by demoapp.lua.
 - `lua-5.3.5` folder:
     - lua source code for this application. Stock except where marked by `C_EMB_LUA`.
+
 
 # Licenses
 [This repo](https://github.com/cepthomas/c-emb-lua/blob/master/LICENSE)
