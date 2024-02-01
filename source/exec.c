@@ -39,6 +39,11 @@ typedef struct cli_command
     const cli_command_desc_t desc;
 } cli_command_t;
 
+// Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
+static CRITICAL_SECTION _critical_section;
+#define ENTER_CRITICAL_SECTION EnterCriticalSection(&_critical_section)
+#define EXIT_CRITICAL_SECTION  LeaveCriticalSection(&_critical_section)
+
 
 //----------------------- Vars - app ---------------------------//
 
@@ -60,14 +65,7 @@ static bool _mon_input = false;
 // Monitor midi output.
 static bool _mon_output = false;
 
-//// Forward reference.
-//static cli_command_t _commands[];
-
-// Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
-static CRITICAL_SECTION _critical_section;
-#define ENTER_CRITICAL_SECTION EnterCriticalSection(&_critical_section)
-#define EXIT_CRITICAL_SECTION  LeaveCriticalSection(&_critical_section)
-
+// Cli commands.
 int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args);
 int _ExitCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
 int _RunCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
@@ -77,8 +75,6 @@ int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
 int _PositionCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
 int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
 
-
-//--------------------------------------------------------//
 // Map commands to handlers.
 static cli_command_t _commands[] =
 {
@@ -134,7 +130,7 @@ int exec_Main(int argc, char* argv[])
     FILE* fp = fopen("nebulua_log.txt", "a");
     cbot_stat = logger_Init(fp);
     _EvalStatus(cbot_stat, "Failed to init logger");
-    logger_SetFilters(LVL_DEBUG, CAT_ALL);
+    logger_SetFilters(LVL_DEBUG);
 
     cbot_stat = cli_OpenStdio();
     _EvalStatus(cbot_stat, "Failed to open cli");

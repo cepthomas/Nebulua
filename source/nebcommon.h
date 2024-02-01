@@ -21,7 +21,6 @@
 #define NEB_ERR_MIDI            15
 
 #define UNUSED(x)   ((void)(x))
-#define NULL_PTR    ((void*)NULL)
 
 
 //----------------------- Timing -----------------------------//

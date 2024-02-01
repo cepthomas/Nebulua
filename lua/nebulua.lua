@@ -19,13 +19,14 @@
 local M = {}
 
 
---- Log levels - must match those in the host C code.
-M.LOG_LEVEL = { NONE = 0, DEBUG = 1, INFO = 2, ERROR = 3 }
+--- TODO1 Log levels - must match those in the host C code.
+M.LOG_LEVEL = { NONE = 0, TRACE = 1, DEBUG = 2, INFO = 3, ERROR = 4 }
 
 --- Convenience functions.
 function M.error(msg) api.log(M.LOG_LEVEL.ERROR, msg) end
 function M.info(msg)  api.log(M.LOG_LEVEL.INFO, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DEBUG, msg) end
+function M.trace(msg) api.log(M.LOG_LEVEL.TRACE, msg) end
 
 
 -- index is sequence name, value is table of subbeats:steps.
