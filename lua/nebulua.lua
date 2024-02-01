@@ -19,7 +19,7 @@
 local M = {}
 
 
---- TODO1 Log levels - must match those in the host C code.
+--- Log levels - must match those in the host C code.
 M.LOG_LEVEL = { NONE = 0, TRACE = 1, DEBUG = 2, INFO = 3, ERROR = 4 }
 
 --- Convenience functions.

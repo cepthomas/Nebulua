@@ -9,7 +9,6 @@
 #include "logger.h"
 #include "cli.h"
 #include "ftimer.h"
-#include "timeanalyzer.h"
 // application
 #include "nebcommon.h"
 #include "midi.h"
@@ -152,10 +151,6 @@ int exec_Main(int argc, char* argv[])
 
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
-
-    // Diagnostic.
-    cbot_stat = timeanalyzer_Init(50); // TODO1 need to measure
-    _EvalStatus(cbot_stat, "Failed to init timeanalyzer");
 
     // Tempo timer and interrupt.
     cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.

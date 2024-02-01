@@ -8,6 +8,7 @@
 // cbot
 #include "logger.h"
 #include "ftimer.h"
+#include "cbot.h"
 // application
 #include "midi.h"
 #include "nebcommon.h"

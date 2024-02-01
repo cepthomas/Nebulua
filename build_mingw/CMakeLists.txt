@@ -59,7 +59,6 @@ else()
         ${CBOT}/source/private/cli.c
         ${CBOT}/source/private/ftimer.c
         ${CBOT}/source/private/stopwatch.c
-        ${CBOT}/source/private/timeanalyzer.c
         )
 
 endif()
