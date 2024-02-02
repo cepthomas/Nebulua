@@ -24,6 +24,7 @@ typedef struct cli_command_desc
 {
     const char* long_name;
     const char* short_name;
+    const char* immediate_key;
     const char* desc;
     const char* args;
 } cli_command_desc_t;
@@ -35,7 +36,7 @@ typedef int (* cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t
 typedef struct cli_command
 {
     const cli_command_handler_t handler;
-    const cli_command_desc_t desc;
+    const cli_command_desc_t cmd;
 } cli_command_t;
 
 // Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
@@ -65,27 +66,27 @@ static bool _mon_input = false;
 static bool _mon_output = false;
 
 // Cli commands.
-int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args);
-int _ExitCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
-int _RunCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
-int _TempoCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
-int _MonCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
-int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
-int _PositionCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
-int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args);
+int _Usage(const cli_command_desc_t* pcmd, cli_args_t* args);
+int _ExitCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
+int _RunCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
+int _TempoCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
+int _MonCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
+int _KillCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
+int _PositionCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
+int _ReloadCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
 
 // Map commands to handlers.
 static cli_command_t _commands[] =
 {
-    { _Usage,        { "help",       "?",   "explain it all",                         "" } },
-    { _ExitCmd,      { "exit",       "x",   "exit the application",                   "" } },
-    { _RunCmd,       { "run",        "r",   "toggle running the script",              "" } },
-    { _TempoCmd,     { "tempo",      "t",   "get or set the tempo",                   "(bpm): tempo 40-240$[color]: blue" } },
-    { _MonCmd,       { "monitor",    "m",   "toggle monitor midi traffic",            "(in|out|off): action" } },
-    { _KillCmd,      { "kill",       "k",   "stop all midi",                          "" } },
-    { _PositionCmd,  { "position",   "p",   "set position to where or tell current",  "(where): beat" } },
-    { _ReloadCmd,    { "reload",     "l",   "re/load current script",                 "" } },
-    { NULL,          { NULL, NULL, NULL, NULL } }
+    { _Usage,        { "help",       "?",   "",   "explain it all",                         "" } },
+    { _ExitCmd,      { "exit",       "x",   "",   "exit the application",                   "" } },
+    { _RunCmd,       { "run",        "r",   " ",  "toggle running the script",              "" } },
+    { _TempoCmd,     { "tempo",      "t",   "",   "get or set the tempo",                   "(bpm): tempo 40-240$[color]: blue" } },
+    { _MonCmd,       { "monitor",    "m",   "",   "toggle monitor midi traffic",            "(in|out|off): action" } },
+    { _KillCmd,      { "kill",       "k",   "",   "stop all midi",                          "" } },
+    { _PositionCmd,  { "position",   "p",   "",   "set position to where or tell current",  "(where): beat" } },
+    { _ReloadCmd,    { "reload",     "l",   "",   "re/load current script",                 "" } },
+    { NULL,          { NULL, NULL, NULL, NULL, NULL } }
 };
 
 //----------------------- Vars - script ------------------------//
@@ -134,7 +135,7 @@ int exec_Main(int argc, char* argv[])
     cbot_stat = cli_OpenStdio();
     _EvalStatus(cbot_stat, "Failed to open cli");
 
-    // Initialize the critical section. It is used to synchronize access to lua context.
+    // Initialize the critical section. It is used to synchronize access to the lua context _l.
     InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
 
     ENTER_CRITICAL_SECTION;
@@ -353,7 +354,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 
 
 //--------------------------------------------------------//
-int _TempoCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _TempoCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -383,7 +384,7 @@ int _TempoCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _RunCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _RunCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -398,7 +399,7 @@ int _RunCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _ExitCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _ExitCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -413,7 +414,7 @@ int _ExitCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _MonCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _MonCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -446,7 +447,7 @@ int _MonCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _KillCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -462,7 +463,7 @@ int _KillCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _PositionCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _PositionCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -490,7 +491,7 @@ int _PositionCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _ReloadCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -506,20 +507,20 @@ int _ReloadCmd(const cli_command_desc_t* pdesc, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _Usage(const cli_command_desc_t* pdesc, cli_args_t* args)
+int _Usage(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_OK;
 
     const cli_command_t* pcmditer = _commands;
-    const cli_command_desc_t* pdesciter = &(pcmditer->desc);
+    const cli_command_desc_t* pcmditer = &(pcmditer->desc);
     while (_commands->handler != NULL_PTR)
     {
-        cli_WriteLine("%s|%s: %s", pdesciter->long_name, pdesciter->short_name, pdesciter->desc);
-        if (strlen(pdesciter->args) > 0)
+        cli_WriteLine("%s|%s: %s", pcmditer->long_name, pcmditer->short_name, pcmditer->desc);
+        if (strlen(pcmditer->args) > 0)
         {
             // Maybe multiline args. Make writable copy and tokenize it.
             char cp[128];
-            strncpy(cp, pdesciter->args, sizeof(cp));
+            strncpy(cp, pcmditer->args, sizeof(cp));
             char* tok = strtok(cp, "$");
             while (tok != NULL)
             {

@@ -7,6 +7,7 @@
 extern "C"
 {
 #include "nebcommon.h"
+#include "cbot.h"
 #include "devmgr.h"
 #include "logger.h"
 }

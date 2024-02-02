@@ -35,6 +35,21 @@ function M.do_step(send_stuff, bar, beat, subbeat)
 -- @return type desc
 function M.to_subbeats(dbeat)
 
+
+M.UT_CLOSE(val1, val2, tol)
+M.UT_EQUAL(val1, val2)
+M.UT_ERROR(info)
+M.UT_FALSE(expr)
+M.UT_GREATER(val1, val2)
+M.UT_GREATER_OR_EQUAL(val1, val2)
+M.UT_INFO(info)
+M.UT_LESS(val1, val2)
+M.UT_LESS_OR_EQUAL(val1, val2)
+M.UT_NIL(expr)
+M.UT_NOT_EQUAL(val1, val2)
+M.UT_NOT_NIL(expr)
+M.UT_TRUE(expr)
+
 ]]
 
 

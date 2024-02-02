@@ -47,7 +47,7 @@ const char* nebcommon_FormatMidiStatus(int mstat)
     buff[0] = 0;
     if (mstat != MMSYSERR_NOERROR)
     {
-        // Get the lib supplied text.
+        // Get the lib supplied text from mmeapi.h.
         midiInGetErrorText(mstat, buff, BUFF_LEN);
         if (strlen(buff) == 0)
         {

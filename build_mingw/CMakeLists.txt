@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 3.5)
 
 project(nebulua)
 
-# This is a Windows 64 bit build. PATH must include \your\path\mingw64\bin.
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "Project must be built for 64 bit")
 endif()
@@ -23,7 +22,7 @@ if(DO_TEST)
 
     include_directories(
         ../source
-        ../test
+        ../test_code
         ${LUA}/include
         ${CBOT}/source
         ${CBOT}/pnut
@@ -33,8 +32,8 @@ if(DO_TEST)
         main.cpp
         ../source/nebcommon.c
         ../source/devmgr.c
-        ../test/test_nebcommon.cpp
-        ../test/test_devmgr.cpp
+        ../test_code/test_nebcommon.cpp
+        ../test_code/test_devmgr.cpp
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source/private/logger.c
         )
