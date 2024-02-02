@@ -25,7 +25,7 @@ typedef struct cli_command_desc
     const char* long_name;
     const char* short_name;
     const char* immediate_key;
-    const char* desc;
+    const char* info;
     const char* args;
 } cli_command_desc_t;
 
@@ -36,7 +36,7 @@ typedef int (* cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t
 typedef struct cli_command
 {
     const cli_command_handler_t handler;
-    const cli_command_desc_t cmd;
+    const cli_command_desc_t desc;
 } cli_command_t;
 
 // Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
@@ -511,16 +511,16 @@ int _Usage(const cli_command_desc_t* pcmd, cli_args_t* args)
 {
     int stat = NEB_OK;
 
-    const cli_command_t* pcmditer = _commands;
-    const cli_command_desc_t* pcmditer = &(pcmditer->desc);
+    const cli_command_t* cmditer = _commands;
     while (_commands->handler != NULL_PTR)
     {
-        cli_WriteLine("%s|%s: %s", pcmditer->long_name, pcmditer->short_name, pcmditer->desc);
-        if (strlen(pcmditer->args) > 0)
+        const cli_command_desc_t* pdesc = &(cmditer->desc);
+        cli_WriteLine("%s|%s: %s", pdesc->long_name, pdesc->short_name, pdesc->info);
+        if (strlen(pdesc->args) > 0)
         {
             // Maybe multiline args. Make writable copy and tokenize it.
             char cp[128];
-            strncpy(cp, pcmditer->args, sizeof(cp));
+            strncpy(cp, pdesc->args, sizeof(cp));
             char* tok = strtok(cp, "$");
             while (tok != NULL)
             {
@@ -528,7 +528,7 @@ int _Usage(const cli_command_desc_t* pcmd, cli_args_t* args)
                 tok = strtok(NULL, "$");
             }
         }
-        pcmditer++;
+        cmditer++;
     }
 
     return stat;
