@@ -19,27 +19,9 @@
 
 //----------------------- Definitions -----------------------//
 
-// Cli command descriptor.
-typedef struct cli_command_desc
-{
-    const char* long_name;
-    const char* short_name;
-    const char* immediate_key;
-    const char* info;
-    const char* args;
-} cli_command_desc_t;
-
-// Cli command handler.
-typedef int (* cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t* args);
-
-// Map a cli command.
-typedef struct cli_command
-{
-    const cli_command_handler_t handler;
-    const cli_command_desc_t desc;
-} cli_command_t;
 
 // Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
+// TODO3 Performance? https://stackoverflow.com/questions/853316/is-critical-section-always-faster
 static CRITICAL_SECTION _critical_section;
 #define ENTER_CRITICAL_SECTION EnterCriticalSection(&_critical_section)
 #define EXIT_CRITICAL_SECTION  LeaveCriticalSection(&_critical_section)
@@ -65,29 +47,8 @@ static bool _mon_input = false;
 // Monitor midi output.
 static bool _mon_output = false;
 
-// Cli commands.
-int _Usage(const cli_command_desc_t* pcmd, cli_args_t* args);
-int _ExitCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
-int _RunCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
-int _TempoCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
-int _MonCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
-int _KillCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
-int _PositionCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
-int _ReloadCmd(const cli_command_desc_t* pcmd, cli_args_t* args);
-
-// Map commands to handlers.
-static cli_command_t _commands[] =
-{
-    { _Usage,        { "help",       "?",   "",   "explain it all",                         "" } },
-    { _ExitCmd,      { "exit",       "x",   "",   "exit the application",                   "" } },
-    { _RunCmd,       { "run",        "r",   " ",  "toggle running the script",              "" } },
-    { _TempoCmd,     { "tempo",      "t",   "",   "get or set the tempo",                   "(bpm): tempo 40-240$[color]: blue" } },
-    { _MonCmd,       { "monitor",    "m",   "",   "toggle monitor midi traffic",            "(in|out|off): action" } },
-    { _KillCmd,      { "kill",       "k",   "",   "stop all midi",                          "" } },
-    { _PositionCmd,  { "position",   "p",   "",   "set position to where or tell current",  "(where): beat" } },
-    { _ReloadCmd,    { "reload",     "l",   "",   "re/load current script",                 "" } },
-    { NULL,          { NULL, NULL, NULL, NULL, NULL } }
-};
+// Cli commands forward reference.
+static cli_command_t _commands[];
 
 //----------------------- Vars - script ------------------------//
 
@@ -132,7 +93,7 @@ int exec_Main(int argc, char* argv[])
     _EvalStatus(cbot_stat, "Failed to init logger");
     logger_SetFilters(LVL_DEBUG);
 
-    cbot_stat = cli_OpenStdio();
+    cbot_stat = cli_Open(IF_STDIO, _commands);
     _EvalStatus(cbot_stat, "Failed to open cli");
 
     // Initialize the critical section. It is used to synchronize access to the lua context _l.
@@ -198,57 +159,17 @@ int exec_Main(int argc, char* argv[])
 int _Run(void)
 {
     int stat = NEB_OK;
-    int cbot_stat = CBOT_ERR_NO_ERR;
-    cli_args_t cli_args;
 
     // Loop forever doing cli requests.
     while (_app_running)
     {
-        cbot_stat = cli_ReadLine(&cli_args);
-        _EvalStatus(cbot_stat, "Failed to cli_ReadLine");
+        // Lock access to lua context.
+        ENTER_CRITICAL_SECTION;
+        int cbot_stat = cli_Pump();
+        _EvalStatus(cbot_stat, "Pump failed");
+        EXIT_CRITICAL_SECTION;
 
-        switch (cbot_stat)
-        {
-        case CBOT_ERR_NO_ERR: // something to do
-            bool valid = false;
-
-            // Process the command and its options.
-            if (cli_args.arg_count > 0)
-            {
-                // Find and execute the command.
-                const cli_command_t* pcmd = _commands;
-                while (pcmd->handler != NULL)
-                {
-                    if (strcmp(pcmd->desc.short_name, cli_args.arg_values[0]) || strcmp(pcmd->desc.long_name, cli_args.arg_values[0]))
-                    {
-                        valid = true;
-                        // Lock access to lua context.
-                        ENTER_CRITICAL_SECTION;
-                        // Execute the command. They handle any errors internally.
-                        stat = (*pcmd->handler)(&(pcmd->desc), &cli_args);
-                        _EvalStatus(stat, "handler failed: %s", pcmd->desc.long_name);
-                        EXIT_CRITICAL_SECTION;
-                        break;
-                    }
-                }
-
-                if (!valid)
-                {
-                    cli_WriteLine("invalid command");
-                }
-            }
-            break;
-
-        case ENODATA: // nothing to do
-            break;
-
-        default: // error
-            cbot_stat = cli_WriteLine(cli_args.arg_values[0]);
-            _EvalStatus(cbot_stat, "cli_WriteLine() error");
-            break;
-        }
-
-        _Sleep(100);
+        _Sleep(100); // pace
     }
 
     return stat;
@@ -507,35 +428,6 @@ int _ReloadCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _Usage(const cli_command_desc_t* pcmd, cli_args_t* args)
-{
-    int stat = NEB_OK;
-
-    const cli_command_t* cmditer = _commands;
-    while (_commands->handler != NULL_PTR)
-    {
-        const cli_command_desc_t* pdesc = &(cmditer->desc);
-        cli_WriteLine("%s|%s: %s", pdesc->long_name, pdesc->short_name, pdesc->info);
-        if (strlen(pdesc->args) > 0)
-        {
-            // Maybe multiline args. Make writable copy and tokenize it.
-            char cp[128];
-            strncpy(cp, pdesc->args, sizeof(cp));
-            char* tok = strtok(cp, "$");
-            while (tok != NULL)
-            {
-                cli_WriteLine("    %s", tok);
-                tok = strtok(NULL, "$");
-            }
-        }
-        cmditer++;
-    }
-
-    return stat;
-}
-
-
-//--------------------------------------------------------//
 void _Sleep(int msec)
 {
 #if defined(_MSC_VER)
@@ -544,7 +436,6 @@ void _Sleep(int msec)
     struct timespec ts = { (int)(msec / 1000), (msec % 1000) * 1000000 };
     nanosleep(&ts, NULL);
 #endif
-
 }
 
 
@@ -568,27 +459,28 @@ bool _EvalStatus(int stat, const char* format, ...)
         switch (stat)
         {
             // generic
-        case 0:                         sstat = "NO_ERR"; break;
+            case 0:                         sstat = "NO_ERR"; break;
             // lua
-        case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
-        case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
-        case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
-        case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
-        case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
-        case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
+            case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
+            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
+            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
+            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
+            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
+            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
             // cbot
-        case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
-        case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
-        case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
-        case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
+            case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
+            case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
+            case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
+            case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
             // app
-        case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
-        case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
-        case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
-        case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
-        case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
-        case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
-        default:                        snprintf(err_buff, sizeof(err_buff) - 1, "ERR_%d", stat); break;
+            case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
+            case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
+            case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
+            case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
+            case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
+            case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
+            // default
+            default:                        snprintf(err_buff, sizeof(err_buff) - 1, "ERR_%d", stat); break;
         }
 
         sstat = (sstat == NULL) ? err_buff : sstat;
@@ -615,3 +507,17 @@ bool _EvalStatus(int stat, const char* format, ...)
     return has_error;
 }
 
+
+//--------------------------------------------------------//
+// Map commands to handlers.
+static cli_command_t _commands[] =
+{
+    { _ExitCmd,      { "exit",       "x",   "",   "exit the application",                   "" } },
+    { _RunCmd,       { "run",        "r",   " ",  "toggle running the script",              "" } },
+    { _TempoCmd,     { "tempo",      "t",   "",   "get or set the tempo",                   "(bpm): tempo 40-240$[color]: blue" } },
+    { _MonCmd,       { "monitor",    "m",   "^m", "toggle monitor midi traffic",            "(in|out|off): action" } },
+    { _KillCmd,      { "kill",       "k",   "",   "stop all midi",                          "" } },
+    { _PositionCmd,  { "position",   "p",   "",   "set position to where or tell current",  "(where): beat" } },
+    { _ReloadCmd,    { "reload",     "l",   "",   "re/load current script",                 "" } },
+    { NULL,          { NULL, NULL, NULL, NULL, NULL } }
+};
