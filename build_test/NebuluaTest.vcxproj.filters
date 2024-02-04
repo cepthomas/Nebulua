@@ -39,9 +39,9 @@
     <ClCompile Include="..\source\nebcommon.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\cli.c">
+    <!-- <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\cli.c">
       <Filter>cbot</Filter>
-    </ClCompile>
+    </ClCompile> -->
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\ftimer.c">
       <Filter>cbot</Filter>
     </ClCompile>
@@ -116,9 +116,9 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\ftimer.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cli.h">
+    <!-- <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cli.h">
       <Filter>cbot</Filter>
-    </ClInclude>
+    </ClInclude> -->
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cbot.h">
       <Filter>cbot</Filter>
     </ClInclude>

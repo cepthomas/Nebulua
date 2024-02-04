@@ -55,7 +55,7 @@ else()
         ../source/luainteropwork.c
         ../source/luaex.c
         ${CBOT}/source/private/logger.c
-        ${CBOT}/source/private/cli.c
+        # ${CBOT}/source/private/cli.c
         ${CBOT}/source/private/ftimer.c
         ${CBOT}/source/private/stopwatch.c
         )

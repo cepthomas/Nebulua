@@ -131,7 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\cli.c" />
+    <!-- <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\cli.c" /> -->
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\ftimer.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\list.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\logger.c" />
@@ -148,7 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cbot.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cli.h" />
+    <!-- <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cli.h" /> -->
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\diagnostics.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\ftimer.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\list.h" />
