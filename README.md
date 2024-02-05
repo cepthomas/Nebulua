@@ -1,9 +1,12 @@
 
-# Nebulua TODO2 Copy some stuff from Nebulator\README.md
+# Nebulua TODO2 Copy doc from Nebulator\README.md
 
-win only, not unicode.
+- An experimental version of Nebulator using Lua as the script flavor.
+- Windows UTF only.
+- Build with VS or mingw.
 
-An experimental version of Nebulator using Lua as the script flavor.
+- For conventions see [c_modular](https://github.com/cepthomas/c_modular/blob/master/README.md).
+
 
 ## timing
 DeltaTicksPerQuarterNote aka subbeats per beat = 8
@@ -36,41 +39,15 @@ E = expression?
 -- note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
 
 
-
-# take some of this from c_emb_lua
-A minimal example of a C embedded executable with lua script processor.
-It demonstrates:
-- Coroutines - one state for the C side and one for the script side.
-- Calling script functions with args from the C side.
-- Calling C functions with args from the script side.
-- Simulated embedded system with a hardware level, CLI for control, and exec loop running everything.
-- Rudimentary error handling model - more required.
-
-
-## Build
-- Pure C99 which should compile anywhere, including small embedded systems - basically anywhere you can compile lua.
-- A VS Code workspace using mingw and CMake is supplied. Your PATH needs to include mingw.
-- Run build.cmd to make the executables.
-
-
 ## Files
-X- [Conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/CONVENTIONS.md).
-X- [Modular model](https://github.com/cepthomas/c_modular).
-- `c` folder:
-    - main.c - Entry stub calls exec.
+- `source` folder:
     - exec.c/h - Does all the top-level work.
-    - board.c/h - Interface to the (simulated) hardware.
-    - common.c/h - Misc time, strings, ...
-    - luainterop.c/h - Interfaces to call lua functions from C and to call C functions from lua.
-    - luautils.c/h - General purpose tools for probing lua stacks.
+    - etc...
 - `lua` folder:
-    - demoapp.lua - Lua script for a simplistic multithreaded coroutine application. Uses luatoc.
+    - nebulua.lua - Lua script for a simplistic multithreaded coroutine application. Uses luatoc.
     - utils.lua - Used by demoapp.lua.
-- `lua-5.3.5` folder:
-    - lua source code for this application. Stock except where marked by `C_EMB_LUA`.
+- `test_code` folder:
+    - lua source code for this application...
+- `examples` folder:
+    - lua...
 
-
-# Licenses
-[This repo](https://github.com/cepthomas/c-emb-lua/blob/master/LICENSE)
-
-[Lua](https://github.com/cepthomas/c-emb-lua/blob/master/LUA-LICENSE)

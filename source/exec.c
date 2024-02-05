@@ -46,7 +46,7 @@ typedef struct cli_command
     const char* long_name;
     // If you don't.
     const char short_name;
-    // Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.
+    // TODO3 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.
     const char immediate_key;
     // Free text for command description.
     const char* info;
@@ -198,28 +198,7 @@ int _Forever(void)
 
         if (res != NULL)
         {
-            // Process the line.
-
-            // TODO1 If this is a new line (len _cli_buff == 0)
-            //   test the char against the immediate options
-            //   if a match, return args[0] = short
-            // char c = -1;
-            // bool ctrl = false;
-            // bool alt = false;
-            // bool shift = false;
-            // bool chars_done = false;
-            // if (_kbhit())
-            // {
-            //     c = (char)_getch();
-            //     ctrl = GetKeyState(VK_CONTROL) > 0;
-            //     alt = GetKeyState(VK_MENU) > 0;
-            //     shift = GetKeyState(VK_SHIFT) > 0;
-            //     //?? _ungetch(int _Ch);
-            // }
-            // Sleep(100); // pace
-
-
-            // Chop up the raw command line into args.
+            // Process the line. Chop up the raw command line into args.
             int argc = 0;
             char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
             char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
