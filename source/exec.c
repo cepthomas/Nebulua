@@ -16,57 +16,48 @@
 #include "luainterop.h"
 #include "luainteropwork.h"
 
-#include <unistd.h>
 
 //----------------------- Definitions -----------------------//
 
 
 // Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
-// TODO3 Performance? https://stackoverflow.com/questions/853316/is-critical-section-always-faster
+// TODO2 Performance? https://stackoverflow.com/questions/853316/is-critical-section-always-faster
 static CRITICAL_SECTION _critical_section;
 #define ENTER_CRITICAL_SECTION EnterCriticalSection(&_critical_section)
 #define EXIT_CRITICAL_SECTION  LeaveCriticalSection(&_critical_section)
 
+#define CLI_BUFF_LEN    128
+#define MAX_CLI_ARGS     10
+#define MAX_CLI_ARG_LEN  32
 
-//////////////////////////////////////////////////////////
-#define CLI_BUFF_LEN 128
-static char _cli_buff[CLI_BUFF_LEN];
-int cli_WriteLine(const char* format, ...);
-#define MAX_CLI_ARGS    10
-#define MAX_CLI_ARG_LEN 32 // incl terminator
-typedef struct
-{
-    /// How many values. 0 indicates error string in values[0].
-    int count;
-    /// The actual values as strings.
-    char values[MAX_CLI_ARGS][MAX_CLI_ARG_LEN];
-} cli_args_t;
 
-/// Cli command descriptor.
+//----------------------- Types -----------------------//
+
+// Cli command descriptor.
 typedef struct cli_command_desc
 {
-    /// If you like to type.
+    // If you like to type.
     const char* long_name;
-    /// If you don't.
+    // If you don't.
     const char short_name;
-    /// Optional single char for immediate execution (no CR required). Can be prefixed with ^(ctrl) or ~(alt).
+    // Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.
     const char immediate_key;
-    /// Free text for command description.
+    // Free text for command description.
     const char* info;
-    /// Free text for args description.
+    // Free text for args description.
     const char* args;
 } cli_command_desc_t;
 
 // Cli command handler.
-typedef int (* cli_command_handler_t)(const cli_command_desc_t* pcmd, cli_args_t* args);
+typedef int (* cli_command_handler_t)(const cli_command_desc_t* pcmd, int argc, char* argv[]);
 
-/// Bind a cli command to its handler.
+// Bind a cli command to its handler.
 typedef struct cli_command
 {
     const cli_command_handler_t handler;
     const cli_command_desc_t desc;
 } cli_command_t;
-//////////////////////////////////////////////////////////
+
 
 //----------------------- Vars - app ---------------------------//
 
@@ -94,6 +85,9 @@ static cli_command_t _commands[];
 // CLI prompt.
 static char* _prompt = "$";
 
+// CLI buffer.
+static char _cli_buff[CLI_BUFF_LEN];
+
 
 //----------------------- Vars - script ------------------------//
 
@@ -118,14 +112,11 @@ static void _MidiClockHandler(double msec);
 // Handle incoming messages. !!From Interrupt!!
 static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
-// Blocking sleep.
-static void _Sleep(int msec);
-
 // Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
 static bool _EvalStatus(int stat, const char* format, ...);
 
-// Local function.
-static int _Usage(void);
+// Notify the user.
+static int _CliWriteLine(const char* format, ...);
 
 
 //----------------------------------------------------//
@@ -193,7 +184,7 @@ int exec_Main(int argc, char* argv[])
 
     ///// Finished. Clean up and go home. /////
     DeleteCriticalSection(&_critical_section);
-    cli_WriteLine("Goodbye - come back soon!");
+    _CliWriteLine("Goodbye - come back soon!");
     ftimer_Run(0);
     ftimer_Destroy();
     // cli_Destroy();
@@ -212,18 +203,16 @@ int _Run(void)
     // Loop forever doing cli requests.
     while (_app_running)
     {
+        // Prompt.
         fputs(_prompt, stdout);
         fflush(stdout);
-        char* res = fgets(_cli_buff, CLI_BUFF_LEN, stdin);// != NULL)  /* get line */
-        // On success, the function returns the same str parameter. If the End-of-File is encountered and no
-        // characters have been read, the contents of str remain unchanged and a null pointer is returned.
-        // If an error occurs, a null pointer is returned.
+        char* res = fgets(_cli_buff, CLI_BUFF_LEN, stdin);
 
         if (res != NULL)
         {
             // Process the line.
 
-            // If this is a new line (len _cli_buff == 0)
+            // TODO1 If this is a new line (len _cli_buff == 0)
             //   test the char against the immediate options
             //   if a match, return args[0] = short
             // char c = -1;
@@ -239,44 +228,38 @@ int _Run(void)
             //     shift = GetKeyState(VK_SHIFT) > 0;
             //     //?? _ungetch(int _Ch);
             // }
+            // Sleep(100); // pace
 
 
             // Chop up the raw command line into args.
-            cli_args_t args;
-            memset(&args, 0 , sizeof(args));
-
+            int argc = 0;
+            char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
+            char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
+            memset(cmd_argv, 0, sizeof(cmd_argv));
             char* tok = strtok(_cli_buff, " ");
-            char* serr;
-            while (tok != NULL && args.count < MAX_CLI_ARGS) // && serr == NULL)
+            while (tok != NULL && argc < MAX_CLI_ARGS)
             {
-                if (strlen(tok) >= MAX_CLI_ARG_LEN)
-                {
-                    serr = "Argument too long";
-                }
-                else
-                {
-                    strncpy(args.values[args.count], tok, MAX_CLI_ARG_LEN-1);
-                    args.count++;
-                    tok = strtok(NULL, " ");
-                }
+                strncpy(argv[argc], tok, MAX_CLI_ARG_LEN - 1);
+                cmd_argv[argc] = tok;
+                argc++;
+                tok = strtok(NULL, " ");
             }
-
 
             // Process the command and its options.
             bool valid = false;
-            if (args.count > 0)
+            if (argc > 0)
             {
                 // Find and execute the command.
                 const cli_command_t* pcmd = _commands;
                 while (pcmd->handler != NULL)
                 {
-                    if (strcmp(pcmd->desc.short_name, args.values[0]) || strcmp(pcmd->desc.long_name, args.values[0]))
+                    if (pcmd->desc.short_name == argv[0][0] || strcmp(pcmd->desc.long_name, argv[0]))
                     {
-                        valid = true;
                         // Execute the command. They handle any errors internally.
-                        // Lock access to lua context. TODO1 too often??
+                        valid = true;
+                        // Lock access to lua context.
                         ENTER_CRITICAL_SECTION;
-                        stat = (*pcmd->handler)(&(pcmd->desc), &args);
+                        stat = (*pcmd->handler)(&(pcmd->desc), argc, cmd_argv);
                         // _EvalStatus(stat, "handler failed: %s", pcmd->desc.long_name);
                         EXIT_CRITICAL_SECTION;
                         break;
@@ -285,16 +268,16 @@ int _Run(void)
 
                 if (!valid)
                 {
-                    cli_WriteLine("invalid command");
+                    _CliWriteLine("invalid command");
                 }
             }
         }
         else
         {
-//            cli_WriteLine(args.values[0]);
+            // Assume finished.
+            _CliWriteLine("run loop finished");
+            _app_running = false;
         }
-
-        // _Sleep(100); // pace
     }
 
     return stat;
@@ -302,7 +285,7 @@ int _Run(void)
 
 
 // --------------------------------------------------------//
-int cli_WriteLine(const char* format, ...)
+int _CliWriteLine(const char* format, ...)
 {
     int stat = NEB_OK;
 
@@ -419,26 +402,26 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 
 
 //--------------------------------------------------------//
-int _TempoCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
+int _TempoCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (args->count == 1) // get
+    if (argc == 1) // get
     {
-        cli_WriteLine("tempo: %d", _tempo);
+        _CliWriteLine("tempo: %d", _tempo);
         stat = NEB_OK;
     }
-    else if (args->count == 2) // set
+    else if (argc == 2) // set
     {
         int t;
-        if (nebcommon_ParseInt(args->values[1], &t, 40, 240))
+        if (nebcommon_ParseInt(argv[1], &t, 40, 240))
         {
             _tempo = t;
             luainteropwork_SetTempo(_l, _tempo);
         }
         else
         {
-            cli_WriteLine("invalid tempo: %d", args->values[1]);
+            _CliWriteLine("invalid tempo: %d", argv[1]);
             stat = NEB_ERR_BAD_CLI_ARG;
         }
         stat = NEB_OK;
@@ -449,11 +432,11 @@ int _TempoCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _RunCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
+int _RunCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (args->count == 1) // no args
+    if (argc == 1) // no args
     {
         _script_running = !_script_running;
         stat = NEB_OK;
@@ -464,11 +447,11 @@ int _RunCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _ExitCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
+int _ExitCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (args->count == 1) // no args
+    if (argc == 1) // no args
     {
         _app_running = false;
         stat = NEB_OK;
@@ -479,23 +462,23 @@ int _ExitCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _MonCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
+int _MonCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (args->count == 2) // set
+    if (argc == 2) // set
     {
-        if (strcmp(args->values[1], "in") == 0)
+        if (strcmp(argv[1], "in") == 0)
         {
             _mon_input = !_mon_input;
             stat = NEB_OK;
         }
-        else if (strcmp(args->values[1], "out") == 0)
+        else if (strcmp(argv[1], "out") == 0)
         {
             _mon_output = !_mon_output;
             stat = NEB_OK;
         }
-        else if (strcmp(args->values[1], "off") == 0)
+        else if (strcmp(argv[1], "off") == 0)
         {
             _mon_input = false;
             _mon_output = false;
@@ -503,7 +486,7 @@ int _MonCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
         }
         else
         {
-            cli_WriteLine("invalid option: %s", args->values[1]);
+            _CliWriteLine("invalid option: %s", argv[1]);
         }
     }
 
@@ -512,11 +495,11 @@ int _MonCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _KillCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
+int _KillCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (args->count == 1) // no args
+    if (argc == 1) // no args
     {
         // TODO2 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
         // luainteropwork_SendController(_l, chan_hnd, AllNotesOff=123, 0);
@@ -528,26 +511,26 @@ int _KillCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _PositionCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
+int _PositionCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (args->count == 1) // get
+    if (argc == 1) // get
     {
-        cli_WriteLine(nebcommon_FormatBarTime(_position));
+        _CliWriteLine(nebcommon_FormatBarTime(_position));
         stat = NEB_OK;
     }
-    else if (args->count == 2)
+    else if (argc == 2)
     {
-        int position = nebcommon_ParseBarTime(args->values[1]);
+        int position = nebcommon_ParseBarTime(argv[1]);
         if (position < 0)
         {
-            cli_WriteLine("invalid position: %s", args->values[1]);
+            _CliWriteLine("invalid position: %s", argv[1]);
         }
         else
         {
             _position = position >= _length ? _length : position;
-            cli_WriteLine(nebcommon_FormatBarTime(_position));
+            _CliWriteLine(nebcommon_FormatBarTime(_position));
         }
     }
 
@@ -556,11 +539,11 @@ int _PositionCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-int _ReloadCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
+int _ReloadCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
-    if (args->count == 1) // no args
+    if (argc == 1) // no args
     {
         // TODO2 do something to reload script =>
         // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
@@ -572,14 +555,31 @@ int _ReloadCmd(const cli_command_desc_t* pcmd, cli_args_t* args)
 
 
 //--------------------------------------------------------//
-void _Sleep(int msec)
+int _Usage(const cli_command_desc_t* pcmd, int argc, char* argv[])
 {
-#if defined(_MSC_VER)
-    Sleep(msec);
-#else // mingw
-    struct timespec ts = { (int)(msec / 1000), (msec % 1000) * 1000000 };
-    nanosleep(&ts, NULL);
-#endif
+    int stat = NEB_OK;
+
+    const cli_command_t* cmditer = _commands;
+    while (_commands->handler != NULL_PTR)
+    {
+        const cli_command_desc_t* pdesc = &(cmditer->desc);
+        _CliWriteLine("%s|%s: %s", pdesc->long_name, pdesc->short_name, pdesc->info);
+        if (strlen(pdesc->args) > 0)
+        {
+            // Maybe multiline args. Make writable copy and tokenize it.
+            char cp[128];
+            strncpy(cp, pdesc->args, sizeof(cp));
+            char* tok = strtok(cp, "$");
+            while (tok != NULL)
+            {
+                _CliWriteLine("    %s", tok);
+                tok = strtok(NULL, "$");
+            }
+        }
+        cmditer++;
+    }
+
+    return stat;
 }
 
 
@@ -652,39 +652,12 @@ bool _EvalStatus(int stat, const char* format, ...)
 }
 
 
-//--------------------------------------------------------//
-int _Usage(void)
-{
-    int stat = CBOT_ERR_NO_ERR;
-
-    const cli_command_t* cmditer = _commands;
-    while (_commands->handler != NULL_PTR)
-    {
-        const cli_command_desc_t* pdesc = &(cmditer->desc);
-        cli_WriteLine("%s|%s: %s", pdesc->long_name, pdesc->short_name, pdesc->info);
-        if (strlen(pdesc->args) > 0)
-        {
-            // Maybe multiline args. Make writable copy and tokenize it.
-            char cp[128];
-            strncpy(cp, pdesc->args, sizeof(cp));
-            char* tok = strtok(cp, "$");
-            while (tok != NULL)
-            {
-                cli_WriteLine("    %s", tok);
-                tok = strtok(NULL, "$");
-            }
-        }
-        cmditer++;
-    }
-
-    return stat;
-}
-
 
 //--------------------------------------------------------//
 // Map commands to handlers.
 static cli_command_t _commands[] =
 {
+    { _Usage,        { "help",       '?',   0,    "tell me everything",                     "" } },
     { _ExitCmd,      { "exit",       'x',   0,    "exit the application",                   "" } },
     { _RunCmd,       { "run",        'r',   ' ',  "toggle running the script",              "" } },
     { _TempoCmd,     { "tempo",      't',   0,    "get or set the tempo",                   "(bpm): 40-240" } },
