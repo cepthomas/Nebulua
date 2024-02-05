@@ -33,8 +33,14 @@ static CRITICAL_SECTION _critical_section;
 
 //----------------------- Types -----------------------//
 
+// Forward declaration for handler.
+typedef struct cli_command cli_command_t;
+
+// Cli command handler.
+typedef int (* cli_command_handler_t)(const cli_command_t* cmd, int argc, char* argv[]);
+
 // Cli command descriptor.
-typedef struct cli_command_desc
+typedef struct cli_command
 {
     // If you like to type.
     const char* long_name;
@@ -46,16 +52,8 @@ typedef struct cli_command_desc
     const char* info;
     // Free text for args description.
     const char* args;
-} cli_command_desc_t;
-
-// Cli command handler.
-typedef int (* cli_command_handler_t)(const cli_command_desc_t* pcmd, int argc, char* argv[]);
-
-// Bind a cli command to its handler.
-typedef struct cli_command
-{
+    // The runtime handler.
     const cli_command_handler_t handler;
-    const cli_command_desc_t desc;
 } cli_command_t;
 
 
@@ -79,7 +77,7 @@ static bool _mon_input = false;
 // Monitor midi output.
 static bool _mon_output = false;
 
-// Cli commands forward reference.
+// Commands forward declaration.
 static cli_command_t _commands[];
 
 // CLI prompt.
@@ -104,19 +102,13 @@ static int _length = 0;
 //---------------------- Functions ------------------------//
 
 // Forever loop.
-static int _Run(void);
+static int _Forever(void);
 
 // Tick corresponding to bpm. !!From Interrupt!!
 static void _MidiClockHandler(double msec);
 
 // Handle incoming messages. !!From Interrupt!!
 static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
-
-// Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
-static bool _EvalStatus(int stat, const char* format, ...);
-
-// Notify the user.
-static int _CliWriteLine(const char* format, ...);
 
 
 //----------------------------------------------------//
@@ -129,11 +121,8 @@ int exec_Main(int argc, char* argv[])
 
     FILE* fp = fopen("nebulua_log.txt", "a");
     cbot_stat = logger_Init(fp);
-    _EvalStatus(cbot_stat, "Failed to init logger");
+    nebcommon_EvalStatus(_l, cbot_stat, "Failed to init logger");
     logger_SetFilters(LVL_DEBUG);
-
-    // cbot_stat = cli_Open(_commands);
-    // _EvalStatus(cbot_stat, "Failed to open cli");
 
     // Initialize the critical section. It is used to synchronize access to the lua context _l.
     InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
@@ -156,38 +145,37 @@ int exec_Main(int argc, char* argv[])
 
     // Tempo timer and interrupt.
     cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
-    _EvalStatus(cbot_stat, "Failed to init ftimer");
+    nebcommon_EvalStatus(_l, cbot_stat, "Failed to init ftimer");
     luainteropwork_SetTempo(_l, 60);
 
     stat = devmgr_Init(_MidiInHandler);
-    _EvalStatus(stat, "Failed to init device manager");
+    nebcommon_EvalStatus(_l, stat, "Failed to init device manager");
 
     ///// Load and run the application. /////
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack - or pushes an error message.
     stat = luaL_loadfile(_l, argv[1]);
-    _EvalStatus(stat, "luaL_loadfile() failed fn:%s", argv[1]);
+    nebcommon_EvalStatus(_l, stat, "luaL_loadfile() failed fn:%s", argv[1]);
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    _EvalStatus(stat, "lua_pcall() failed fn:%s", argv[1]);
+    nebcommon_EvalStatus(_l, stat, "lua_pcall() failed fn:%s", argv[1]);
 
     // Script setup.
     stat = luainterop_Setup(_l);
-    _EvalStatus(stat, "luainterop_Setup() failed");
+    nebcommon_EvalStatus(_l, stat, "luainterop_Setup() failed");
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
-    stat = _Run();
-    _EvalStatus(stat, "Run failed");
+    stat = _Forever();
+    nebcommon_EvalStatus(_l, stat, "Run failed");
 
     ///// Finished. Clean up and go home. /////
     DeleteCriticalSection(&_critical_section);
-    _CliWriteLine("Goodbye - come back soon!");
+    printf("Goodbye - come back soon!\n");
     ftimer_Run(0);
     ftimer_Destroy();
-    // cli_Destroy();
     devmgr_Destroy();
     lua_close(_l);
 
@@ -196,7 +184,7 @@ int exec_Main(int argc, char* argv[])
 
 
 //---------------------------------------------------//
-int _Run(void)
+int _Forever(void)
 {
     int stat = NEB_OK;
 
@@ -253,14 +241,14 @@ int _Run(void)
                 const cli_command_t* pcmd = _commands;
                 while (pcmd->handler != NULL)
                 {
-                    if (pcmd->desc.short_name == argv[0][0] || strcmp(pcmd->desc.long_name, argv[0]))
+                    if (pcmd->short_name == argv[0][0] || strcmp(pcmd->long_name, argv[0]))
                     {
                         // Execute the command. They handle any errors internally.
                         valid = true;
                         // Lock access to lua context.
                         ENTER_CRITICAL_SECTION;
-                        stat = (*pcmd->handler)(&(pcmd->desc), argc, cmd_argv);
-                        // _EvalStatus(stat, "handler failed: %s", pcmd->desc.long_name);
+                        stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
+                        // nebcommon_EvalStatus(_l, stat, "handler failed: %s", pcmd->desc.long_name);
                         EXIT_CRITICAL_SECTION;
                         break;
                     }
@@ -268,35 +256,17 @@ int _Run(void)
 
                 if (!valid)
                 {
-                    _CliWriteLine("invalid command");
+                    printf("invalid command\n");
                 }
             }
         }
         else
         {
             // Assume finished.
-            _CliWriteLine("run loop finished");
+            printf("run loop finished\n");
             _app_running = false;
         }
     }
-
-    return stat;
-}
-
-
-// --------------------------------------------------------//
-int _CliWriteLine(const char* format, ...)
-{
-    int stat = NEB_OK;
-
-    static char buff[CLI_BUFF_LEN];
-
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buff, CLI_BUFF_LEN-1, format, args);
-    va_end(args);
-
-    printf("%s\r\n>", buff);
 
     return stat;
 }
@@ -370,12 +340,12 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
             case MIDI_NOTE_OFF:
                 double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
                 stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume);
-                _EvalStatus(stat, "luainterop_InputNote() failed");
+                nebcommon_EvalStatus(_l, stat, "luainterop_InputNote() failed");
                 break;
 
             case MIDI_CONTROL_CHANGE:
                 stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2);
-                _EvalStatus(stat, "luainterop_InputController() failed");
+                nebcommon_EvalStatus(_l, stat, "luainterop_InputController() failed");
                 break;
 
             case MIDI_PITCH_WHEEL_CHANGE:
@@ -401,14 +371,18 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 }
 
 
+//---------------------------------------------------------------//
+//--------------------- all the commands ------------------------//
+//---------------------------------------------------------------//
+
 //--------------------------------------------------------//
-int _TempoCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
     if (argc == 1) // get
     {
-        _CliWriteLine("tempo: %d", _tempo);
+        printf("tempo: %d\n", _tempo);
         stat = NEB_OK;
     }
     else if (argc == 2) // set
@@ -421,7 +395,7 @@ int _TempoCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            _CliWriteLine("invalid tempo: %d", argv[1]);
+            printf("invalid tempo: %s\n", argv[1]);
             stat = NEB_ERR_BAD_CLI_ARG;
         }
         stat = NEB_OK;
@@ -432,7 +406,7 @@ int _TempoCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _RunCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _RunCmd(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -447,7 +421,7 @@ int _RunCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _ExitCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _ExitCmd(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -462,7 +436,7 @@ int _ExitCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _MonCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _MonCmd(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -486,7 +460,7 @@ int _MonCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            _CliWriteLine("invalid option: %s", argv[1]);
+            printf("invalid option: %s\n", argv[1]);
         }
     }
 
@@ -495,7 +469,7 @@ int _MonCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _KillCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _KillCmd(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -511,13 +485,13 @@ int _KillCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _PositionCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
     if (argc == 1) // get
     {
-        _CliWriteLine(nebcommon_FormatBarTime(_position));
+        printf("%s\n", nebcommon_FormatBarTime(_position));
         stat = NEB_OK;
     }
     else if (argc == 2)
@@ -525,12 +499,12 @@ int _PositionCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
         int position = nebcommon_ParseBarTime(argv[1]);
         if (position < 0)
         {
-            _CliWriteLine("invalid position: %s", argv[1]);
+            printf("invalid position: %s\n", argv[1]);
         }
         else
         {
             _position = position >= _length ? _length : position;
-            _CliWriteLine(nebcommon_FormatBarTime(_position));
+            printf("%s\n", nebcommon_FormatBarTime(_position));
         }
     }
 
@@ -539,7 +513,7 @@ int _PositionCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _ReloadCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _ReloadCmd(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_ERR_BAD_CLI_ARG;
 
@@ -555,24 +529,24 @@ int _ReloadCmd(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-int _Usage(const cli_command_desc_t* pcmd, int argc, char* argv[])
+int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
 {
     int stat = NEB_OK;
 
     const cli_command_t* cmditer = _commands;
     while (_commands->handler != NULL_PTR)
     {
-        const cli_command_desc_t* pdesc = &(cmditer->desc);
-        _CliWriteLine("%s|%s: %s", pdesc->long_name, pdesc->short_name, pdesc->info);
-        if (strlen(pdesc->args) > 0)
+        //const cli_command_t* pdesc = &(cmditer->desc);
+        printf("%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
+        if (strlen(cmditer->args) > 0)
         {
             // Maybe multiline args. Make writable copy and tokenize it.
             char cp[128];
-            strncpy(cp, pdesc->args, sizeof(cp));
+            strncpy(cp, cmditer->args, sizeof(cp));
             char* tok = strtok(cp, "$");
             while (tok != NULL)
             {
-                _CliWriteLine("    %s", tok);
+                printf("    %s\n", tok);
                 tok = strtok(NULL, "$");
             }
         }
@@ -584,86 +558,15 @@ int _Usage(const cli_command_desc_t* pcmd, int argc, char* argv[])
 
 
 //--------------------------------------------------------//
-bool _EvalStatus(int stat, const char* format, ...)
-{
-    static char buff[100];
-    bool has_error = false;
-
-    if (stat >= LUA_ERRRUN)
-    {
-        has_error = true;
-
-        va_list args;
-        va_start(args, format);
-        vsnprintf(buff, sizeof(buff) - 1, format, args);
-        va_end(args);
-
-        const char* sstat = NULL;
-        char err_buff[16];
-        switch (stat)
-        {
-            // generic
-            case 0:                         sstat = "NO_ERR"; break;
-            // lua
-            case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
-            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
-            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
-            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
-            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
-            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
-            // cbot
-            case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
-            case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
-            case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
-            case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
-            // app
-            case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
-            case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
-            case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
-            case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
-            case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
-            case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
-            // default
-            default:                        snprintf(err_buff, sizeof(err_buff) - 1, "ERR_%d", stat); break;
-        }
-
-        sstat = (sstat == NULL) ? err_buff : sstat;
-
-        if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
-        {
-            if (lua_gettop(_l) > 0)
-            {
-                luaL_error(_l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(_l, -1));
-            }
-            else
-            {
-                luaL_error(_l, "Status:%s info:%s", sstat, buff);
-            }
-        }
-        else // cbot or nebulua error
-        {
-            luaL_error(_l, "Status:%s info:%s", sstat, buff);
-        }
-
-        //  maybe? const char* strerrorname_np(int errnum), const char* strerrordesc_np(int errnum);
-    }
-
-    return has_error;
-}
-
-
-
-//--------------------------------------------------------//
-// Map commands to handlers.
 static cli_command_t _commands[] =
 {
-    { _Usage,        { "help",       '?',   0,    "tell me everything",                     "" } },
-    { _ExitCmd,      { "exit",       'x',   0,    "exit the application",                   "" } },
-    { _RunCmd,       { "run",        'r',   ' ',  "toggle running the script",              "" } },
-    { _TempoCmd,     { "tempo",      't',   0,    "get or set the tempo",                   "(bpm): 40-240" } },
-    { _MonCmd,       { "monitor",    'm',   '^',  "toggle monitor midi traffic",            "(in|out|off): action" } },
-    { _KillCmd,      { "kill",       'k',   '~',  "stop all midi",                          "" } },
-    { _PositionCmd,  { "position",   'p',   0,    "set position to where or tell current",  "(where): bar.beat.subbeat" } },
-    { _ReloadCmd,    { "reload",     'l',   0,    "re/load current script",                 "" } },
-    { NULL,          { NULL,           0,   0,    NULL,                                     NULL } }
+    { "help",       '?',   0,    "tell me everything",                     "",                          _Usage },
+    { "exit",       'x',   0,    "exit the application",                   "",                          _ExitCmd },
+    { "run",        'r',   ' ',  "toggle running the script",              "",                          _RunCmd },
+    { "tempo",      't',   0,    "get or set the tempo",                   "(bpm): 40-240",             _TempoCmd },
+    { "monitor",    'm',   '^',  "toggle monitor midi traffic",            "(in|out|off): action",      _MonCmd },
+    { "kill",       'k',   '~',  "stop all midi",                          "",                          _KillCmd },
+    { "position",   'p',   0,    "set position to where or tell current",  "(where): bar.beat.subbeat", _PositionCmd },
+    { "reload",     'l',   0,    "re/load current script",                 "",                          _ReloadCmd },
+    { NULL,          0,    0,    NULL,                                     NULL,                        NULL }
 };

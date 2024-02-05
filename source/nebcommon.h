@@ -4,7 +4,7 @@
 // system
 #include <stdbool.h>
 // lua
-//#include "lua.h"
+#include "lua.h"
 // cbot
 // application
 
@@ -49,24 +49,15 @@
 /// The subbeat in the beat.
 #define SUBBEAT(subbeats) (subbeats % SUBBEATS_PER_BEAT)
 
-// /// Calculate period for tempo.
-// /// @param[in] tempo
-// /// @return msec per subbeat
-// double nebcommon_InternalPeriod(int tempo);
-
-// /// Calculate integer period >= 1 for tempo.
-// /// @param[in] tempo
-// /// @return rounded msec per subbeat
-// int nebcommon_RoundedInternalPeriod(int tempo);
-
-// /// Convert subbeats to time.
-// /// @param[in] tempo
-// /// @param[in] subbeats
-// /// @return msec
-// double nebcommon_InternalToMsec(int tempo, int subbeats);
-
 
 //----------------------- Utilities -----------------------------//
+
+/// Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
+/// @param[in] l Lua context
+/// @param[in] stat Status to examine
+/// @param[in] format Standard printf
+/// @return String empty if status is ok
+bool nebcommon_EvalStatus(lua_State* l, int stat, const char* format, ...);
 
 /// Convert a status to string.
 /// @param[in] mstat Midi status to examine
