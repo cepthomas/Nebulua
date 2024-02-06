@@ -2,6 +2,8 @@
 -- Core generic functions for this app. Matches/requires the C libs.
 
 
+local st = require("step_types")
+
 
 --[[
 
@@ -17,6 +19,11 @@ Glossary
     int subbeat (in beat)
     int subbeats (absolute/total - in sequence/section/composition)
 
+Script defs:
+   BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUBBEAT is 0->neb.SUBBEATS_PER_BEAT-1
+   WHAT_TO_PLAY is a string (see neb.get_notes_from_string(s)) or integer or function.
+   BAR_TIME is a string of "BAR.BEAT.SUBBEAT" e.g. "1.2.3" or "1.2" or "1".
+   VOLUME 0->9
 
 Internal collections
     steps: index is sequence name, value is table of Step.
@@ -47,6 +54,18 @@ Internal collections
         },
         ...
     }
+
+    -- example.lua
+    sections =
+    {
+        beginning =
+        {
+            { hkeys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
+            { hdrums, drums_verse, drums_verse, drums_verse, drums_verse },
+            { hbass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+        }
+    }
+
 ]]
 
 local M = {}
@@ -64,6 +83,13 @@ function M.debug(msg) api.log(M.LOG_LEVEL.DEBUG, msg) end
 function M.trace(msg) api.log(M.LOG_LEVEL.TRACE, msg) end
 
 
+-----------------------------------------------------------------------------
+--- Report a syntax error.
+-- @param info
+local function syntax_error(desc, info)
+    log.error(string.format("Syntax error: %s %s", desc, info))
+end
+
 
 -----------------------------------------------------------------------------
 --- Process all sequences into discrete steps. Sections are stored as is.
@@ -72,72 +98,121 @@ function M.trace(msg) api.log(M.LOG_LEVEL.TRACE, msg) end
 -- @return list of step_info ordered by subbeat
 function M.process_all(sequences, sections)
 
-    -- Process sequences.
+    -------------- Process sequences.
+    -- sequences =
+    -- {
+    --     sequence_name_1 =
+    --     { seq_chunks
+    --         -- |........|........|........|........|........|........|........|........|
+    --         { "|        |        |        |        |        |        |        |        |", "ABC" }, one seq_chunk
+    --         { "|        |        |        |        |        |        |        |        |", "ABC" },
+    --     },
+    -- }
+    -- 
+    -- ==>
+    -- 
+    -- steps =
+    -- {
+    --     sequence_name_1 =
+    --     {
+    --         subbeat1 = { StepX, StepX, ... },
+    --         subbeat2 = { StepX, StepX, ... },
+    --         ...
+    --     },
+    --     sequence_name_2 =
+    --     {
+    --         subbeat3 = { StepX, StepX, ... },
+    --         subbeat4 = { StepX, StepX, ... },
+    --         ...
+    --     },
+    --     ...
+    -- }
 
-    for seq_name, seq_steps in ipairs(sequences) do
+
+    for seq_name, seq_chunks in ipairs(sequences) do
         -- test types?
 
-        local step_infos = {}
+        local steps = {}
 
-        for _, seq_step in ipairs(seq_steps) do
+        for _, seq_chunk in ipairs(seq_chunks) do
             local gr_steps = nil
             -- Make a guess.
-            if #seq_steps == 2 then
-                gr_steps = parse_graphic_steps(seq_steps)
-            elseif #seq_steps >= 3 then
-                gr_steps = parse_explicit_notes(seq_steps)
+            if #seq_chunk == 2 then    -- { "|  ...  |", "ABC" }
+                gr_steps = parse_chunk(seq_chunk)
+            else
+                syntax_error("Invalid chunk", seq_chunk)
             end
 
             if gr_steps == nil then
-                log.error("input_note") -- string.format("%s", variable_name), channel_name, note, vel)
+                syntax_error("Couldn't parse chunk", seq_chunk)
             else
-                step_infos[seq_name] = gr_steps
+                steps[seq_name] = gr_steps
             end
 
-            M.seq_step_infos.insert()
+            M.seq_steps.insert()
         end
     end
 
-    table.sort(seq_step_infos, function (left, right) return left.subbeat < right.subbeat end)
+    table.sort(seq_steps, function (left, right) return left.subbeat < right.subbeat end)
 
-    -- Process sections.
+
+    -------------- Process sections.
     _sections = sections
+
+    -- sections =
+    -- {
+    --     beginning =
+    --     {
+    --         { hkeys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
+    --         { hdrums, drums_verse, drums_verse, drums_verse, drums_verse },
+    --         { hbass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+    --     },
+    --     ...
+    -- }
+    -- 
+    -- ==>
+    -- 
+    -- sections =
+    -- {
+    --     beginning =
+    --     {
+    --         { hkeys = { keys_verse,  keys_verse,  keys_verse,  keys_verse },
+    --         ...
+    --     },
+    --     ...
+    -- }
+
 end
 
 
 -----------------------------------------------------------------------------
---- Parse a pattern.
--- @param notes_src like: { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
--- @return partially filled-in step_info list
-function parse_graphic_notes(notes_src)
+--- Parse a chunk pattern.
+-- @param chunk like: { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
+-- @return list of Steps partially filled-in.
+local function parse_chunk(chunk)
+    local steps = { }
 
-    -- { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
-    -- { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    -- { "|7-------|--      |        |        |7-------|--      |        |        |", 84 },
-    -- { "|7-------|--      |        |        |7-------|--      |        |        |", drum.AcousticSnare },
-    -- { "|        |        |        |5---    |        |        |        |5-8---  |", sequence_func }
-
-    local step_infos = { }
-
-    local note = notes_src[2]
-    local tnote = type(notes_src[2])
+    -- Process the note descriptor first.
+    local what_to_play = chunk[2]
+    local tn = type(what_to_play)
     local notes = {}
     local func = nil
 
-    if tnote == "number" then
+    if tn == "number" then
         -- use as is
-        table.insert(notes, note)
-    elseif tnote == "function" then
+        notes = { what_to_play }
+    elseif tn == "function" then
         -- use as is
-        func = note
-    elseif tnote == "string" then
-        notes = md.get_notes(src)
+        func = what_to_play
+    elseif tn == "string" then
+        notes = md.get_notes(what_to_play)
     else
-        step_infos = nil
+        syntax_error("hoo", "haa")
     end        
 
+    -- Process note instances.
     -- Remove visual markers from pattern.
-    local pattern = notes_src[1].Replace("|", "")
+    local pattern = chunk[1].Replace("|", "")
 
     local current_vol = 0 -- default, not sounding
     local start_offset = 0 -- in pattern for the start of the current event
@@ -151,7 +226,7 @@ function parse_graphic_notes(notes_src)
                 -- ok, do nothing
             else
                 -- invalid condition
-                -- throw new InvalidOperationException("Invalid \'-\'' in pattern string");
+                syntax_error("Invalid \'-\'' in pattern string")
             end
         elseif c >= '1' and c <= '9' then
             -- A new note starting.
@@ -171,7 +246,7 @@ function parse_graphic_notes(notes_src)
             current_vol = 0
         else
             -- Invalid char.
-            -- throw new InvalidOperationException("Invalid char in pattern string [{pattern[i]}]")
+            syntax_error("Invalid char in pattern string", c)
         end
     end
 
@@ -180,7 +255,7 @@ function parse_graphic_notes(notes_src)
         make_note_event(#pattern - 1)
     end
 
-    -- Local function to package an event.
+    -- Local function to package an event. chan_hnd is not know now and will get plugged in later.
     function make_note_event(offset)
         -- offset is 0-based.
         local volmod = current_vol / 10
@@ -189,52 +264,16 @@ function parse_graphic_notes(notes_src)
         local si = nil
 
         if func then
-            si = { step_type=STEP_TYPE.FUNCTION, subbeat=when, function=func, volume=volmod, duration=dur }
+            si = StepFunction(when, 0, func)
+            -- { step_type=STEP_TYPE.FUNCTION, subbeat=when, function=func, volume=volmod, duration=dur }
         else
-            si = { step_type=STEP_TYPE.NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
+            si = StepNote(when, 0, note_num, dur)
+            -- { step_type=STEP_TYPE.NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
         end
-        table.insert(step_infos, si)
+        table.insert(steps, si)
     end
 end
 
------------------------------------------------------------------------------
---- Description
--- @param notes_src like: { 0.4, 44, 5, 0.4 }
--- @return partially filled-in type_info list
-function parse_explicit_notes(notes_src)
-
-    -- { 0.0, drum.AcousticBassDrum,  4, 0.1 },
-    -- { 0.4, 44,                     5, 0.4 },
-    -- { 7.4, "A#min",                7, 1.2 },
-    -- { 4.0, sequence_func,          7      },
-
-    local step_infos = {}
-
-    local start = to_subbeats(notes_src[1])
-    local note = notes_src[2]
-    local tnote = type(notes_src[2])
-    local volume = notes_src[3]
-    local duration = notes_src[4] or 0.1
-    local si = nil
-
-    if tnote == "number" then
-        -- use as is
-        si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=src, volume=volume / 10 }
-        table.insert(step_infos, si)
-    elseif tnote == "function" then
-        -- use as is
-        si = { step_type=STEP_TYPE.FUNCTION, subbeat=start, function=src, volume=volume / 10 }
-        table.insert(step_infos, si)
-    elseif tnote == "string" then
-        local notes = md.get_notes(src)
-        for n in notes do
-            si = { step_type=STEP_TYPE.NOTE, subbeat=start, note_num=n, volume=volume / 10 }
-            table.insert(step_infos, si)
-    else
-        step_infos = nil
-    end        
-    return step_infos
-end
 
 -----------------------------------------------------------------------------
 --- Process notes at this time.
@@ -247,28 +286,3 @@ function M.do_step(send_stuff, bar, beat, subbeat) -- TODO1
 
 
 end
-
-
------------------------------------------------------------------------------
---- Construct a subbeat from beat.subbeat representation as a double.
--- @param d number value to convert
--- @return type desc
-function M.to_subbeats(dbeat)
-
-    local integral = math.truncate(dbeat)
-    local fractional = dbeat - integral
-    local beats = (int)integral
-    local subbeats = (int)math.round(fractional * 10.0)
-
-    if (subbeats >= LOW_RES_PPQ)
-        --throw new Exception($"Invalid subbeat value: {beat}")
-    end
-
-    -- Scale subbeats to native.
-    subbeats = subbeats * INTERNAL_PPQ / LOW_RES_PPQ
-    total_subbeats = beats * SUBBEATS_PER_BEAT + subbeats
-end
-
-
--- Return the module.
-return M

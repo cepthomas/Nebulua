@@ -2,7 +2,7 @@
 -- Unit tests for nebulua.lua.  TODO1
 
 local ut = require("utils")
-local si = require("step_info")
+local st = require("step_types")
 
 -- Create the namespace/module.
 local M = {}
@@ -73,7 +73,7 @@ end
 
 -----------------------------------------------------------------------------
 function M.suite_step_info(pn)
-    pn.UT_INFO("Test all functions in step_info.lua")
+    pn.UT_INFO("Test all functions in step_types.lua")
 
     note1 = StepNote(1234, 99)
     pn.UT_EQUAL(note1, "Ut")

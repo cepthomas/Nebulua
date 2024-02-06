@@ -9,10 +9,10 @@ STEP_TYPE = { NONE = 0, NOTE = 1, CONTROLLER = 2, FUNCTION = 3 }
 -----------------------------------------------------------------------------
 -- base class
 Step = class(
-    function(a, subbeats, chan_hnd)
-        a.type = STEP_TYPE.NONE
-        a.subbeats = subbeats
-        a.chan_hnd = chan_hnd
+    function(c, subbeats, chan_hnd)
+        c.type = STEP_TYPE.NONE
+        c.subbeats = subbeats
+        c.chan_hnd = chan_hnd
     end)
 
 function Step:__tostring()
