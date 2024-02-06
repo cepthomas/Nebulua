@@ -9,3 +9,5 @@
 /build_test/NebuluaTest.vcxproj.user
 /build_mingw/build
 /build_mingw/build_test
+/build_test/test_out.txt
+/build_test/log_out.txt

@@ -1,26 +1,61 @@
 
---- Core generic functions for this app. Matches/requires the C libs.
--- glossary
--- int chan_hnd  (dev_index << 8 | chan_num)
--- int controller (id)
--- int value (ctlr)
--- int note_num
--- double volume
--- int velocity
--- int bar (absolute/total)
--- int beat (in bar)
--- int subbeat (in beat)
--- int subbeats (absolute/total - in sequence/section/composition)
--- WHAT_TO_PLAY is a integer or function. string is converted to integer(s)
--- SB_REL_X (subbeats) is integer when to play relative
--- VEL velocity. volume is converted to integer. 0 means note off.
+-- Core generic functions for this app. Matches/requires the C libs.
 
+
+
+--[[
+
+Glossary
+    int chan_hnd (device id << 8 | chan_num)
+    int controller (name - midi_defs)
+    int value (controller payload)
+    int note_num (0-127)
+    double volume (0.0-1.0) 0 means note off
+    int velocity (0-127) 0 means note off
+    int bar (absolute)
+    int beat (in bar)
+    int subbeat (in beat)
+    int subbeats (absolute/total - in sequence/section/composition)
+
+
+Internal collections
+    steps: index is sequence name, value is table of Step.
+    steps =
+    {
+        sequence_name_1 =
+        {
+            subbeat1 = { StepX, StepX, ... },
+            subbeat2 = { StepX, StepX, ... },
+            ...
+        },
+        sequence_name_2 =
+        {
+            subbeat3 = { StepX, StepX, ... },
+            subbeat4 = { StepX, StepX, ... },
+            ...
+        },
+        ...
+    }
+
+    sections: index is section name, value is table of...
+    sections =
+    {
+        section_name_1 =
+        {
+            { chan_hnd = { sequence_name_1,  sequence_name_2, ... },
+            ...
+        },
+        ...
+    }
+]]
 
 local M = {}
 
-
---- Log levels - must match those in the host C code.
+-- Misc defs - matches C host.
+M.SUBBEATS_PER_BEAT 8
+M.BEATS_PER_BAR     4
 M.LOG_LEVEL = { NONE = 0, TRACE = 1, DEBUG = 2, INFO = 3, ERROR = 4 }
+
 
 --- Convenience functions.
 function M.error(msg) api.log(M.LOG_LEVEL.ERROR, msg) end
@@ -28,34 +63,6 @@ function M.info(msg)  api.log(M.LOG_LEVEL.INFO, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DEBUG, msg) end
 function M.trace(msg) api.log(M.LOG_LEVEL.TRACE, msg) end
 
-
--- index is sequence name, value is table of subbeats:steps.
--- local _step_infos = {}
--- {
---     sequence1 = 
---     {
---         subbeat1 = { StepInfo, StepInfo, ... },
---         subbeat2 = { StepInfo, StepInfo, ... },
---         -- ...
---     },
---     sequence2 = 
---     {
---         subbeat3 = { StepInfo, StepInfo, ... },
---         subbeat4 = { StepInfo, StepInfo, ... },
---         -- ...
---     },
---     -- ...
--- }
-
--- index is section name, value is list of sequence names (or ???).
-local _sections = {}
--- sections =
--- {
---     sectionname =
---     {
---         { chanhandle, sequence,     nil,          function,     ... },
---     },
--- }
 
 
 -----------------------------------------------------------------------------
@@ -65,7 +72,7 @@ local _sections = {}
 -- @return list of step_info ordered by subbeat
 function M.process_all(sequences, sections)
 
-    -- Process sections.
+    -- Process sequences.
 
     for seq_name, seq_steps in ipairs(sequences) do
         -- test types?

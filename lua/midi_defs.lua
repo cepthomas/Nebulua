@@ -59,7 +59,7 @@ M.controllers =
 }
 
 --- Make markdown content from the definitions. TODO3
--- @return list oof strings
+-- @return list of strings
 -- function M.format_doc()
 
 -- Return the module.

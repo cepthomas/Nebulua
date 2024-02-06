@@ -160,28 +160,32 @@ ride = drum.RideCymbal1
 crash = drum.CrashCymbal2
 mtom = drum.HiMidTom
 
--- WHAT_TO_PLAY is a string or integer or function.
+
+-- BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUBBEAT is 0->neb.SUBBEATS_PER_BEAT-1
+
+-- WHAT_TO_PLAY is a string (see neb.get_notes_from_string(s)) or integer or function.
+-- BAR_TIME is a string of "BAR.BEAT.SUBBEAT" e.g. "1.2.3" or "1.2" or "1". 
+-- BEAT_TIME is a number of BEAT.SUBBEAT e.g 3.6
+-- VOLUME 0->9
 
 sequences =
 {
-    graphical_seq = -- these are 8 beats long - end with WHAT_TO_PLAY.
+    ---------------- Graphical format ----------------
+    example_graphical_seq = -- neb.SUBBEATS_PER_BEAT
     {
-        -- |........|........|........|........|........|........|........|........|
+        -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
         { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
         { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
-        { "|7-------|--      |        |        |7-------|--      |        |        |",  snare },
         { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
         { "|        |        |        |5---    |        |        |        |5-8---  |",  seq_func }
     },
 
-    list_seq = -- these are terminator beats long - seq[2] is WHAT_TO_PLAY.
+    drums_verse =
     {
-        { 0.0, "C2",        7, 0.1 },
-        { 0.0,  bdrum,      4, 0.1 },
-        { 0.4,  44,         5, 0.1 },
-        { 4.0,  seq_func,   7, 1.0 },
-        { 7.4, "A#2",       7, 0.1 },
-        { 8.0, "",          0, 0.0 }   -- ?? terminator -> length
+        --|........|........|........|........|........|........|........|........|
+        {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
+        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
+        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
     },
 
     keys_verse =
@@ -189,6 +193,19 @@ sequences =
         -- |........|........|........|........|........|........|........|........|
         { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
         { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
+    },
+
+
+    ---------------- Sequence format ----------------
+    example_list_seq =
+    {
+     -- { BEAT_TIME start, WHAT_TO_PLAY, VOLUME, BEAT_TIME duration },
+        { 0.0, "C2",        7, 0.1 },
+        { 0.0,  bdrum,      4, 0.1 },
+        { 0.4,  44,         5, 0.1 },
+        { 4.0,  seq_func,   7, 1.0 },
+        { 7.4, "A#2",       7, 0.1 },
+        -- { 8.0, "",          0, 0.0 }   -- ?? terminator -> length
     },
 
     keys_chorus =
@@ -209,6 +226,16 @@ sequences =
         { 6.4, "D#2",   5,   0.2 },
         { 7.0, "C2",    6,   0.2 },
         { 7.4, "B2.m7", 6,   0.2 }
+    },
+    
+    keys_chorus =
+    {
+        -- |........|........|........|........|........|........|........|........|
+        { "|6-      |        |        |        |        |        |        |        |", "F4" },
+        { "|    5-  |        |        |        |        |        |        |        |", "D#4" },
+        { "|        |6-      |        |        |        |        |        |        |", "C4" },
+        { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
+        -- ...
     },
 
     bass_verse =
@@ -232,14 +259,6 @@ sequences =
         { 6.4, "C2",    5,   0.1 }
     },
 
-
-    drums_verse =
-    {
-        --|........|........|........|........|........|........|........|........|
-        {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
-        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
-        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
-    },
 
     drums_chorus =
     {
