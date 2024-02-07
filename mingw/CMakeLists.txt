@@ -21,43 +21,43 @@ set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
 if(DO_TEST)
 
     include_directories(
-        ../source
+        ../source_code
         ../test_code
         ${LUA}/include
-        ${CBOT}/source
+        ${CBOT}/source_code
         ${CBOT}/pnut
         )
 
     add_executable(nebulua
         main.cpp
-        ../source/nebcommon.c
-        ../source/devmgr.c
+        ../source_code/nebcommon.c
+        ../source_code/devmgr.c
         ../test_code/test_nebcommon.cpp
         ../test_code/test_devmgr.cpp
         ${CBOT}/pnut/pnut.cpp
-        ${CBOT}/source/private/logger.c
+        ${CBOT}/source_code/private/logger.c
         )
 
 else()
 
     include_directories(
-        ../source
+        ../source_code
         ${LUA}/include
-        ${CBOT}/source
+        ${CBOT}/source_code
         )
 
     add_executable(nebulua
         main.c
-        ../source/exec.c
-        ../source/nebcommon.c
-        ../source/devmgr.c
-        ../source/luainterop.c
-        ../source/luainteropwork.c
-        ../source/luaex.c
-        ${CBOT}/source/private/logger.c
-        # ${CBOT}/source/private/cli.c
-        ${CBOT}/source/private/ftimer.c
-        ${CBOT}/source/private/stopwatch.c
+        ../source_code/exec.c
+        ../source_code/nebcommon.c
+        ../source_code/devmgr.c
+        ../source_code/luainterop.c
+        ../source_code/luainteropwork.c
+        ../source_code/luaex.c
+        ${CBOT}/source_code/private/logger.c
+        # ${CBOT}/source_code/private/cli.c
+        ${CBOT}/source_code/private/ftimer.c
+        ${CBOT}/source_code/private/stopwatch.c
         )
 
 endif()

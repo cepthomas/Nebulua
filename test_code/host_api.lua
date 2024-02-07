@@ -1,4 +1,5 @@
 
+--  mock the real C component.
 
 -- Create the namespace/module.
 local M = {}

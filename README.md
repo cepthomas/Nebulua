@@ -1,5 +1,7 @@
 
-# Nebulua TODO2 Copy doc from Nebulator\README.md
+# Nebulua TODO1 update all
+
+TODO2 Copy some doc from Nebulator\README.md
 
 - An experimental version of Nebulator using Lua as the script flavor.
 - Windows UTF only.
