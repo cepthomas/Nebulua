@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>C:\Lua\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source;C:\Dev\repos\Lua\Nebulua\source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Lua\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;C:\Dev\repos\Lua\Nebulua\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,42 +131,40 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp" />
-    <!-- <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\cli.c" /> -->
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\ftimer.c" />
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\list.c" />
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\logger.c" />
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\stopwatch.c" />
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\stringx.c" />
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source\private\timeanalyzer.c" />
-    <ClCompile Include="..\source\devmgr.c" />
-    <ClCompile Include="..\source\exec.c" />
-    <ClCompile Include="..\source\luaex.c" />
-    <ClCompile Include="..\source\luainterop.c" />
-    <ClCompile Include="..\source\luainteropwork.c" />
-    <ClCompile Include="..\source\nebcommon.c" />
-    <ClCompile Include="..\test\test_devmgr.cpp" />
-    <ClCompile Include="..\test\test_nebcommon.cpp" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\ftimer.c" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\list.c" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\logger.c" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\timeanalyzer.c" />
+    <ClCompile Include="..\source_code\devmgr.c" />
+    <ClCompile Include="..\source_code\exec.c" />
+    <ClCompile Include="..\source_code\luaex.c" />
+    <ClCompile Include="..\source_code\luainterop.c" />
+    <ClCompile Include="..\source_code\luainteropwork.c" />
+    <ClCompile Include="..\source_code\nebcommon.c" />
+    <ClCompile Include="..\test_code\test_devmgr.cpp" />
+    <ClCompile Include="..\test_code\test_nebcommon.cpp" />
     <ClCompile Include="NebuluaTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cbot.h" />
-    <!-- <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\cli.h" /> -->
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\diagnostics.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\ftimer.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\list.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\logger.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\private\cbot_internal.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\stopwatch.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\stringx.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source\timeanalyzer.h" />
-    <ClInclude Include="..\source\devmgr.h" />
-    <ClInclude Include="..\source\luaex.h" />
-    <ClInclude Include="..\source\luainterop.h" />
-    <ClInclude Include="..\source\luainteropwork.h" />
-    <ClInclude Include="..\source\midi.h" />
-    <ClInclude Include="..\source\nebcommon.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\cbot.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\diagnostics.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\ftimer.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\list.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stringx.h" />
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\timeanalyzer.h" />
+    <ClInclude Include="..\source_code\devmgr.h" />
+    <ClInclude Include="..\source_code\luaex.h" />
+    <ClInclude Include="..\source_code\luainterop.h" />
+    <ClInclude Include="..\source_code\luainteropwork.h" />
+    <ClInclude Include="..\source_code\midi.h" />
+    <ClInclude Include="..\source_code\nebcommon.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="log_out.txt" />
