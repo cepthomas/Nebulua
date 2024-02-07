@@ -136,7 +136,6 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\timeanalyzer.c" />
     <ClCompile Include="..\source_code\devmgr.c" />
     <ClCompile Include="..\source_code\exec.c" />
     <ClCompile Include="..\source_code\luaex.c" />
@@ -154,7 +153,6 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h" />
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\timeanalyzer.h" />
     <ClInclude Include="..\source_code\devmgr.h" />
     <ClInclude Include="..\source_code\luaex.h" />
     <ClInclude Include="..\source_code\luainterop.h" />

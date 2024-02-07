@@ -21,23 +21,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\source_code\devmgr.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="NebuluaTest.cpp">
+      <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\exec.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\test_code\test_devmgr.cpp">
+      <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\luaex.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\test_code\test_nebcommon.cpp">
+      <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\luainterop.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source_code\luainteropwork.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source_code\nebcommon.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
+      <Filter>cbot</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\ftimer.c">
       <Filter>cbot</Filter>
@@ -48,26 +42,29 @@
     <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
+    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c">
       <Filter>cbot</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c">
-      <Filter>cbot</Filter>
+    <ClCompile Include="..\..\source_code\devmgr.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\timeanalyzer.c">
-      <Filter>cbot</Filter>
+    <ClCompile Include="..\..\source_code\exec.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NebuluaTest.cpp">
-      <Filter>test</Filter>
+    <ClCompile Include="..\..\source_code\luaex.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\test_code\test_devmgr.cpp">
-      <Filter>test</Filter>
+    <ClCompile Include="..\..\source_code\luainterop.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\test_code\test_nebcommon.cpp">
-      <Filter>test</Filter>
+    <ClCompile Include="..\..\source_code\luainteropwork.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source_code\nebcommon.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,31 +86,28 @@
     <ClInclude Include="..\source_code\nebcommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\timeanalyzer.h">
-      <Filter>cbot</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stringx.h">
-      <Filter>cbot</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h">
-      <Filter>cbot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h">
-      <Filter>cbot</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\list.h">
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\cbot.h">
       <Filter>cbot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\ftimer.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\cbot.h">
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\list.h">
+      <Filter>cbot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h">
+      <Filter>cbot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h">
+      <Filter>cbot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stringx.h">
       <Filter>cbot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h">

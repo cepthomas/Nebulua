@@ -48,23 +48,11 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
-      <Filter>cbot</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c">
       <Filter>cbot</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c">
       <Filter>cbot</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\timeanalyzer.c">
-      <Filter>cbot</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test_code\test_devmgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test_code\test_nebcommon.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,16 +77,10 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\timeanalyzer.h">
-      <Filter>cbot</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h">
       <Filter>cbot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h">
-      <Filter>cbot</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\logger.h">

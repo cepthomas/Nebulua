@@ -77,8 +77,8 @@ static bool _mon_input = false;
 // Monitor midi output.
 static bool _mon_output = false;
 
-// Commands forward declaration.
-static cli_command_t _commands[];
+// Commands forward declaration. TODO2 need to define size to satisfy VS compiler, but not gcc.
+static cli_command_t _commands[20];
 
 // CLI prompt.
 static char* _prompt = "$";
