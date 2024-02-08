@@ -12,15 +12,13 @@
 //----------------------- Definitions -----------------------//
 
 ///// App errors start after internal lua errors so they can be handled harmoniously.
-#define NEB_OK                   0  // LUA_OK synonym
+#define NEB_OK                   0  // synonym for LUA_OK and CBOT_ERR_NO_ERR
 #define NEB_ERR_INTERNAL        10
 #define NEB_ERR_BAD_CLI_ARG     11
 #define NEB_ERR_BAD_LUA_ARG     12
 #define NEB_ERR_BAD_MIDI_CFG    13
 #define NEB_ERR_SYNTAX          14
 #define NEB_ERR_MIDI            15
-
-#define UNUSED(x)   ((void)(x))
 
 
 //----------------------- Timing -----------------------------//

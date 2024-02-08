@@ -1,14 +1,10 @@
-
-# Nebulua TODO1 update all
-
-
-TODO2 Copy some doc from Nebulator\README.md
+# Nebulua TODO1 update all + parts of Nebulator\README.md
 
 - An experimental version of Nebulator using Lua as the script flavor.
-- Windows UTF only.
+- Windows only.
 - Build with VS or mingw.
 
-- For conventions see [c_modular](https://github.com/cepthomas/c_modular/blob/master/README.md).
+- Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 
 
 ## timing
@@ -43,7 +39,7 @@ E = expression?
 
 
 ## Files
-- `source` folder:
+- `source_code` folder:
     - exec.c/h - Does all the top-level work.
     - etc...
 - `lua` folder:

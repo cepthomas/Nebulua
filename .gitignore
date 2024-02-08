@@ -5,5 +5,5 @@ x64/
 /build_test/log_out.txt
 /mingw/build_app
 /mingw/build_test
-/app/Nebulua.vcxproj.user
-/app/test/NebuluaTest.vcxproj.user
+*.vcxproj.user
+*.sublime-*
