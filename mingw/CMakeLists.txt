@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.5)
 project(nebulua)
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "Project must be built for 64 bit")
+    message(FATAL_ERROR "Project uses 64 bit Lua")
 endif()
 
 set(CMAKE_C_STANDARD 99)
@@ -19,11 +19,10 @@ set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
 
 # Header files.
 if(DO_TEST)
-
     include_directories(
         ../source_code
         ../test_code
-        ${LUA}/include
+        ../lua_lib/include
         ${CBOT}/source_code
         ${CBOT}/pnut
         )
@@ -37,12 +36,10 @@ if(DO_TEST)
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source_code/private/logger.c
         )
-
 else()
-
     include_directories(
         ../source_code
-        ${LUA}/include
+        ../lua_lib/include
         ${CBOT}/source_code
         )
 
@@ -59,11 +56,10 @@ else()
         ${CBOT}/source_code/private/ftimer.c
         ${CBOT}/source_code/private/stopwatch.c
         )
-
 endif()
 
 # Libs.
 target_link_libraries(nebulua
-    ${LUA}/Win64/lua54.dll
+    ${PROJECT_SOURCE_DIR}/../lua_lib/lua54.dll
     libwinmm.a
     )
