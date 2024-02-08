@@ -19,6 +19,7 @@
 
 #if defined(_MSC_VER)
 // Ignore some generated code warnings
+#pragma warning( push )
 #pragma warning( disable : 6001 4244 4703 )
 #endif
 
@@ -315,3 +316,7 @@ void luainterop_Load(lua_State* l)
 {
     luaL_requiref(l, "host_api", luainterop_Open, true);
 }
+
+#if defined(_MSC_VER)
+#pragma warning( pop )
+#endif
