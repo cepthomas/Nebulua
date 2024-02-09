@@ -1,20 +1,41 @@
 
 -- Unit tests for nebulua.lua.  TODO1
 
-local ut = require("utils")
 local v = require('validators')
+local ut = require("utils")
 local st = require("step_types")
 
+-- ut.config_error_handling(true, true)
 
--- if use_dbgr then
---     have_dbgr, dbg = pcall(require, "debugger")
---     if not have_dbgr then
---         print(dbg)
---     end
--- end
 
 -- Create the namespace/module.
 local M = {}
+
+
+-----------------------------------------------------------------------------
+function M.setup(pn)
+    -- pn.UT_INFO("setup()!!!")
+    v.set_mode(false, 4)
+end
+
+-----------------------------------------------------------------------------
+function M.teardown(pn)
+    -- pn.UT_INFO("teardown()!!!")
+end
+
+-----------------------------------------------------------------------------
+function M.suite_step_info(pn)
+    pn.UT_INFO("Test all functions in step_types.lua")
+
+    note1 = StepNote(1234, 99, 101, 202)
+    pn.UT_STR_EQUAL(note1, "1234 99 NOTE 101 202")
+
+    note1 = StepNote(10000, 99, 101, 202)
+    pn.UT_STR_EQUAL(note1, "Invalid integer:10000 arg 1")
+
+
+end
+
 
 
 --[[
@@ -24,25 +45,10 @@ local M = {}
 -- @return list of step_info ordered by subbeat
 function M.process_all(sequences, sections)
 
---- Parse a pattern.
--- @param notes_src like: { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
--- @return partially filled-in step_info list
-function parse_graphic_notes(notes_src)
-
---- Description
--- @param notes_src like: { 0.4, 44, 5, 0.4 }
--- @return partially filled-in type_info list
-function parse_explicit_notes(notes_src)
-
 --- Process notes at this time.
 -- @param name type desc
 -- @return type desc
 function M.do_step(send_stuff, bar, beat, subbeat)
-
---- Construct a subbeat from beat.subbeat representation as a double.
--- @param d number value to convert
--- @return type desc
-function M.to_subbeats(dbeat)
 
 
 M.UT_CLOSE(val1, val2, tol)
@@ -61,30 +67,8 @@ M.UT_TRUE(expr)
 
 ]]
 
-
------------------------------------------------------------------------------
-function M.setup(pn)
-    -- pn.UT_INFO("setup()!!!")
-    v.set_mode(true, 4)
-end
-
------------------------------------------------------------------------------
-function M.teardown(pn)
-    -- pn.UT_INFO("teardown()!!!")
-end
-
------------------------------------------------------------------------------
-function M.suite_step_info(pn)
-    pn.UT_INFO("Test all functions in step_types.lua")
-
-    note1 = StepNote(1234, 99, 101, 202)
-    pn.UT_STR_EQUAL(note1, "1234 99 NOTE 101 202")
-
-
-end
-
 -----------------------------------------------------------------------------
 -- Return the module.
-print("return test_nebula module:")
-print(ut.dump_table_string(M, 'test_nebula module'))
+-- print("return test_nebula module:")
+-- print(ut.dump_table_string(M, 'test_nebula module'))
 return M

@@ -297,9 +297,9 @@ static int luainterop_SendController(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
+    { "log", luainterop_Log },
     { "create_output_channel", luainterop_CreateOutputChannel },
     { "create_input_channel", luainterop_CreateInputChannel },
-    { "log", luainterop_Log },
     { "set_tempo", luainterop_SetTempo },
     { "send_note", luainterop_SendNote },
     { "send_controller", luainterop_SendController },
