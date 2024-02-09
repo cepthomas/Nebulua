@@ -37,7 +37,7 @@ local hinp1  = create_input_channel(midi_in, 2)
 -- local vars - Volumes. TODO1 stitch into playing sequences.
 local keys_vol = 0.8
 local drum_vol = 0.8
--- -- TODO2 volumes could be an optional user map instead of linear range.
+-- -- TODO3 volumes could be an optional user map instead of linear range.
 -- drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
 -- drum_vol_range = { 5.0, 9.5 }
 

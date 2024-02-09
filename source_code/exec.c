@@ -77,7 +77,7 @@ static bool _mon_input = false;
 // Monitor midi output.
 static bool _mon_output = false;
 
-// Commands forward declaration. TODO2 need to define size to satisfy VS compiler, but not gcc.
+// Commands forward declaration. TODO3 need to define size to satisfy VS compiler, but not gcc.
 static cli_command_t _commands[20];
 
 // CLI prompt.

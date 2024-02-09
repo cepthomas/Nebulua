@@ -2,7 +2,16 @@
 -- Unit tests for nebulua.lua.  TODO1
 
 local ut = require("utils")
+local v = require('validators')
 local st = require("step_types")
+
+
+-- if use_dbgr then
+--     have_dbgr, dbg = pcall(require, "debugger")
+--     if not have_dbgr then
+--         print(dbg)
+--     end
+-- end
 
 -- Create the namespace/module.
 local M = {}
@@ -56,6 +65,7 @@ M.UT_TRUE(expr)
 -----------------------------------------------------------------------------
 function M.setup(pn)
     -- pn.UT_INFO("setup()!!!")
+    v.set_mode(true, 4)
 end
 
 -----------------------------------------------------------------------------
@@ -63,23 +73,18 @@ function M.teardown(pn)
     -- pn.UT_INFO("teardown()!!!")
 end
 
-
--- if use_dbgr then
---     have_dbgr, dbg = pcall(require, "debugger")
---     if not have_dbgr then
---         print(dbg)
---     end
--- end
-
 -----------------------------------------------------------------------------
 function M.suite_step_info(pn)
     pn.UT_INFO("Test all functions in step_types.lua")
 
-    note1 = StepNote(1234, 99)
-    pn.UT_EQUAL(note1, "Ut")
+    note1 = StepNote(1234, 99, 101, 202)
+    pn.UT_STR_EQUAL(note1, "1234 99 NOTE 101 202")
+
 
 end
 
 -----------------------------------------------------------------------------
 -- Return the module.
+print("return test_nebula module:")
+print(ut.dump_table_string(M, 'test_nebula module'))
 return M
