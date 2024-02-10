@@ -169,7 +169,7 @@ end
 local function parse_chunk(chunk)
     local steps = { }
 
-    -- Process the note descriptor first.
+    -- Process the note descriptor first. Could be number, string, function.
     local what_to_play = chunk[2]
     local tn = type(what_to_play)
     local notes = {}

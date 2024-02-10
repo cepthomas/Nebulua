@@ -1,11 +1,10 @@
 
 -- Example Nebulua composition file. This is not actual music.
 
-local sx  = require("stringex")
-local ut  = require("utils")
+-- local sx  = require("stringex")
+-- local ut  = require("utils")
 
 local neb = require("nebulua") -- lua api
-local api = require("host_api") -- C api
 local md  = require("midi_defs")
 
 local inst = md.instruments
@@ -14,7 +13,7 @@ local kit = md.drum_kits
 local ctrl = md.controllers
 
 
-api.info("=============== go go go =======================")
+neb.info("=============== go go go =======================")
 
 
 ------------------------- Config ----------------------------------------
@@ -57,12 +56,12 @@ crash = drum.CrashCymbal2
 mtom = drum.HiMidTom
 
 
---------------------- Called from C core -----------------------------------
+--------------------- Called from core -----------------------------------
 
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    api.info("example initialization")
+    neb.info("example initialization")
     math.randomseed(os.time())
 
     -- Load her up.
@@ -70,7 +69,7 @@ function setup()
     -- steps = neb.process_all(sequences, sections)
     neb.process_all(sequences, sections)
 
-    api.set_tempo(100)
+    neb.set_tempo(100)
 
     return 0
 
@@ -84,9 +83,9 @@ function step(bar, beat, subbeat)
 
     -- Selective work.
     if beat == 0 and subbeat == 0 then
-        api.send_controller(hsynth, ctrl.Pan, 90)
+        neb.send_controller(hsynth, ctrl.Pan, 90)
         -- or...
-        api.send_controller(hkeys,  ctrl.Pan, 30)
+        neb.send_controller(hkeys,  ctrl.Pan, 30)
     end
 
     -- -- Plays well with others.
@@ -97,19 +96,19 @@ end
 -----------------------------------------------------------------------------
 -- Handlers for input note events.
 function input_note(chan_hnd, note_num, velocity)
-    api.info("input_note") -- string.format("%s", variable_name), chan_hnd, note, vel)
+    neb.info("input_note") -- string.format("%s", variable_name), chan_hnd, note, vel)
 
     if chan_hnd == hbing_bong then
         -- whiz = ...
     end
 
-    api.send_note("synth", note_num, velocity, 8) --0.5)
+    neb.send_note("synth", note_num, velocity, 8) --0.5)
 end
 
 -----------------------------------------------------------------------------
 -- Handlers for input controller events.
 function input_controller(chan_hnd, controller, value)
-    api.info("input_controller") --, chan_hnd, ctlid, value)
+    neb.info("input_controller") --, chan_hnd, ctlid, value)
 end
 
 ----------------------- User lua functions -------------------------
@@ -118,7 +117,7 @@ end
 -- Called from sequence.
 local function seq_func(bar, beat, subbeat)
     local note_num = math.random(0, #alg_scale)
-    api.send_note("synth", alg_scale[note_num], 0.7, 8) --0.5)
+    neb.send_note("synth", alg_scale[note_num], 0.7, 8) --0.5)
 end
 
 -- Called from section.
@@ -131,11 +130,11 @@ end
 local function boing(note_num)
     local boinged = false;
 
-    api.info("boing")
+    neb.info("boing")
     if note_num == 0 then
         note_num = Random(30, 80)
         boinged = true
-        api.send_note("synth", note_num, VEL, 8) --0.5)
+        neb.send_note("synth", note_num, VEL, 8) --0.5)
     end
     return boinged
 end

@@ -153,7 +153,7 @@ end
 --   E#5.major - named key.scale
 --   A3.MY_SCALE - user defined key.chord-or-scale
 -- @param nstr string Standard string to parse.
--- @return List of note numbers or nil,string if invalid nstr.
+-- @return List of note numbers or nil, error if invalid nstr.
 function M.get_notes_from_string(nstr)
     local notes = nil
     local serr = ""
