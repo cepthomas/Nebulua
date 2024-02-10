@@ -61,7 +61,7 @@ M.lua_export_funcs =
             {
                 name = "volume",
                 type = "N",
-                description = "Volume between 0.0 and 1.0."
+                description = "Volume between 0.0 and 1.0"
             },
         },
         ret = { type = "I", description = "LUA_STATUS" }
@@ -105,12 +105,12 @@ M.host_export_funcs =
         args =
         {
             {
-                name = "device",
+                name = "dev_name",
                 type = "S",
                 description = "Midi device name"
             },
             {
-                name = "channum",
+                name = "chan_num",
                 type = "I",
                 description = "Midi channel number 1-16"
             },
@@ -130,12 +130,12 @@ M.host_export_funcs =
         args =
         {
             {
-                name = "device",
+                name = "dev_name",
                 type = "S",
                 description = "Midi device name"
             },
             {
-                name = "channum",
+                name = "chan_num",
                 type = "I",
                 description = "Midi channel number 1-16"
             },
@@ -181,7 +181,7 @@ M.host_export_funcs =
     {
         lua_func_name = "send_note",
         host_func_name = "SendNote",
-        description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).",
+        description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
         args =
         {
             {
@@ -201,8 +201,8 @@ M.host_export_funcs =
             },
             {
                 name = "dur",
-                type = "N",
-                description = "Duration as bar.beat"
+                type = "I",
+                description = "Duration in subbeats"
             },
         },
         ret = { type = "I", description = "LUA_STATUS" }

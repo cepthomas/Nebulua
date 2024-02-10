@@ -34,7 +34,7 @@ int luainterop_Step(lua_State* l, int bar, int beat, int subbeat);
 /// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Input channel handle
 /// @param[in] note_num Note number
-/// @param[in] volume Volume between 0.0 and 1.0.
+/// @param[in] volume Volume between 0.0 and 1.0
 /// @return int LUA_STATUS
 int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume);
 

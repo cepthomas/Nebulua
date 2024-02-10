@@ -1,42 +1,31 @@
 
--- Example Nebulator composition file. This is not actual music.
-
-local log = require("logger")
+-- Nebulua test script.
 
 local neb = require("nebulua") -- lua api
-local api = require("host_api") -- C api
+-- local api = require("host_api") -- C api (or sim)
 
 
-log.info("=============== go go go =======================")
+neb.info("=============== go go go =======================")
 
 
 ------------------------- Config ----------------------------------------
 
--- Devices
+-- Device names
 local dev_in1 = "in1"
 local dev_in2 = "in2"
 local dev_out1 = "out1"
 local dev_out2 = "out2"
 
 -- Channels
-local hout1  = create_output_channel(dev_out1, 1, 33)
-local hout2  = create_output_channel(dev_out2, 2, 44)
-local hin1  = create_input_channel(dev_in1, 3)
-local hin2  = create_input_channel(dev_in2, 4)
+local hout1  = neb.create_output_channel(dev_out1, 1, 33)
+local hout2  = neb.create_output_channel(dev_out2, 2, 44)
+local hin1   = neb.create_input_channel(dev_in1, 3)
+local hin2   = neb.create_input_channel(dev_in2, 4)
 
 ------------------------- Vars ----------------------------------------
 
--- Local vars.
-local keys_vol = 0.8
-local drum_vol = 0.8
-
--- Aliases.
-snare = drum.AcousticSnare
-bdrum = drum.AcousticBassDrum
-hhcl = drum.ClosedHiHat
-ride = drum.RideCymbal1
-crash = drum.CrashCymbal2
-mtom = drum.HiMidTom
+-- -- Local vars.
+local master_vol = 0.8
 
 
 --------------------- Called from C core -----------------------------------
@@ -44,48 +33,44 @@ mtom = drum.HiMidTom
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    log.info("initialization")
-
-    -- Load her up.
-    -- local steps = {}
-    -- steps = neb.process_all(sequences, sections)
+    neb.info("initialization")
+    -- Do work.
     neb.process_all(sequences, sections)
-
-    api.set_tempo(100)
-
+    neb.set_tempo(100)
     return 0
+end
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
 function step(bar, beat, subbeat)
-
     -- Main work.
     neb.do_step(steps, bar, beat, subbeat)
 
     -- Selective work.
     if beat == 0 and subbeat == 0 then
-        api.send_controller(hsynth, ctrl.Pan, 90)
-        -- or...
-        api.send_controller(hout1,  ctrl.Pan, 30)
+        neb.send_controller(hout1, 50, 51)
+    end
+    if beat == 1 and subbeat == 4 then
+        neb.send_controller(hout2,  60, 61)
     end
 end
 
 -----------------------------------------------------------------------------
--- Handlers for input note events.
-function input_note(chan_hnd, note_num, velocity)
-    log.info("input_note") -- string.format("%s", variable_name), chan_hnd, note, vel)
+-- Handler for input note events.
+function input_note(chan_hnd, note_num, volume)
+    local s = string.format("input_note: %d %d %f", chan_hnd, note_num, volume)
+    neb.info(s)
 
-    if chan_hnd == hbing_bong then
-        -- whiz = ...
+    if chan_hnd == hin1 then
+        neb.send_note(hout1, note_num + 1, volume + 1, 8)
     end
-
-    api.send_note(hout1, note_num, velocity, 0.5)
 end
 
 -----------------------------------------------------------------------------
--- Handlers for input controller events.
+-- Handler for input controller events.
 function input_controller(chan_hnd, controller, value)
-    log.info("input_controller") --, chan_hnd, ctlid, value)
+    local s = string.format("input_controller: %d %d %d", chan_hnd, controller, value)
+    neb.info(s)
 end
 
 ----------------------- User lua functions -------------------------
@@ -94,7 +79,7 @@ end
 -- Called from sequence.
 local function seq_func(bar, beat, subbeat)
     local note_num = math.random(0, #alg_scale)
-    api.send_note(hout1, alg_scale[note_num], 0.7, 0.5)
+    neb.send_note(hout1, alg_scale[note_num], 0.7, 1)
 end
 
 -- Called from section.
@@ -107,11 +92,11 @@ end
 local function boing(note_num)
     local boinged = false;
 
-    log.info("boing")
+    neb.info("boing")
     if note_num == 0 then
-        note_num = Random(30, 80)
+        note_num = math.random(30, 80)
         boinged = true
-        api.send_note(hout2, note_num, VEL, 1.0)
+        neb.send_note(hout2, note_num, VEL, 8)
     end
     return boinged
 end
@@ -120,21 +105,27 @@ end
 
 sequences =
 {
+    example_seq = -- neb.SUBBEATS_PER_BEAT = 8
+    {
+        -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+        { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    },
+
     drums_verse =
     {
         --|........|........|........|........|........|........|........|........|
-        {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
-        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
-        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
+        {"|8       |        |8       |        |8       |        |8       |        |", 10 },
+        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
+        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
     },
 
     drums_chorus =
     {
         -- |........|........|........|........|........|........|........|........|
-        { "|6       |        |6       |        |6       |        |6       |        |", bdrum },
-        { "|        |7 7     |        |7 7     |        |7 7     |        |        |", ride },
-        { "|        |    4   |        |        |        |    4   |        |        |", mtom },
-        { "|        |        |        |        |        |        |        |8       |", crash },
+        { "|6       |        |6       |        |6       |        |6       |        |", 10 },
+        { "|        |7 7     |        |7 7     |        |7 7     |        |        |", 13 },
+        { "|        |    4   |        |        |        |    4   |        |        |", 14 },
+        { "|        |        |        |        |        |        |        |8       |", 15 },
     },
 
     keys_verse =
@@ -180,8 +171,8 @@ sections =
 
     middle =
     {
-        { hout1,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
-        { hout2,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
+        { hout1,  keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
+        { hout2,  bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
     },
 
     ending =
@@ -191,5 +182,3 @@ sections =
     }
 }
 
--- -- Return the module.
--- return M

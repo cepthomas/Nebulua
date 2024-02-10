@@ -1,30 +1,12 @@
 
 -- Core generic functions for this app. Matches/requires the C libs.
+-- Hides the C api so this is one stop shopping for the user script.
 
-
+local api = require("host_api") -- C api (or sim)
 local st = require("step_types")
 
 
 --[[
-
-Glossary
-    int chan_hnd (device id << 8 | chan_num)
-    int controller (name - midi_defs)
-    int value (controller payload)
-    int note_num (0-127)
-    double volume (0.0-1.0) 0 means note off
-    int velocity (0-127) 0 means note off
-    int bar (absolute)
-    int beat (in bar)
-    int subbeat (in beat)
-    int subbeats (absolute/total - in sequence/section/composition)
-
-Script defs:
-   BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUBBEAT is 0->neb.SUBBEATS_PER_BEAT-1
-   WHAT_TO_PLAY is a string (see neb.get_notes_from_string(s)) or integer or function.
-   BAR_TIME is a string of "BAR.BEAT.SUBBEAT" e.g. "1.2.3" or "1.2" or "1".
-   VOLUME 0->9
-
 Internal collections
     steps: index is sequence name, value is table of Step.
     steps =
@@ -54,40 +36,34 @@ Internal collections
         },
         ...
     }
-
-    -- example.lua
-    sections =
-    {
-        beginning =
-        {
-            { hkeys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-            { hdrums, drums_verse, drums_verse, drums_verse, drums_verse },
-            { hbass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-        }
-    }
-
 ]]
 
 local M = {}
 
 -- Misc defs - matches C host.
-M.SUBBEATS_PER_BEAT 8
-M.BEATS_PER_BAR     4
+M.SUBBEATS_PER_BEAT = 8
+M.BEATS_PER_BAR = 4
+
 M.LOG_LEVEL = { NONE = 0, TRACE = 1, DEBUG = 2, INFO = 3, ERROR = 4 }
-
-
 --- Convenience functions.
 function M.error(msg) api.log(M.LOG_LEVEL.ERROR, msg) end
 function M.info(msg)  api.log(M.LOG_LEVEL.INFO, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DEBUG, msg) end
 function M.trace(msg) api.log(M.LOG_LEVEL.TRACE, msg) end
 
+-- Thunk the C api.
+M.create_input_channel = api.create_input_channel
+M.create_output_channel = api.create_output_channel
+M.set_tempo = api.set_tempo
+M.send_note = api.send_note
+M.send_controller = api.send_controller
+
 
 -----------------------------------------------------------------------------
 --- Report a syntax error.
 -- @param info
 local function syntax_error(desc, info)
-    log.error(string.format("Syntax error: %s %s", desc, info))
+    M.error(string.format("Syntax error: %s %s", desc, info))
 end
 
 
@@ -96,9 +72,9 @@ end
 -- @param sequences table user sequence specs
 -- @param sections table user section specs
 -- @return list of step_info ordered by subbeat
-function M.process_all(sequences, sections)
+function M.process_all(sequences, sections) -- TODO1 finish
 
-    -------------- Process sequences.
+    -- Process sequences.
     -- sequences =
     -- {
     --     sequence_name_1 =
@@ -128,6 +104,7 @@ function M.process_all(sequences, sections)
     --     ...
     -- }
 
+    local seq_steps = {}
 
     for seq_name, seq_chunks in ipairs(sequences) do
         -- test types?
@@ -149,15 +126,15 @@ function M.process_all(sequences, sections)
                 steps[seq_name] = gr_steps
             end
 
-            M.seq_steps.insert()
+            seq_steps.insert(steps)
         end
     end
 
     table.sort(seq_steps, function (left, right) return left.subbeat < right.subbeat end)
 
 
-    -------------- Process sections.
-    _sections = sections
+    -- Process sections.
+    -- _sections = sections
 
     -- sections =
     -- {
@@ -283,6 +260,7 @@ function M.do_step(send_stuff, bar, beat, subbeat) -- TODO1
     -- calc total subbeat
     -- get all 
     -- return status?
-
-
 end
+
+-- Return module.
+return M

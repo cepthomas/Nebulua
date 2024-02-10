@@ -1,21 +1,20 @@
 
--- Example Nebulator composition file. This is not actual music.
+-- Example Nebulua composition file. This is not actual music.
 
-local log = require("logger")
-local sx = require("stringex")
-local ut = require("utils")
+local sx  = require("stringex")
+local ut  = require("utils")
 
 local neb = require("nebulua") -- lua api
 local api = require("host_api") -- C api
+local md  = require("midi_defs")
 
-local md = require("midi_defs")
 local inst = md.instruments
 local drum = md.drums
 local kit = md.drum_kits
 local ctrl = md.controllers
 
 
-log.info("=============== go go go =======================")
+api.info("=============== go go go =======================")
 
 
 ------------------------- Config ----------------------------------------
@@ -63,7 +62,7 @@ mtom = drum.HiMidTom
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    log.info("example initialization")
+    api.info("example initialization")
     math.randomseed(os.time())
 
     -- Load her up.
@@ -98,19 +97,19 @@ end
 -----------------------------------------------------------------------------
 -- Handlers for input note events.
 function input_note(chan_hnd, note_num, velocity)
-    log.info("input_note") -- string.format("%s", variable_name), chan_hnd, note, vel)
+    api.info("input_note") -- string.format("%s", variable_name), chan_hnd, note, vel)
 
     if chan_hnd == hbing_bong then
         -- whiz = ...
     end
 
-    api.send_note("synth", note_num, velocity, 0.5)
+    api.send_note("synth", note_num, velocity, 8) --0.5)
 end
 
 -----------------------------------------------------------------------------
 -- Handlers for input controller events.
 function input_controller(chan_hnd, controller, value)
-    log.info("input_controller") --, chan_hnd, ctlid, value)
+    api.info("input_controller") --, chan_hnd, ctlid, value)
 end
 
 ----------------------- User lua functions -------------------------
@@ -119,7 +118,7 @@ end
 -- Called from sequence.
 local function seq_func(bar, beat, subbeat)
     local note_num = math.random(0, #alg_scale)
-    api.send_note("synth", alg_scale[note_num], 0.7, 0.5)
+    api.send_note("synth", alg_scale[note_num], 0.7, 8) --0.5)
 end
 
 -- Called from section.
@@ -132,11 +131,11 @@ end
 local function boing(note_num)
     local boinged = false;
 
-    log.info("boing")
+    api.info("boing")
     if note_num == 0 then
         note_num = Random(30, 80)
         boinged = true
-        api.send_note("synth", note_num, VEL, 1.0)
+        api.send_note("synth", note_num, VEL, 8) --0.5)
     end
     return boinged
 end

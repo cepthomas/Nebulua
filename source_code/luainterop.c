@@ -146,25 +146,25 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
 // Host export function: Create an output midi channel.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: device Midi device name
-// Lua arg: channum Midi channel number 1-16
+// Lua arg: dev_name Midi device name
+// Lua arg: chan_num Midi channel number 1-16
 // Lua arg: patch Midi patch number
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_CreateOutputChannel(lua_State* l)
 {
     // Get arguments
-    const char* device;
-    if (lua_isstring(l, 1)) { device = lua_tostring(l, 1); }
-    else { luaL_error(l, "Bad arg type for device"); }
-    int channum;
-    if (lua_isinteger(l, 2)) { channum = lua_tointeger(l, 2); }
-    else { luaL_error(l, "Bad arg type for channum"); }
+    const char* dev_name;
+    if (lua_isstring(l, 1)) { dev_name = lua_tostring(l, 1); }
+    else { luaL_error(l, "Bad arg type for dev_name"); }
+    int chan_num;
+    if (lua_isinteger(l, 2)) { chan_num = lua_tointeger(l, 2); }
+    else { luaL_error(l, "Bad arg type for chan_num"); }
     int patch;
     if (lua_isinteger(l, 3)) { patch = lua_tointeger(l, 3); }
     else { luaL_error(l, "Bad arg type for patch"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_CreateOutputChannel(l, device, channum, patch);
+    int ret = luainteropwork_CreateOutputChannel(l, dev_name, chan_num, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -173,21 +173,21 @@ static int luainterop_CreateOutputChannel(lua_State* l)
 // Host export function: Create an input midi channel.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: device Midi device name
-// Lua arg: channum Midi channel number 1-16
+// Lua arg: dev_name Midi device name
+// Lua arg: chan_num Midi channel number 1-16
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_CreateInputChannel(lua_State* l)
 {
     // Get arguments
-    const char* device;
-    if (lua_isstring(l, 1)) { device = lua_tostring(l, 1); }
-    else { luaL_error(l, "Bad arg type for device"); }
-    int channum;
-    if (lua_isinteger(l, 2)) { channum = lua_tointeger(l, 2); }
-    else { luaL_error(l, "Bad arg type for channum"); }
+    const char* dev_name;
+    if (lua_isstring(l, 1)) { dev_name = lua_tostring(l, 1); }
+    else { luaL_error(l, "Bad arg type for dev_name"); }
+    int chan_num;
+    if (lua_isinteger(l, 2)) { chan_num = lua_tointeger(l, 2); }
+    else { luaL_error(l, "Bad arg type for chan_num"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_CreateInputChannel(l, device, channum);
+    int ret = luainteropwork_CreateInputChannel(l, dev_name, chan_num);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -235,13 +235,13 @@ static int luainterop_SetTempo(lua_State* l)
 }
 
 //--------------------------------------------------------//
-// Host export function: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).
+// Host export function: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: note_num Note number
 // Lua arg: volume Volume between 0.0 and 1.0
-// Lua arg: dur Duration as bar.beat
+// Lua arg: dur Duration in subbeats
 // Lua return: int LUA_STATUS
 static int luainterop_SendNote(lua_State* l)
 {
@@ -255,8 +255,8 @@ static int luainterop_SendNote(lua_State* l)
     double volume;
     if (lua_isnumber(l, 3)) { volume = lua_tonumber(l, 3); }
     else { luaL_error(l, "Bad arg type for volume"); }
-    double dur;
-    if (lua_isnumber(l, 4)) { dur = lua_tonumber(l, 4); }
+    int dur;
+    if (lua_isinteger(l, 4)) { dur = lua_tointeger(l, 4); }
     else { luaL_error(l, "Bad arg type for dur"); }
 
     // Do the work. One result.
@@ -297,9 +297,9 @@ static int luainterop_SendController(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
-    { "log", luainterop_Log },
     { "create_output_channel", luainterop_CreateOutputChannel },
     { "create_input_channel", luainterop_CreateInputChannel },
+    { "log", luainterop_Log },
     { "set_tempo", luainterop_SetTempo },
     { "send_note", luainterop_SendNote },
     { "send_controller", luainterop_SendController },
