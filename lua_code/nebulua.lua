@@ -40,23 +40,28 @@ Internal collections
 
 local M = {}
 
+-----------------------------------------------------------------------------
+-- Impedance matching between C and Lua.
+
 -- Misc defs - matches C host.
 M.SUBBEATS_PER_BEAT = 8
 M.BEATS_PER_BAR = 4
-
 M.LOG_LEVEL = { NONE = 0, TRACE = 1, DEBUG = 2, INFO = 3, ERROR = 4 }
+
 --- Convenience functions.
 function M.error(msg) api.log(M.LOG_LEVEL.ERROR, msg) end
 function M.info(msg)  api.log(M.LOG_LEVEL.INFO, msg) end
 function M.debug(msg) api.log(M.LOG_LEVEL.DEBUG, msg) end
 function M.trace(msg) api.log(M.LOG_LEVEL.TRACE, msg) end
 
--- Thunk the C api.
+-- These go straight through so just thunk the C api.
 M.create_input_channel = api.create_input_channel
 M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
-M.send_note = api.send_note
 M.send_controller = api.send_controller
+
+
+M.send_note = api.send_note -- TOODO1 intercept and handle note offs.
 
 
 -----------------------------------------------------------------------------

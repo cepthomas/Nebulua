@@ -9,7 +9,7 @@
 
 
 ## timing
-DeltaTicksPerQuarterNote aka subbeats per beat = 8
+Midi DeltaTicksPerQuarterNote aka subbeats per beat/qtr_note = 8 = 32nd note resolution
 Gives 32nd note resolution.
 Fast timer resolution set to 1 msec.
 int bpm = 40 -> 188 msec period.
@@ -43,7 +43,7 @@ not: int dev_id -
     int bar (absolute)
     int beat (in bar)
     int subbeat (in beat)
-    int subbeats (absolute/total - in sequence/section/composition)
+    int tick (absolute - maybe in sequence/section/composition) is subbeats
 
 Script defs:
    BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUBBEAT is 0->neb.SUBBEATS_PER_BEAT-1
@@ -66,40 +66,40 @@ Script defs:
 -- Script wants to log something.
 -- - level Log level
 -- - msg Log message
--- @return LUA_STATUS
+-- return LUA_STATUS
 M.log(level, msg)
 
 -- Create an input midi channel.
 -- - dev_name Midi device name
 -- - chan_num Midi channel number 1-16
--- @return Channel handle or 0 if invalid
+-- return Channel handle or 0 if invalid
 M.create_input_channel(dev_name, chan_num)
 
 -- Create an output midi channel.
 -- - dev_name Midi device name
 -- - chan_num Midi channel number 1-16
 -- - patch Midi patch number
--- @return Channel handle or 0 if invalid
+-- return Channel handle or 0 if invalid
 M.create_output_channel(dev_name, chan_num, patch)
 
 -- Script wants to change tempo.
 -- - bpm BPM
--- @return LUA_STATUS
+-- return LUA_STATUS
 M.set_tempo(bpm)
 
 -- If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).
 -- - chan_hnd Output channel handle
 -- - note_num Note number
 -- - volume Volume between 0.0 and 1.0
--- - dur Duration in subbeats
--- @return LUA_STATUS
+-- - dur Duration in ??? see spec
+-- return LUA_STATUS
 M.send_note(chan_hnd, note_num, volume, dur)
 
 -- Send a controller immediately.
 -- - chan_hnd Output channel handle
 -- - controller Specific controller
 -- - value Payload.
--- @return LUA_STATUS
+-- return LUA_STATUS
 M.send_controller(chan_hnd, controller, value)
 
 

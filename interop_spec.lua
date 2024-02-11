@@ -24,20 +24,25 @@ M.lua_export_funcs =
         args =
         {
             {
-                name = "bar",
+                name = "tick",
                 type = "I",
-                description = "Which bar 0-N"
+                description = "Current tick 0-N"
             },
-            {
-                name = "beat",
-                type = "I",
-                description = "Which beat 0-3"
-            },
-            {
-                name = "subbeat",
-                type = "I",
-                description = "Which subbeat 0-7"
-            },
+            -- {
+            --     name = "bar",
+            --     type = "I",
+            --     description = "Which bar 0-N"
+            -- },
+            -- {
+            --     name = "beat",
+            --     type = "I",
+            --     description = "Which beat 0-3"
+            -- },
+            -- {
+            --     name = "subbeat",
+            --     type = "I",
+            --     description = "Which subbeat 0-7"
+            -- },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -202,7 +207,7 @@ M.host_export_funcs =
             {
                 name = "dur",
                 type = "I",
-                description = "Duration in subbeats"
+                description = "Duration in ticks TODO1 klunky time"
             },
         },
         ret = { type = "I", description = "LUA_STATUS" }

@@ -64,7 +64,7 @@ end
 -- @param[in] chan_hnd Output channel handle
 -- @param[in] note_num Note number
 -- @param[in] volume Volume between 0.0 and 1.0
--- @param[in] dur Duration in subbeats
+-- @param[in] dur Duration in subbeats TODO1
 -- @return LUA_STATUS
 function M.send_note(chan_hnd, note_num, volume, dur)
     table.concat(activity, string.format("send_note: %d %d %f %d", chan_hnd, note_num, volume, dur))

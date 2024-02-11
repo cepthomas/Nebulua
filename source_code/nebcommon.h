@@ -26,26 +26,26 @@
 /// Only 4/4 time supported.
 #define BEATS_PER_BAR 4
 
-/// Internal/app resolution aka DeltaTicksPerQuarterNote. was 32?
-#define INTERNAL_PPQ 8
+// /// Internal/app resolution aka DeltaTicksPerQuarterNote.
+// #define INTERNAL_PPQ 8
 
-/// Convenience.
-#define SUBBEATS_PER_BEAT INTERNAL_PPQ
+/// Our resolution = 32nd note.
+#define SUBBEATS_PER_BEAT 8
 
 /// Convenience.
 #define SUBBEATS_PER_BAR (SUBBEATS_PER_BEAT * BEATS_PER_BAR)
 
 /// Total.
-#define TOTAL_BEATS(subbeats) (subbeats / SUBBEATS_PER_BEAT)
+#define TOTAL_BEATS(tick) (tick / SUBBEATS_PER_BEAT)
 
 /// The bar number.
-#define BAR(subbeats) (subbeats / SUBBEATS_PER_BAR)
+#define BAR(tick) (tick / SUBBEATS_PER_BAR)
 
 /// The beat number in the bar.
-#define BEAT(subbeats) (subbeats / SUBBEATS_PER_BEAT % BEATS_PER_BAR)
+#define BEAT(tick) (tick / SUBBEATS_PER_BEAT % BEATS_PER_BAR)
 
 /// The subbeat in the beat.
-#define SUBBEAT(subbeats) (subbeats % SUBBEATS_PER_BEAT)
+#define SUBBEAT(tick) (tick % SUBBEATS_PER_BEAT)
 
 
 //----------------------- Utilities -----------------------------//
@@ -64,7 +64,7 @@ const char* nebcommon_FormatMidiStatus(int mstat);
 
 /// Convert a string bar time to absolute position.
 /// @param[in] sbt time string can be "1.2.3" or "1.2" or "1".
-/// @return int subbeats
+/// @return int tick
 int nebcommon_ParseBarTime(const char* sbt);
 
 /// Convert a position to string bar time.

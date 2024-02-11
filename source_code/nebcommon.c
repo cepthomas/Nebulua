@@ -107,12 +107,12 @@ const char* nebcommon_FormatMidiStatus(int mstat)
 
 
 //--------------------------------------------------------//
-const char* nebcommon_FormatBarTime(int subbeats)
+const char* nebcommon_FormatBarTime(int tick)
 {
     static char buff[BUFF_LEN];
-    int bar = BAR(subbeats);
-    int beat = BEAT(subbeats);
-    int subbeat = SUBBEAT(subbeats);
+    int bar = BAR(tick);
+    int beat = BEAT(tick);
+    int subbeat = SUBBEAT(tick);
     snprintf(buff, BUFF_LEN, "%d.%d.%d", bar, beat, subbeat);
 
     return buff;
@@ -122,7 +122,7 @@ const char* nebcommon_FormatBarTime(int subbeats)
 //--------------------------------------------------------//
 int nebcommon_ParseBarTime(const char* sbt)
 {
-    int subbeats = 0;
+    int tick = 0;
     bool valid = false;
     int v;
 
@@ -135,7 +135,7 @@ int nebcommon_ParseBarTime(const char* sbt)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, 9999);
         if (!valid) goto nogood;
-        subbeats += v * SUBBEATS_PER_BAR;
+        tick += v * SUBBEATS_PER_BAR;
     }
 
     tok = strtok(NULL, ".");
@@ -143,7 +143,7 @@ int nebcommon_ParseBarTime(const char* sbt)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, BEATS_PER_BAR-1);
         if (!valid) goto nogood;
-        subbeats += v * SUBBEATS_PER_BEAT;
+        tick += v * SUBBEATS_PER_BEAT;
     }
 
     tok = strtok(NULL, ".");
@@ -151,10 +151,10 @@ int nebcommon_ParseBarTime(const char* sbt)
     {
         valid = nebcommon_ParseInt(tok, &v, 0, SUBBEATS_PER_BEAT-1);
         if (!valid) goto nogood;
-        subbeats += v;
+        tick += v;
     }
 
-    return subbeats;
+    return tick;
     
 nogood:
     return -1;

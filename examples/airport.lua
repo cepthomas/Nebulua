@@ -63,7 +63,7 @@ function setup()
 
     -- Set up the _loops.
     -- Key is Ab.
-    add_loop("Ab4", 17.3,  8.1);
+    add_loop("Ab4", 17.3,  8.1); -- TODO1 times!  1.2.3
     add_loop("Ab5", 17.2,  3.1);
     -- 3rd
     add_loop("C5",  21.1,  5.3);

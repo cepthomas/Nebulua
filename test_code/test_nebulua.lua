@@ -32,7 +32,7 @@ function M.suite_step_info(pn)
 
     n = StepNote(10000, 99, 101, 202)
     pn.UT_NOT_NIL(n.err)
-    pn.UT_STR_EQUAL(n, "Invalid integer subbeats: 10000")
+    pn.UT_STR_EQUAL(n, "Invalid integer tick: 10000")
 
     c = StepController(344, 37, 143, 99)
     pn.UT_NIL(c.err)

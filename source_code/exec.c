@@ -95,16 +95,16 @@ static int _tempo = 100;
 // Current subbeat.
 static int _position = 0;
 
-// Length of composition in subbeats.
+// Length of composition in ticks.
 static int _length = 0;
 
 
 //---------------------- Functions ------------------------//
 
-// Forever loop.
+// Main loop.
 static int _Forever(void);
 
-// Tick corresponding to bpm. !!From Interrupt!!
+// Clock tick corresponding to bpm. !!From Interrupt!!
 static void _MidiClockHandler(double msec);
 
 // Handle incoming messages. !!From Interrupt!!
@@ -198,7 +198,7 @@ int _Forever(void)
 
         if (res != NULL)
         {
-            // Process the line. Chop up the raw command line into args.
+            // Process the line. Chop up the raw command line into args. TODO1 use stringx.
             int argc = 0;
             char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
             char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
