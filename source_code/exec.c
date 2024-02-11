@@ -261,7 +261,8 @@ void _MidiClockHandler(double msec)
     // Lock access to lua context.
     ENTER_CRITICAL_SECTION;
 
-    int stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUBBEAT(_position));
+    // int stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUBBEAT(_position));
+    int stat = luainterop_Step(_l, _position);
     if (stat != NEB_OK)
     {
         // TODO2 do something non-fatal?

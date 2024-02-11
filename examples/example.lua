@@ -75,7 +75,7 @@ function setup()
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
-function step(bar, beat, subbeat)
+function step(bt) --bar, beat, subbeat)
     -- boing(60)
 
     -- Main work.

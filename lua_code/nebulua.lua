@@ -43,16 +43,11 @@ local M = {}
 -----------------------------------------------------------------------------
 -- Impedance matching between C and Lua.
 
--- Misc defs - matches C host.
-M.SUBBEATS_PER_BEAT = 8
-M.BEATS_PER_BAR = 4
-M.LOG_LEVEL = { NONE = 0, TRACE = 1, DEBUG = 2, INFO = 3, ERROR = 4 }
-
---- Convenience functions.
-function M.error(msg) api.log(M.LOG_LEVEL.ERROR, msg) end
-function M.info(msg)  api.log(M.LOG_LEVEL.INFO, msg) end
-function M.debug(msg) api.log(M.LOG_LEVEL.DEBUG, msg) end
-function M.trace(msg) api.log(M.LOG_LEVEL.TRACE, msg) end
+-- Log functions. Magic numbers from C code.
+function M.error(msg) api.log(4, msg) end
+function M.info(msg)  api.log(3, msg) end
+function M.debug(msg) api.log(2, msg) end
+function M.trace(msg) api.log(1, msg) end
 
 -- These go straight through so just thunk the C api.
 M.create_input_channel = api.create_input_channel
@@ -61,7 +56,7 @@ M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
 
 
-M.send_note = api.send_note -- TOODO1 intercept and handle note offs.
+M.send_note = api.send_note -- TOODO1 intercept and handle note offs, velocity.
 
 
 -----------------------------------------------------------------------------
@@ -260,8 +255,9 @@ end
 -----------------------------------------------------------------------------
 --- Process notes at this time.
 -- @param name type desc
+-- @param name type desc
 -- @return type desc
-function M.do_step(send_stuff, bar, beat, subbeat) -- TODO1
+function M.do_step(send_stuff, tm) -- TODO1
     -- calc total subbeat
     -- get all 
     -- return status?

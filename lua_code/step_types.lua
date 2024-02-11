@@ -1,8 +1,8 @@
-
 -- Class family for midi events to send.
 
 local ut = require("utils")
 local v = require('validators')
+local md = require('midi_defs')
 require('class')
 
 
@@ -27,16 +27,15 @@ end
 -- derived Note class
 StepNote = class(Step,
     function(c, tick, chan_hnd, note_num, velocity)
-        err = nil
-        err = err or v.val_integer(tick, 0, 9999, 'tick')
-        err = err or v.val_integer(chan_hnd, 0, 255, 'chan_hnd')
-        err = err or v.val_integer(note_num, 0, 255, 'note_num')
-        err = err or v.val_integer(velocity, 0, 255, 'velocity')
+        c.err = nil
+        c.err = c.err or v.val_integer(tick, 0, 99999, 'tick')
+        c.err = c.err or v.val_integer(chan_hnd, 0, md.MIDI_MAX, 'chan_hnd')
+        c.err = c.err or v.val_integer(note_num, 0, md.MIDI_MAX, 'note_num')
+        c.err = c.err or v.val_integer(velocity, 0, md.MIDI_MAX, 'velocity')
         Step.__init(c, tick, chan_hnd) -- init base
         c.type = STEP_TYPE.NOTE
         c.note_num = note_num
         c.velocity = velocity
-        c.err = err
     end)
 
 function StepNote:format()
@@ -48,16 +47,15 @@ end
 -- derived Controller class
 StepController = class(Step,
     function(c, tick, chan_hnd, controller, value)
-        err = nil
-        err = err or v.val_integer(tick, 0, 9999, 'tick')
-        err = err or v.val_integer(chan_hnd, 0, 255, 'chan_hnd')
-        err = err or v.val_integer(controller, 0, 255, 'controller')
-        err = err or v.val_integer(value, 0, 255, 'value')
+        c.err = nil
+        c.err = c.err or v.val_integer(tick, 0, 9999, 'tick')
+        c.err = c.err or v.val_integer(chan_hnd, 0, md.MIDI_MAX, 'chan_hnd')
+        c.err = c.err or v.val_integer(controller, 0, md.MIDI_MAX, 'controller')
+        c.err = c.err or v.val_integer(value, 0, md.MIDI_MAX, 'value')
         Step.__init(c, tick, chan_hnd) -- init base
         c.type = STEP_TYPE.CONTROLLER
         c.controller = controller
         c.value = value
-        c.err = err
     end)
 
 function StepController:format()
@@ -69,14 +67,13 @@ end
 -- derived Function class
 StepFunction = class(Step,
     function(c, tick, chan_hnd, func)
-        err = nil
-        err = err or v.val_integer(tick, 0, 9999, 'tick')
-        err = err or v.val_integer(chan_hnd, 0, 255, 'chan_hnd')
-        err = err or v.val_function(func, 'func')
+        c.err = nil
+        c.err = c.err or v.val_integer(tick, 0, 9999, 'tick')
+        c.err = c.err or v.val_integer(chan_hnd, 0, md.MIDI_MAX, 'chan_hnd')
+        c.err = c.err or v.val_function(func, 'func')
         Step.__init(c, tick, chan_hnd) -- init base
         c.type = STEP_TYPE.FUNCTION
         c.func = func
-        c.err = err
     end)
 
 function StepFunction:format()

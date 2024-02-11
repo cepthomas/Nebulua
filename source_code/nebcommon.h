@@ -29,14 +29,14 @@
 // /// Internal/app resolution aka DeltaTicksPerQuarterNote.
 // #define INTERNAL_PPQ 8
 
-/// Our resolution = 32nd note.
+/// Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
 #define SUBBEATS_PER_BEAT 8
 
 /// Convenience.
 #define SUBBEATS_PER_BAR (SUBBEATS_PER_BEAT * BEATS_PER_BAR)
 
 /// Total.
-#define TOTAL_BEATS(tick) (tick / SUBBEATS_PER_BEAT)
+// #define TOTAL_BEATS(tick) (tick / SUBBEATS_PER_BEAT)
 
 /// The bar number.
 #define BAR(tick) (tick / SUBBEATS_PER_BAR)

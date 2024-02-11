@@ -2,6 +2,8 @@
 -- Create the namespace/module.
 local M = {}
 
+M.MIDI_MAX = 127
+
 -- The GM midi instrument definitions.
 M.instruments =
 {

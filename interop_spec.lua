@@ -20,7 +20,7 @@ M.lua_export_funcs =
     {
         lua_func_name = "step",
         host_func_name = "Step",
-        description = "Called every fast timer increment.",
+        description = "Called every fast timer increment aka tick.",
         args =
         {
             {
@@ -61,8 +61,13 @@ M.lua_export_funcs =
             {
                 name = "note_num",
                 type = "I",
-                description = "Note number"
+                description = "Note number 0-MIDI_MAX"
             },
+            -- {
+            --     name = "velocity",
+            --     type = "I",
+            --     description = "Velocity 0-MIDI_MAX"
+            -- },
             {
                 name = "volume",
                 type = "N",
@@ -86,12 +91,12 @@ M.lua_export_funcs =
             {
                 name = "controller",
                 type = "I",
-                description = "Specific controller id"
+                description = "Specific controller id 0-MIDI_MAX"
             },
             {
                 name = "value",
                 type = "I",
-                description = "Payload"
+                description = "Payload 0-MIDI_MAX"
             },
         },
         ret = { type = "I", description = "LUA_STATUS" }
@@ -122,7 +127,7 @@ M.host_export_funcs =
             {
                 name = "patch",
                 type = "I",
-                description = "Midi patch number"
+                description = "Midi patch number 0-MIDI_MAX"
             },
         },
         ret = { type = "I", description = "Channel handle or 0 if invalid" }
@@ -177,7 +182,7 @@ M.host_export_funcs =
             {
                 name = "bpm",
                 type = "I",
-                description = "BPM"
+                description = "BPM 40-240"
             },
         },
         ret = { type = "I", description = "LUA_STATUS" }
@@ -199,16 +204,21 @@ M.host_export_funcs =
                 type = "I",
                 description = "Note number"
             },
+            -- {
+            --     name = "velocity",
+            --     type = "I",
+            --     description = "Velocity 0-MIDI_MAX"
+            -- },
             {
                 name = "volume",
                 type = "N",
                 description = "Volume between 0.0 and 1.0"
             },
-            {
-                name = "dur",
-                type = "I",
-                description = "Duration in ticks TODO1 klunky time"
-            },
+            -- {
+            --     name = "dur",
+            --     type = "I",
+            --     description = "Duration in ticks TODO1 klunky time - also lua should do chasing"
+            -- },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -227,12 +237,12 @@ M.host_export_funcs =
             {
                 name = "controller",
                 type = "I",
-                description = "Specific controller"
+                description = "Specific controller 0-MIDI_MAX"
             },
             {
                 name = "value",
                 type = "I",
-                description = "Payload."
+                description = "Payload 0-MIDI_MAX"
             },
         },
         ret = { type = "I", description = "LUA_STATUS" }

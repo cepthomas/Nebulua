@@ -22,18 +22,16 @@
 /// @return int LUA_STATUS
 int luainterop_Setup(lua_State* l);
 
-/// Lua export function: Called every fast timer increment.
+/// Lua export function: Called every fast timer increment aka tick.
 /// @param[in] l Internal lua state.
-/// @param[in] bar Which bar 0-N
-/// @param[in] beat Which beat 0-3
-/// @param[in] subbeat Which subbeat 0-7
+/// @param[in] tick Current tick 0-N
 /// @return int LUA_STATUS
-int luainterop_Step(lua_State* l, int bar, int beat, int subbeat);
+int luainterop_Step(lua_State* l, int tick);
 
 /// Lua export function: Called when input arrives.
 /// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Input channel handle
-/// @param[in] note_num Note number
+/// @param[in] note_num Note number 0-MIDI_MAX
 /// @param[in] volume Volume between 0.0 and 1.0
 /// @return int LUA_STATUS
 int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume);
@@ -41,8 +39,8 @@ int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume
 /// Lua export function: Called when input arrives.
 /// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Input channel handle
-/// @param[in] controller Specific controller id
-/// @param[in] value Payload
+/// @param[in] controller Specific controller id 0-MIDI_MAX
+/// @param[in] value Payload 0-MIDI_MAX
 /// @return int LUA_STATUS
 int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int value);
 

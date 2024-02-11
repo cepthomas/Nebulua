@@ -29,15 +29,7 @@ local midi_out = "Microsoft GS Wavetable Synth"
 -- Channels
 local hout = create_output_channel(midi_out, 1, md.instruments.Pad2Warm)
 
-local function dur_to_subbeats(dur) -- TODO1
-    -- 15.6
-    return 0
-end
-
-function to_subbeats(bar, beat, subbeat) -- TODO1 put in lib?
-    return 1
-end
-
+-- note string, BT dur, BT delay
 local function add_loop(snote, duration, delay)
     -- List of note numbers or nil, error if invalid nstr.
     notes, err = md.get_notes_from_string(snote)
@@ -63,17 +55,17 @@ function setup()
 
     -- Set up the _loops.
     -- Key is Ab.
-    add_loop("Ab4", 17.3,  8.1); -- TODO1 times!  1.2.3
-    add_loop("Ab5", 17.2,  3.1);
+    add_loop("Ab4", BT(17,3),  BT(8,1))
+    add_loop("Ab5", BT(17,2),  BT(3,1))
     -- 3rd
-    add_loop("C5",  21.1,  5.3);
+    add_loop("C5",  BT(21,1),  BT(5,3))
     -- 4th
-    add_loop("Db5", 18.2,  12.3);
+    add_loop("Db5", BT(18,2),  BT(12,3))
     -- 5th
-    add_loop("Eb5", 20.0,  9.2);
+    add_loop("Eb5", BT(20,0),  BT(9,2))
     -- 6th
-    add_loop("F4",  19.3,  4.2);
-    add_loop("F5",  20.0,  14.1);
+    add_loop("F4",  BT(19,3),  BT(4,2))
+    add_loop("F5",  BT(20,0),  BT(14,1))
 
     neb.set_tempo(70)
 
@@ -81,7 +73,7 @@ function setup()
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
-function step(bar, beat, subbeat)
+function step(tm) --bar, beat, subbeat)
     if not valid then
         subbeats = to_subbeats(bar, beat, subbeat)
         for _, loop in ipairs(loops) do

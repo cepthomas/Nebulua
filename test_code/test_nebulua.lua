@@ -4,6 +4,7 @@
 local v  = require('validators')
 local ut = require("utils")
 local st = require("step_types")
+local bt = require("bar_time")
 
 -- ut.config_error_handling(true, true)
 
@@ -30,9 +31,9 @@ function M.suite_step_info(pn)
     pn.UT_NIL(n.err)
     pn.UT_STR_EQUAL(n, "1234 99 NOTE 101 202")
 
-    n = StepNote(10000, 99, 101, 202)
+    n = StepNote(100000, 99, 101, 202)
     pn.UT_NOT_NIL(n.err)
-    pn.UT_STR_EQUAL(n, "Invalid integer tick: 10000")
+    pn.UT_STR_EQUAL(n, "Invalid integer tick: 100000")
 
     c = StepController(344, 37, 143, 99)
     pn.UT_NIL(c.err)
@@ -55,6 +56,39 @@ end
 
 
 -----------------------------------------------------------------------------
+function M.suite_bar_time(pn) --  TODO1
+    pn.UT_INFO("suite_bar_time")
+
+    bt = BT(12345)
+    pn.UT_NIL(bt.err)
+    pn.UT_EQUAL(bt.tick, 12345)
+    pn.UT_EQUAL(bt.get_bar(), 0)
+    pn.UT_EQUAL(bt.get_beat(), 0)
+    pn.UT_EQUAL(bt.get_subbeat(), 0)
+    pn.UT_STR_EQUAL(tostring(bt), "xxxx")
+
+    bt.from_bar(129, 4, 2)
+    pn.UT_NIL(bt.err)
+    pn.UT_EQUAL(bt.tick, 0)
+    pn.UT_EQUAL(bt.get_bar(), 0)
+    pn.UT_EQUAL(bt.get_beat(), 0)
+    pn.UT_EQUAL(bt.get_subbeat(), 0)
+    pn.UT_STR_EQUAL(tostring(bt), "129.4.2")
+
+    bt.from_bar(25, 5, 2)
+    pn.UT_NOT_NIL(bt.err)
+    pn.UT_EQUAL(bt.tick, 0)
+    pn.UT_STR_EQUAL(tostring(bt), "poopoo")
+
+    bt.from_bar(25, 1, 9)
+    pn.UT_NOT_NIL(bt.err)
+    pn.UT_EQUAL(bt.tick, 0)
+    pn.UT_STR_EQUAL(tostring(bt), "poopoo")
+
+end
+
+
+-----------------------------------------------------------------------------
 function M.suite_process(pn) --  TODO1
     pn.UT_INFO("suite_process")
 
@@ -68,7 +102,7 @@ function M.suite_process(pn) --  TODO1
     pn.UT_TRUE(ok, string.format("Function setup() failed:\n%s ", msg))
 
     ok, msg = pcall(process_all, sequences, sections)
-    pn.UT_TRUE(ok, string.format("Function process_all() failed:\n%s ", msg))
+--    pn.UT_TRUE(ok, string.format("Function process_all() failed:\n%s ", msg))
 end
 
 

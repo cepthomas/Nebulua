@@ -101,12 +101,12 @@ int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int c
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume, double dur)
+int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)//, double dur)
 {
     VALI(chan_hnd > 0, chan_hnd);
     VALI(note_num >= 0 && note_num < MIDI_VAL_MAX, note_num);
     VALF(volume >= 0.0 && volume <= 1.0, volume);
-    VALF(dur >= 0.0 && dur <= 100.0, dur);
+    // VALF(dur >= 0.0 && dur <= 100.0, dur);
 
     midi_device_t* pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
     VALI(pdev != NULL, chan_hnd);

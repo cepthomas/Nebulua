@@ -50,7 +50,7 @@ int luainterop_Setup(lua_State* l)
 }
 
 //--------------------------------------------------------//
-int luainterop_Step(lua_State* l, int bar, int beat, int subbeat)
+int luainterop_Step(lua_State* l, int tick)
 {
     int num_args = 0;
     int num_ret = 1;
@@ -60,11 +60,7 @@ int luainterop_Step(lua_State* l, int bar, int beat, int subbeat)
     if (ltype != LUA_TFUNCTION) { luaL_error(l, "Bad lua function: step"); };
 
     // Push arguments.
-    lua_pushinteger(l, bar);
-    num_args++;
-    lua_pushinteger(l, beat);
-    num_args++;
-    lua_pushinteger(l, subbeat);
+    lua_pushinteger(l, tick);
     num_args++;
 
     // Do the actual call.
@@ -148,7 +144,7 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
 // Lua arg: chan_num Midi channel number 1-16
-// Lua arg: patch Midi patch number
+// Lua arg: patch Midi patch number 0-MIDI_MAX
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_CreateOutputChannel(lua_State* l)
 {
@@ -219,7 +215,7 @@ static int luainterop_Log(lua_State* l)
 // Host export function: Script wants to change tempo.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: bpm BPM
+// Lua arg: bpm BPM 40-240
 // Lua return: int LUA_STATUS
 static int luainterop_SetTempo(lua_State* l)
 {
@@ -241,7 +237,6 @@ static int luainterop_SetTempo(lua_State* l)
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: note_num Note number
 // Lua arg: volume Volume between 0.0 and 1.0
-// Lua arg: dur Duration in subbeats
 // Lua return: int LUA_STATUS
 static int luainterop_SendNote(lua_State* l)
 {
@@ -255,12 +250,9 @@ static int luainterop_SendNote(lua_State* l)
     double volume;
     if (lua_isnumber(l, 3)) { volume = lua_tonumber(l, 3); }
     else { luaL_error(l, "Bad arg type for volume"); }
-    int dur;
-    if (lua_isinteger(l, 4)) { dur = lua_tointeger(l, 4); }
-    else { luaL_error(l, "Bad arg type for dur"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SendNote(l, chan_hnd, note_num, volume, dur);
+    int ret = luainteropwork_SendNote(l, chan_hnd, note_num, volume);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -270,8 +262,8 @@ static int luainterop_SendNote(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: chan_hnd Output channel handle
-// Lua arg: controller Specific controller
-// Lua arg: value Payload.
+// Lua arg: controller Specific controller 0-MIDI_MAX
+// Lua arg: value Payload 0-MIDI_MAX
 // Lua return: int LUA_STATUS
 static int luainterop_SendController(lua_State* l)
 {
