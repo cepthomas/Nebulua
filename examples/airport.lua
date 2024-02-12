@@ -3,6 +3,7 @@
 
 local neb = require("nebulua") -- lua api
 local md  = require("midi_defs")
+local bt  = require("bar_time")
 -- local inst = md.instruments
 
 
@@ -55,7 +56,7 @@ function setup()
 
     -- Set up the _loops.
     -- Key is Ab.
-    add_loop("Ab4", BT(17,3),  BT(8,1))
+    add_loop("Ab4", BT(17,3),  BT(8,1)) nope...
     add_loop("Ab5", BT(17,2),  BT(3,1))
     -- 3rd
     add_loop("C5",  BT(21,1),  BT(5,3))

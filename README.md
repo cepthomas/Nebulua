@@ -42,8 +42,8 @@ not: int dev_id -
     int velocity (0-127) 0 means note off
     int bar (absolute)
     int beat (in bar)
-    int subbeat (in beat)
-    int tick (absolute - maybe in sequence/section/composition) is subbeats
+    int subbeat (in beat) - "musical"
+    int tick (absolute order - maybe in sequence/section/composition) - delta is subbeat
 
 Script defs:
    BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUBBEAT is 0->neb.SUBBEATS_PER_BEAT-1

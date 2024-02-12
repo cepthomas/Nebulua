@@ -6,6 +6,7 @@
 
 local neb = require("nebulua") -- lua api
 local md  = require("midi_defs")
+local bt  = require("bar_time")
 
 local inst = md.instruments
 local drum = md.drums

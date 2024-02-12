@@ -7,7 +7,7 @@ local M = {}
 
 -- ut.config_error_handling(true, true)
 
---- Definitions
+--- Music definitions
 NOTES_PER_OCTAVE = 12
 MIDDLE_C4 = 60
 DEFAULT_OCTAVE = 4 -- middle C

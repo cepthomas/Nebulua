@@ -217,7 +217,7 @@ M.host_export_funcs =
             -- {
             --     name = "dur",
             --     type = "I",
-            --     description = "Duration in ticks TODO1 klunky time - also lua should do chasing"
+            --     description = "Duration in ticks"
             -- },
         },
         ret = { type = "I", description = "LUA_STATUS" }

@@ -1,117 +1,115 @@
--- Class for time handling.
+-- Musical time handling.
 
 local ut = require("utils")
+local sx = require("stringex")
 local v = require('validators')
-require('class')
-
-
--- STEP_TYPE = { NONE = 0, NOTE = 1, CONTROLLER = 2, FUNCTION = 3 }
-
-
--- #define BEATS_PER_BAR 4
-
--- // /// Internal/app resolution aka DeltaTicksPerQuarterNote.
--- // #define INTERNAL_PPQ 8
-
--- #define SUBBEATS_PER_BEAT 8
-
--- /// Convenience.
--- #define SUBBEATS_PER_BAR (SUBBEATS_PER_BEAT * BEATS_PER_BAR)
-
--- /// Total.
--- #define TOTAL_BEATS(tick) (tick / SUBBEATS_PER_BEAT)
-
 
 
 ---------------- these match c code! ----------
--- /// Only 4/4 time supported.
+-- Only 4/4 time supported.
 BEATS_PER_BAR = 4
--- /// Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
+-- Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
 SUBBEATS_PER_BEAT = 8
 SUBBEATS_PER_BAR = SUBBEATS_PER_BEAT * BEATS_PER_BAR
 
+MAX_BARS = 1000
+MAX_TICKS = MAX_BARS * SUBBEATS_PER_BAR
 
+-- TODO1 incr/decr/math/eq etc/
 
 
 -----------------------------------------------------------------------------
--- base class
-BT = class(
-    function(t, tick)
-        t.tick = 0 -- default
-        t.err = v.val_integer(tick, 0, 999999, 'tick')
-        if t.err == nil then
-            t.tick = tick
+function BT(tick)
+    local d = {}
+    d.err = nil
+    d.tick = tick
+    -- Validate.
+    d.err = d.err or v.val_integer(d.tick, 0, MAX_TICKS, 'tick')
+
+    -- Init from explicit parts.
+    d.from_bar = function(bar, beat, subbeat)
+        d.tick = 0 -- default
+        d.err = nil
+        d.err = d.err or v.val_integer(bar, 0, MAX_BARS, 'bar')
+        d.err = d.err or v.val_integer(beat, 0, BEATS_PER_BAR, 'beat')
+        d.err = d.err or v.val_integer(subbeat, 0, SUBBEATS_PER_BEAT, 'subbeat')
+        if d.err == nil then
+            -- print((bar * SUBBEATS_PER_BAR), (beat * SUBBEATS_PER_BEAT), (subbeat))
+            d.tick = (bar * SUBBEATS_PER_BAR) + (beat * SUBBEATS_PER_BEAT) + (subbeat)
         end
-    end)
-
--- Init from bars.
-function BT:from_bar(bar, beat, subbeat)
-    self.tick = 0 -- default
-    self.err = nil
-    self.err = self.err or v.val_integer(bar, 0, 9999, 'bar')
-    self.err = self.err or v.val_integer(beat, 0, BEATS_PER_BAR, 'beat')
-    self.err = self.err or v.val_integer(subbeat, 0, SUBBEATS_PER_BAR, 'subbeat')
-    if self.err == nil then
-        self.tick = bar * SUBBEATS_PER_BAR + beat * SUBBEATS_PER_BEAT + subbeat
     end
-end
 
+    -- Parse from string repr.
+    d.parse = function(s)
+        -- Validate the parts.
+        local valid = true
 
--- Parse from string repr. TODO1
-function BT:parse(s)
---     int tick = 0;
---     bool valid = false;
---     int v;
+        if type(s) ~= "string" then
+            d.err = "Not a string"
+            d.tick = 0
+            valid = false
+        else
+            local parts = sx.strsplit(s, ':', false)
+            local bar = 0
+            local beat = 0
+            local subbeat = 0
 
---     // Make writable copy and tokenize it.
---     char cp[32];
---     strncpy(cp, s, sizeof(cp));
+            if #parts == 2 then
+                beat = tonumber(parts[1], 10)
+                subbeat = tonumber(parts[2], 10)
+            elseif #parts == 3 then
+                bar = tonumber(parts[1], 10)
+                beat = tonumber(parts[2], 10)
+                subbeat = tonumber(parts[3], 10)
+            else
+                valid = false
+            end
 
---     char* tok = strtok(cp, ".");
---     if (tok != NULL)
---     {
---         valid = nebcommon_ParseInt(tok, &v, 0, 9999);
---         if (!valid) goto nogood;
---         tick += v * SUBBEATS_PER_BAR;
---     }
+            valid = valid and bar ~= nil and beat ~= nil and subbeat ~= nil
 
---     tok = strtok(NULL, ".");
---     if (tok != NULL)
---     {
---         valid = nebcommon_ParseInt(tok, &v, 0, BEATS_PER_BAR-1);
---         if (!valid) goto nogood;
---         tick += v * SUBBEATS_PER_BEAT;
---     }
+            if valid then
+                d.from_bar(bar, beat, subbeat)
+            else
+                d.tick = 0
+                d.err = string.format("Invalid time: %s", s)
+            end
+        end
 
---     tok = strtok(NULL, ".");
---     if (tok != NULL)
---     {
---         valid = nebcommon_ParseInt(tok, &v, 0, SUBBEATS_PER_BEAT-1);
---         if (!valid) goto nogood;
---         tick += v;
---     }
-end
+        return valid
+    end
 
--- Get the tick.
--- function BT:get_tick()
---     return self.tick
--- end
+    -- Check returns valid, error string.
+    d.is_valid = function()
+        return d.err == nil, d.err
+    end
 
--- Get the bar number.
-function BT:get_bar()
-    return self.tick / SUBBEATS_PER_BAR
-end
+    -- Get the tick.
+    d.get_tick = function()
+        return d.tick
+    end
 
--- Get the beat number in the bar.
-function BT:get_beat()
-    return self.tick / SUBBEATS_PER_BEAT % BEATS_PER_BAR
-end
+    -- Get the bar number.
+    d.get_bar = function()
+        return math.floor(d.tick / SUBBEATS_PER_BAR)
+    end
 
--- Get the subbeat in the beat.
-function BT:get_subbeat()
-    return self.tick % SUBBEATS_PER_BEAT
-end
+    -- Get the beat number in the bar.
+    d.get_beat = function()
+        return math.floor(d.tick / SUBBEATS_PER_BEAT % BEATS_PER_BAR)
+    end
 
-function BT:__tostring()
-    return self.err or string.format("%d.%d.%d", self.get_bar(), self.get_beat(), self.get_subbeat)
+    -- Get the subbeat in the beat.
+    d.get_subbeat = function()
+        return math.floor(d.tick % SUBBEATS_PER_BEAT)
+    end
+
+    -- Readable.
+    setmetatable(d,
+    {
+        __tostring = function(self)
+            return self.err or string.format("%d:%d:%d", self.get_bar(), self.get_beat(), self.get_subbeat())
+        end
+    } )
+
+    return d
 end
