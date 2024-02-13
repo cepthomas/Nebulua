@@ -187,6 +187,17 @@ function M.suite_bar_time_meta(pn)
     pn.UT_FALSE(bt1 <= bt2)
     pn.UT_TRUE(bt2 <= 472)
     pn.UT_FALSE(473 <= bt2)
+
+    pn.UT_FALSE(bt2 > bt1)
+    pn.UT_TRUE(bt1 > bt2)
+    pn.UT_FALSE(bt2 > 473)
+    pn.UT_TRUE(473 > bt2)
+
+    pn.UT_TRUE(bt3 >= bt1)
+    pn.UT_TRUE(bt1 >= bt2)
+    pn.UT_TRUE(bt2 >= 472)
+    pn.UT_FALSE(bt2 >= 473)
+    pn.UT_TRUE(472 >= bt2)
 end
 
 

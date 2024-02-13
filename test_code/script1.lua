@@ -43,16 +43,17 @@ end
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
-function step(tick) --bar, beat, subbeat)
+function step(tick)
     -- Main work.
-    neb.do_step(tick) --steps, bar, beat, subbeat)
+    neb.do_step(tick)
 
-    t = bt.BT(tick)
+    t = BT(tick)
 
     -- Selective work.
     if t.beat == 0 and t.subbeat == 0 then
         neb.send_controller(hout1, 50, 51)
     end
+
     if t.beat == 1 and t.subbeat == 4 then
         neb.send_controller(hout2,  60, 61)
     end
@@ -99,7 +100,7 @@ local function boing(note_num)
     if note_num == 0 then
         note_num = math.random(30, 80)
         boinged = true
-        neb.send_note(hout2, note_num, VEL, 8)
+        neb.send_note(hout2, note_num, master_vol, 8)
     end
     return boinged
 end

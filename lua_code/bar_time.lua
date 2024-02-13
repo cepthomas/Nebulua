@@ -15,6 +15,8 @@ SUBBEATS_PER_BAR = SUBBEATS_PER_BEAT * BEATS_PER_BAR
 MAX_BAR = 1000
 MAX_TICK = MAX_BAR * SUBBEATS_PER_BAR
 
+
+-----------------------------------------------------------------------------
 -- Sanity check the args.
 -- Lua guarantees that at least one of the args is the table but order is not predictable.
 -- Except: == works only for two identical types.
@@ -40,7 +42,6 @@ end
 -- Static metamethods.
 local mt =
 {
-    __type = "bar_time",
     __tostring = function(self) return self.err or string.format("%d:%d:%d", self.get_bar(), self.get_beat(), self.get_subbeat()) end,
     __add = function(a, b) sana, sanb = sanitize(a, b, 'add'); return BT(sana + sanb) end,
     __sub = function(a, b) sana, sanb = sanitize(a, b, 'sub'); return BT(sana - sanb) end,

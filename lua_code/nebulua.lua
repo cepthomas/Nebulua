@@ -55,10 +55,12 @@ M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
 
-
-M.send_note = api.send_note -- TODO1 intercept and handle chasing note offs
--- "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
-
+-----------------------------------------------------------------------------
+function M.send_note(chan_hnd, note_num, volume, dur)
+    -- TODO1 intercept and handle chasing note offs
+    -- "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
+    api.send_note(chan_hnd, note_num, volume)
+end
 
 
 -----------------------------------------------------------------------------
