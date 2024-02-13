@@ -1,6 +1,7 @@
 
 -- Nebulua test script.
 
+local bt = require("bar_time")
 local neb = require("nebulua") -- lua api
 -- local api = require("host_api") -- C api (or sim)
 
@@ -17,10 +18,10 @@ local dev_out1 = "out1"
 local dev_out2 = "out2"
 
 -- Channels
-local hout1  = neb.create_output_channel(dev_out1, 1, 33)
-local hout2  = neb.create_output_channel(dev_out2, 2, 44)
-local hin1   = neb.create_input_channel(dev_in1, 3)
-local hin2   = neb.create_input_channel(dev_in2, 4)
+local hout1 = neb.create_output_channel(dev_out1, 1, 33)
+local hout2 = neb.create_output_channel(dev_out2, 2, 44)
+local hin1  = neb.create_input_channel(dev_in1, 3)
+local hin2  = neb.create_input_channel(dev_in2, 4)
 
 ------------------------- Vars ----------------------------------------
 
@@ -42,15 +43,17 @@ end
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
-function step(bar, beat, subbeat)
+function step(tick) --bar, beat, subbeat)
     -- Main work.
-    neb.do_step(steps, bar, beat, subbeat)
+    neb.do_step(tick) --steps, bar, beat, subbeat)
+
+    t = bt.BT(tick)
 
     -- Selective work.
-    if beat == 0 and subbeat == 0 then
+    if t.beat == 0 and t.subbeat == 0 then
         neb.send_controller(hout1, 50, 51)
     end
-    if beat == 1 and subbeat == 4 then
+    if t.beat == 1 and t.subbeat == 4 then
         neb.send_controller(hout2,  60, 61)
     end
 end
@@ -62,7 +65,7 @@ function input_note(chan_hnd, note_num, volume)
     neb.info(s)
 
     if chan_hnd == hin1 then
-        neb.send_note(hout1, note_num + 1, volume + 1, 8)
+        neb.send_note(hout1, note_num + 1, volume * 0.5, 8)
     end
 end
 

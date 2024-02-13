@@ -14,6 +14,7 @@ M.lua_export_funcs =
         lua_func_name = "setup",
         host_func_name = "Setup",
         description = "Called to initialize Nebulator stuff.",
+        -- no args
         ret = { type = "I", description = "LUA_STATUS" }
     },
 
@@ -23,26 +24,7 @@ M.lua_export_funcs =
         description = "Called every fast timer increment aka tick.",
         args =
         {
-            {
-                name = "tick",
-                type = "I",
-                description = "Current tick 0-N"
-            },
-            -- {
-            --     name = "bar",
-            --     type = "I",
-            --     description = "Which bar 0-N"
-            -- },
-            -- {
-            --     name = "beat",
-            --     type = "I",
-            --     description = "Which beat 0-3"
-            -- },
-            -- {
-            --     name = "subbeat",
-            --     type = "I",
-            --     description = "Which subbeat 0-7"
-            -- },
+            { name = "tick", type = "I", description = "Current tick 0-N" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -53,26 +35,9 @@ M.lua_export_funcs =
         description = "Called when input arrives.",
         args =
         {
-            {
-                name = "chan_hnd",
-                type = "I",
-                description = "Input channel handle"
-            },
-            {
-                name = "note_num",
-                type = "I",
-                description = "Note number 0-MIDI_MAX"
-            },
-            -- {
-            --     name = "velocity",
-            --     type = "I",
-            --     description = "Velocity 0-MIDI_MAX"
-            -- },
-            {
-                name = "volume",
-                type = "N",
-                description = "Volume between 0.0 and 1.0"
-            },
+            { name = "chan_hnd", type = "I", description = "Input channel handle" },
+            { name = "note_num", type = "I", description = "Note number 0-MIDI_MAX" },
+            { name = "volume", type = "N", description = "Volume between 0.0 and 1.0" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -83,21 +48,9 @@ M.lua_export_funcs =
         description = "Called when input arrives.",
         args =
         {
-            {
-                name = "chan_hnd",
-                type = "I",
-                description = "Input channel handle"
-            },
-            {
-                name = "controller",
-                type = "I",
-                description = "Specific controller id 0-MIDI_MAX"
-            },
-            {
-                name = "value",
-                type = "I",
-                description = "Payload 0-MIDI_MAX"
-            },
+            { name = "chan_hnd", type = "I", description = "Input channel handle" },
+            { name = "controller", type = "I", description = "Specific controller id 0-MIDI_MAX" },
+            { name = "value", type = "I", description = "Payload 0-MIDI_MAX" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -114,21 +67,9 @@ M.host_export_funcs =
         description = "Create an output midi channel.",
         args =
         {
-            {
-                name = "dev_name",
-                type = "S",
-                description = "Midi device name"
-            },
-            {
-                name = "chan_num",
-                type = "I",
-                description = "Midi channel number 1-16"
-            },
-            {
-                name = "patch",
-                type = "I",
-                description = "Midi patch number 0-MIDI_MAX"
-            },
+            { name = "dev_name", type = "S", description = "Midi device name" },
+            { name = "chan_num", type = "I", description = "Midi channel number 1-16" },
+            { name = "patch",    type = "I", description = "Midi patch number 0-MIDI_MAX" },
         },
         ret = { type = "I", description = "Channel handle or 0 if invalid" }
     },
@@ -139,16 +80,8 @@ M.host_export_funcs =
         description = "Create an input midi channel.",
         args =
         {
-            {
-                name = "dev_name",
-                type = "S",
-                description = "Midi device name"
-            },
-            {
-                name = "chan_num",
-                type = "I",
-                description = "Midi channel number 1-16"
-            },
+            { name = "dev_name", type = "S", description = "Midi device name" },
+            { name = "chan_num", type = "I", description = "Midi channel number 1-16" },
         },
         ret = { type = "I", description = "Channel handle or 0 if invalid" }
     },
@@ -159,16 +92,8 @@ M.host_export_funcs =
         description = "Script wants to log something.",
         args =
         {
-            {
-                name = "level",
-                type = "I",
-                description = "Log level"
-            },
-            {
-                name = "msg",
-                type = "S",
-                description = "Log message"
-            },
+            { name = "level", type = "I", description = "Log level" },
+            { name = "msg", type = "S", description = "Log message" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -179,11 +104,7 @@ M.host_export_funcs =
         description = "Script wants to change tempo.",
         args =
         {
-            {
-                name = "bpm",
-                type = "I",
-                description = "BPM 40-240"
-            },
+            { name = "bpm", type = "I", description = "BPM 40-240" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -194,31 +115,9 @@ M.host_export_funcs =
         description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
         args =
         {
-            {
-                name = "chan_hnd",
-                type = "I",
-                description = "Output channel handle"
-            },
-            {
-                name = "note_num",
-                type = "I",
-                description = "Note number"
-            },
-            -- {
-            --     name = "velocity",
-            --     type = "I",
-            --     description = "Velocity 0-MIDI_MAX"
-            -- },
-            {
-                name = "volume",
-                type = "N",
-                description = "Volume between 0.0 and 1.0"
-            },
-            -- {
-            --     name = "dur",
-            --     type = "I",
-            --     description = "Duration in ticks"
-            -- },
+            { name = "chan_hnd", type = "I", description = "Output channel handle" },
+            { name = "note_num", type = "I", description = "Note number" },
+            { name = "volume", type = "N", description = "Volume between 0.0 and 1.0" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -229,25 +128,12 @@ M.host_export_funcs =
         description = "Send a controller immediately.",
         args =
         {
-            {
-                name = "chan_hnd",
-                type = "I",
-                description = "Output channel handle"
-            },
-            {
-                name = "controller",
-                type = "I",
-                description = "Specific controller 0-MIDI_MAX"
-            },
-            {
-                name = "value",
-                type = "I",
-                description = "Payload 0-MIDI_MAX"
-            },
+            { name = "chan_hnd", type = "I", description = "Output channel handle" },
+            { name = "controller", type = "I", description = "Specific controller 0-MIDI_MAX" },
+            { name = "value", type = "I", description = "Payload 0-MIDI_MAX" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
-
 }
 
 return M

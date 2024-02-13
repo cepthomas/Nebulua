@@ -56,8 +56,8 @@ M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
 
 
-M.send_note = api.send_note -- TOODO1 intercept and handle chasing note offs, velocity conversion.
---         description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
+M.send_note = api.send_note -- TODO1 intercept and handle chasing note offs
+-- "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
 
 
 
@@ -256,10 +256,9 @@ end
 
 -----------------------------------------------------------------------------
 --- Process notes at this time.
--- @param name type desc
--- @param name type desc
--- @return type desc
-function M.do_step(send_stuff, tm) -- TODO1
+-- @param tick desc
+-- @return status
+function M.do_step(tick) -- TODO1
     -- calc total subbeat
     -- get all 
     -- return status?

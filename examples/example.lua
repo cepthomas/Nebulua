@@ -76,14 +76,15 @@ function setup()
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
-function step(bt) --bar, beat, subbeat)
+function step(tick) --bar, beat, subbeat)
     -- boing(60)
+    t = bt.BT(tick)
 
     -- Main work.
-    neb.do_step(steps, bar, beat, subbeat)
+    neb.do_step(tick) --steps, bar, beat, subbeat)
 
     -- Selective work.
-    if beat == 0 and subbeat == 0 then
+    if t.beat == 0 and t.subbeat == 0 then
         neb.send_controller(hsynth, ctrl.Pan, 90)
         -- or...
         neb.send_controller(hkeys,  ctrl.Pan, 30)
@@ -111,6 +112,7 @@ end
 function input_controller(chan_hnd, controller, value)
     neb.info("input_controller") --, chan_hnd, ctlid, value)
 end
+
 
 ----------------------- User lua functions -------------------------
 

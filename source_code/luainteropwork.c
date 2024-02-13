@@ -101,12 +101,11 @@ int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int c
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)//, double dur)
+int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     VALI(chan_hnd > 0, chan_hnd);
     VALI(note_num >= 0 && note_num < MIDI_VAL_MAX, note_num);
     VALF(volume >= 0.0 && volume <= 1.0, volume);
-    // VALF(dur >= 0.0 && dur <= 100.0, dur);
 
     midi_device_t* pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
     VALI(pdev != NULL, chan_hnd);
@@ -117,6 +116,7 @@ int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double vol
     if (pdev != NULL_PTR)
     {
         int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
+        // Translate volume to velocity.
         int velocity = (int)(volume * MIDI_VAL_MAX);
         int short_msg = (chan_num - 1) + cmd + ((byte)note_num << 8) + ((byte)velocity << 16);
         int mstat = midiOutShortMsg(pdev->handle, short_msg);
@@ -128,10 +128,10 @@ int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double vol
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendController(lua_State* l, int chan_hnd, int ctlr, int value)
+int luainteropwork_SendController(lua_State* l, int chan_hnd, int controller, int value)
 {
     VALI(chan_hnd > 0, chan_hnd);
-    VALI(ctlr >= 0 && ctlr < MIDI_VAL_MAX, ctlr);
+    VALI(controller >= 0 && controller < MIDI_VAL_MAX, controller);
     VALI(value >= 0 && value < MIDI_VAL_MAX, value);
 
     midi_device_t* pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
@@ -143,7 +143,7 @@ int luainteropwork_SendController(lua_State* l, int chan_hnd, int ctlr, int valu
     if (pdev != NULL_PTR)
     {
         int cmd = MIDI_CONTROL_CHANGE;
-        int short_msg = (chan_num - 1) + cmd + ((byte)ctlr << 8) + ((byte)value << 16);
+        int short_msg = (chan_num - 1) + cmd + ((byte)controller << 8) + ((byte)value << 16);
         int mstat = midiOutShortMsg(pdev->handle, short_msg);
         VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
     }

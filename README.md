@@ -63,44 +63,7 @@ Script defs:
 -- note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
 
 ## API
--- Script wants to log something.
--- - level Log level
--- - msg Log message
--- return LUA_STATUS
-M.log(level, msg)
 
--- Create an input midi channel.
--- - dev_name Midi device name
--- - chan_num Midi channel number 1-16
--- return Channel handle or 0 if invalid
-M.create_input_channel(dev_name, chan_num)
-
--- Create an output midi channel.
--- - dev_name Midi device name
--- - chan_num Midi channel number 1-16
--- - patch Midi patch number
--- return Channel handle or 0 if invalid
-M.create_output_channel(dev_name, chan_num, patch)
-
--- Script wants to change tempo.
--- - bpm BPM
--- return LUA_STATUS
-M.set_tempo(bpm)
-
--- If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 0.1 (for drum/hit).
--- - chan_hnd Output channel handle
--- - note_num Note number
--- - volume Volume between 0.0 and 1.0
--- - dur Duration in ??? see spec
--- return LUA_STATUS
-M.send_note(chan_hnd, note_num, volume, dur)
-
--- Send a controller immediately.
--- - chan_hnd Output channel handle
--- - controller Specific controller
--- - value Payload.
--- return LUA_STATUS
-M.send_controller(chan_hnd, controller, value)
 
 
 ## Files

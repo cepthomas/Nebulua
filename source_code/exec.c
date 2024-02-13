@@ -318,6 +318,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
             {
             case MIDI_NOTE_ON:
             case MIDI_NOTE_OFF:
+                // Translate velocity to volume.
                 double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
                 stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume);
                 nebcommon_EvalStatus(_l, stat, "luainterop_InputNote() failed");
