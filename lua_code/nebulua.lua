@@ -4,39 +4,33 @@
 
 local api = require("host_api") -- C api (or sim)
 local st = require("step_types")
+require('neb_common')
 
 
---[[
-Internal collections
-    steps: index is sequence name, value is table of Step.
-    steps =
-    {
-        sequence_name_1 =
-        {
-            subbeat1 = { StepX, StepX, ... },
-            subbeat2 = { StepX, StepX, ... },
-            ...
-        },
-        sequence_name_2 =
-        {
-            subbeat3 = { StepX, StepX, ... },
-            subbeat4 = { StepX, StepX, ... },
-            ...
-        },
-        ...
-    }
+-- {
+--     sequence_1 =
+--     {
+--         sub_1 = { StepX, StepX, ... },
+--         sub_2 = { StepX, StepX, ... },
+--         ...
+--     },
+--     ...
+-- }
+local _seq_steps = {}
 
-    sections: index is section name, value is table of...
-    sections =
-    {
-        section_name_1 =
-        {
-            { chan_hnd = { sequence_name_1,  sequence_name_2, ... },
-            ...
-        },
-        ...
-    }
-]]
+
+-- {
+--     section_1 =
+--     {
+--         { chan_hnd = { sequence_1,  sequence_2, ... },
+--         { chan_hnd = { sequence_1,  sequence_2, ... },
+--         ...
+--     },
+--     ...
+-- }
+local _sections = {}
+
+tempdbg = { steps = _seq_steps, sections = _sections }
 
 local M = {}
 
@@ -55,12 +49,12 @@ M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
 
------------------------------------------------------------------------------
+-- TODO1 intercept and handle chasing note offs
 function M.send_note(chan_hnd, note_num, volume, dur)
-    -- TODO1 intercept and handle chasing note offs
     -- "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
     api.send_note(chan_hnd, note_num, volume)
 end
+-----------------------------------------------------------------------------
 
 
 -----------------------------------------------------------------------------
@@ -75,40 +69,8 @@ end
 --- Process all sequences into discrete steps. Sections are stored as is.
 -- @param sequences table user sequence specs
 -- @param sections table user section specs
--- @return list of step_info ordered by subbeat
-function M.process_all(sequences, sections) -- TODO1 finish
-
-    -- Process sequences.
-    -- sequences =
-    -- {
-    --     sequence_name_1 =
-    --     { seq_chunks
-    --         -- |........|........|........|........|........|........|........|........|
-    --         { "|        |        |        |        |        |        |        |        |", "ABC" }, one seq_chunk
-    --         { "|        |        |        |        |        |        |        |        |", "ABC" },
-    --     },
-    -- }
-    -- 
-    -- ==>
-    -- 
-    -- steps =
-    -- {
-    --     sequence_name_1 =
-    --     {
-    --         subbeat1 = { StepX, StepX, ... },
-    --         subbeat2 = { StepX, StepX, ... },
-    --         ...
-    --     },
-    --     sequence_name_2 =
-    --     {
-    --         subbeat3 = { StepX, StepX, ... },
-    --         subbeat4 = { StepX, StepX, ... },
-    --         ...
-    --     },
-    --     ...
-    -- }
-
-    local seq_steps = {}
+-- @return list of step_info ordered by sub
+function M.process_all(sequences, sections)
 
     for seq_name, seq_chunks in ipairs(sequences) do
         -- test types?
@@ -116,12 +78,18 @@ function M.process_all(sequences, sections) -- TODO1 finish
         local steps = {}
 
         for _, seq_chunk in ipairs(seq_chunks) do
+
+    -- example_seq =
+    -- {
+    --     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+    --     { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    -- },
+
+
             local gr_steps = nil
-            -- Make a guess.
+
             if #seq_chunk == 2 then    -- { "|  ...  |", "ABC" }
                 gr_steps = parse_chunk(seq_chunk)
-            else
-                syntax_error("Invalid chunk", seq_chunk)
             end
 
             if gr_steps == nil then
@@ -130,38 +98,16 @@ function M.process_all(sequences, sections) -- TODO1 finish
                 steps[seq_name] = gr_steps
             end
 
-            seq_steps.insert(steps)
+            _seq_steps.insert(steps)
         end
     end
 
-    table.sort(seq_steps, function (left, right) return left.subbeat < right.subbeat end)
+    -- Put in time order.
+    table.sort(_seq_steps, function (left, right) return left.sub < right.sub end)
 
 
-    -- Process sections.
-    -- _sections = sections
-
-    -- sections =
-    -- {
-    --     beginning =
-    --     {
-    --         { hkeys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-    --         { hdrums, drums_verse, drums_verse, drums_verse, drums_verse },
-    --         { hbass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-    --     },
-    --     ...
-    -- }
-    -- 
-    -- ==>
-    -- 
-    -- sections =
-    -- {
-    --     beginning =
-    --     {
-    --         { hkeys = { keys_verse,  keys_verse,  keys_verse,  keys_verse },
-    --         ...
-    --     },
-    --     ...
-    -- }
+    -- Process sections. TODO1?
+    _sections = sections
 
 end
 
@@ -246,10 +192,10 @@ local function parse_chunk(chunk)
 
         if func then
             si = StepFunction(when, 0, func)
-            -- { step_type=STEP_TYPE.FUNCTION, subbeat=when, function=func, volume=volmod, duration=dur }
+            -- { step_type=STEP_TYPE.FUNCTION, sub=when, function=func, volume=volmod, duration=dur }
         else
             si = StepNote(when, 0, note_num, dur)
-            -- { step_type=STEP_TYPE.NOTE, subbeat=when, note_num=src, volume=volmod, duration=dur }
+            -- { step_type=STEP_TYPE.NOTE, sub=when, note_num=src, volume=volmod, duration=dur }
         end
         table.insert(steps, si)
     end
@@ -261,7 +207,7 @@ end
 -- @param tick desc
 -- @return status
 function M.do_step(tick) -- TODO1
-    -- calc total subbeat
+    -- calc total sub
     -- get all 
     -- return status?
 end

@@ -24,7 +24,7 @@ M.lua_export_funcs =
         description = "Called every fast timer increment aka tick.",
         args =
         {
-            { name = "tick", type = "I", description = "Current tick 0-N" },
+            { name = "tick", type = "I", description = "Current tick 0 => N" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -36,8 +36,8 @@ M.lua_export_funcs =
         args =
         {
             { name = "chan_hnd", type = "I", description = "Input channel handle" },
-            { name = "note_num", type = "I", description = "Note number 0-MIDI_MAX" },
-            { name = "volume", type = "N", description = "Volume between 0.0 and 1.0" },
+            { name = "note_num", type = "I", description = "Note number 0 => 127" },
+            { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -49,8 +49,8 @@ M.lua_export_funcs =
         args =
         {
             { name = "chan_hnd", type = "I", description = "Input channel handle" },
-            { name = "controller", type = "I", description = "Specific controller id 0-MIDI_MAX" },
-            { name = "value", type = "I", description = "Payload 0-MIDI_MAX" },
+            { name = "controller", type = "I", description = "Specific controller id 0 => 127" },
+            { name = "value", type = "I", description = "Payload 0 => 127" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -68,8 +68,8 @@ M.host_export_funcs =
         args =
         {
             { name = "dev_name", type = "S", description = "Midi device name" },
-            { name = "chan_num", type = "I", description = "Midi channel number 1-16" },
-            { name = "patch",    type = "I", description = "Midi patch number 0-MIDI_MAX" },
+            { name = "chan_num", type = "I", description = "Midi channel number 1 => 16" },
+            { name = "patch",    type = "I", description = "Midi patch number 0 => 127" },
         },
         ret = { type = "I", description = "Channel handle or 0 if invalid" }
     },
@@ -81,7 +81,7 @@ M.host_export_funcs =
         args =
         {
             { name = "dev_name", type = "S", description = "Midi device name" },
-            { name = "chan_num", type = "I", description = "Midi channel number 1-16" },
+            { name = "chan_num", type = "I", description = "Midi channel number 1 => 16" },
         },
         ret = { type = "I", description = "Channel handle or 0 if invalid" }
     },
@@ -104,7 +104,7 @@ M.host_export_funcs =
         description = "Script wants to change tempo.",
         args =
         {
-            { name = "bpm", type = "I", description = "BPM 40-240" },
+            { name = "bpm", type = "I", description = "BPM 40 => 240" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -117,7 +117,7 @@ M.host_export_funcs =
         {
             { name = "chan_hnd", type = "I", description = "Output channel handle" },
             { name = "note_num", type = "I", description = "Note number" },
-            { name = "volume", type = "N", description = "Volume between 0.0 and 1.0" },
+            { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },
@@ -129,8 +129,8 @@ M.host_export_funcs =
         args =
         {
             { name = "chan_hnd", type = "I", description = "Output channel handle" },
-            { name = "controller", type = "I", description = "Specific controller 0-MIDI_MAX" },
-            { name = "value", type = "I", description = "Payload 0-MIDI_MAX" },
+            { name = "controller", type = "I", description = "Specific controller 0 => 127" },
+            { name = "value", type = "I", description = "Payload 0 => 127" },
         },
         ret = { type = "I", description = "LUA_STATUS" }
     },

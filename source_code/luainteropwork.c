@@ -38,8 +38,8 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
     VALI(bpm >= 30 && bpm <= 240, bpm);
 
     double sec_per_beat = 60.0 / bpm;
-    double msec_per_subbeat = 1000 * sec_per_beat / SUBBEATS_PER_BEAT;
-    int period = msec_per_subbeat > 1.0 ? (int)round(msec_per_subbeat) : 1;
+    double msec_per_sub = 1000 * sec_per_beat / SUBS_PER_BEAT;
+    int period = msec_per_sub > 1.0 ? (int)round(msec_per_sub) : 1;
 
     ftimer_Run(period);
 

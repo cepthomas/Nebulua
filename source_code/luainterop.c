@@ -143,8 +143,8 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
-// Lua arg: chan_num Midi channel number 1-16
-// Lua arg: patch Midi patch number 0-MIDI_MAX
+// Lua arg: chan_num Midi channel number 1 => 16
+// Lua arg: patch Midi patch number 0 => 127
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_CreateOutputChannel(lua_State* l)
 {
@@ -170,7 +170,7 @@ static int luainterop_CreateOutputChannel(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
-// Lua arg: chan_num Midi channel number 1-16
+// Lua arg: chan_num Midi channel number 1 => 16
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_CreateInputChannel(lua_State* l)
 {
@@ -215,7 +215,7 @@ static int luainterop_Log(lua_State* l)
 // Host export function: Script wants to change tempo.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: bpm BPM 40-240
+// Lua arg: bpm BPM 40 => 240
 // Lua return: int LUA_STATUS
 static int luainterop_SetTempo(lua_State* l)
 {
@@ -236,7 +236,7 @@ static int luainterop_SetTempo(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: note_num Note number
-// Lua arg: volume Volume between 0.0 and 1.0
+// Lua arg: volume Volume 0.0 => 1.0
 // Lua return: int LUA_STATUS
 static int luainterop_SendNote(lua_State* l)
 {
@@ -262,8 +262,8 @@ static int luainterop_SendNote(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: chan_hnd Output channel handle
-// Lua arg: controller Specific controller 0-MIDI_MAX
-// Lua arg: value Payload 0-MIDI_MAX
+// Lua arg: controller Specific controller 0 => 127
+// Lua arg: value Payload 0 => 127
 // Lua return: int LUA_STATUS
 static int luainterop_SendController(lua_State* l)
 {

@@ -25,7 +25,6 @@ end
 
 -----------------------------------------------------------------------------
 function M.suite_bar_time_create(pn)
-    pn.UT_INFO("Basic creation.")
 
     -- Basic construction.
     bt = BT(12345)
@@ -35,7 +34,7 @@ function M.suite_bar_time_create(pn)
     pn.UT_EQUAL(bt.get_tick(), 12345)
     pn.UT_EQUAL(bt.get_bar(), 385)
     pn.UT_EQUAL(bt.get_beat(), 3)
-    pn.UT_EQUAL(bt.get_subbeat(), 1)
+    pn.UT_EQUAL(bt.get_sub(), 1)
     pn.UT_STR_EQUAL(tostring(bt), "385:3:1")
 
     -- Feed it garbage.
@@ -60,7 +59,7 @@ function M.suite_bar_time_create(pn)
     pn.UT_EQUAL(bt.get_tick(), 4142)
     pn.UT_EQUAL(bt.get_bar(), 129)
     pn.UT_EQUAL(bt.get_beat(), 1)
-    pn.UT_EQUAL(bt.get_subbeat(), 6)
+    pn.UT_EQUAL(bt.get_sub(), 6)
     pn.UT_STR_EQUAL(tostring(bt), "129:1:6")
 
     bt.from_bar(25, 5, 2)
@@ -73,9 +72,9 @@ function M.suite_bar_time_create(pn)
     bt.from_bar(25, 1, 9)
     ok, s = bt.is_valid()
     pn.UT_FALSE(ok)
-    pn.UT_STR_EQUAL(s, "Invalid integer subbeat: 9")
+    pn.UT_STR_EQUAL(s, "Invalid integer sub: 9")
     pn.UT_EQUAL(bt.get_tick(), 0)
-    pn.UT_STR_EQUAL(tostring(bt), "Invalid integer subbeat: 9")
+    pn.UT_STR_EQUAL(tostring(bt), "Invalid integer sub: 9")
 
     -- Three part form - time usually.
     print("-----------")
@@ -133,7 +132,7 @@ end
 
 -----------------------------------------------------------------------------
 function M.suite_bar_time_meta(pn)
-    pn.UT_INFO("Metamethods: + - == < <=")
+    -- Metamethods: + - == < <="
 
     -- Test objects.
     bt1 = BT(1109)

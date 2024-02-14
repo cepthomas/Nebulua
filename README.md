@@ -9,7 +9,7 @@
 
 
 ## timing
-Midi DeltaTicksPerQuarterNote aka subbeats per beat/qtr_note = 8 = 32nd note resolution
+Midi DeltaTicksPerQuarterNote aka sub parts per beat/qtr_note = 8 = 32nd note resolution
 Gives 32nd note resolution.
 Fast timer resolution set to 1 msec.
 int bpm = 40 -> 188 msec period.
@@ -42,24 +42,24 @@ not: int dev_id -
     int velocity (0-127) 0 means note off
     int bar (absolute)
     int beat (in bar)
-    int subbeat (in beat) - "musical"
-    int tick (absolute order - maybe in sequence/section/composition) - delta is subbeat
+    int sub (in beat) - "musical"
+    int tick (absolute order - maybe in sequence/section/composition) - same size as sub
 
 Script defs:
-   BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUBBEAT is 0->neb.SUBBEATS_PER_BEAT-1
+   BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUB is 0->neb.SUBS_PER_BEAT-1
    WHAT_TO_PLAY is a string (see neb.get_notes_from_string(s)) or integer or function.
-   BAR_TIME is a string of "BAR.BEAT.SUBBEAT" e.g. "1.2.3" or "1.2" or "1".
+   BAR_TIME is a string of "BAR.BEAT.SUB" e.g. "1.2.3" or "1.2" or "1".
    VOLUME 0->9
 
 
 
 ## sequences
 -- Graphical format:
--- "|7-------|" is one beat with 8 subbeats
+-- "|7-------|" is one beat with 8 subs
 -- note velocity is 1-9 (map) or - which means sustained
 -- note/chord, velocity/volume
 -- List format:
--- times are beat.subbeat where beat is 0-N subbeat is 0-7
+-- times are beat.sub where beat is 0-N sub is 0-7
 -- note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
 
 ## API

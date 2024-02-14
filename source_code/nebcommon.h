@@ -27,19 +27,19 @@
 #define BEATS_PER_BAR 4
 
 /// Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
-#define SUBBEATS_PER_BEAT 8
+#define SUBS_PER_BEAT 8
 
 /// Convenience.
-#define SUBBEATS_PER_BAR (SUBBEATS_PER_BEAT * BEATS_PER_BAR)
+#define SUBS_PER_BAR (SUBS_PER_BEAT * BEATS_PER_BAR)
 
 /// The bar number.
-#define BAR(tick) (tick / SUBBEATS_PER_BAR)
+#define BAR(tick) (tick / SUBS_PER_BAR)
 
 /// The beat number in the bar.
-#define BEAT(tick) (tick / SUBBEATS_PER_BEAT % BEATS_PER_BAR)
+#define BEAT(tick) (tick / SUBS_PER_BEAT % BEATS_PER_BAR)
 
-/// The subbeat in the beat.
-#define SUBBEAT(tick) (tick % SUBBEATS_PER_BEAT)
+/// The sub in the beat.
+#define SUB(tick) (tick % SUBS_PER_BEAT)
 
 
 //----------------------- Utilities -----------------------------//

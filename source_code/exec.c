@@ -92,7 +92,7 @@ static char _cli_buff[CLI_BUFF_LEN];
 // Current tempo in bpm.
 static int _tempo = 100;
 
-// Current subbeat.
+// Current sub.
 static int _position = 0;
 
 // Length of composition in ticks.
@@ -261,7 +261,7 @@ void _MidiClockHandler(double msec)
     // Lock access to lua context.
     ENTER_CRITICAL_SECTION;
 
-    // int stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUBBEAT(_position));
+    // int stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUB(_position));
     int stat = luainterop_Step(_l, _position);
     if (stat != NEB_OK)
     {
@@ -547,7 +547,7 @@ static cli_command_t _commands[] =
     { "tempo",      't',   0,    "get or set the tempo",                   "(bpm): 40-240",             _TempoCmd },
     { "monitor",    'm',   '^',  "toggle monitor midi traffic",            "(in|out|off): action",      _MonCmd },
     { "kill",       'k',   '~',  "stop all midi",                          "",                          _KillCmd },
-    { "position",   'p',   0,    "set position to where or tell current",  "(where): bar.beat.subbeat", _PositionCmd },
+    { "position",   'p',   0,    "set position to where or tell current",  "(where): bar.beat.sub",     _PositionCmd },
     { "reload",     'l',   0,    "re/load current script",                 "",                          _ReloadCmd },
     { NULL,          0,    0,    NULL,                                     NULL,                        NULL }
 };

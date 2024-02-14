@@ -50,11 +50,11 @@ function step(tick)
     t = BT(tick)
 
     -- Selective work.
-    if t.beat == 0 and t.subbeat == 0 then
+    if t.beat == 0 and t.sub == 0 then
         neb.send_controller(hout1, 50, 51)
     end
 
-    if t.beat == 1 and t.subbeat == 4 then
+    if t.beat == 1 and t.sub == 4 then
         neb.send_controller(hout2,  60, 61)
     end
 end
@@ -81,13 +81,13 @@ end
 
 -----------------------------------------------------------------------------
 -- Called from sequence.
-local function seq_func(bar, beat, subbeat)
+local function seq_func(bar, beat, sub)
     local note_num = math.random(0, #alg_scale)
     neb.send_note(hout1, alg_scale[note_num], 0.7, 1)
 end
 
 -- Called from section.
-function section_func(bar, beat, subbeat)
+function section_func(bar, beat, sub)
     -- do something
 end
 
@@ -109,11 +109,11 @@ end
 
 sequences =
 {
-    example_seq = -- neb.SUBBEATS_PER_BEAT = 8
-    {
-        -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
-        { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    },
+    -- example_seq = -- neb.SUBS_PER_BEAT = 8
+    -- {
+    --     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+    --     { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    -- },
 
     drums_verse =
     {
@@ -169,20 +169,20 @@ sections =
 {
     beginning =
     {
-        { hout1,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { hout2,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+        { hout1 = { keys_verse,  keys_verse,  keys_verse,  keys_verse } },
+        { hout2 = { bass_verse,  bass_verse,  bass_verse,  bass_verse } }
     },
 
     middle =
     {
-        { hout1,  keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
-        { hout2,  bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
+        { hout1 = { keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus } },
+        { hout2 = { bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus } },
     },
 
     ending =
     {
-        { hout1,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { hout2,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+        { hout1 = { keys_verse,  keys_verse,  keys_verse,  keys_verse } },
+        { hout2 = { bass_verse,  bass_verse,  bass_verse,  bass_verse } }
     }
 }
 

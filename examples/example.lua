@@ -76,15 +76,15 @@ function setup()
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
-function step(tick) --bar, beat, subbeat)
+function step(tick)
     -- boing(60)
     t = bt.BT(tick)
 
     -- Main work.
-    neb.do_step(tick) --steps, bar, beat, subbeat)
+    neb.do_step(tick)
 
     -- Selective work.
-    if t.beat == 0 and t.subbeat == 0 then
+    if t.beat == 0 and t.sub == 0 then
         neb.send_controller(hsynth, ctrl.Pan, 90)
         -- or...
         neb.send_controller(hkeys,  ctrl.Pan, 30)
@@ -104,7 +104,7 @@ function input_note(chan_hnd, note_num, velocity)
         -- whiz = ...
     end
 
-    neb.send_note("synth", note_num, velocity, 8) --0.5)
+    neb.send_note("synth", note_num, velocity, 8)
 end
 
 -----------------------------------------------------------------------------
@@ -118,13 +118,13 @@ end
 
 -----------------------------------------------------------------------------
 -- Called from sequence.
-local function seq_func(bar, beat, subbeat)
+local function seq_func(bar, beat, sub)
     local note_num = math.random(0, #alg_scale)
     neb.send_note("synth", alg_scale[note_num], 0.7, 8) --0.5)
 end
 
 -- Called from section.
-function section_func(bar, beat, subbeat)
+function section_func(bar, beat, sub)
     -- do something
 end
 
@@ -153,7 +153,7 @@ sequences =
         { "|        |        |        |        |        |        |        |        |", "??" },
     },
 
-    example_seq = -- neb.SUBBEATS_PER_BEAT
+    example_seq = -- neb.SUBS_PER_BEAT
     {
         -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
         { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },

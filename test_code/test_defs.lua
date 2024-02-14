@@ -24,7 +24,7 @@ end
 
 -----------------------------------------------------------------------------
 function M.suite_music_defs(pn)
-    pn.UT_INFO("Test all functions in music_defs.lua")
+    -- Test all functions in music_defs.lua
 
     ----- note_name_to_number()
     res = md.note_name_to_number("G#")

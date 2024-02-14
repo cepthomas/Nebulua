@@ -41,8 +41,8 @@ local function add_loop(snote, duration, delay)
     end
 end
 
-local function tot(beat, subbeat)
-    bt = BT(beat, subbeat)
+local function tot(beat, sub)
+    bt = BT(beat, sub)
     return bt.get_tick()
 end
 
@@ -81,7 +81,7 @@ function step(tick)
                 for _, note_num in ipairs(loop.notes) do
                     neb.send_note(chan_hnd, note_num, volume, loop.dur)
                 -- Calc next time.
-                loop.next_start = subbeats + loop.delay + loop.duration;
+                loop.next_start = tick + loop.delay + loop.duration;
         end
     end
 end

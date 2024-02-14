@@ -30,11 +30,11 @@ UT_SUITE(NEBCOM_MAIN, "Test nebulua common.")
     UT_STR_EQUAL(smidi, "MidiStatus:90909");
 
     int bt = nebcommon_ParseBarTime("23:2:6");
-    UT_EQUAL(bt, 23 * SUBBEATS_PER_BAR + 2 * SUBBEATS_PER_BEAT + 6);
+    UT_EQUAL(bt, 23 * SUBS_PER_BAR + 2 * SUBS_PER_BEAT + 6);
     bt = nebcommon_ParseBarTime("146:1");
-    UT_EQUAL(bt, 146 * SUBBEATS_PER_BAR + 1 * SUBBEATS_PER_BEAT);
+    UT_EQUAL(bt, 146 * SUBS_PER_BAR + 1 * SUBS_PER_BEAT);
     bt = nebcommon_ParseBarTime("71");
-    UT_EQUAL(bt, 71 * SUBBEATS_PER_BAR);
+    UT_EQUAL(bt, 71 * SUBS_PER_BAR);
     bt = nebcommon_ParseBarTime("49:55:8");
     UT_EQUAL(bt, -1);
     bt = nebcommon_ParseBarTime("111:3:88");
