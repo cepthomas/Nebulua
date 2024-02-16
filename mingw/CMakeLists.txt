@@ -13,8 +13,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
-set(LUA  "C:/Lua")
 set(CBOT "C:/Dev/repos/C/c_bag_of_tricks")
+set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks")
 
 
 # Header files.
@@ -23,6 +23,7 @@ if(DO_TEST)
         ../source_code
         ../test_code
         ../lua_lib/include
+        ${LBOT}/source_code
         ${CBOT}/source_code
         ${CBOT}/pnut
         )
@@ -35,11 +36,14 @@ if(DO_TEST)
         ../test_code/test_devmgr.cpp
         ${CBOT}/pnut/pnut.cpp
         ${CBOT}/source_code/private/logger.c
+        ${LBOT}/source_code/luaex.c
+        ${LBOT}/source_code/luautils.c
         )
 else()
     include_directories(
         ../source_code
         ../lua_lib/include
+        ${LBOT}/source_code
         ${CBOT}/source_code
         )
 
@@ -50,11 +54,11 @@ else()
         ../source_code/devmgr.c
         ../source_code/luainterop.c
         ../source_code/luainteropwork.c
-        ../source_code/luaex.c
         ${CBOT}/source_code/private/logger.c
-        # ${CBOT}/source_code/private/cli.c
         ${CBOT}/source_code/private/ftimer.c
         ${CBOT}/source_code/private/stopwatch.c
+        ${LBOT}/source_code/luaex.c
+        ${LBOT}/source_code/luautils.c
         )
 endif()
 
