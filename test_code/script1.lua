@@ -6,7 +6,7 @@ local neb = require("nebulua") -- lua api
 -- local api = require("host_api") -- C api (or sim)
 
 
-neb.info("=============== go go go =======================")
+neb.log_info("=============== go go go =======================")
 
 
 ------------------------- Config ----------------------------------------
@@ -34,7 +34,7 @@ local master_vol = 0.8
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    neb.info("initialization")
+    neb.log_info("initialization")
     -- Do work.
     neb.process_all(sequences, sections)
     neb.set_tempo(100)
@@ -63,7 +63,7 @@ end
 -- Handler for input note events.
 function input_note(chan_hnd, note_num, volume)
     local s = string.format("input_note: %d %d %f", chan_hnd, note_num, volume)
-    neb.info(s)
+    neb.log_info(s)
 
     if chan_hnd == hin1 then
         neb.send_note(hout1, note_num + 1, volume * 0.5, 8)
@@ -74,7 +74,7 @@ end
 -- Handler for input controller events.
 function input_controller(chan_hnd, controller, value)
     local s = string.format("input_controller: %d %d %d", chan_hnd, controller, value)
-    neb.info(s)
+    neb.log_info(s)
 end
 
 ----------------------- User lua functions -------------------------
@@ -97,7 +97,7 @@ end
 local function boing(note_num)
     local boinged = false;
 
-    neb.info("boing")
+    neb.log_info("boing")
     if note_num == 0 then
         note_num = math.random(30, 80)
         boinged = true

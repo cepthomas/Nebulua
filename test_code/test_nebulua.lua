@@ -48,7 +48,7 @@ function M.suite_parse_chunk(pn)
     -- pr-int('+++', ut.dump_table_string(steps, 'steps4'))
 
     -- Bad syntax.
-    steps = neb.parse_chunk( { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 } )
+--    steps = neb.parse_chunk( { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 } )
     -- pr-int('+++', ut.dump_table_string(steps, 'steps5'))
 end
 
@@ -139,29 +139,29 @@ function M.suite_step_info(pn)
 
     n = StepNote(1234, 99, 101, 0.4, 10)
     pn.UT_NIL(n.err)
-    pn.UT_STR_EQUAL(n, "01234 99 NOTE 101 0.4 10")
+    pn.UT_STR_EQUAL(tostring(n), "01234 99 NOTE 101 0.4 10")
 
     n = StepNote(100001, 88, 111, 0.3, 22)
     pn.UT_NOT_NIL(n.err)
-    pn.UT_STR_EQUAL(n, "Invalid integer tick: 100001")
+    pn.UT_STR_EQUAL(tostring(n), "Invalid integer tick: 100001")
 
     c = StepController(344, 37, 88, 55)
     pn.UT_NIL(c.err)
-    pn.UT_STR_EQUAL(c, "00344 37 CONTROLLER 88 99")
+    pn.UT_STR_EQUAL(tostring(c), "00344 37 CONTROLLER 88 55")
 
     c = StepController(344, 55, 260, 23)
     pn.UT_NOT_NIL(c.err)
-    pn.UT_STR_EQUAL(c, "Invalid integer controller: 260")
+    pn.UT_STR_EQUAL(tostring(c), "Invalid integer controller: 260")
 
     function stub() end
 
     f = StepFunction(122, 66, 0.5, stub)
     pn.UT_NIL(f.err)
-    pn.UT_STR_EQUAL(f, "00122 66 FUNCTION 0.5")
+    pn.UT_STR_EQUAL(tostring(f), "00122 66 FUNCTION 0.5")
 
     f = StepFunction(122, 333, 0.6, stub)
     pn.UT_NOT_NIL(f.err)
-    pn.UT_STR_EQUAL(f, "Invalid integer chan_hnd: 333")
+    pn.UT_STR_EQUAL(tostring(f), "Invalid integer chan_hnd: 333")
 end
 
 

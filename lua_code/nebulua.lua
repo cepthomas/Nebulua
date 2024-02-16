@@ -40,10 +40,10 @@ local M = {}
 -- Impedance matching between C and Lua.
 
 -- Log functions. Magic numbers from C code.
-function M.error(msg) api.log(4, msg) end
-function M.info(msg)  api.log(3, msg) end
-function M.debug(msg) api.log(2, msg) end
-function M.trace(msg) api.log(1, msg) end
+function M.log_error(msg) api.log(4, msg) end
+function M.log_info(msg)  api.log(3, msg) end
+function M.log_debug(msg) api.log(2, msg) end
+function M.log_trace(msg) api.log(1, msg) end
 
 -- These go straight through so just thunk the C api.
 M.create_input_channel = api.create_input_channel
@@ -64,7 +64,7 @@ end
 -- @param info
 local function syntax_error(desc, info)
     s = string.format("Syntax error: %s %s", desc, info or "")
-    M.error(s)
+--    M.error(s)
     error(s, 3)
 end
 
