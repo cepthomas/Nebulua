@@ -1,6 +1,7 @@
 // system
 #include <windows.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 // lua
 // cbot
@@ -8,7 +9,6 @@
 // application
 #include "nebcommon.h"
 #include "devmgr.h"
-
 
 
 //--------------------- Defs -----------------------------//
@@ -292,22 +292,22 @@ int devmgr_OpenMidi(midi_device_t* pdev)
 
 
 //--------------------------------------------------------//
-void devmgr_Dump()
+void devmgr_Dump(FILE* fout)
 {
     // Inputs.
-    for (int i = 0; i < NUM_MIDI_DEVICES; i++)
+    for (int i = 0; i < NUM_MIDI_DEVICES; i++)16
     {
         midi_device_t* pdev = _devices + i;
         const char* dir = i >= NUM_MIDI_DEVICES / 2 ? "Output" : "Input";
 
-        printf("Midi %s %d:  name:%s handle:%p channels: ", dir, i, pdev->sys_dev_name, pdev->handle);
-        for (int c = 0; c < NUM_MIDI_CHANNELS; c++)
+        fprintf(fout, "Midi %s %d:  name:%s handle:%p channels: ", dir, i, pdev->sys_dev_name, pdev->handle);
+        for (int c = 0; c < NUM_MIDI_CHANNELS; c++)16
         {
             if (pdev->channels[c])
             {
-                printf("%2x ", c);
+                fprintf(fout, "%2x ", c);
             }
         }
-        printf("\n");
+        fprintf(fout, "\n");
     }
 }

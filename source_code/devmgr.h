@@ -77,6 +77,6 @@ int devmgr_GetChannelHandle(midi_device_t* pdev, int chan_num);
 int devmgr_GetChannelNumber(int chan_hnd);
 
 /// Diagnostic.
-void devmgr_Dump();
+void devmgr_Dump(FILE* fout);
 
 #endif // DEVMGR_H

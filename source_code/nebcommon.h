@@ -74,13 +74,6 @@ typedef enum
 
 //----------------------- Utilities -----------------------------//
 
-/// Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
-/// @param[in] l Lua context
-/// @param[in] stat Status to examine
-/// @param[in] format Standard printf
-/// @return String empty if status is ok
-bool nebcommon_EvalStatus(lua_State* l, int stat, const char* format, ...);
-
 /// Convert a status to string.
 /// @param[in] mstat Midi status to examine
 /// @return String empty if status is ok

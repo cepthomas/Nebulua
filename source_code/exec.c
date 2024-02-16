@@ -113,7 +113,7 @@ static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWO
 /// Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
 /// @param l Lua context
 /// @param stat Status to examine
-/// @param format Standard printf
+/// @param format Standard format
 /// @return String empty if status is ok
 static void _EvalStatus(lua_State* l, int stat, const char* format, ...);
 

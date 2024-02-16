@@ -71,7 +71,6 @@ function M.suite_bar_time_create(pn)
     pn.UT_STR_EQUAL(tostring(bt), "Invalid integer sub: 9")
 
     -- Three part form - time usually.
-    print("-----------")
     bt.parse("108:0:7")
     pn.UT_NIL(bt.get_err())
     pn.UT_EQUAL(bt.get_tick(), 3463)
