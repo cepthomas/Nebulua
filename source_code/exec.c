@@ -77,7 +77,7 @@ static bool _mon_input = false;
 // Monitor midi output.
 static bool _mon_output = false;
 
-// Commands forward declaration. TODO3 need to define size to satisfy VS compiler, but not gcc.
+// Commands forward declaration. VS compiler needs size assigned, but not gcc.
 static cli_command_t _commands[20];
 
 // CLI prompt.
@@ -198,7 +198,7 @@ int _Forever(void)
 
         if (res != NULL)
         {
-            // Process the line. Chop up the raw command line into args. TODO1 use stringx.
+            // Process the line. Chop up the raw command line into args.
             int argc = 0;
             char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
             char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
