@@ -5,7 +5,7 @@ local sx = require("stringex")
 -- Create the namespace/module.
 local M = {}
 
--- ut.config_error_handling(true, true)
+-- ut.config_debug(true)
 
 --- Music definitions
 NOTES_PER_OCTAVE = 12

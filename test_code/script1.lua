@@ -81,13 +81,14 @@ end
 
 -----------------------------------------------------------------------------
 -- Called from sequence.
-local function seq_func(bar, beat, sub)
+local function seq_func(tick)--bar, beat, sub)
     local note_num = math.random(0, #alg_scale)
     neb.send_note(hout1, alg_scale[note_num], 0.7, 1)
 end
 
+-----------------------------------------------------------------------------
 -- Called from section.
-function section_func(bar, beat, sub)
+function section_func(tick)--bar, beat, sub)
     -- do something
 end
 
@@ -118,9 +119,9 @@ sequences =
     drums_verse =
     {
         --|........|........|........|........|........|........|........|........|
-        {"|8       |        |8       |        |8       |        |8       |        |", 10 },
-        {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
-        {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
+        { "|8       |        |8       |        |8       |        |8       |        |", 10 },
+        { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
+        { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
     },
 
     drums_chorus =
@@ -143,7 +144,7 @@ sequences =
     {
         -- |........|........|........|........|........|........|........|........|
         { "|6-      |        |        |        |        |        |        |        |", "F4" },
-        { "|    5-  |        |        |        |        |        |        |        |", "D#4" },
+        { "|    5-  |        |        |        |        |        |        |        |", seq_func },
         { "|        |6-      |        |        |        |        |        |        |", "C4" },
         { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
     },

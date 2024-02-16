@@ -16,6 +16,7 @@ local ctrl = md.controllers
 
 neb.info("=============== go go go =======================")
 
+-- TODO2 fix up per script1.lua
 
 ------------------------- Config ----------------------------------------
 
@@ -33,7 +34,7 @@ local hinp1  = create_input_channel(midi_in, 2)
 
 ------------------------- Vars ----------------------------------------
 
--- local vars - Volumes. TODO1 stitch into playing sequences.
+-- local vars - Volumes.
 local keys_vol = 0.8
 local drum_vol = 0.8
 -- -- TODO3 volumes could be an optional user map instead of linear range.

@@ -7,3 +7,4 @@ x64/
 /mingw/build_test
 *.vcxproj.user
 *.sublime-*
+/_temp

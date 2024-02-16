@@ -1,4 +1,4 @@
-# Nebulua TODO1 update all + parts of Nebulator\README.md
+# Nebulua TODO2 update all + parts of Nebulator\README.md
 
 - An experimental version of Nebulator using Lua as the script flavor.
 - Windows only.

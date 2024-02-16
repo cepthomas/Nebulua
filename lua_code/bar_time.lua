@@ -76,9 +76,9 @@ function BT(tick)
     end
 
     ----------------------------------------
-    -- Check returns valid, error string.
-    d.is_valid = function()
-        return d.err == nil, d.err
+    -- Get the error (maybe).
+    d.get_err = function()
+        return d.err
     end
 
     ----------------------------------------

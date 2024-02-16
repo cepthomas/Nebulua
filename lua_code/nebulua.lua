@@ -4,6 +4,8 @@
 
 local api = require("host_api") -- C api (or sim)
 local st = require("step_types")
+local md = require("midi_defs")
+local mu = require("music_defs")
 require('neb_common')
 
 
@@ -58,12 +60,25 @@ end
 
 
 -----------------------------------------------------------------------------
---- Report a syntax error.
+--- Report a user script syntax error.
 -- @param info
 local function syntax_error(desc, info)
-    M.error(string.format("Syntax error: %s %s", desc, info))
+    s = string.format("Syntax error: %s %s", desc, info or "")
+    M.error(s)
+    error(s, 3)
 end
 
+--- Gets the file and line of the caller.
+-- @param level How deep to look:
+--    0 is the getinfo() itself
+--    1 is the function that called getinfo() - get_caller_info()
+--    2 is the function that called get_caller_info() - usually the one of interest
+-- @return { filename, linenumber } or nil if invalid
+-- function M.get_caller_info(level)
+    -- -- Print failure information.
+    -- local caller = ut.get_caller_info(4)
+    -- info = info or ""
+    -- write_error(caller[1]..":"..caller[2].." "..msg..". "..info)
 
 -----------------------------------------------------------------------------
 --- Process all sequences into discrete steps. Sections are stored as is.
@@ -114,10 +129,12 @@ end
 
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern.
--- @param chunk like: { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
--- @return list of Steps partially filled-in.
-local function parse_chunk(chunk)
+-- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
+-- @return list of Steps partially filled-in or nil if invalid.
+function M.parse_chunk(chunk) --TODO2 local
     local steps = { }
+    local current_vol = 0 -- default, not sounding
+    local start_offset = 0 -- in pattern for the start of the current event
 
     -- Process the note descriptor first. Could be number, string, function.
     local what_to_play = chunk[2]
@@ -132,22 +149,50 @@ local function parse_chunk(chunk)
         -- use as is
         func = what_to_play
     elseif tn == "string" then
-        notes = md.get_notes(what_to_play)
+        notes = mu.get_notes_from_string(what_to_play)
     else
-        syntax_error("hoo", "haa")
-    end        
+        syntax_error("Invalid what_to_play "..tostring(chunk[2]))
+    end
+
+    -- Local function to package an event. chan_hnd is not know now and will get plugged in later.
+    function make_event(offset)
+        -- offset is 0-based.
+        local vol = current_vol / 10
+        local dur = offset - start_offset
+        local when = start_offset
+        local si = nil
+
+        if func then -- func
+            si = StepFunction(when, 0, vol, func)
+            if si.err == nil then
+                table.insert(steps, si)
+            else
+                -- Internal error
+                syntax_error(si.err)
+            end
+        else -- note
+            for _, n in ipairs(notes) do
+                si = StepNote(when, 0, n, vol, dur)
+                if si.err == nil then
+                    table.insert(steps, si)
+                else
+                    -- Internal error
+                    syntax_error(si.err)
+                end
+            end
+        end
+    end
 
     -- Process note instances.
     -- Remove visual markers from pattern.
-    local pattern = chunk[1].Replace("|", "")
-
-    local current_vol = 0 -- default, not sounding
-    local start_offset = 0 -- in pattern for the start of the current event
+    local pattern = string.gsub(chunk[1], "|", "")
 
     for i = 1, #pattern do
-        local c = pattern[i]
+        local c = pattern:sub(i, i)
+        local cnum = string.byte(c) - 48
 
         if c == '-' then
+-- dbg()
             -- Continue current note.
             if current_vol > 0 then
                 -- ok, do nothing
@@ -155,23 +200,28 @@ local function parse_chunk(chunk)
                 -- invalid condition
                 syntax_error("Invalid \'-\'' in pattern string")
             end
-        elseif c >= '1' and c <= '9' then
+        elseif cnum >= 1 and cnum <= 9 then
+
+-- dbg.assert(false, 'howdy')
+
             -- A new note starting.
             -- Do we need to end the current note?
             if current_vol > 0 then
-                make_note_event(i - 1)
+                make_event(i - 1)
             end
             -- Start new note.
-            current_vol = pattern[i] - '0'
+            current_vol = cnum
             start_offset = i - 1
         elseif c == ' ' or c == '.' then
+-- dbg()
             -- No sound.
             -- Do we need to end the current note?
             if current_vol > 0 then
-                make_note_event(i - 1)
+                make_event(i - 1)
             end
             current_vol = 0
         else
+-- dbg()
             -- Invalid char.
             syntax_error("Invalid char in pattern string", c)
         end
@@ -179,26 +229,10 @@ local function parse_chunk(chunk)
 
     -- Straggler?
     if current_vol > 0 then
-        make_note_event(#pattern - 1)
+        make_event(#pattern - 1)
     end
 
-    -- Local function to package an event. chan_hnd is not know now and will get plugged in later.
-    function make_note_event(offset)
-        -- offset is 0-based.
-        local volmod = current_vol / 10
-        local dur = offset - start_offset
-        local when = start_offset
-        local si = nil
-
-        if func then
-            si = StepFunction(when, 0, func)
-            -- { step_type=STEP_TYPE.FUNCTION, sub=when, function=func, volume=volmod, duration=dur }
-        else
-            si = StepNote(when, 0, note_num, dur)
-            -- { step_type=STEP_TYPE.NOTE, sub=when, note_num=src, volume=volmod, duration=dur }
-        end
-        table.insert(steps, si)
-    end
+    return steps
 end
 
 
@@ -208,7 +242,7 @@ end
 -- @return status
 function M.do_step(tick) -- TODO1
     -- calc total sub
-    -- get all 
+    -- get all
     -- return status?
 end
 
