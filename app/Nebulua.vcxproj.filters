@@ -27,9 +27,6 @@
     <ClCompile Include="..\source_code\exec.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\luaex.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\source_code\luainterop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -59,16 +56,10 @@
     <ClInclude Include="..\source_code\devmgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\source_code\luaex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\source_code\luainterop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\source_code\luainteropwork.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\source_code\midi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\source_code\nebcommon.h">

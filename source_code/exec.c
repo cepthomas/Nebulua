@@ -7,11 +7,11 @@
 // cbot
 #include "cbot.h"
 #include "logger.h"
-// #include "cli.h"
+// lbot
+#include "luautils.h"
 #include "ftimer.h"
 // application
 #include "nebcommon.h"
-#include "midi.h"
 #include "devmgr.h"
 #include "luainterop.h"
 #include "luainteropwork.h"
@@ -110,6 +110,13 @@ static void _MidiClockHandler(double msec);
 // Handle incoming messages. !!From Interrupt!!
 static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
+/// Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
+/// @param l Lua context
+/// @param stat Status to examine
+/// @param format Standard printf
+/// @return String empty if status is ok
+static void _EvalStatus(lua_State* l, int stat, const char* format, ...);
+
 
 //----------------------------------------------------//
 
@@ -121,7 +128,7 @@ int exec_Main(int argc, char* argv[])
 
     FILE* fp = fopen("nebulua_log.txt", "a");
     cbot_stat = logger_Init(fp);
-    nebcommon_EvalStatus(_l, cbot_stat, "Failed to init logger");
+    _EvalStatus(_l, cbot_stat, "Failed to init logger");
     logger_SetFilters(LVL_DEBUG);
 
     // Initialize the critical section. It is used to synchronize access to the lua context _l.
@@ -145,31 +152,31 @@ int exec_Main(int argc, char* argv[])
 
     // Tempo timer and interrupt.
     cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
-    nebcommon_EvalStatus(_l, cbot_stat, "Failed to init ftimer");
+    _EvalStatus(_l, cbot_stat, "Failed to init ftimer");
     luainteropwork_SetTempo(_l, 60);
 
     stat = devmgr_Init(_MidiInHandler);
-    nebcommon_EvalStatus(_l, stat, "Failed to init device manager");
+    _EvalStatus(_l, stat, "Failed to init device manager");
 
     ///// Load and run the application. /////
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack - or pushes an error message.
     stat = luaL_loadfile(_l, argv[1]);
-    nebcommon_EvalStatus(_l, stat, "luaL_loadfile() failed fn:%s", argv[1]);
+    _EvalStatus(_l, stat, "luaL_loadfile() failed fn:%s", argv[1]);
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    nebcommon_EvalStatus(_l, stat, "lua_pcall() failed fn:%s", argv[1]);
+    _EvalStatus(_l, stat, "lua_pcall() failed fn:%s", argv[1]);
 
     // Script setup.
     stat = luainterop_Setup(_l);
-    nebcommon_EvalStatus(_l, stat, "luainterop_Setup() failed");
+    _EvalStatus(_l, stat, "luainterop_Setup() failed");
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
     stat = _Forever();
-    nebcommon_EvalStatus(_l, stat, "Run failed");
+    _EvalStatus(_l, stat, "Run failed");
 
     ///// Finished. Clean up and go home. /////
     DeleteCriticalSection(&_critical_section);
@@ -227,7 +234,7 @@ int _Forever(void)
                         // Lock access to lua context.
                         ENTER_CRITICAL_SECTION;
                         stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
-                        // nebcommon_EvalStatus(_l, stat, "handler failed: %s", pcmd->desc.long_name);
+                        // _EvalStatus(_l, stat, "handler failed: %s", pcmd->desc.long_name);
                         EXIT_CRITICAL_SECTION;
                         break;
                     }
@@ -321,12 +328,12 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                 // Translate velocity to volume.
                 double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
                 stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume);
-                nebcommon_EvalStatus(_l, stat, "luainterop_InputNote() failed");
+                _EvalStatus(_l, stat, "luainterop_InputNote() failed");
                 break;
 
             case MIDI_CONTROL_CHANGE:
                 stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2);
-                nebcommon_EvalStatus(_l, stat, "luainterop_InputController() failed");
+                _EvalStatus(_l, stat, "luainterop_InputController() failed");
                 break;
 
             case MIDI_PITCH_WHEEL_CHANGE:
@@ -369,7 +376,7 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
     else if (argc == 2) // set
     {
         int t;
-        if (nebcommon_ParseInt(argv[1], &t, 40, 240))
+        if (luautils_ParseInt(argv[1], &t, 40, 240))
         {
             _tempo = t;
             luainteropwork_SetTempo(_l, _tempo);
@@ -551,3 +558,71 @@ static cli_command_t _commands[] =
     { "reload",     'l',   0,    "re/load current script",                 "",                          _ReloadCmd },
     { NULL,          0,    0,    NULL,                                     NULL,                        NULL }
 };
+
+
+//--------------------------------------------------------//
+void _EvalStatus(lua_State* l, int stat, const char* format, ...)
+{
+    static char buff[100];
+    // bool has_error = false;
+
+    if (stat >= LUA_ERRRUN)
+    {
+        // has_error = true;
+
+        va_list args;
+        va_start(args, format);
+        vsnprintf(buff, sizeof(buff) - 1, format, args);
+        va_end(args);
+
+        const char* sstat = NULL;
+        char err_buff[16];
+        switch (stat)
+        {
+            // generic
+            case 0:                         sstat = "NO_ERR"; break;
+            // lua
+            case LUA_YIELD:                 sstat = "LUA_YIELD"; break;
+            case LUA_ERRRUN:                sstat = "LUA_ERRRUN"; break;
+            case LUA_ERRSYNTAX:             sstat = "LUA_ERRSYNTAX"; break; // syntax error during pre-compilation
+            case LUA_ERRMEM:                sstat = "LUA_ERRMEM"; break; // memory allocation error
+            case LUA_ERRERR:                sstat = "LUA_ERRERR"; break; // error while running the error handler function
+            case LUA_ERRFILE:               sstat = "LUA_ERRFILE"; break; // couldn't open the given file
+            // cbot
+            case CBOT_ERR_INVALID_ARG:      sstat = "CBOT_ERR_INVALID_ARG"; break;
+            case CBOT_ERR_ARG_NULL:         sstat = "CBOT_ERR_ARG_NULL"; break;
+            case CBOT_ERR_NO_DATA:          sstat = "CBOT_ERR_NO_DATA"; break;
+            case CBOT_ERR_INVALID_INDEX:    sstat = "CBOT_ERR_INVALID_INDX"; break;
+            // app
+            case NEB_ERR_INTERNAL:          sstat = "NEB_ERR_INTERNAL"; break;
+            case NEB_ERR_BAD_CLI_ARG:       sstat = "NEB_ERR_BAD_CLI_ARG"; break;
+            case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
+            case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
+            case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
+            case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
+            // default
+            default:                        snprintf(err_buff, sizeof(err_buff) - 1, "ERR_%d", stat); break;
+        }
+
+        sstat = (sstat == NULL) ? err_buff : sstat;
+
+        if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
+        {
+            if (lua_gettop(l) > 0)
+            {
+                luaL_error(l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(l, -1));
+            }
+            else
+            {
+                luaL_error(l, "Status:%s info:%s", sstat, buff);
+            }
+        }
+        else // cbot or nebulua error
+        {
+            luaL_error(l, "Status:%s info:%s", sstat, buff);
+        }
+
+        //  maybe? const char* strerrorname_np(int errnum), const char* strerrordesc_np(int errnum);
+    }
+}
+

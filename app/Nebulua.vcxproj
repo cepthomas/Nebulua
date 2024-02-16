@@ -138,7 +138,6 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
     <ClCompile Include="..\source_code\devmgr.c" />
     <ClCompile Include="..\source_code\exec.c" />
-    <ClCompile Include="..\source_code\luaex.c" />
     <ClCompile Include="..\source_code\luainterop.c" />
     <ClCompile Include="..\source_code\luainteropwork.c" />
     <ClCompile Include="..\source_code\nebcommon.c" />
@@ -154,10 +153,8 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h" />
     <ClInclude Include="..\source_code\devmgr.h" />
-    <ClInclude Include="..\source_code\luaex.h" />
     <ClInclude Include="..\source_code\luainterop.h" />
     <ClInclude Include="..\source_code\luainteropwork.h" />
-    <ClInclude Include="..\source_code\midi.h" />
     <ClInclude Include="..\source_code\nebcommon.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

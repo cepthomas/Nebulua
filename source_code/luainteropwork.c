@@ -10,7 +10,6 @@
 #include "ftimer.h"
 #include "cbot.h"
 // application
-#include "midi.h"
 #include "nebcommon.h"
 #include "devmgr.h"
 #include "luainteropwork.h"
@@ -76,7 +75,7 @@ int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int c
 
     VALS(dev_name != NULL, dev_name);
     VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
-    VALI(patch >= 0 && patch < MIDI_VAL_MAX, patch);
+    VALI(patch >= MIDI_VAL_MIN && patch < MIDI_VAL_MAX, patch);
 
     midi_device_t* pdev = devmgr_GetDeviceFromName(dev_name);
     VALS(pdev != NULL, dev_name);
@@ -104,7 +103,7 @@ int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int c
 int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     VALI(chan_hnd > 0, chan_hnd);
-    VALI(note_num >= 0 && note_num < MIDI_VAL_MAX, note_num);
+    VALI(note_num >= MIDI_VAL_MIN && note_num < MIDI_VAL_MAX, note_num);
     VALF(volume >= 0.0 && volume <= 1.0, volume);
 
     midi_device_t* pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
@@ -131,8 +130,8 @@ int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double vol
 int luainteropwork_SendController(lua_State* l, int chan_hnd, int controller, int value)
 {
     VALI(chan_hnd > 0, chan_hnd);
-    VALI(controller >= 0 && controller < MIDI_VAL_MAX, controller);
-    VALI(value >= 0 && value < MIDI_VAL_MAX, value);
+    VALI(controller >= MIDI_VAL_MIN && controller < MIDI_VAL_MAX, controller);
+    VALI(value >= MIDI_VAL_MIN && value < MIDI_VAL_MAX, value);
 
     midi_device_t* pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
     VALI(pdev != NULL, chan_hnd);
