@@ -19,6 +19,9 @@
     <Filter Include="test">
       <UniqueIdentifier>{60c03f1b-71c4-4dee-9f8d-b8f70bfa0abd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\lbot">
+      <UniqueIdentifier>{aab314b7-6701-4f7c-8d34-165e160899db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NebuluaTest.cpp">
@@ -63,6 +66,15 @@
     <ClCompile Include="..\..\source_code\nebcommon.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\LuaBagOfTricks\source_code\luaex.c">
+      <Filter>Header Files\lbot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\LuaBagOfTricks\source_code\luautils.c">
+      <Filter>Header Files\lbot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test_code\test_error.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source_code\devmgr.h">
@@ -103,6 +115,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h">
       <Filter>cbot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\LuaBagOfTricks\source_code\luaex.h">
+      <Filter>Header Files\lbot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\LuaBagOfTricks\source_code\luautils.h">
+      <Filter>Header Files\lbot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

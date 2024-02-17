@@ -3,7 +3,6 @@
 
 local bt = require("bar_time")
 local neb = require("nebulua") -- lua api
--- local api = require("host_api") -- C api (or sim)
 
 
 neb.log_info("=============== go go go =======================")
@@ -81,14 +80,14 @@ end
 
 -----------------------------------------------------------------------------
 -- Called from sequence.
-local function seq_func(tick)--bar, beat, sub)
+local function seq_func(tick)
     local note_num = math.random(0, #alg_scale)
     neb.send_note(hout1, alg_scale[note_num], 0.7, 1)
 end
 
 -----------------------------------------------------------------------------
 -- Called from section.
-function section_func(tick)--bar, beat, sub)
+function section_func(tick)
     -- do something
 end
 

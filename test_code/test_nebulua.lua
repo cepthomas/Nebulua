@@ -6,7 +6,7 @@ local ut = require("utils")
 local st = require("step_types")
 local bt = require("bar_time")
 local neb = require("nebulua") -- lua api
-local api = require("host_api") -- C api (or sim)
+-- local api = require("host_api") -- C api (or sim)
 
 
 ut.config_debug(false, true)
@@ -32,24 +32,24 @@ function M.suite_parse_chunk(pn)
 
     -- Note number.
     steps = neb.parse_chunk( { "|1       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 } )
-    -- pr-int('+++', ut.dump_table_string(steps, 'steps1'))
+    -- print('+++', ut.dump_table_string(steps, 'steps1'))
 
     -- Note name.
     steps = neb.parse_chunk( { "|7   7   |        |        |        |    4---|---     |        |        |", "C2" } )
-    -- pr-int('+++', ut.dump_table_string(steps, 'steps2'))
+    -- print('+++', ut.dump_table_string(steps, 'steps2'))
 
     -- Chord.
     steps = neb.parse_chunk( { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" } )
-    -- pr-int('+++', ut.dump_table_string(steps, 'steps3'))
+    -- print('+++', ut.dump_table_string(steps, 'steps3'))
 
     -- Function.
     local func = function() end
     steps = neb.parse_chunk( { "|        |    6-  |        |        |        | 9999   |  111   |        |", func } )
-    -- pr-int('+++', ut.dump_table_string(steps, 'steps4'))
+    -- print('+++', ut.dump_table_string(steps, 'steps4'))
 
     -- Bad syntax.
 --    steps = neb.parse_chunk( { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 } )
-    -- pr-int('+++', ut.dump_table_string(steps, 'steps5'))
+    -- print('+++', ut.dump_table_string(steps, 'steps5'))
 end
 
 
@@ -72,7 +72,7 @@ function M.suite_process_script(pn)
     pn.UT_NOT_NIL(tempdbg.sections)
 
     s = ut.dump_table_string(tempdbg.steps, 'tempdbg.steps')
-    -- pr-int('+++', s)
+    -- print('+++', s)
 
     -- TODO1 examine contents
 

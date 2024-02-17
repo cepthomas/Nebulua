@@ -59,27 +59,7 @@ end
 -----------------------------------------------------------------------------
 
 
------------------------------------------------------------------------------
---- Report a user script syntax error.
--- @param info
-local function syntax_error(desc, info)
-    s = string.format("Syntax error: %s %s", desc, info or "")
---    M.error(s)
-    error(s, 3)
-end
-
---- Gets the file and line of the caller.
--- @param level How deep to look:
---    0 is the getinfo() itself
---    1 is the function that called getinfo() - get_caller_info()
---    2 is the function that called get_caller_info() - usually the one of interest
--- @return { filename, linenumber } or nil if invalid
--- function M.get_caller_info(level)
-    -- -- Print failure information.
-    -- local caller = ut.get_caller_info(4)
-    -- info = info or ""
-    -- write_error(caller[1]..":"..caller[2].." "..msg..". "..info)
-
+    
 -----------------------------------------------------------------------------
 --- Process all sequences into discrete steps. Sections are stored as is.
 -- @param sequences table user sequence specs
@@ -131,7 +111,7 @@ end
 --- Parse a chunk pattern.
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
 -- @return list of Steps partially filled-in or nil if invalid.
-function M.parse_chunk(chunk) --TODO2 local
+function M.parse_chunk(chunk) --TODO2 should be local
     local steps = { }
     local current_vol = 0 -- default, not sounding
     local start_offset = 0 -- in pattern for the start of the current event

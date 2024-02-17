@@ -5,6 +5,7 @@ local v = require('validators')
 local md = require('midi_defs')
 require('neb_common')
 
+-- In each of these if the d.err field is not nil that implies it's invalid.
 
 -----------------------------------------------------------------------------
 function StepNote(tick, chan_hnd, note_num, volume, duration)

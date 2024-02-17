@@ -295,13 +295,13 @@ int devmgr_OpenMidi(midi_device_t* pdev)
 void devmgr_Dump(FILE* fout)
 {
     // Inputs.
-    for (int i = 0; i < NUM_MIDI_DEVICES; i++)16
+    for (int i = 0; i < NUM_MIDI_DEVICES; i++)
     {
         midi_device_t* pdev = _devices + i;
         const char* dir = i >= NUM_MIDI_DEVICES / 2 ? "Output" : "Input";
 
         fprintf(fout, "Midi %s %d:  name:%s handle:%p channels: ", dir, i, pdev->sys_dev_name, pdev->handle);
-        for (int c = 0; c < NUM_MIDI_CHANNELS; c++)16
+        for (int c = 0; c < NUM_MIDI_CHANNELS; c++)
         {
             if (pdev->channels[c])
             {

@@ -6,8 +6,8 @@ local v = require('validators')
 require('neb_common')
 
 -- Forward refs.
-local sanitize
 local mt
+
 
 
 -----------------------------------------------------------------------------
@@ -17,7 +17,7 @@ function BT(tick)
     local d = {}
     -- Meta.
     setmetatable(d, mt)
-    -- Validate.
+    -- Validate. If the d.err field is not nil that implies it's invalid.
     d.err = v.val_integer(tick, 0, MAX_TICK, 'tick')
     if d.err ~= nil then d.tick = 0 else d.tick = tick end
 
@@ -110,36 +110,45 @@ end
 
 
 -----------------------------------------------------------------------------
--- Static metamethods.
-mt =
-{
-    __tostring = function(self) return self.err or string.format("%d:%d:%d", self.get_bar(), self.get_beat(), self.get_sub()) end,
-    __add = function(a, b) sana, sanb = sanitize(a, b, 'add'); return BT(sana + sanb) end,
-    __sub = function(a, b) sana, sanb = sanitize(a, b, 'sub'); return BT(sana - sanb) end,
-    __eq = function(a, b) return a.tick == b.tick end,
-    __lt = function(a, b) sana, sanb = sanitize(a, b, 'sub'); return sana < sanb end,
-    __le = function(a, b) sana, sanb = sanitize(a, b, 'sub'); return sana <= sanb end,
-}
-
-
------------------------------------------------------------------------------
--- Sanity check the args.
+-- Sanity check the metamethod args and return two ints. Only table and integer supported.
 -- Lua guarantees that at least one of the args is the table but order is not predictable.
--- Except: == works only for two identical types.
-sanitize = function(a, b, op)
+-- Except eq works only for two identical types.
+val_op = function(a, b, op)
     asan = nil
     bsan = nil
+    err = nil
+
     if ut.is_integer(a) then
-        asan = a
-        bsan = b.tick
+        if b.err == nil then
+            asan = a
+            bsan = b.tick
+        else
+            syntax_error(string.format("Bad operand for %s operator", op), b.err)
+        end
     elseif ut.is_integer(b) then
-        asan = a.tick
-        bsan = b
+        if a.err == nil then
+            asan = a.tick
+            bsan = b
+        else
+            syntax_error(string.format("Bad operand for %s operator", op), a.err)
+        end
     elseif getmetatable(a) == getmetatable(b) then
         asan = a.tick
         bsan = b.tick
     else
-        error(string.format("Invalid datatype for %s operator", op))
+        syntax_error(string.format("Invalid datatype for %s operator", op))
     end
-    return asan, bsan
+    return asan, bsan, err
 end
+
+-- Static metatable.
+mt =
+{
+    __tostring = function(self) return self.err or string.format("%d:%d:%d", self.get_bar(), self.get_beat(), self.get_sub()) end,
+    __add = function(a, b) sana, sanb = val_op(a, b, 'add'); return BT(sana + sanb) end,
+    __add = function(a, b) sana, sanb = val_op(a, b, 'add'); return BT(sana + sanb) end,
+    __sub = function(a, b) sana, sanb = val_op(a, b, 'sub'); return BT(sana - sanb) end,
+    __eq = function(a, b) return a.tick == b.tick end,
+    __lt = function(a, b) sana, sanb = val_op(a, b, 'lt'); return sana < sanb end,
+    __le = function(a, b) sana, sanb = val_op(a, b, 'le'); return sana <= sanb end,
+}
