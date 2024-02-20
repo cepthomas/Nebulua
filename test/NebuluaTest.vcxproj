@@ -140,7 +140,6 @@
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
     <ClCompile Include="..\source_code\devmgr.c" />
-    <ClCompile Include="..\source_code\exec.c" />
     <ClCompile Include="..\source_code\luainterop.c" />
     <ClCompile Include="..\source_code\luainteropwork.c" />
     <ClCompile Include="..\source_code\nebcommon.c" />

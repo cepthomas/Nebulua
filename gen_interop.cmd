@@ -11,6 +11,6 @@ rem echo %out_path%
 
 :: Build the interop.
 pushd "..\..\Lua\LuaBagOfTricks"
-lua gen_interop.lua -ch -d -t %spec_fn% %out_path%
+lua gen_interop.lua -ch -d %spec_fn% %out_path%
 
 popd

@@ -12,7 +12,6 @@
 // application
 #include "nebcommon.h"
 #include "devmgr.h"
-#include "luainteropwork.h"
 
 
 // Definition of work functions for host functions called by lua.

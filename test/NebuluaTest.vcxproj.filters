@@ -1,25 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource_code Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="cbot">
       <UniqueIdentifier>{d20d46b1-721f-411f-98e8-ef1b4aabb06b}</UniqueIdentifier>
     </Filter>
     <Filter Include="test">
       <UniqueIdentifier>{60c03f1b-71c4-4dee-9f8d-b8f70bfa0abd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\lbot">
+    <Filter Include="source">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="lbot">
       <UniqueIdentifier>{aab314b7-6701-4f7c-8d34-165e160899db}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -51,43 +43,37 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\devmgr.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source_code\exec.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source_code\luainterop.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source_code\luainteropwork.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\source_code\nebcommon.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c">
-      <Filter>Header Files\lbot</Filter>
+      <Filter>lbot</Filter>
     </ClCompile>
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c">
-      <Filter>Header Files\lbot</Filter>
+      <Filter>lbot</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source_code\devmgr.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source_code\luainterop.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source_code\luainteropwork.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source_code\nebcommon.c">
+      <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source_code\devmgr.h">
-      <Filter>Header Files</Filter>
+      <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\source_code\luainterop.h">
-      <Filter>Header Files</Filter>
+      <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\source_code\luainteropwork.h">
-      <Filter>Header Files</Filter>
+      <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\source_code\nebcommon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
-      <Filter>Header Files</Filter>
+      <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
@@ -114,10 +100,13 @@
       <Filter>cbot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h">
-      <Filter>Header Files\lbot</Filter>
+      <Filter>lbot</Filter>
     </ClInclude>
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h">
-      <Filter>Header Files\lbot</Filter>
+      <Filter>lbot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
+      <Filter>cbot</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

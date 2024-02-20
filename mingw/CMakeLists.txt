@@ -1,4 +1,4 @@
-# Build the nebulua app or its unit tests.
+# Build the nebulua app or its unit tests. TODO2 do something with this? Maybe remove or embed in VS.
 
 cmake_minimum_required(VERSION 3.5)
 

@@ -105,12 +105,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>C:\Lua\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;C:\Dev\repos\Lua\Nebulua\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Lua\include;C:\Dev\repos\Lua\LuaBagOfTricks\source_code;C:\Dev\repos\Lua\Nebulua\source_code;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;C:\Lua\Win64\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;C:\Dev\repos\Lua\Nebulua\lua_lib\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:MSVCR %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -136,6 +136,8 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
+    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
+    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
     <ClCompile Include="..\source_code\devmgr.c" />
     <ClCompile Include="..\source_code\exec.c" />
     <ClCompile Include="..\source_code\luainterop.c" />
@@ -152,6 +154,8 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h" />
+    <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h" />
+    <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h" />
     <ClInclude Include="..\source_code\devmgr.h" />
     <ClInclude Include="..\source_code\luainterop.h" />
     <ClInclude Include="..\source_code\luainteropwork.h" />

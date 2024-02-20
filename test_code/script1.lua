@@ -1,5 +1,6 @@
 
--- Nebulua test script.
+-- Nebulua test script. TODO1 fix like lbot test.
+
 
 local bt = require("bar_time")
 local neb = require("nebulua") -- lua api

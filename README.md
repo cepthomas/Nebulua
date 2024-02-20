@@ -2,8 +2,9 @@
 
 - An experimental version of Nebulator using Lua as the script flavor.
 - Windows only.
-- Windows 64 bit. Build with VS or mingw64.
-- Test code is Windows 64 bit build using CMake. Your PATH must include `...\mingw64\bin`.
+- Windows 64 bit. Build with VS or mingw64.  I'm using 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
+
+- Test code is Windows 64 bit build using CMake. Your PATH must include `...\mingw64\bin`. <<<<<?????
 
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 

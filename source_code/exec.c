@@ -14,7 +14,6 @@
 #include "nebcommon.h"
 #include "devmgr.h"
 #include "luainterop.h"
-#include "luainteropwork.h"
 
 
 //----------------------- Definitions -----------------------//
@@ -62,6 +61,18 @@ typedef struct cli_command
 // The main Lua thread.
 static lua_State* _l;
 
+// Point this stream where you like.
+static FILE* _log_out = NULL;
+
+// Point this stream where you like.
+static FILE* _error_out = NULL;
+
+// Point this stream where you like.
+static FILE* _cli_in = NULL;
+
+// Point this stream where you like.
+static FILE* _cli_out = NULL;
+
 // The script execution state.
 static bool _script_running = false;
 
@@ -86,6 +97,8 @@ static char* _prompt = "$";
 // CLI buffer.
 static char _cli_buff[CLI_BUFF_LEN];
 
+//static char _last_log[500];
+static char _last_error[500];
 
 //----------------------- Vars - script ------------------------//
 
@@ -110,35 +123,50 @@ static void _MidiClockHandler(double msec);
 // Handle incoming messages. !!From Interrupt!!
 static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
-/// Top level error handler for nebulua status. Logs and calls luaL_error() which doesn't return.
-/// @param l Lua context
-/// @param stat Status to examine
-/// @param format Standard format
-static void _EvalStatus(lua_State* l, int stat, const char* format, ...);
+/// Top level error handler for nebulua status.
+static bool _EvalStatus(int stat, int line, const char* format, ...);
 
 
 //----------------------------------------------------//
 
 /// Main entry for the application.
-int exec_Main(int argc, char* argv[])
+int exec_Main(const char* script_fn)
 {
     int stat = NEB_OK;
     int cbot_stat;
 
-    FILE* fp = fopen("nebulua_log.txt", "a");
+
+    bool ok = false;
+    int iret = 0;
+    double dret = 0;
+    bool bret = false;
+    const char* sret = NULL;
+    int app_ret = 0;
+
+    #define INIT_FAIL(msg) fprintf(_error_out, "ERROR %s\n", msg); app_ret = 1; goto init_fail;
+
+    // Init streams.
+    _log_out = stdout;
+    _error_out = stdout;
+    _cli_in = stdin;
+    _cli_out = stdout;
+
+    // Init logger.
+    FILE* fp = fopen("_log.txt", "a");
     cbot_stat = logger_Init(fp);
-    _EvalStatus(_l, cbot_stat, "Failed to init logger");
+    ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init logger");
+    if (!ok) INIT_FAIL(_last_error);
     logger_SetFilters(LVL_DEBUG);
 
     // Initialize the critical section. It is used to synchronize access to the lua context _l.
-    InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
+    ok = InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
 
     // Lock access to lua context during init.
     ENTER_CRITICAL_SECTION;
 
     ///// Init internal stuff. /////
     _l = luaL_newstate();
-    // luautils_EvalStack(_l, 0);
+     //luautils_EvalStack(_l, stdout, 0);
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -151,41 +179,60 @@ int exec_Main(int argc, char* argv[])
 
     // Tempo timer and interrupt.
     cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
-    _EvalStatus(_l, cbot_stat, "Failed to init ftimer");
-    luainteropwork_SetTempo(_l, 60);
+    ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init ftimer.");
+    if (!ok) INIT_FAIL(_last_error);
+    luainteropwork_SetTempo(60);
 
     stat = devmgr_Init(_MidiInHandler);
-    _EvalStatus(_l, stat, "Failed to init device manager");
+    ok = _EvalStatus(stat, __LINE__, "Failed to init device manager.");
+    if (!ok) INIT_FAIL(_last_error);
+
 
     ///// Load and run the application. /////
 
-    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack - or pushes an error message.
-    stat = luaL_loadfile(_l, argv[1]);
-    _EvalStatus(_l, stat, "luaL_loadfile() failed fn:%s", argv[1]);
+    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
+    stat = luaL_loadfile(_l, script_fn);
+    ok = _EvalStatus(stat, __LINE__, "Load script file failed [%s].", script_fn);
+    if (!ok) INIT_FAIL(_last_error);
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    _EvalStatus(_l, stat, "lua_pcall() failed fn:%s", argv[1]);
+    ok = _EvalStatus(stat, __LINE__, "Execute script failed [%s].", script_fn);
+    if (!ok) INIT_FAIL(_last_error);
 
     // Script setup.
-    stat = luainterop_Setup(_l);
-    _EvalStatus(_l, stat, "luainterop_Setup() failed");
+    stat = luainterop_Setup(_l, &iret);
+    ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
+    if (!ok) INIT_FAIL(_last_error);
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
     stat = _Forever();
-    _EvalStatus(_l, stat, "Run failed");
+    ok = _EvalStatus(stat, __LINE__, "Run failed [%s].", script_fn);
+    if (!ok) INIT_FAIL(_last_error);
+
+
+init_fail:
 
     ///// Finished. Clean up and go home. /////
     DeleteCriticalSection(&_critical_section);
-    printf("Goodbye - come back soon!\n");
     ftimer_Run(0);
     ftimer_Destroy();
     devmgr_Destroy();
+
+    if (_log_out != stdout)
+    {
+        fclose(_log_out);
+    }
+    if (_error_out != stdout)
+    {
+        fclose(_error_out);
+    }
+
     lua_close(_l);
 
-    return 0;
+    return app_ret;
 }
 
 
@@ -198,9 +245,9 @@ int _Forever(void)
     while (_app_running)
     {
         // Prompt.
-        fputs(_prompt, stdout);
+        fprintf(_cli_out, _prompt);
         fflush(stdout);
-        char* res = fgets(_cli_buff, CLI_BUFF_LEN, stdin);
+        char* res = fgets(_cli_buff, CLI_BUFF_LEN, _cli_in);
 
         if (res != NULL)
         {
@@ -233,7 +280,7 @@ int _Forever(void)
                         // Lock access to lua context.
                         ENTER_CRITICAL_SECTION;
                         stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
-                        // _EvalStatus(_l, stat, "handler failed: %s", pcmd->desc.long_name);
+                        // ok = _EvalStatus(stat, __LINE__, "handler failed: %s", pcmd->desc.long_name);
                         EXIT_CRITICAL_SECTION;
                         break;
                     }
@@ -241,14 +288,14 @@ int _Forever(void)
 
                 if (!valid)
                 {
-                    printf("invalid command\n");
+                    fprintf(_cli_out, "invalid command\n");
                 }
             }
         }
         else
         {
             // Assume finished.
-            printf("run loop finished\n");
+            // log?("run loop finished\n");
             _app_running = false;
         }
     }
@@ -263,12 +310,12 @@ void _MidiClockHandler(double msec)
     // Process events -- this is in an interrupt handler!
     // msec is since last time.
     _last_msec = msec;
+    int iret;
 
     // Lock access to lua context.
     ENTER_CRITICAL_SECTION;
 
-    // int stat = luainterop_Step(_l, BAR(_position), BEAT(_position), SUB(_position));
-    int stat = luainterop_Step(_l, _position);
+    int stat = luainterop_Step(_l, _position, &iret);
     if (stat != NEB_OK)
     {
         // TODO2 do something non-fatal?
@@ -280,12 +327,15 @@ void _MidiClockHandler(double msec)
 
 
 //--------------------------------------------------------//
-void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) //TODO1 test
 {
     // Input midi event -- this is in an interrupt handler!
     // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
 
     int stat = NEB_OK;
+    bool ok = true;
+    int iret;
+
     switch (wMsg)
     {
     case MIM_DATA:
@@ -326,13 +376,13 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
             case MIDI_NOTE_OFF:
                 // Translate velocity to volume.
                 double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
-                stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume);
-                _EvalStatus(_l, stat, "luainterop_InputNote() failed");
+                stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume, &iret);
+                ok = _EvalStatus(stat, __LINE__, "luainterop_InputNote() failed");
                 break;
 
             case MIDI_CONTROL_CHANGE:
-                stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2);
-                _EvalStatus(_l, stat, "luainterop_InputController() failed");
+                stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2, &iret);
+                ok = _EvalStatus(stat, __LINE__, "luainterop_InputController() failed");
                 break;
 
             case MIDI_PITCH_WHEEL_CHANGE:
@@ -369,7 +419,7 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        printf("tempo: %d\n", _tempo);
+        fprintf(_cli_out, "tempo: %d\n", _tempo);
         stat = NEB_OK;
     }
     else if (argc == 2) // set
@@ -378,11 +428,11 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
         if (luautils_ParseInt(argv[1], &t, 40, 240))
         {
             _tempo = t;
-            luainteropwork_SetTempo(_l, _tempo);
+            luainteropwork_SetTempo(_tempo);
         }
         else
         {
-            printf("invalid tempo: %s\n", argv[1]);
+            fprintf(_cli_out, "invalid tempo: %s\n", argv[1]);
             stat = NEB_ERR_BAD_CLI_ARG;
         }
         stat = NEB_OK;
@@ -447,7 +497,7 @@ int _MonCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            printf("invalid option: %s\n", argv[1]);
+            fprintf(_cli_out, "invalid option: %s\n", argv[1]);
         }
     }
 
@@ -478,7 +528,7 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        printf("%s\n", nebcommon_FormatBarTime(_position));
+        fprintf(_cli_out, "%s\n", nebcommon_FormatBarTime(_position));
         stat = NEB_OK;
     }
     else if (argc == 2)
@@ -486,12 +536,12 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         int position = nebcommon_ParseBarTime(argv[1]);
         if (position < 0)
         {
-            printf("invalid position: %s\n", argv[1]);
+            fprintf(_cli_out, "invalid position: %s\n", argv[1]);
         }
         else
         {
             _position = position >= _length ? _length : position;
-            printf("%s\n", nebcommon_FormatBarTime(_position));
+            fprintf(_cli_out, "%s\n", nebcommon_FormatBarTime(_position));
         }
     }
 
@@ -524,7 +574,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
     while (_commands->handler != NULL_PTR)
     {
         //const cli_command_t* pdesc = &(cmditer->desc);
-        printf("%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
+        fprintf(_cli_out, "%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
         if (strlen(cmditer->args) > 0)
         {
             // Maybe multiline args. Make writable copy and tokenize it.
@@ -533,7 +583,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
             char* tok = strtok(cp, "$");
             while (tok != NULL)
             {
-                printf("    %s\n", tok);
+                fprintf(_cli_out, "    %s\n", tok);
                 tok = strtok(NULL, "$");
             }
         }
@@ -560,22 +610,23 @@ static cli_command_t _commands[] =
 
 
 //--------------------------------------------------------//
-void _EvalStatus(lua_State* l, int stat, const char* format, ...)
+bool _EvalStatus(int stat, int line, const char* format, ...)
 {
-    static char buff[100];
-    // bool has_error = false;
+    bool ok = true;
+    strcpy(_last_error, "No error");
 
     if (stat >= LUA_ERRRUN)
     {
-        // has_error = true;
+        ok = false;
 
+        // Format info string.
+        char info[100];
         va_list args;
         va_start(args, format);
-        vsnprintf(buff, sizeof(buff) - 1, format, args);
+        vsnprintf(info, sizeof(info) - 1, format, args);
         va_end(args);
 
         const char* sstat = NULL;
-        char err_buff[16];
         switch (stat)
         {
             // generic
@@ -600,28 +651,27 @@ void _EvalStatus(lua_State* l, int stat, const char* format, ...)
             case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
             case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
             // default
-            default:                        snprintf(err_buff, sizeof(err_buff) - 1, "ERR_%d", stat); break;
+            default:                        sstat = "UNKNOWN_ERROR"; LOG_DEBUG("Unknwon ret code:%d", stat); break;
         }
 
-        sstat = (sstat == NULL) ? err_buff : sstat;
-
-        if (stat <= LUA_ERRFILE) // internal lua error - get error message on stack if provided.
+        // Additional error message.
+        const char* errmsg = NULL;
+        if (stat <= LUA_ERRFILE && lua_gettop(_l) > 0) // internal lua error - get error message on stack if provided.
         {
-            if (lua_gettop(l) > 0)
-            {
-                luaL_error(l, "Status:%s info:%s errmsg:%s", sstat, buff, lua_tostring(l, -1));
-            }
-            else
-            {
-                luaL_error(l, "Status:%s info:%s", sstat, buff);
-            }
+            errmsg = lua_tostring(_l, -1);
         }
-        else // cbot or nebulua error
-        {
-            luaL_error(l, "Status:%s info:%s", sstat, buff);
-        }
+        // else app error
 
-        //  maybe? const char* strerrorname_np(int errnum), const char* strerrordesc_np(int errnum);
+        // Log the error info.
+        if (errmsg == NULL)
+        {
+            snprintf(_last_error, sizeof(_last_error), "%s %s", sstat, info);
+        }
+        else
+        {
+            snprintf(_last_error, sizeof(_last_error), "%s %s\n%s", sstat, info, errmsg);
+        }
     }
-}
 
+    return ok;
+}
