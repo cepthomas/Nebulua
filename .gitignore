@@ -5,4 +5,5 @@ x64/
 /mingw/build_test
 *.vcxproj.user
 *.sublime-*
-/_temp
+_log.txt
+_test.txt

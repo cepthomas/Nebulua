@@ -27,53 +27,50 @@
     <ClCompile Include="NebuluaTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test_code\test_devmgr.cpp">
+    <ClCompile Include="..\test_code\test_devmgr.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test_code\test_nebcommon.cpp">
+    <ClCompile Include="..\test_code\test_nebcommon.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\ftimer.c">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\ftimer.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\list.c">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\list.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c">
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c">
       <Filter>cbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source_code\devmgr.c">
+    <ClCompile Include="..\source_code\devmgr.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source_code\exec.c">
+    <ClCompile Include="..\source_code\exec.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source_code\luainterop.c">
+    <ClCompile Include="..\source_code\luainterop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source_code\luainteropwork.c">
+    <ClCompile Include="..\source_code\luainteropwork.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source_code\nebcommon.c">
+    <ClCompile Include="..\source_code\nebcommon.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\LuaBagOfTricks\source_code\luaex.c">
+    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c">
       <Filter>Header Files\lbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\LuaBagOfTricks\source_code\luautils.c">
+    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c">
       <Filter>Header Files\lbot</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test_code\test_error.cpp">
-      <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,37 +86,37 @@
     <ClInclude Include="..\source_code\nebcommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
+    <ClInclude Include="..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\cbot.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\cbot.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\ftimer.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\ftimer.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\list.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\list.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\logger.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\logger.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\stringx.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h">
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h">
       <Filter>cbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\LuaBagOfTricks\source_code\luaex.h">
+    <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h">
       <Filter>Header Files\lbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\LuaBagOfTricks\source_code\luautils.h">
+    <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h">
       <Filter>Header Files\lbot</Filter>
     </ClInclude>
   </ItemGroup>

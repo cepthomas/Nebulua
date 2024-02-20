@@ -21,10 +21,10 @@ int main()
     whichSuites.emplace_back("DEVMGR");
 
     // Init system before running tests.
-    FILE* fp_log = fopen("out\\log.txt", "w");
+    FILE* fp_log = fopen("_log.txt", "w");
     logger_Init(fp_log); // stdout
 
-    std::ofstream s_ut("out\\test.txt", std::ofstream::out);
+    std::ofstream s_ut("_test.txt", std::ofstream::out);
     tm.RunSuites(whichSuites, 'r', &s_ut);
 
     fclose(fp_log);
