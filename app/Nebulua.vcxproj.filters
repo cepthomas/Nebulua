@@ -34,19 +34,19 @@
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c">
       <Filter>lbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\devmgr.c">
+    <ClCompile Include="devmgr.c">
       <Filter>app</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\exec.c">
+    <ClCompile Include="exec.c">
       <Filter>app</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\luainterop.c">
+    <ClCompile Include="luainterop.c">
       <Filter>app</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\luainteropwork.c">
+    <ClCompile Include="luainteropwork.c">
       <Filter>app</Filter>
     </ClCompile>
-    <ClCompile Include="..\source_code\nebcommon.c">
+    <ClCompile Include="nebcommon.c">
       <Filter>app</Filter>
     </ClCompile>
     <ClCompile Include="Nebulua.cpp">
@@ -54,16 +54,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\source_code\devmgr.h">
+    <ClInclude Include="devmgr.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="..\source_code\luainterop.h">
+    <ClInclude Include="luainterop.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="..\source_code\luainteropwork.h">
+    <ClInclude Include="luainteropwork.h">
       <Filter>app</Filter>
     </ClInclude>
-    <ClInclude Include="..\source_code\nebcommon.h">
+    <ClInclude Include="nebcommon.h">
       <Filter>app</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h">

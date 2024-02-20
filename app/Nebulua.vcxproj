@@ -138,11 +138,11 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
-    <ClCompile Include="..\source_code\devmgr.c" />
-    <ClCompile Include="..\source_code\exec.c" />
-    <ClCompile Include="..\source_code\luainterop.c" />
-    <ClCompile Include="..\source_code\luainteropwork.c" />
-    <ClCompile Include="..\source_code\nebcommon.c" />
+    <ClCompile Include="devmgr.c" />
+    <ClCompile Include="exec.c" />
+    <ClCompile Include="luainterop.c" />
+    <ClCompile Include="luainteropwork.c" />
+    <ClCompile Include="nebcommon.c" />
     <ClCompile Include="Nebulua.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -156,10 +156,10 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h" />
-    <ClInclude Include="..\source_code\devmgr.h" />
-    <ClInclude Include="..\source_code\luainterop.h" />
-    <ClInclude Include="..\source_code\luainteropwork.h" />
-    <ClInclude Include="..\source_code\nebcommon.h" />
+    <ClInclude Include="devmgr.h" />
+    <ClInclude Include="luainterop.h" />
+    <ClInclude Include="luainteropwork.h" />
+    <ClInclude Include="nebcommon.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

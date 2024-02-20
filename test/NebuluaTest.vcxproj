@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>C:\Dev\repos\Lua\Nebulua\lua_lib\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;C:\Dev\repos\Lua\Nebulua\source_code;C:\Dev\repos\Lua\LuaBagOfTricks\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\repos\Lua\Nebulua\lua_lib\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;C:\Dev\repos\Lua\Nebulua\app;C:\Dev\repos\Lua\LuaBagOfTricks\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,12 +139,12 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
-    <ClCompile Include="..\source_code\devmgr.c" />
-    <ClCompile Include="..\source_code\luainterop.c" />
-    <ClCompile Include="..\source_code\luainteropwork.c" />
-    <ClCompile Include="..\source_code\nebcommon.c" />
-    <ClCompile Include="..\test_code\test_devmgr.cpp" />
-    <ClCompile Include="..\test_code\test_nebcommon.cpp" />
+    <ClCompile Include="..\app\devmgr.c" />
+    <ClCompile Include="..\app\luainterop.c" />
+    <ClCompile Include="..\app\luainteropwork.c" />
+    <ClCompile Include="..\app\nebcommon.c" />
+    <ClCompile Include="test_devmgr.cpp" />
+    <ClCompile Include="test_nebcommon.cpp" />
     <ClCompile Include="NebuluaTest.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,10 +159,10 @@
     <ClInclude Include="..\..\C\c_bag_of_tricks\source_code\diagnostics.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h" />
-    <ClInclude Include="..\source_code\devmgr.h" />
-    <ClInclude Include="..\source_code\luainterop.h" />
-    <ClInclude Include="..\source_code\luainteropwork.h" />
-    <ClInclude Include="..\source_code\nebcommon.h" />
+    <ClInclude Include="..\app\devmgr.h" />
+    <ClInclude Include="..\app\luainterop.h" />
+    <ClInclude Include="..\app\luainteropwork.h" />
+    <ClInclude Include="..\app\nebcommon.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
