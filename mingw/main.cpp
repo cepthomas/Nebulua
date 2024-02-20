@@ -21,7 +21,7 @@ int main()
     whichSuites.emplace_back("DEVMGR");
 
     // Init system before running tests.
-    // FILE* fp = fopen("log_test_out.txt", "w");
+    // FILE* fp = fopen("out\\log.txt", "w");
     // logger_Init(fp);
     logger_Init(stdout);
     tm.RunSuites(whichSuites, 'r'); // 'r' for readable, 'x' for xml

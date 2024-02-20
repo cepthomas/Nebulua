@@ -166,10 +166,6 @@
     <ClInclude Include="..\source_code\luainteropwork.h" />
     <ClInclude Include="..\source_code\nebcommon.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="log_out.txt" />
-    <Text Include="test_out.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

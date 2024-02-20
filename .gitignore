@@ -1,8 +1,6 @@
 
 .vs/
 x64/
-/build_test/test_out.txt
-/build_test/log_out.txt
 /mingw/build_app
 /mingw/build_test
 *.vcxproj.user

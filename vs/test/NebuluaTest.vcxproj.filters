@@ -123,8 +123,4 @@
       <Filter>Header Files\lbot</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="log_out.txt" />
-    <Text Include="test_out.txt" />
-  </ItemGroup>
 </Project>
