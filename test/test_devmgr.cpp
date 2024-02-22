@@ -17,15 +17,6 @@ const char* _my_midi_in1  = "loopMIDI Port";
 const char* _my_midi_out1 = "Microsoft GS Wavetable Synth";
 
 
-//--------------------------------------------------------//
-static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
-{
-    // Input midi event -- this is in an interrupt handler!
-    // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
-
-}
-
-
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(DEVMGR_MAIN, "Test device manager.")
 {

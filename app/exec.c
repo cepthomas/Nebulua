@@ -62,16 +62,16 @@ typedef struct cli_command
 static lua_State* _l;
 
 // Point this stream where you like.
-static FILE* _log_out = NULL;
+static FILE* _log_stream_out = NULL;
 
 // Point this stream where you like.
-static FILE* _error_out = NULL;
+static FILE* _error_stream_out = NULL;
 
 // Point this stream where you like.
-static FILE* _cli_in = NULL;
+static FILE* _cli_stream_in = NULL;
 
 // Point this stream where you like.
-static FILE* _cli_out = NULL;
+static FILE* _cli_stream_out = NULL;
 
 // The script execution state.
 static bool _script_running = false;
@@ -135,7 +135,6 @@ int exec_Main(const char* script_fn)
     int stat = NEB_OK;
     int cbot_stat;
 
-
     bool ok = false;
     int iret = 0;
     double dret = 0;
@@ -143,19 +142,18 @@ int exec_Main(const char* script_fn)
     const char* sret = NULL;
     int app_ret = 0;
 
-    #define INIT_FAIL(msg) fprintf(_error_out, "ERROR %s\n", msg); app_ret = 1; goto init_fail;
+    #define INIT_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); app_ret = 1; goto init_fail;
 
     // Init streams.
-    _log_out = stdout;
-    _error_out = stdout;
-    _cli_in = stdin;
-    _cli_out = stdout;
+    _error_stream_out = stdout;
+    _cli_stream_in = stdin;
+    _cli_stream_out = stdout;
 
     // Init logger.
-    FILE* fp = fopen("_log.txt", "a");
-    cbot_stat = logger_Init(fp);
+    _log_stream_out = fopen("_log.txt", "a");
+    cbot_stat = logger_Init(_log_stream_out);
     ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init logger");
-    if (!ok) INIT_FAIL(_last_error);
+    if (!ok) INIT_FAIL();
     logger_SetFilters(LVL_DEBUG);
 
     // Initialize the critical section. It is used to synchronize access to the lua context _l.
@@ -166,7 +164,6 @@ int exec_Main(const char* script_fn)
 
     ///// Init internal stuff. /////
     _l = luaL_newstate();
-     //luautils_EvalStack(_l, stdout, 0);
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -180,37 +177,36 @@ int exec_Main(const char* script_fn)
     // Tempo timer and interrupt.
     cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
     ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init ftimer.");
-    if (!ok) INIT_FAIL(_last_error);
+    if (!ok) INIT_FAIL();
     luainteropwork_SetTempo(60);
 
     stat = devmgr_Init(_MidiInHandler);
     ok = _EvalStatus(stat, __LINE__, "Failed to init device manager.");
-    if (!ok) INIT_FAIL(_last_error);
-
+    if (!ok) INIT_FAIL();
 
     ///// Load and run the application. /////
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, script_fn);
     ok = _EvalStatus(stat, __LINE__, "Load script file failed [%s].", script_fn);
-    if (!ok) INIT_FAIL(_last_error);
+    if (!ok) INIT_FAIL();
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     ok = _EvalStatus(stat, __LINE__, "Execute script failed [%s].", script_fn);
-    if (!ok) INIT_FAIL(_last_error);
+    if (!ok) INIT_FAIL();
 
     // Script setup.
     stat = luainterop_Setup(_l, &iret);
     ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
-    if (!ok) INIT_FAIL(_last_error);
+    if (!ok) INIT_FAIL();
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
     stat = _Forever();
     ok = _EvalStatus(stat, __LINE__, "Run failed [%s].", script_fn);
-    if (!ok) INIT_FAIL(_last_error);
+    if (!ok) INIT_FAIL();
 
 
 init_fail:
@@ -221,14 +217,9 @@ init_fail:
     ftimer_Destroy();
     devmgr_Destroy();
 
-    if (_log_out != stdout)
-    {
-        fclose(_log_out);
-    }
-    if (_error_out != stdout)
-    {
-        fclose(_error_out);
-    }
+    if (_log_stream_out != stdout) { fclose(_log_stream_out); }
+    if (_error_stream_out != stdout) { fclose(_error_stream_out); }
+    if (_cli_stream_out != stdout) { fclose(_cli_stream_out); }
 
     lua_close(_l);
 
@@ -245,9 +236,9 @@ int _Forever(void)
     while (_app_running)
     {
         // Prompt.
-        fprintf(_cli_out, _prompt);
+        fprintf(_cli_stream_out, _prompt);
         fflush(stdout);
-        char* res = fgets(_cli_buff, CLI_BUFF_LEN, _cli_in);
+        char* res = fgets(_cli_buff, CLI_BUFF_LEN, _cli_stream_in);
 
         if (res != NULL)
         {
@@ -288,7 +279,7 @@ int _Forever(void)
 
                 if (!valid)
                 {
-                    fprintf(_cli_out, "invalid command\n");
+                    fprintf(_cli_stream_out, "invalid command\n");
                 }
             }
         }
@@ -419,7 +410,7 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        fprintf(_cli_out, "tempo: %d\n", _tempo);
+        fprintf(_cli_stream_out, "tempo: %d\n", _tempo);
         stat = NEB_OK;
     }
     else if (argc == 2) // set
@@ -432,7 +423,7 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            fprintf(_cli_out, "invalid tempo: %s\n", argv[1]);
+            fprintf(_cli_stream_out, "invalid tempo: %s\n", argv[1]);
             stat = NEB_ERR_BAD_CLI_ARG;
         }
         stat = NEB_OK;
@@ -497,7 +488,7 @@ int _MonCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            fprintf(_cli_out, "invalid option: %s\n", argv[1]);
+            fprintf(_cli_stream_out, "invalid option: %s\n", argv[1]);
         }
     }
 
@@ -528,7 +519,7 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        fprintf(_cli_out, "%s\n", nebcommon_FormatBarTime(_position));
+        fprintf(_cli_stream_out, "%s\n", nebcommon_FormatBarTime(_position));
         stat = NEB_OK;
     }
     else if (argc == 2)
@@ -536,12 +527,12 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         int position = nebcommon_ParseBarTime(argv[1]);
         if (position < 0)
         {
-            fprintf(_cli_out, "invalid position: %s\n", argv[1]);
+            fprintf(_cli_stream_out, "invalid position: %s\n", argv[1]);
         }
         else
         {
             _position = position >= _length ? _length : position;
-            fprintf(_cli_out, "%s\n", nebcommon_FormatBarTime(_position));
+            fprintf(_cli_stream_out, "%s\n", nebcommon_FormatBarTime(_position));
         }
     }
 
@@ -574,7 +565,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
     while (_commands->handler != NULL_PTR)
     {
         //const cli_command_t* pdesc = &(cmditer->desc);
-        fprintf(_cli_out, "%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
+        fprintf(_cli_stream_out, "%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
         if (strlen(cmditer->args) > 0)
         {
             // Maybe multiline args. Make writable copy and tokenize it.
@@ -583,7 +574,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
             char* tok = strtok(cp, "$");
             while (tok != NULL)
             {
-                fprintf(_cli_out, "    %s\n", tok);
+                fprintf(_cli_stream_out, "    %s\n", tok);
                 tok = strtok(NULL, "$");
             }
         }

@@ -1,5 +1,5 @@
 
--- Nebulua test script. TODO1 fix like lbot test.
+-- Nebulua test script.
 
 
 local bt = require("bar_time")
