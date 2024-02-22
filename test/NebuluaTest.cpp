@@ -19,13 +19,16 @@ int main()
 
     whichSuites.emplace_back("NEBCOM");
     whichSuites.emplace_back("DEVMGR");
+    whichSuites.emplace_back("EXEC");
 
     // Init system before running tests.
-    FILE* fp_log = fopen("_test_log.txt", "w");
-    logger_Init(fp_log); // stdout
+    FILE* fp_log = fopen("_log.txt", "w");
+    logger_Init(fp_log);
+
+    LOG_ERROR("1111");
 
     std::ofstream s_ut("_test.txt", std::ofstream::out);
-    tm.RunSuites(whichSuites, 'r', &s_ut);
+    tm.RunSuites(whichSuites, 'r', false, &s_ut);
 
     fclose(fp_log);
     s_ut.close();

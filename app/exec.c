@@ -23,8 +23,8 @@
 // Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
 // TODO2 Performance? https://stackoverflow.com/questions/853316/is-critical-section-always-faster
 static CRITICAL_SECTION _critical_section;
-#define ENTER_CRITICAL_SECTION EnterCriticalSection(&_critical_section)
-#define EXIT_CRITICAL_SECTION  LeaveCriticalSection(&_critical_section)
+#define ENTER_CRITICAL_SECTION ;//EnterCriticalSection(&_critical_section)
+#define EXIT_CRITICAL_SECTION  ;//LeaveCriticalSection(&_critical_section)
 
 #define CLI_BUFF_LEN    128
 #define MAX_CLI_ARGS     10
@@ -115,14 +115,14 @@ static int _length = 0;
 
 //---------------------- Functions ------------------------//
 
-// Main loop.
-static int _Forever(void);
+// Process user input.
+ int _DoCli(void); // TODO2 static
 
 // Clock tick corresponding to bpm. !!From Interrupt!!
-static void _MidiClockHandler(double msec);
+ void _MidiClockHandler(double msec); // TODO2 static
 
 // Handle incoming messages. !!From Interrupt!!
-static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2); // TODO2 static
 
 /// Top level error handler for nebulua status.
 static bool _EvalStatus(int stat, int line, const char* format, ...);
@@ -131,7 +131,7 @@ static bool _EvalStatus(int stat, int line, const char* format, ...);
 //----------------------------------------------------//
 
 /// Main entry for the application.
-int exec_Main(const char* script_fn)
+static int exec_Main(const char* script_fn)
 {
     int stat = NEB_OK;
     int cbot_stat;
@@ -143,7 +143,7 @@ int exec_Main(const char* script_fn)
     const char* sret = NULL;
     int exit_code = 0;
 
-    #define INIT_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); exit_code = 1; goto init_done;
+    #define EXEC_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); exit_code = 1; goto init_done;
 
     // Init streams.
     _error_stream_out = stdout;
@@ -155,7 +155,7 @@ int exec_Main(const char* script_fn)
     _log_stream_out = fopen("_log.txt", "a");
     cbot_stat = logger_Init(_log_stream_out);
     ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init logger");
-    if (!ok) INIT_FAIL();
+    if (!ok) EXEC_FAIL();
     logger_SetFilters(LVL_DEBUG);
     LOG_INFO("Logger is alive");
 
@@ -180,36 +180,41 @@ int exec_Main(const char* script_fn)
     // Tempo timer and interrupt.
     cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
     ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init ftimer.");
-    if (!ok) INIT_FAIL();
+    if (!ok) EXEC_FAIL();
     luainteropwork_SetTempo(60);
 
     stat = devmgr_Init(_MidiInHandler);
     ok = _EvalStatus(stat, __LINE__, "Failed to init device manager.");
-    if (!ok) INIT_FAIL();
+    if (!ok) EXEC_FAIL();
 
     ///// Load and run the application. /////
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, script_fn);
     ok = _EvalStatus(stat, __LINE__, "Load script file failed [%s].", script_fn);
-    if (!ok) INIT_FAIL();
+    if (!ok) EXEC_FAIL();
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     ok = _EvalStatus(stat, __LINE__, "Execute script failed [%s].", script_fn);
-    if (!ok) INIT_FAIL();
+    if (!ok) EXEC_FAIL();
 
     // Script setup.
     stat = luainterop_Setup(_l, &iret);
     ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
-    if (!ok) INIT_FAIL();
+    if (!ok) EXEC_FAIL();
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
-    stat = _Forever();
+    // Loop forever doing cli requests.
+    while (_app_running)
+    {
+        stat = _DoCli();
+    }
+
     ok = _EvalStatus(stat, __LINE__, "Run failed [%s].", script_fn);
-    if (!ok) INIT_FAIL();
+    if (!ok) EXEC_FAIL();
 
 
 init_done:
@@ -235,66 +240,70 @@ init_done:
 
 
 //---------------------------------------------------//
-int _Forever(void)
+int _DoCli(void)
 {
     int stat = NEB_OK;
 
-    // Loop forever doing cli requests.
-    while (_app_running)
+    // Prompt.
+    cli_printf(_prompt);
+
+    char* res = cli_gets(_cli_buff, CLI_BUFF_LEN);
+
+    if (res != NULL)
     {
-        // Prompt.
-        cli_printf(_prompt);
-
-        char* res = cli_gets(_cli_buff, CLI_BUFF_LEN);
-
-        if (res != NULL)
+        // Process the line. Chop up the raw command line into args.
+        int argc = 0;
+        char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
+        memset(argv, 0, sizeof(argv));
+        char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
+        memset(cmd_argv, 0, sizeof(cmd_argv));
+        char* tok = strtok(_cli_buff, " ");
+        while (tok != NULL && argc < MAX_CLI_ARGS)
         {
-            // Process the line. Chop up the raw command line into args.
-            int argc = 0;
-            char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
-            char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
-            memset(cmd_argv, 0, sizeof(cmd_argv));
-            char* tok = strtok(_cli_buff, " ");
-            while (tok != NULL && argc < MAX_CLI_ARGS)
-            {
-                strncpy(argv[argc], tok, MAX_CLI_ARG_LEN - 1);
-                cmd_argv[argc] = tok;
-                argc++;
-                tok = strtok(NULL, " ");
-            }
+            strncpy(argv[argc], tok, MAX_CLI_ARG_LEN - 1);
+            cmd_argv[argc] = tok;
+            argc++;
+            tok = strtok(NULL, " ");
+        }
 
-            // Process the command and its options.
-            bool valid = false;
-            if (argc > 0)
+        // Process the command and its options.
+        bool valid = false;
+        if (argc > 0)
+        {
+            // Find and execute the command.
+            const cli_command_t* pcmd = _commands;
+            while (pcmd->handler != NULL)
             {
-                // Find and execute the command.
-                const cli_command_t* pcmd = _commands;
-                while (pcmd->handler != NULL)
+                if ((strlen(argv[0]) == 1 && pcmd->short_name == argv[0][0]) || strcmp(pcmd->long_name, argv[0]) == 0)
                 {
-                    if (pcmd->short_name == argv[0][0] || strcmp(pcmd->long_name, argv[0]))
-                    {
-                        // Execute the command. They handle any errors internally.
-                        valid = true;
-                        // Lock access to lua context.
-                        ENTER_CRITICAL_SECTION;
-                        stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
-                        // ok = _EvalStatus(stat, __LINE__, "handler failed: %s", pcmd->desc.long_name);
-                        EXIT_CRITICAL_SECTION;
-                        break;
-                    }
+                    // Execute the command. They handle any errors internally.
+                    valid = true;
+                    // Lock access to lua context.
+                    ENTER_CRITICAL_SECTION;
+
+                    stat = _Usage(pcmd, argc, cmd_argv);
+
+
+                    stat = pcmd->handler(pcmd, argc, cmd_argv);
+                    //stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
+                    // ok = _EvalStatus(stat, __LINE__, "handler failed: %s", pcmd->desc.long_name);
+                    EXIT_CRITICAL_SECTION;
+                    break;
                 }
 
-                if (!valid)
-                {
-                    cli_printf("invalid command\n");
-                }
+                pcmd++;
+            }
+
+            if (!valid)
+            {
+                cli_printf("Invalid command\n");
             }
         }
-        else
-        {
-            // Assume finished.
-            _app_running = false;
-        }
+    }
+    else
+    {
+        // Assume finished.
+        _app_running = false;
     }
 
     return stat;

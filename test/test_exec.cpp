@@ -11,7 +11,16 @@ extern "C"
 #include "devmgr.h"
 #include "cli.h"
 #include "logger.h"
+
+    int _DoCli(void);
 }
+
+
+// For mock.
+char _next_response[MAX_LINE_LEN];
+
+// For mock.
+char _next_command[MAX_LINE_LEN];
 
 
 // const char* _my_midi_in1  = "loopMIDI Port";
@@ -20,17 +29,31 @@ extern "C"
 
 //--------------------------------------------------------//
 // TODO1 test these:
-//void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
-//void _MidiClockHandler(double msec);
-//int _Forever(void); // does the cli R/W
-//int exec_Main(const char* script_fn); // entry, init, cleanup + call _Forever()
-
+//static void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+//static void _MidiClockHandler(double msec);
+//static int _DoCli(void);
+//static int exec_Main(const char* script_fn); // entry, init, cleanup + call _Forever()
 
 
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(EXEC_MAIN, "Test execute functions.")
 {
     int stat = 0;
+
+    strncpy(_next_command, "bbbbb", MAX_LINE_LEN);
+    stat = _DoCli();
+    UT_EQUAL(stat, NEB_OK);
+    UT_STR_EQUAL(_next_response, "Invalid command\n");
+
+    strncpy(_next_command, "?", MAX_LINE_LEN);
+    stat = _DoCli();
+    UT_EQUAL(stat, NEB_OK);
+    UT_STR_EQUAL(_next_response, "Invalid command\n");
+
+    strncpy(_next_command, "help", MAX_LINE_LEN);
+    stat = _DoCli();
+    UT_EQUAL(stat, NEB_OK);
+    UT_STR_EQUAL(_next_response, "Invalid command\n");
 
 
 
@@ -112,15 +135,12 @@ UT_SUITE(EXEC_MAIN, "Test execute functions.")
 
 ////////////////////////////////////// mock cli ////////////////////////////////
 
-char _last_write[MAX_LINE_LEN];
-char _next_read[MAX_LINE_LEN];
-
 extern "C"
 {
 int cli_open()
 {
-    _last_write[0] = 0;
-    _next_read[0] = 0;
+    _next_response[0] = 0;
+    _next_command[0] = 0;
     return 0;
 }
 
@@ -137,7 +157,7 @@ int cli_printf(const char* format, ...)
     // Format string.
     va_list args;
     va_start(args, format);
-    vsnprintf(_last_write, MAX_LINE_LEN, format, args);
+    vsnprintf(_next_response, MAX_LINE_LEN, format, args);
     va_end(args);
 
     return 0;
@@ -146,9 +166,9 @@ int cli_printf(const char* format, ...)
 
 char* cli_gets(char* buff, int len)
 {
-    if (strlen(_next_read) > 0)
+    if (strlen(_next_command) > 0)
     {
-        strncpy(buff, _next_read, len);
+        strncpy(buff, _next_command, len);
         return buff;
     }
     else
