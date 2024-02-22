@@ -138,6 +138,7 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
+    <ClCompile Include="cli.c" />
     <ClCompile Include="devmgr.c" />
     <ClCompile Include="exec.c" />
     <ClCompile Include="luainterop.c" />
@@ -156,6 +157,7 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h" />
+    <ClInclude Include="cli.h" />
     <ClInclude Include="devmgr.h" />
     <ClInclude Include="luainterop.h" />
     <ClInclude Include="luainteropwork.h" />

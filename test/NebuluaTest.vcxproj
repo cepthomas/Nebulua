@@ -140,10 +140,12 @@
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
     <ClCompile Include="..\app\devmgr.c" />
+    <ClCompile Include="..\app\exec.c" />
     <ClCompile Include="..\app\luainterop.c" />
     <ClCompile Include="..\app\luainteropwork.c" />
     <ClCompile Include="..\app\nebcommon.c" />
     <ClCompile Include="test_devmgr.cpp" />
+    <ClCompile Include="test_exec.cpp" />
     <ClCompile Include="test_nebcommon.cpp" />
     <ClCompile Include="NebuluaTest.cpp" />
   </ItemGroup>
@@ -159,6 +161,7 @@
     <ClInclude Include="..\..\C\c_bag_of_tricks\source_code\diagnostics.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h" />
     <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h" />
+    <ClInclude Include="..\app\cli.h" />
     <ClInclude Include="..\app\devmgr.h" />
     <ClInclude Include="..\app\luainterop.h" />
     <ClInclude Include="..\app\luainteropwork.h" />

@@ -52,6 +52,9 @@
     <ClCompile Include="Nebulua.cpp">
       <Filter>app</Filter>
     </ClCompile>
+    <ClCompile Include="cli.c">
+      <Filter>app</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="devmgr.h">
@@ -95,6 +98,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
       <Filter>cbot</Filter>
+    </ClInclude>
+    <ClInclude Include="cli.h">
+      <Filter>app</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

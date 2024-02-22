@@ -19,12 +19,6 @@
     <ClCompile Include="NebuluaTest.cpp">
       <Filter>test</Filter>
     </ClCompile>
-    <ClCompile Include="..\test_code\test_devmgr.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\test_code\test_nebcommon.cpp">
-      <Filter>test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\pnut\pnut.cpp">
       <Filter>cbot</Filter>
     </ClCompile>
@@ -60,6 +54,18 @@
     </ClCompile>
     <ClCompile Include="..\app\nebcommon.c">
       <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\app\exec.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="test_devmgr.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="test_nebcommon.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="test_exec.cpp">
+      <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +113,9 @@
     </ClInclude>
     <ClInclude Include="..\..\C\c_bag_of_tricks\source_code\diagnostics.h">
       <Filter>cbot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\app\cli.h">
+      <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

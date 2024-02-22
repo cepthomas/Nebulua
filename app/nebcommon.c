@@ -31,7 +31,7 @@ const char* nebcommon_FormatMidiStatus(int mstat)
         midiInGetErrorText(mstat, buff, BUFF_LEN);
         if (strlen(buff) == 0)
         {
-            sprintf(buff, "MidiStatus:%d", mstat);
+            snprintf(buff, BUFF_LEN, "MidiStatus:%d", mstat);
         }
     }
 

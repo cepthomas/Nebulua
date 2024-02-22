@@ -12,6 +12,7 @@
 #include "ftimer.h"
 // application
 #include "nebcommon.h"
+#include "cli.h"
 #include "devmgr.h"
 #include "luainterop.h"
 
@@ -67,11 +68,11 @@ static FILE* _log_stream_out = NULL;
 // Point this stream where you like.
 static FILE* _error_stream_out = NULL;
 
-// Point this stream where you like.
-static FILE* _cli_stream_in = NULL;
+// // Point this stream where you like.
+// static FILE* _cli_stream_in = NULL;
 
-// Point this stream where you like.
-static FILE* _cli_stream_out = NULL;
+// // Point this stream where you like.
+// static FILE* _cli_stream_out = NULL;
 
 // The script execution state.
 static bool _script_running = false;
@@ -142,12 +143,13 @@ int exec_Main(const char* script_fn)
     const char* sret = NULL;
     int exit_code = 0;
 
-    #define INIT_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); exit_code = 1; goto init_fail;
+    #define INIT_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); exit_code = 1; goto init_done;
 
     // Init streams.
     _error_stream_out = stdout;
-    _cli_stream_in = stdin;
-    _cli_stream_out = stdout;
+    cli_open();
+    // _cli_stream_in = stdin;
+    // _cli_stream_out = stdout;
 
     // Init logger.
     _log_stream_out = fopen("_log.txt", "a");
@@ -155,6 +157,7 @@ int exec_Main(const char* script_fn)
     ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init logger");
     if (!ok) INIT_FAIL();
     logger_SetFilters(LVL_DEBUG);
+    LOG_INFO("Logger is alive");
 
     // Initialize the critical section. It is used to synchronize access to the lua context _l.
     ok = InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
@@ -209,12 +212,11 @@ int exec_Main(const char* script_fn)
     if (!ok) INIT_FAIL();
 
 
-init_fail:
-
-if (exit_code != 0)
-{
-    
-}
+init_done:
+    if (exit_code != 0)
+    {
+        LOG_ERROR("FATAL init error: %s", _last_error);
+    }
 
     ///// Finished. Clean up and go home. /////
     DeleteCriticalSection(&_critical_section);
@@ -224,7 +226,7 @@ if (exit_code != 0)
 
     if (_log_stream_out != stdout) { fclose(_log_stream_out); }
     if (_error_stream_out != stdout) { fclose(_error_stream_out); }
-    if (_cli_stream_out != stdout) { fclose(_cli_stream_out); }
+    cli_close();
 
     lua_close(_l);
 
@@ -241,9 +243,9 @@ int _Forever(void)
     while (_app_running)
     {
         // Prompt.
-        fprintf(_cli_stream_out, _prompt);
+        cli_printf(_prompt);
 
-        char* res = fgets(_cli_buff, CLI_BUFF_LEN, _cli_stream_in);
+        char* res = cli_gets(_cli_buff, CLI_BUFF_LEN);
 
         if (res != NULL)
         {
@@ -284,7 +286,7 @@ int _Forever(void)
 
                 if (!valid)
                 {
-                    fprintf(_cli_stream_out, "invalid command\n");
+                    cli_printf("invalid command\n");
                 }
             }
         }
@@ -297,61 +299,6 @@ int _Forever(void)
 
     return stat;
 }
-
-
-
-//---------------------------------------------------//
-int _DoCliCommand(const char* cmd)
-{
-    int stat = NEB_OK;
-
-    if (res != NULL)
-    {
-        // Process the line. Chop up the raw command line into args.
-        int argc = 0;
-        char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
-        char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
-        memset(cmd_argv, 0, sizeof(cmd_argv));
-        char* tok = strtok(_cli_buff, " ");
-        while (tok != NULL && argc < MAX_CLI_ARGS)
-        {
-            strncpy(argv[argc], tok, MAX_CLI_ARG_LEN - 1);
-            cmd_argv[argc] = tok;
-            argc++;
-            tok = strtok(NULL, " ");
-        }
-
-        // Process the command and its options.
-        bool valid = false;
-        if (argc > 0)
-        {
-            // Find and execute the command.
-            const cli_command_t* pcmd = _commands;
-            while (pcmd->handler != NULL)
-            {
-                if (pcmd->short_name == argv[0][0] || strcmp(pcmd->long_name, argv[0]))
-                {
-                    // Execute the command. They handle any errors internally.
-                    valid = true;
-                    // Lock access to lua context.
-                    ENTER_CRITICAL_SECTION;
-                    stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
-                    // ok = _EvalStatus(stat, __LINE__, "handler failed: %s", pcmd->desc.long_name);
-                    EXIT_CRITICAL_SECTION;
-                    break;
-                }
-            }
-
-            if (!valid)
-            {
-                fprintf(_cli_stream_out, "invalid command\n");
-            }
-        }
-    }
-
-    return stat;
-}
-
 
 
 //-------------------------------------------------------//
@@ -469,7 +416,7 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        fprintf(_cli_stream_out, "tempo: %d\n", _tempo);
+        cli_printf("tempo: %d\n", _tempo);
         stat = NEB_OK;
     }
     else if (argc == 2) // set
@@ -482,7 +429,7 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            fprintf(_cli_stream_out, "invalid tempo: %s\n", argv[1]);
+            cli_printf("invalid tempo: %s\n", argv[1]);
             stat = NEB_ERR_BAD_CLI_ARG;
         }
         stat = NEB_OK;
@@ -547,7 +494,7 @@ int _MonCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            fprintf(_cli_stream_out, "invalid option: %s\n", argv[1]);
+            cli_printf("invalid option: %s\n", argv[1]);
         }
     }
 
@@ -578,7 +525,7 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        fprintf(_cli_stream_out, "%s\n", nebcommon_FormatBarTime(_position));
+        cli_printf("%s\n", nebcommon_FormatBarTime(_position));
         stat = NEB_OK;
     }
     else if (argc == 2)
@@ -586,12 +533,12 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         int position = nebcommon_ParseBarTime(argv[1]);
         if (position < 0)
         {
-            fprintf(_cli_stream_out, "invalid position: %s\n", argv[1]);
+            cli_printf("invalid position: %s\n", argv[1]);
         }
         else
         {
             _position = position >= _length ? _length : position;
-            fprintf(_cli_stream_out, "%s\n", nebcommon_FormatBarTime(_position));
+            cli_printf("%s\n", nebcommon_FormatBarTime(_position));
         }
     }
 
@@ -624,7 +571,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
     while (_commands->handler != NULL_PTR)
     {
         //const cli_command_t* pdesc = &(cmditer->desc);
-        fprintf(_cli_stream_out, "%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
+        cli_printf("%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
         if (strlen(cmditer->args) > 0)
         {
             // Maybe multiline args. Make writable copy and tokenize it.
@@ -633,7 +580,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
             char* tok = strtok(cp, "$");
             while (tok != NULL)
             {
-                fprintf(_cli_stream_out, "    %s\n", tok);
+                cli_printf("    %s\n", tok);
                 tok = strtok(NULL, "$");
             }
         }
