@@ -140,9 +140,9 @@ int exec_Main(const char* script_fn)
     double dret = 0;
     bool bret = false;
     const char* sret = NULL;
-    int app_ret = 0;
+    int exit_code = 0;
 
-    #define INIT_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); app_ret = 1; goto init_fail;
+    #define INIT_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); exit_code = 1; goto init_fail;
 
     // Init streams.
     _error_stream_out = stdout;
@@ -211,6 +211,11 @@ int exec_Main(const char* script_fn)
 
 init_fail:
 
+if (exit_code != 0)
+{
+    
+}
+
     ///// Finished. Clean up and go home. /////
     DeleteCriticalSection(&_critical_section);
     ftimer_Run(0);
@@ -223,7 +228,7 @@ init_fail:
 
     lua_close(_l);
 
-    return app_ret;
+    return exit_code;
 }
 
 
@@ -237,7 +242,7 @@ int _Forever(void)
     {
         // Prompt.
         fprintf(_cli_stream_out, _prompt);
-        fflush(stdout);
+
         char* res = fgets(_cli_buff, CLI_BUFF_LEN, _cli_stream_in);
 
         if (res != NULL)
@@ -286,13 +291,67 @@ int _Forever(void)
         else
         {
             // Assume finished.
-            // log?("run loop finished\n");
             _app_running = false;
         }
     }
 
     return stat;
 }
+
+
+
+//---------------------------------------------------//
+int _DoCliCommand(const char* cmd)
+{
+    int stat = NEB_OK;
+
+    if (res != NULL)
+    {
+        // Process the line. Chop up the raw command line into args.
+        int argc = 0;
+        char argv[MAX_CLI_ARGS][MAX_CLI_ARG_LEN]; // The actual args.
+        char* cmd_argv[MAX_CLI_ARGS]; // For easy digestion by commands.
+        memset(cmd_argv, 0, sizeof(cmd_argv));
+        char* tok = strtok(_cli_buff, " ");
+        while (tok != NULL && argc < MAX_CLI_ARGS)
+        {
+            strncpy(argv[argc], tok, MAX_CLI_ARG_LEN - 1);
+            cmd_argv[argc] = tok;
+            argc++;
+            tok = strtok(NULL, " ");
+        }
+
+        // Process the command and its options.
+        bool valid = false;
+        if (argc > 0)
+        {
+            // Find and execute the command.
+            const cli_command_t* pcmd = _commands;
+            while (pcmd->handler != NULL)
+            {
+                if (pcmd->short_name == argv[0][0] || strcmp(pcmd->long_name, argv[0]))
+                {
+                    // Execute the command. They handle any errors internally.
+                    valid = true;
+                    // Lock access to lua context.
+                    ENTER_CRITICAL_SECTION;
+                    stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
+                    // ok = _EvalStatus(stat, __LINE__, "handler failed: %s", pcmd->desc.long_name);
+                    EXIT_CRITICAL_SECTION;
+                    break;
+                }
+            }
+
+            if (!valid)
+            {
+                fprintf(_cli_stream_out, "invalid command\n");
+            }
+        }
+    }
+
+    return stat;
+}
+
 
 
 //-------------------------------------------------------//

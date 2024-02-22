@@ -5,7 +5,7 @@ echo off
 
 :: Args.
 set spec_fn=%~dp0%interop_spec.lua
-set out_path=%~dp0%source_code
+set out_path=%~dp0%app
 rem echo %spec_fn%
 rem echo %out_path%
 

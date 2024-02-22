@@ -19,7 +19,7 @@
 #if defined(_MSC_VER)
 // Ignore some generated code warnings
 #pragma warning( push )
-#pragma warning( disable : 6001 4244 4703 )
+#pragma warning( disable : 6001 4244 4703 4090 )
 #endif
 
 //---------------- Call lua functions from host -------------//
@@ -172,7 +172,7 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
 static int luainterop_CreateOutputChannel(lua_State* l)
 {
     // Get arguments
-    const char* dev_name;
+    char* dev_name;
     if (lua_isstring(l, 1)) { dev_name = lua_tostring(l, 1); }
     else { luaL_error(l, "Bad arg type for dev_name"); }
     int chan_num;
@@ -198,7 +198,7 @@ static int luainterop_CreateOutputChannel(lua_State* l)
 static int luainterop_CreateInputChannel(lua_State* l)
 {
     // Get arguments
-    const char* dev_name;
+    char* dev_name;
     if (lua_isstring(l, 1)) { dev_name = lua_tostring(l, 1); }
     else { luaL_error(l, "Bad arg type for dev_name"); }
     int chan_num;
@@ -224,7 +224,7 @@ static int luainterop_Log(lua_State* l)
     int level;
     if (lua_isinteger(l, 1)) { level = lua_tointeger(l, 1); }
     else { luaL_error(l, "Bad arg type for level"); }
-    const char* msg;
+    char* msg;
     if (lua_isstring(l, 2)) { msg = lua_tostring(l, 2); }
     else { luaL_error(l, "Bad arg type for msg"); }
 

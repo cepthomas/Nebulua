@@ -15,6 +15,7 @@
 
 #define INTEROP_BAD_FUNC_NAME 10
 #define INTEROP_BAD_RET_TYPE  11
+#define MAX_STRING 100
 
 //---------------- Call lua functions from host -------------//
 
@@ -57,19 +58,19 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
 /// @param[in] chan_num Midi channel number 1 => 16
 /// @param[in] patch Midi patch number 0 => 127
 /// @return Channel handle or 0 if invalid
-int luainteropwork_CreateOutputChannel(const char* dev_name, int chan_num, int patch);
+int luainteropwork_CreateOutputChannel(char* dev_name, int chan_num, int patch);
 
 /// Create an input midi channel.
 /// @param[in] dev_name Midi device name
 /// @param[in] chan_num Midi channel number 1 => 16
 /// @return Channel handle or 0 if invalid
-int luainteropwork_CreateInputChannel(const char* dev_name, int chan_num);
+int luainteropwork_CreateInputChannel(char* dev_name, int chan_num);
 
 /// Script wants to log something.
 /// @param[in] level Log level
 /// @param[in] msg Log message
 /// @return LUA_STATUS
-int luainteropwork_Log(int level, const char* msg);
+int luainteropwork_Log(int level, char* msg);
 
 /// Script wants to change tempo.
 /// @param[in] bpm BPM 40 => 240
