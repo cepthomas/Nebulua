@@ -67,6 +67,9 @@
     <ClCompile Include="test_exec.cpp">
       <Filter>test</Filter>
     </ClCompile>
+    <ClCompile Include="test_cli.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\app\devmgr.h">

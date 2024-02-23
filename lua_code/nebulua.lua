@@ -31,6 +31,7 @@ local _seq_steps = {}
 --     ...
 -- }
 local _sections = {}
+local _length = 5000
 
 tempdbg = { steps = _seq_steps, sections = _sections }
 
@@ -64,7 +65,7 @@ end
 --- Process all sequences into discrete steps. Sections are stored as is.
 -- @param sequences table user sequence specs
 -- @param sections table user section specs
--- @return list of step_info ordered by sub
+-- @return total length in subs.
 function M.process_all(sequences, sections)
 
     for seq_name, seq_chunks in ipairs(sequences) do
@@ -73,13 +74,11 @@ function M.process_all(sequences, sections)
         local steps = {}
 
         for _, seq_chunk in ipairs(seq_chunks) do
-
-    -- example_seq =
-    -- {
-    --     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
-    --     { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    -- },
-
+            -- example_seq =
+            -- {
+            --     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+            --     { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+            -- },
 
             local gr_steps = nil
 
@@ -104,6 +103,9 @@ function M.process_all(sequences, sections)
     -- Process sections. TODO1?
     _sections = sections
 
+    -- Calculate length. TODO1
+
+    return _length
 end
 
 

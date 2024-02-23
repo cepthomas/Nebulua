@@ -4,7 +4,7 @@
 extern "C"
 {
     // Stub for entry. Mainly to make testing easier.
-    int exec_Main(int argc, char* argv[]);
+    int exec_Main(const char* script_fn);
 }
 
 
@@ -23,10 +23,9 @@ int main(int argc, char* argv[])
         printf("Bad lua file name.");
         exit(101);
     }
-
     fclose (fp);
 
-    int ret = exec_Main(argc, argv);
+    int ret = exec_Main(argv[1]);
 
     exit(ret);
 }

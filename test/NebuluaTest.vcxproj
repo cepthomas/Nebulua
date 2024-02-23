@@ -144,6 +144,7 @@
     <ClCompile Include="..\app\luainterop.c" />
     <ClCompile Include="..\app\luainteropwork.c" />
     <ClCompile Include="..\app\nebcommon.c" />
+    <ClCompile Include="test_cli.cpp" />
     <ClCompile Include="test_devmgr.cpp" />
     <ClCompile Include="test_exec.cpp" />
     <ClCompile Include="test_nebcommon.cpp" />

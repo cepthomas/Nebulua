@@ -66,7 +66,7 @@ function M.suite_process_script(pn)
     pn.UT_NOT_NIL(sequences)
     pn.UT_NOT_NIL(sections)
 
-    neb.process_all(sequences, sections)
+    local len = neb.process_all(sequences, sections)
 
     pn.UT_NOT_NIL(tempdbg.steps)
     pn.UT_NOT_NIL(tempdbg.sections)

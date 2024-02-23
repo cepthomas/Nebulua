@@ -89,7 +89,7 @@ UT_SUITE(DEVMGR_MAIN, "Test device manager.")
     UT_EQUAL(chan_hnd, 0x0806);
 
     poutdev = devmgr_GetDeviceFromChannelHandle(999);
-    UT_EQUAL(poutdev, NULL_PTR);
+    UT_EQUAL(poutdev, NULL);
 
     ///// Done.
     //devmgr_Dump();

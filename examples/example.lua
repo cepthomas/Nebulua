@@ -68,8 +68,8 @@ function setup()
 
     -- Load her up.
     -- local steps = {}
-    -- steps = neb.process_all(sequences, sections)
-    neb.process_all(sequences, sections)
+
+    local len = neb.process_all(sequences, sections)
 
     neb.set_tempo(100)
 

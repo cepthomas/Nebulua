@@ -47,23 +47,23 @@ int luainteropwork_SetTempo(int bpm)
 int luainteropwork_CreateInputChannel(const char* dev_name, int chan_num)
 {
     int chan_hnd = 0; // default is invalid
-    midi_device_t* pdev = NULL_PTR;
+    midi_device_t* pdev = NULL;
 
-    if (dev_name != NULL_PTR && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
+    if (dev_name != NULL && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
     {
         pdev = devmgr_GetDeviceFromName(dev_name);
     }
 
-    if (pdev != NULL_PTR)
+    if (pdev != NULL)
     {
         int stat = devmgr_OpenMidi(pdev);
         if (stat != NEB_OK)
         {
-            pdev = NULL_PTR;
+            pdev = NULL;
         }
     }
 
-    if (pdev != NULL_PTR)
+    if (pdev != NULL)
     {
         chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
     }
@@ -76,29 +76,29 @@ int luainteropwork_CreateInputChannel(const char* dev_name, int chan_num)
 int luainteropwork_CreateOutputChannel(const char* dev_name, int chan_num, int patch)
 {
     int chan_hnd = 0; // default is invalid
-    midi_device_t* pdev = NULL_PTR;
+    midi_device_t* pdev = NULL;
 
-    if (dev_name != NULL_PTR && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
+    if (dev_name != NULL && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
     {
         pdev = devmgr_GetDeviceFromName(dev_name);
     }
 
-    if (pdev != NULL_PTR)
+    if (pdev != NULL)
     {
         int stat = devmgr_OpenMidi(pdev);
         if (stat != NEB_OK)
         {
-            pdev = NULL_PTR;
+            pdev = NULL;
         }
     }
 
-    if (pdev != NULL_PTR)
+    if (pdev != NULL)
     {
         chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
     }
 
     // Send patch now.
-    if (pdev != NULL_PTR)
+    if (pdev != NULL)
     {
         int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
         int mstat = midiOutShortMsg(pdev->handle, short_msg);
@@ -116,14 +116,14 @@ int luainteropwork_CreateOutputChannel(const char* dev_name, int chan_num, int p
 int luainteropwork_SendNote(int chan_hnd, int note_num, double volume)
 {
     int stat = NEB_OK;
-    midi_device_t* pdev = NULL_PTR;
+    midi_device_t* pdev = NULL;
 
     if (chan_hnd > 0 && note_num >= MIDI_VAL_MIN && note_num < MIDI_VAL_MAX && volume >= 0.0 && volume <= 1.0)
     {
         pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
     }
 
-    if (pdev != NULL_PTR)
+    if (pdev != NULL)
     {
         int chan_num = devmgr_GetChannelNumber(chan_hnd);
         int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
@@ -149,14 +149,14 @@ int luainteropwork_SendNote(int chan_hnd, int note_num, double volume)
 int luainteropwork_SendController(int chan_hnd, int controller, int value)
 {
     int stat = NEB_OK;
-    midi_device_t* pdev = NULL_PTR;
+    midi_device_t* pdev = NULL;
 
     if (chan_hnd > 0 && controller >= MIDI_VAL_MIN && controller < MIDI_VAL_MAX && value >= MIDI_VAL_MIN && value < MIDI_VAL_MAX)
     {
         pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
     }
 
-    if (pdev != NULL_PTR)
+    if (pdev != NULL)
     {
         int chan_num = devmgr_GetChannelNumber(chan_hnd);
         int cmd = MIDI_CONTROL_CHANGE;

@@ -36,7 +36,7 @@ local master_vol = 0.8
 function setup()
     neb.log_info("initialization")
     -- Do work.
-    neb.process_all(sequences, sections)
+    local length = neb.process_all(sequences, sections)
     neb.set_tempo(100)
     return 0
 end

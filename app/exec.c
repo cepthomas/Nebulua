@@ -20,17 +20,18 @@
 //----------------------- Definitions -----------------------//
 
 
-// Script lua_State access syncronization. https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
-// TODO2 Performance? https://stackoverflow.com/questions/853316/is-critical-section-always-faster
-static CRITICAL_SECTION _critical_section;
-#define ENTER_CRITICAL_SECTION ;//EnterCriticalSection(&_critical_section)
-#define EXIT_CRITICAL_SECTION  ;//LeaveCriticalSection(&_critical_section)
-// Not working, try:
-//https://learn.microsoft.com/en-us/windows/win32/sync/event-objects
-//https://learn.microsoft.com/en-us/windows/win32/sync/mutex-objects
+// TODO2 Script lua_State access syncronization. 
 // For:
 //void _MidiClockHandler(double msec);
 //void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+// Not working, try:
+//https://learn.microsoft.com/en-us/windows/win32/sync/event-objects
+//https://learn.microsoft.com/en-us/windows/win32/sync/mutex-objects
+// https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
+// Performance? https://stackoverflow.com/questions/853316/is-critical-section-always-faster
+//static CRITICAL_SECTION _critical_section;
+#define ENTER_CRITICAL_SECTION ;//EnterCriticalSection(&_critical_section)
+#define EXIT_CRITICAL_SECTION  ;//LeaveCriticalSection(&_critical_section)
 
 
 #define CLI_BUFF_LEN    128
@@ -132,10 +133,9 @@ static bool _EvalStatus(int stat, int line, const char* format, ...);
 //----------------------------------------------------//
 
 /// Main entry for the application.
-static int exec_Main(const char* script_fn)
+int exec_Main(const char* script_fn)
 {
     int stat = NEB_OK;
-    int cbot_stat;
 
     bool ok = false;
     int iret = 0;
@@ -152,14 +152,14 @@ static int exec_Main(const char* script_fn)
 
     // Init logger.
     _log_stream_out = fopen("_log.txt", "a");
-    cbot_stat = logger_Init(_log_stream_out);
-    ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init logger");
+    stat = logger_Init(_log_stream_out);
+    ok = _EvalStatus(stat, __LINE__, "Failed to init logger");
     if (!ok) EXEC_FAIL();
     logger_SetFilters(LVL_DEBUG);
     LOG_INFO("Logger is alive");
 
     // Initialize the critical section. It is used to synchronize access to the lua context _l.
-    ok = InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
+    // ok = InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
 
     // Lock access to lua context during init.
     ENTER_CRITICAL_SECTION;
@@ -177,8 +177,8 @@ static int exec_Main(const char* script_fn)
     lua_pop(_l, 1);
 
     // Tempo timer and interrupt.
-    cbot_stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
-    ok = _EvalStatus(cbot_stat, __LINE__, "Failed to init ftimer.");
+    stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
+    ok = _EvalStatus(stat, __LINE__, "Failed to init ftimer.");
     if (!ok) EXEC_FAIL();
     luainteropwork_SetTempo(60);
 
@@ -223,7 +223,7 @@ init_done:
     }
 
     ///// Finished. Clean up and go home. /////
-    DeleteCriticalSection(&_critical_section);
+    // DeleteCriticalSection(&_critical_section);
     ftimer_Run(0);
     ftimer_Destroy();
     devmgr_Destroy();
@@ -327,7 +327,7 @@ void _MidiClockHandler(double msec)
 
 
 //--------------------------------------------------------//
-void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) //TODO1 test
+void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
     // Input midi event -- this is in an interrupt handler!
     // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
@@ -513,7 +513,7 @@ int _KillCmd(const cli_command_t* pcmd, int argc, char* argv[])
     if (argc == 1) // no args
     {
         // TODO2 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
-        // luainteropwork_SendController(_l, chan_hnd, AllNotesOff=123, 0);
+        // luainteropwork_SendController(chan_hnd, AllNotesOff=123, 0);
         stat = NEB_OK;
     }
 
@@ -573,7 +573,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
     int stat = NEB_OK;
 
     const cli_command_t* cmditer = _commands;
-    while (cmditer->handler != NULL_PTR)
+    while (cmditer->handler != NULL)
     {
         //const cli_command_t* pdesc = &(cmditer->desc);
         cli_printf("%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
@@ -659,7 +659,7 @@ bool _EvalStatus(int stat, int line, const char* format, ...)
 
         // Additional error message.
         const char* errmsg = NULL;
-        if (stat <= LUA_ERRFILE && lua_gettop(_l) > 0) // internal lua error - get error message on stack if provided.
+        if (stat <= LUA_ERRFILE && _l != NULL && lua_gettop(_l) > 0) // internal lua error - get error message on stack if provided.
         {
             errmsg = lua_tostring(_l, -1);
         }
