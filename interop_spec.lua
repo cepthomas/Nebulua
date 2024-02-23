@@ -15,7 +15,7 @@ M.lua_export_funcs =
         host_func_name = "Setup",
         description = "Called to initialize Nebulator stuff.",
         -- no args
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 
     {
@@ -26,7 +26,7 @@ M.lua_export_funcs =
         {
             { name = "tick", type = "I", description = "Current tick 0 => N" },
         },
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 
     {
@@ -39,7 +39,7 @@ M.lua_export_funcs =
             { name = "note_num", type = "I", description = "Note number 0 => 127" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 
     {
@@ -52,7 +52,7 @@ M.lua_export_funcs =
             { name = "controller", type = "I", description = "Specific controller id 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 
 }
@@ -95,7 +95,7 @@ M.host_export_funcs =
             { name = "level", type = "I", description = "Log level" },
             { name = "msg", type = "S", description = "Log message" },
         },
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 
     {
@@ -106,7 +106,7 @@ M.host_export_funcs =
         {
             { name = "bpm", type = "I", description = "BPM 40 => 240" },
         },
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 
     {
@@ -119,7 +119,7 @@ M.host_export_funcs =
             { name = "note_num", type = "I", description = "Note number" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 
     {
@@ -132,7 +132,7 @@ M.host_export_funcs =
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
-        ret = { type = "I", description = "LUA_STATUS" }
+        ret = { type = "I", description = "NEB_XX status" }
     },
 }
 

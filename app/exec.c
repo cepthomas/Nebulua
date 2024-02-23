@@ -75,12 +75,6 @@ static FILE* _log_stream_out = NULL;
 // Point this stream where you like.
 static FILE* _error_stream_out = NULL;
 
-// // Point this stream where you like.
-// static FILE* _cli_stream_in = NULL;
-
-// // Point this stream where you like.
-// static FILE* _cli_stream_out = NULL;
-
 // The script execution state.
 static bool _script_running = false;
 
@@ -123,13 +117,13 @@ static int _length = 0;
 //---------------------- Functions ------------------------//
 
 // Process user input.
- int _DoCli(void); // TODO2 static
+int _DoCli(void); // TODO2 static
 
 // Clock tick corresponding to bpm. !!From Interrupt!!
- void _MidiClockHandler(double msec); // TODO2 static
+void _MidiClockHandler(double msec); // TODO2 static
 
 // Handle incoming messages. !!From Interrupt!!
- void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2); // TODO2 static
+void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2); // TODO2 static
 
 /// Top level error handler for nebulua status.
 static bool _EvalStatus(int stat, int line, const char* format, ...);
@@ -155,8 +149,6 @@ static int exec_Main(const char* script_fn)
     // Init streams.
     _error_stream_out = stdout;
     cli_open();
-    // _cli_stream_in = stdin;
-    // _cli_stream_out = stdout;
 
     // Init logger.
     _log_stream_out = fopen("_log.txt", "a");
@@ -287,10 +279,6 @@ int _DoCli(void)
                     valid = true;
                     // Lock access to lua context.
                     ENTER_CRITICAL_SECTION;
-
-//                    typedef int (*cli_command_handler_t)(const cli_command_t* cmd, int argc, char* argv[]);
-
-
                     stat = pcmd->handler(pcmd, argc, cmd_argv);
                     // ok = _EvalStatus(stat, __LINE__, "handler failed: %s", pcmd->desc.long_name);
                     EXIT_CRITICAL_SECTION;
@@ -431,7 +419,7 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        cli_printf("tempo: %d\n", _tempo);
+        cli_printf("%d\n", _tempo);
         stat = NEB_OK;
     }
     else if (argc == 2) // set
@@ -441,13 +429,13 @@ int _TempoCmd(const cli_command_t* pcmd, int argc, char* argv[])
         {
             _tempo = t;
             luainteropwork_SetTempo(_tempo);
+            stat = NEB_OK;
         }
         else
         {
             cli_printf("invalid tempo: %s\n", argv[1]);
             stat = NEB_ERR_BAD_CLI_ARG;
         }
-        stat = NEB_OK;
     }
 
     return stat;
@@ -552,8 +540,9 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            _position = position >= _length ? _length : position;
-            cli_printf("%s\n", nebcommon_FormatBarTime(_position));
+            _position = position >= _length ? _length : position; //TODO1
+            cli_printf("%s\n", nebcommon_FormatBarTime(_position)); // echo
+            stat = NEB_OK;
         }
     }
 
@@ -571,6 +560,7 @@ int _ReloadCmd(const cli_command_t* pcmd, int argc, char* argv[])
         // TODO2 do something to reload script =>
         // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
         // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
+        stat = NEB_OK;
     }
 
     return stat;
@@ -661,7 +651,8 @@ bool _EvalStatus(int stat, int line, const char* format, ...)
             case NEB_ERR_BAD_LUA_ARG:       sstat = "NEB_ERR_BAD_LUA_ARG"; break;
             case NEB_ERR_BAD_MIDI_CFG:      sstat = "NEB_ERR_BAD_MIDI_CFG"; break;
             case NEB_ERR_SYNTAX:            sstat = "NEB_ERR_SYNTAX"; break;
-            case NEB_ERR_MIDI:              sstat = "NEB_ERR_MIDI"; break;
+            case NEB_ERR_MIDI_RX:           sstat = "NEB_ERR_MIDI_RX"; break;
+            case NEB_ERR_MIDI_TX:           sstat = "NEB_ERR_MIDI_TX"; break;
             // default
             default:                        sstat = "UNKNOWN_ERROR"; LOG_DEBUG("Unknwon ret code:%d", stat); break;
         }

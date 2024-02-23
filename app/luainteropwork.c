@@ -16,82 +16,96 @@
 
 // Definition of work functions for host functions called by lua.
 
-// Macro used to handle user syntax errors in the interop work functions.
-#define VALS(expr, s) if (!(expr)) { luaL_error(l, "%s: %s", #expr, s); }
-#define VALI(expr, i) if (!(expr)) { luaL_error(l, "%s: %d", #expr, i); }
-#define VALF(expr, f) if (!(expr)) { luaL_error(l, "%s: %f", #expr, f); }
-
 
 //--------------------------------------------------------//
-int luainteropwork_Log(lua_State* l, int level, const char* msg)
+int luainteropwork_Log(int level, const char* msg)
 {
-    logger_Log(level, -1, msg);
-    return 0;
+    logger_Log(level, -1, msg); // does arg checking.
+    return NEB_OK;
 }
 
 
 //--------------------------------------------------------//
-int luainteropwork_SetTempo(lua_State* l, int bpm)
+int luainteropwork_SetTempo(int bpm)
 {
-    VALI(bpm >= 30 && bpm <= 240, bpm);
+    int stat = NEB_ERR_BAD_LUA_ARG;
 
-    double sec_per_beat = 60.0 / bpm;
-    double msec_per_sub = 1000 * sec_per_beat / SUBS_PER_BEAT;
-    int period = msec_per_sub > 1.0 ? (int)round(msec_per_sub) : 1;
+    if (bpm >= 30 && bpm <= 240)
+    {
+        double sec_per_beat = 60.0 / bpm;
+        double msec_per_sub = 1000 * sec_per_beat / SUBS_PER_BEAT;
+        int period = msec_per_sub > 1.0 ? (int)round(msec_per_sub) : 1;
 
-    ftimer_Run(period);
+        ftimer_Run(period);
+        stat = NEB_OK;
+    }
 
-    return 0;
+    return stat;
 }
 
-
 //--------------------------------------------------------//
-int luainteropwork_CreateInputChannel(lua_State* l, const char* dev_name, int chan_num)
+int luainteropwork_CreateInputChannel(const char* dev_name, int chan_num)
 {
-    int chan_hnd = 0;
+    int chan_hnd = 0; // default is invalid
+    midi_device_t* pdev = NULL_PTR;
 
-    VALS(dev_name != NULL, dev_name);
-    VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
+    if (dev_name != NULL_PTR && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
+    {
+        pdev = devmgr_GetDeviceFromName(dev_name);
+    }
 
-    midi_device_t* pdev = devmgr_GetDeviceFromName(dev_name);
-    VALS(pdev != NULL, dev_name);
+    if (pdev != NULL_PTR)
+    {
+        int stat = devmgr_OpenMidi(pdev);
+        if (stat != NEB_OK)
+        {
+            pdev = NULL_PTR;
+        }
+    }
 
-    int stat = devmgr_OpenMidi(pdev);
-    VALI(stat == NEB_OK, 0);
-    UNUSED(stat);
-    
-    chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
-    VALI(chan_hnd > 0, chan_num);
+    if (pdev != NULL_PTR)
+    {
+        chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
+    }
 
     return chan_hnd;
 }
 
 
 //--------------------------------------------------------//
-int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int chan_num, int patch)
+int luainteropwork_CreateOutputChannel(const char* dev_name, int chan_num, int patch)
 {
-    int chan_hnd = 0;
+    int chan_hnd = 0; // default is invalid
+    midi_device_t* pdev = NULL_PTR;
 
-    VALS(dev_name != NULL, dev_name);
-    VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
-    VALI(patch >= MIDI_VAL_MIN && patch < MIDI_VAL_MAX, patch);
+    if (dev_name != NULL_PTR && chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS)
+    {
+        pdev = devmgr_GetDeviceFromName(dev_name);
+    }
 
-    midi_device_t* pdev = devmgr_GetDeviceFromName(dev_name);
-    VALS(pdev != NULL, dev_name);
+    if (pdev != NULL_PTR)
+    {
+        int stat = devmgr_OpenMidi(pdev);
+        if (stat != NEB_OK)
+        {
+            pdev = NULL_PTR;
+        }
+    }
 
-    int stat = devmgr_OpenMidi(pdev);
-    VALI(stat == NEB_OK, 0);
-    UNUSED(stat);
-
-    chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
-    VALI(chan_hnd > 0, chan_num);
+    if (pdev != NULL_PTR)
+    {
+        chan_hnd = devmgr_GetChannelHandle(pdev, chan_num);
+    }
 
     // Send patch now.
     if (pdev != NULL_PTR)
     {
         int short_msg = (chan_num - 1) + MIDI_PATCH_CHANGE + (patch << 8);
         int mstat = midiOutShortMsg(pdev->handle, short_msg);
-        VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+        if (mstat != MMSYSERR_NOERROR)
+        {
+            chan_hnd = 0;
+        }
     }
 
     return chan_hnd;
@@ -99,52 +113,64 @@ int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int c
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainteropwork_SendNote(int chan_hnd, int note_num, double volume)
 {
-    VALI(chan_hnd > 0, chan_hnd);
-    VALI(note_num >= MIDI_VAL_MIN && note_num < MIDI_VAL_MAX, note_num);
-    VALF(volume >= 0.0 && volume <= 1.0, volume);
+    int stat = NEB_OK;
+    midi_device_t* pdev = NULL_PTR;
 
-    midi_device_t* pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
-    VALI(pdev != NULL, chan_hnd);
-
-    int chan_num = devmgr_GetChannelNumber(chan_hnd);
-    VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_num);
+    if (chan_hnd > 0 && note_num >= MIDI_VAL_MIN && note_num < MIDI_VAL_MAX && volume >= 0.0 && volume <= 1.0)
+    {
+        pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
+    }
 
     if (pdev != NULL_PTR)
     {
+        int chan_num = devmgr_GetChannelNumber(chan_hnd);
         int cmd = volume == 0.0 ? MIDI_NOTE_OFF : MIDI_NOTE_ON;
         // Translate volume to velocity.
         int velocity = (int)(volume * MIDI_VAL_MAX);
         int short_msg = (chan_num - 1) + cmd + ((byte)note_num << 8) + ((byte)velocity << 16);
         int mstat = midiOutShortMsg(pdev->handle, short_msg);
-        VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+        if (mstat != MMSYSERR_NOERROR)
+        {
+            stat = NEB_ERR_MIDI_TX;
+        }
+    }
+    else
+    {
+        stat = NEB_ERR_BAD_CLI_ARG;
     }
 
-    return 0;
+    return stat;
 }
 
 
 //--------------------------------------------------------//
-int luainteropwork_SendController(lua_State* l, int chan_hnd, int controller, int value)
+int luainteropwork_SendController(int chan_hnd, int controller, int value)
 {
-    VALI(chan_hnd > 0, chan_hnd);
-    VALI(controller >= MIDI_VAL_MIN && controller < MIDI_VAL_MAX, controller);
-    VALI(value >= MIDI_VAL_MIN && value < MIDI_VAL_MAX, value);
+    int stat = NEB_OK;
+    midi_device_t* pdev = NULL_PTR;
 
-    midi_device_t* pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
-    VALI(pdev != NULL, chan_hnd);
-
-    int chan_num = devmgr_GetChannelNumber(chan_hnd);
-    VALI(chan_num >= 1 && chan_num <= NUM_MIDI_CHANNELS, chan_hnd);
+    if (chan_hnd > 0 && controller >= MIDI_VAL_MIN && controller < MIDI_VAL_MAX && value >= MIDI_VAL_MIN && value < MIDI_VAL_MAX)
+    {
+        pdev = devmgr_GetDeviceFromChannelHandle(chan_hnd);
+    }
 
     if (pdev != NULL_PTR)
     {
+        int chan_num = devmgr_GetChannelNumber(chan_hnd);
         int cmd = MIDI_CONTROL_CHANGE;
         int short_msg = (chan_num - 1) + cmd + ((byte)controller << 8) + ((byte)value << 16);
         int mstat = midiOutShortMsg(pdev->handle, short_msg);
-        VALS(mstat == MMSYSERR_NOERROR, nebcommon_FormatMidiStatus(mstat));
+        if (mstat != MMSYSERR_NOERROR)
+        {
+            stat = NEB_ERR_MIDI_TX;
+        }
+    }
+    else
+    {
+        stat = NEB_ERR_BAD_CLI_ARG;
     }
 
-    return 0;
+    return stat;
 }

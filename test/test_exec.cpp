@@ -46,20 +46,7 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
 {
     int stat = 0;
 
-    // temp - remove
-    response_lines.clear();
-    strncpy(_next_command, "tempo 182", MAX_LINE_LEN);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(response_lines.size(), 1);
-    UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
-
-
-
-
-
-    // Fat fingers.
+    ///// Fat fingers.
     response_lines.clear();
     strncpy(_next_command, "bbbbb", MAX_LINE_LEN);
     stat = _DoCli();
@@ -68,7 +55,6 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
     UT_STR_EQUAL(response_lines[1].c_str(), "Invalid command\n");
 
-    // Fat fingers.
     response_lines.clear();
     strncpy(_next_command, "z", MAX_LINE_LEN);
     stat = _DoCli();
@@ -77,8 +63,7 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
     UT_STR_EQUAL(response_lines[1].c_str(), "Invalid command\n");
 
-
-    // These next two confirm proper full/short name handling.
+    ///// These next two confirm proper full/short name handling.
     response_lines.clear();
     strncpy(_next_command, "help", MAX_LINE_LEN);
     stat = _DoCli();
@@ -97,7 +82,7 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
     UT_STR_EQUAL(response_lines[1].c_str(), "help|?: tell me everything\n");
 
-    // The rest of the commands.
+    ///// The rest of the commands.
     response_lines.clear();
     strncpy(_next_command, "exit", MAX_LINE_LEN);
     stat = _DoCli();
@@ -132,7 +117,7 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(response_lines.size(), 2);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
+    UT_STR_EQUAL(response_lines[1].c_str(), "100\n");
 
     response_lines.clear();
     strncpy(_next_command, "tempo 182", MAX_LINE_LEN);
@@ -140,23 +125,22 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(response_lines.size(), 1);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
 
     response_lines.clear();
     strncpy(_next_command, "tempo 242", MAX_LINE_LEN);
     stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
+    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
     UT_EQUAL(response_lines.size(), 2);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
+    UT_STR_EQUAL(response_lines[1].c_str(), "invalid tempo: 242\n");
 
     response_lines.clear();
     strncpy(_next_command, "tempo 39", MAX_LINE_LEN);
     stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
+    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
     UT_EQUAL(response_lines.size(), 2);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
+    UT_STR_EQUAL(response_lines[1].c_str(), "invalid tempo: 39\n");
 
     response_lines.clear();
     strncpy(_next_command, "monitor in", MAX_LINE_LEN);
@@ -182,10 +166,10 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
     response_lines.clear();
     strncpy(_next_command, "monitor junk", MAX_LINE_LEN);
     stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
+    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
     UT_EQUAL(response_lines.size(), 2);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
+    UT_STR_EQUAL(response_lines[1].c_str(), "invalid option: junk\n");
 
     response_lines.clear();
     strncpy(_next_command, "position", MAX_LINE_LEN);
@@ -193,43 +177,37 @@ UT_SUITE(EXEC_CLI, "Test cli functions.")
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(response_lines.size(), 2);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
+    UT_STR_EQUAL(response_lines[1].c_str(), "0:0:0\n");
 
     response_lines.clear();
     strncpy(_next_command, "position 203:2:6", MAX_LINE_LEN);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(response_lines.size(), 1);
+    UT_EQUAL(response_lines.size(), 2);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
+    UT_STR_EQUAL(response_lines[1].c_str(), "203:2:6\n");
 
     response_lines.clear();
-    strncpy(_next_command, "position 111:9:6", MAX_LINE_LEN);
+    strncpy(_next_command, "position", MAX_LINE_LEN);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(response_lines.size(), 2);
     UT_STR_EQUAL(response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(response_lines[1].c_str(), "xxx\n");
+    //TODO1 needs _length set
+    UT_STR_EQUAL(response_lines[1].c_str(), "203:2:6\n");
 
-
-
-    //static cli_command_t _commands[] =
-    //{
-    //    { "tempo",      't',   0,    "get or set the tempo",                   "(bpm): 40-240",             _TempoCmd },
-    //    { "monitor",    'm',   '^',  "toggle monitor midi traffic",            "(in|out|off): action",      _MonCmd },
-    //    { "position",   'p',   0,    "set position to where or tell current",  "(where): bar.beat.sub",     _PositionCmd },
-    //};
-
-
-    // Commands that need user input.
-
-
+    response_lines.clear();
+    strncpy(_next_command, "position 111:9:6", MAX_LINE_LEN);
+    stat = _DoCli();
+    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
+    UT_EQUAL(response_lines.size(), 2);
+    UT_STR_EQUAL(response_lines[0].c_str(), "$");
+    UT_STR_EQUAL(response_lines[1].c_str(), "invalid position: 111:9:6\n");
 
     //for (std::vector<std::string>::iterator iter = response_lines.begin(); iter != response_lines.end(); ++iter)
     //{
     //    printf(iter->c_str());
     //}
-
-
     return 0;
 }
 

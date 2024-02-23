@@ -18,7 +18,8 @@
 #define NEB_ERR_BAD_LUA_ARG     12
 #define NEB_ERR_BAD_MIDI_CFG    13
 #define NEB_ERR_SYNTAX          14
-#define NEB_ERR_MIDI            15
+#define NEB_ERR_MIDI_TX         15
+#define NEB_ERR_MIDI_RX         16
 
 
 //----------------------- Timing -----------------------------//
