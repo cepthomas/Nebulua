@@ -164,7 +164,6 @@
     <ClInclude Include="..\app\cli.h" />
     <ClInclude Include="..\app\devmgr.h" />
     <ClInclude Include="..\app\luainterop.h" />
-    <ClInclude Include="..\app\luainteropwork.h" />
     <ClInclude Include="..\app\nebcommon.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -25,6 +25,13 @@
 static CRITICAL_SECTION _critical_section;
 #define ENTER_CRITICAL_SECTION ;//EnterCriticalSection(&_critical_section)
 #define EXIT_CRITICAL_SECTION  ;//LeaveCriticalSection(&_critical_section)
+// Not working, try:
+//https://learn.microsoft.com/en-us/windows/win32/sync/event-objects
+//https://learn.microsoft.com/en-us/windows/win32/sync/mutex-objects
+// For:
+//void _MidiClockHandler(double msec);
+//void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+
 
 #define CLI_BUFF_LEN    128
 #define MAX_CLI_ARGS     10
@@ -281,11 +288,10 @@ int _DoCli(void)
                     // Lock access to lua context.
                     ENTER_CRITICAL_SECTION;
 
-                    stat = _Usage(pcmd, argc, cmd_argv);
+//                    typedef int (*cli_command_handler_t)(const cli_command_t* cmd, int argc, char* argv[]);
 
 
                     stat = pcmd->handler(pcmd, argc, cmd_argv);
-                    //stat = (*pcmd->handler)(pcmd, argc, cmd_argv);
                     // ok = _EvalStatus(stat, __LINE__, "handler failed: %s", pcmd->desc.long_name);
                     EXIT_CRITICAL_SECTION;
                     break;
@@ -577,7 +583,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
     int stat = NEB_OK;
 
     const cli_command_t* cmditer = _commands;
-    while (_commands->handler != NULL_PTR)
+    while (cmditer->handler != NULL_PTR)
     {
         //const cli_command_t* pdesc = &(cmditer->desc);
         cli_printf("%s|%c: %s\n", cmditer->long_name, cmditer->short_name, cmditer->info);
@@ -609,7 +615,7 @@ static cli_command_t _commands[] =
     { "tempo",      't',   0,    "get or set the tempo",                   "(bpm): 40-240",             _TempoCmd },
     { "monitor",    'm',   '^',  "toggle monitor midi traffic",            "(in|out|off): action",      _MonCmd },
     { "kill",       'k',   '~',  "stop all midi",                          "",                          _KillCmd },
-    { "position",   'p',   0,    "set position to where or tell current",  "(where): bar.beat.sub",     _PositionCmd },
+    { "position",   'p',   0,    "set position to where or tell current",  "(where): bar:beat:sub",     _PositionCmd },
     { "reload",     'l',   0,    "re/load current script",                 "",                          _ReloadCmd },
     { NULL,          0,    0,    NULL,                                     NULL,                        NULL }
 };

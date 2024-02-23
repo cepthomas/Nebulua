@@ -75,9 +75,6 @@
     <ClInclude Include="..\app\luainterop.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\app\luainteropwork.h">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="..\app\nebcommon.h">
       <Filter>source</Filter>
     </ClInclude>
