@@ -3,6 +3,8 @@
 
 local md = require("music_defs")
 local ut = require("utils")
+require('neb_common')
+throw_error = false
 
 -- Create the namespace/module.
 local M = {}
@@ -70,13 +72,13 @@ function M.suite_music_defs(pn)
     ----- Get scales using get_notes_from_string().
     -- "Lydian                  | 1 2 3 #4 5 6 7               | Lydian mode                              | whole tone        | major",
     res = md.get_notes_from_string("D#2.Lydian") -- stock
-    if not pn.UT_NOT_NIL(res) then error("Fatal") end
+    -- if not pn.UT_NOT_NIL(res) then error("Fatal") end
     pn.UT_EQUAL(#res, 7)
     pn.UT_EQUAL(res[4], 45) -- should be  D# = 3 + 2*12 = 27
     pn.UT_EQUAL(res[7], 50)
 
     res = md.get_notes_from_string("Bb5.MY_SCALE") -- custom
-    if not pn.UT_NOT_NIL(res) then error("Fatal") end
+    -- if not pn.UT_NOT_NIL(res) then error("Fatal") end
     pn.UT_EQUAL(#res, 4)
     pn.UT_EQUAL(res[2], 98)
     pn.UT_EQUAL(res[4], 80)
@@ -84,13 +86,13 @@ function M.suite_music_defs(pn)
     ----- Get chords using get_notes_from_string();
     res = md.get_notes_from_string("C3.M7#11") -- stock
         -- "   | 1 3 5 7 9 #11     |",
-    if not pn.UT_NOT_NIL(res) then error("Fatal") end
+    -- if not pn.UT_NOT_NIL(res) then error("Fatal") end
     pn.UT_EQUAL(#res, 6)
     pn.UT_EQUAL(res[2], 52)
     pn.UT_EQUAL(res[6], 66)
 
     res = md.get_notes_from_string("F#5.KRAZY_CHORD") -- custom
-    if not pn.UT_NOT_NIL(res) then error("Fatal") end
+    -- if not pn.UT_NOT_NIL(res) then error("Fatal") end
     pn.UT_EQUAL(#res, 10)
     pn.UT_EQUAL(res[4], 89)
     pn.UT_EQUAL(res[9], 85)

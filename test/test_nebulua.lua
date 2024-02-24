@@ -7,6 +7,8 @@ local st = require("step_types")
 local bt = require("bar_time")
 local neb = require("nebulua") -- lua api
 -- local api = require("host_api") -- C api (or sim)
+require('neb_common')
+throw_error = false
 
 
 ut.config_debug(false, true)

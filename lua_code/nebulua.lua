@@ -231,12 +231,3 @@ end
 -- Return module.
 return M
 
-
------------------------------------------------------------------------------
---- Report a user script syntax error. This is the only place that user script calls error().
--- @param info
-local function syntax_error(desc, info)
-    s = string.format("Syntax error: %s %s", desc, info or "")
-    error(s, 3) --TODO1 need to locate the script line. get_caller_info()?
-end
-
