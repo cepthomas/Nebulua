@@ -29,7 +29,7 @@ end
 function M.suite_bar_time_create(pn)
 
     -- Basic construction.
-    bt = BT(12345)
+    bt, err = BT(12345)
     pn.UT_NOT_NIL(bt)
 
     pn.UT_EQUAL(bt.get_tick(), 12345)
@@ -39,7 +39,7 @@ function M.suite_bar_time_create(pn)
     pn.UT_STR_EQUAL(tostring(bt), "385:3:1")
 
     -- Create from music terminology.
-    bt = BT(129, 1, 6)
+    bt, err = BT(129, 1, 6)
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 4142)
     pn.UT_EQUAL(bt.get_bar(), 129)
@@ -48,69 +48,69 @@ function M.suite_bar_time_create(pn)
     pn.UT_STR_EQUAL(tostring(bt), "129:1:6")
 
     -- Parse three part form - time usually.
-    bt = BT("108:0:7")
+    bt, err = BT("108:0:7")
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 3463)
     pn.UT_STR_EQUAL(tostring(bt), "108:0:7")
 
-    bt = BT("711:3:0")
+    bt, err = BT("711:3:0")
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 22776)
     pn.UT_STR_EQUAL(tostring(bt), "711:3:0")
 
     -- Parse two part form - duration usually.
-    bt = BT("1:4")
+    bt, err = BT("1:4")
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 12)
     pn.UT_STR_EQUAL(tostring(bt), "0:1:4")
 
 
     -- Bad input in many ways.
-    bt = BT(5.78)
+    bt, err = BT(5.78)
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid integer tick: 5.78")
     pn.UT_EQUAL(bt.get_tick(), 0)
     pn.UT_STR_EQUAL(tostring(bt), "Invalid integer tick: 5.78")
 
-    bt = BT({ me="bad" })
+    bt, err = BT({ me="bad" })
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid integer tick: table")
     pn.UT_EQUAL(bt.get_tick(), 0)
     pn.UT_STR_EQUAL(tostring(bt), "Invalid integer tick: table")
 
-    bt = BT(25, 5, 2)
+    bt, err = BT(25, 5, 2)
     pn.UT_NOT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid integer beat: 5")
     pn.UT_EQUAL(bt.get_tick(), 0)
     pn.UT_STR_EQUAL(tostring(bt), "Invalid integer beat: 5")
 
-    bt = BT(25, 1, 9)
+    bt, err = BT(25, 1, 9)
     pn.UT_NOT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid integer sub: 9")
     pn.UT_EQUAL(bt.get_tick(), 0)
     pn.UT_STR_EQUAL(tostring(bt), "Invalid integer sub: 9")
 
-    bt = BT("1.2.3")
+    bt, err = BT("1.2.3")
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid time: 1.2.3")
 
-    bt = BT("78")
+    bt, err = BT("78")
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid time: 78")
 
-    bt = BT("3.45")
+    bt, err = BT("3.45")
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid time: 3.45")
 
-    bt = BT("1:2:3:4")
+    bt, err = BT("1:2:3:4")
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid time: 1:2:3:4")
 
-    bt = BT("1:alpha:5")
+    bt, err = BT("1:alpha:5")
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Invalid time: 1:alpha:5")
 
-    bt = BT({ 1, 2 })
+    bt, err = BT({ 1, 2 })
     pn.UT_NIL(bt)
     pn.UT_STR_EQUAL(bt, "Not a string")
 end
@@ -214,10 +214,10 @@ function M.suite_bar_time_meta(pn)
     -- Metamethods: + - == < <="
 
     -- Test objects.
-    bt1 = BT(1109)
+    bt1, err = BT(1109)
     pn.UT_NOT_NIL(bt1)
 
-    bt2 = BT(472)
+    bt2, err = BT(472)
     pn.UT_NOT_NIL(bt2)
 
     -- add
@@ -250,7 +250,7 @@ function M.suite_bar_time_meta(pn)
     -- pn.UT_EQUAL(bt3.get_tick(), 0)
 
     -- comparison
-    bt3 = BT(1109)
+    bt3, err = BT(1109)
     pn.UT_TRUE(bt1 == bt3)
     pn.UT_FALSE(bt1 ~= bt3)
 
