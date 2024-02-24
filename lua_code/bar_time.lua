@@ -9,7 +9,6 @@ require('neb_common')
 local mt
 
 
-
 -----------------------------------------------------------------------------
 function BT(tick)
     ----------------------------------------
@@ -110,10 +109,19 @@ end
 
 
 -----------------------------------------------------------------------------
+--- Report a user script syntax error. Calls error().
+-- @param info
+local function syntax_error(desc, info)
+    s = string.format("Syntax error: %s %s", desc, info or "")
+    error(s, 4)
+end
+
+
+-----------------------------------------------------------------------------
 -- Sanity check the metamethod args and return two ints. Only table and integer supported.
--- Lua guarantees that at least one of the args is the table but order is not predictable.
+-- Lua guarantees that at least one of the args is the table but order is not determined.
 -- Except eq works only for two identical types.
-val_op = function(a, b, op)
+local sanitize_operands = function(a, b, op)
     asan = nil
     bsan = nil
     err = nil
@@ -145,10 +153,10 @@ end
 mt =
 {
     __tostring = function(self) return self.err or string.format("%d:%d:%d", self.get_bar(), self.get_beat(), self.get_sub()) end,
-    __add = function(a, b) sana, sanb = val_op(a, b, 'add'); return BT(sana + sanb) end,
-    __add = function(a, b) sana, sanb = val_op(a, b, 'add'); return BT(sana + sanb) end,
-    __sub = function(a, b) sana, sanb = val_op(a, b, 'sub'); return BT(sana - sanb) end,
+    __add = function(a, b) sana, sanb = sanitize_operands(a, b, 'add'); return BT(sana + sanb) end,
+    __add = function(a, b) sana, sanb = sanitize_operands(a, b, 'add'); return BT(sana + sanb) end,
+    __sub = function(a, b) sana, sanb = sanitize_operands(a, b, 'sub'); return BT(sana - sanb) end,
     __eq = function(a, b) return a.tick == b.tick end,
-    __lt = function(a, b) sana, sanb = val_op(a, b, 'lt'); return sana < sanb end,
-    __le = function(a, b) sana, sanb = val_op(a, b, 'le'); return sana <= sanb end,
+    __lt = function(a, b) sana, sanb = sanitize_operands(a, b, 'lt'); return sana < sanb end,
+    __le = function(a, b) sana, sanb = sanitize_operands(a, b, 'le'); return sana <= sanb end,
 }

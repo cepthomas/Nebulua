@@ -540,7 +540,7 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            _position = position >= _length ? _length : position; //TODO1
+            _position = position >= _length ? _length - 1 : position;
             cli_printf("%s\n", nebcommon_FormatBarTime(_position)); // echo
             stat = NEB_OK;
         }

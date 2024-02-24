@@ -140,6 +140,8 @@ function M.suite_bar_time_meta(pn)
     pn.UT_NIL(bt3.get_err())
     pn.UT_EQUAL(bt3.get_tick(), 522)
 
+    bt3 = bt2 + 'p'
+    
     -- sub
     bt3 = bt1 - bt2
     pn.UT_NIL(bt3.get_err())

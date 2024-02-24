@@ -20,45 +20,45 @@ set(LBOT "C:/Dev/repos/Lua/LuaBagOfTricks")
 # Header files.
 if(DO_TEST)
     include_directories(
-        ../source_code
-        ../test_code
+        ../app
+        ../test
         ../lua_lib/include
-        ${LBOT}/source_code
-        ${CBOT}/source_code
+        ${LBOT}/app
+        ${CBOT}/app
         ${CBOT}/pnut
         )
 
     add_executable(nebulua
         main.cpp
-        ../source_code/nebcommon.c
-        ../source_code/devmgr.c
-        ../test_code/test_nebcommon.cpp
-        ../test_code/test_devmgr.cpp
+        ../app/nebcommon.c
+        ../app/devmgr.c
+        ../test/test_nebcommon.cpp
+        ../test/test_devmgr.cpp
         ${CBOT}/pnut/pnut.cpp
-        ${CBOT}/source_code/private/logger.c
-        ${LBOT}/source_code/luaex.c
-        ${LBOT}/source_code/luautils.c
+        ${CBOT}/app/private/logger.c
+        ${LBOT}/app/luaex.c
+        ${LBOT}/app/luautils.c
         )
 else()
     include_directories(
-        ../source_code
+        ../app
         ../lua_lib/include
-        ${LBOT}/source_code
-        ${CBOT}/source_code
+        ${LBOT}/app
+        ${CBOT}/app
         )
 
     add_executable(nebulua
         main.c
-        ../source_code/exec.c
-        ../source_code/nebcommon.c
-        ../source_code/devmgr.c
-        ../source_code/luainterop.c
-        ../source_code/luainteropwork.c
-        ${CBOT}/source_code/private/logger.c
-        ${CBOT}/source_code/private/ftimer.c
-        ${CBOT}/source_code/private/stopwatch.c
-        ${LBOT}/source_code/luaex.c
-        ${LBOT}/source_code/luautils.c
+        ../app/exec.c
+        ../app/nebcommon.c
+        ../app/devmgr.c
+        ../app/luainterop.c
+        ../app/luainteropwork.c
+        ${CBOT}/app/private/logger.c
+        ${CBOT}/app/private/ftimer.c
+        ${CBOT}/app/private/stopwatch.c
+        ${LBOT}/app/luaex.c
+        ${LBOT}/app/luautils.c
         )
 endif()
 
