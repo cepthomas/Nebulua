@@ -38,6 +38,14 @@ tempdbg = { steps = _seq_steps, sections = _sections }
 local M = {}
 
 -----------------------------------------------------------------------------
+--- Report a user script syntax error. Calls error().
+-- @param desc
+local function syntax_error(desc)
+    s = string.format("Syntax error: %s", desc)
+    error(s, 3)
+end
+
+-----------------------------------------------------------------------------
 -- Impedance matching between C and Lua.
 
 -- Log functions. Magic numbers from C code.
@@ -87,7 +95,7 @@ function M.process_all(sequences, sections)
             end
 
             if gr_steps == nil then
-                syntax_error("Couldn't parse chunk", seq_chunk)
+                syntax_error(string.format("Couldn't parse chunk: %s", seq_chunk))
             else
                 steps[seq_name] = gr_steps
             end
@@ -133,7 +141,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
     elseif tn == "string" then
         notes = mu.get_notes_from_string(what_to_play)
     else
-        syntax_error("Invalid what_to_play "..tostring(chunk[2]))
+        syntax_error(string.format("Invalid what_to_play %s", chunk[2]))
     end
 
     -- Local function to package an event. chan_hnd is not know now and will get plugged in later.
@@ -150,7 +158,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
                 table.insert(steps, si)
             else
                 -- Internal error
-                syntax_error(si.err)
+                error(si.err, 2)
             end
         else -- note
             for _, n in ipairs(notes) do
@@ -159,7 +167,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
                     table.insert(steps, si)
                 else
                     -- Internal error
-                    syntax_error(si.err)
+                    error(si.err, 2)
                 end
             end
         end
@@ -174,13 +182,12 @@ function M.parse_chunk(chunk) --TODO2 should be local
         local cnum = string.byte(c) - 48
 
         if c == '-' then
--- dbg()
             -- Continue current note.
             if current_vol > 0 then
                 -- ok, do nothing
             else
                 -- invalid condition
-                syntax_error("Invalid \'-\'' in pattern string")
+                syntax_error(string.format("Invalid \'-\'' in pattern string: %s", chunk[1]))
             end
         elseif cnum >= 1 and cnum <= 9 then
 
@@ -205,7 +212,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
         else
 -- dbg()
             -- Invalid char.
-            syntax_error("Invalid char in pattern string", c)
+            syntax_error(string.format("Invalid char %c in pattern string: %s", c, chunk[1]))
         end
     end
 

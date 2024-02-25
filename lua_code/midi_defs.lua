@@ -58,7 +58,7 @@ M.controllers =
     PortamentoControl = 084, AllSoundOff = 120, ResetAllControllers = 121, LocalKeyboard = 122, AllNotesOff = 123,
 }
 
---- Make markdown content from the definitions. TODO3
+--- Make markdown content from the definitions. FUTURE
 -- @return list of strings
 -- function M.format_doc()
 

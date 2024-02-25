@@ -1,12 +1,10 @@
 
 -- Example Nebulua composition file. This is not actual music.
 
--- local sx  = require("stringex")
--- local ut  = require("utils")
-
 local neb = require("nebulua") -- lua api
 local md  = require("midi_defs")
 local bt  = require("bar_time")
+local ut  = require("utils")
 
 local inst = md.instruments
 local drum = md.drums
@@ -16,7 +14,6 @@ local ctrl = md.controllers
 
 neb.info("=============== go go go =======================")
 
--- TODO2 fix up per script1.lua
 
 ------------------------- Config ----------------------------------------
 
@@ -25,21 +22,18 @@ local midi_in = "loopMIDI Port"
 local midi_out = "Microsoft GS Wavetable Synth"
 
 -- Channels
-local hkeys  = create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
-local hbass  = create_output_channel(midi_out, 2, inst.AcousticBass)
-local hsynth = create_output_channel(midi_out, 3, inst.Lead1Square)
-local hdrums = create_output_channel(midi_out, 10, kit.Jazz)
-local hinp1  = create_input_channel(midi_in, 2)
+local hkeys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
+local hbass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
+local hsynth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
+local hdrums = neb.create_output_channel(midi_out, 10, kit.Jazz)
+local hinp1  = neb.create_input_channel(midi_in, 2)
 -- etc
 
 ------------------------- Vars ----------------------------------------
 
 -- local vars - Volumes.
-local keys_vol = 0.8
+local synth_vol = 0.8
 local drum_vol = 0.8
--- -- TODO3 volumes could be an optional user map instead of linear range.
--- drum_vol = { 0, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0 }
--- drum_vol_range = { 5.0, 9.5 }
 
 -- Get some stock chords and scales.
 local alg_scale = md.get_notes("G3.Algerian")
@@ -50,12 +44,12 @@ md.create_definition("MY_SCALE", "1 +3 4 -b7")
 local my_scale_notes = md.get_notes("B4.MY_SCALE")
 
 -- Aliases.
-snare = drum.AcousticSnare
-bdrum = drum.AcousticBassDrum
-hhcl = drum.ClosedHiHat
-ride = drum.RideCymbal1
-crash = drum.CrashCymbal2
-mtom = drum.HiMidTom
+local snare = drum.AcousticSnare
+local bdrum = drum.AcousticBassDrum
+local hhcl = drum.ClosedHiHat
+local ride = drum.RideCymbal1
+local crash = drum.CrashCymbal2
+local mtom = drum.HiMidTom
 
 
 --------------------- Called from core -----------------------------------
@@ -85,7 +79,7 @@ function step(tick)
     neb.do_step(tick)
 
     -- Selective work.
-    if t.beat == 0 and t.sub == 0 then
+    if t.get_beat() == 0 and t.get_sub() == 0 then
         neb.send_controller(hsynth, ctrl.Pan, 90)
         -- or...
         neb.send_controller(hkeys,  ctrl.Pan, 30)
@@ -99,13 +93,13 @@ end
 -----------------------------------------------------------------------------
 -- Handlers for input note events.
 function input_note(chan_hnd, note_num, velocity)
-    neb.info("input_note") -- string.format("%s", variable_name), chan_hnd, note, vel)
+    neb.info("input_note %d %d %d", chan_hnd, note_num, velocity)
 
     if chan_hnd == hbing_bong then
         -- whiz = ...
     end
 
-    neb.send_note("synth", note_num, velocity, 8)
+    neb.send_note(hsynth, note_num, velocity, 8)
 end
 
 -----------------------------------------------------------------------------
@@ -121,7 +115,7 @@ end
 -- Called from sequence.
 local function seq_func(bar, beat, sub)
     local note_num = math.random(0, #alg_scale)
-    neb.send_note("synth", alg_scale[note_num], 0.7, 8) --0.5)
+    neb.send_note(hsynth, alg_scale[note_num], drum_vol, 8) --0.5)
 end
 
 -- Called from section.
@@ -136,9 +130,9 @@ local function boing(note_num)
 
     neb.info("boing")
     if note_num == 0 then
-        note_num = Random(30, 80)
+        note_num = math.random(30, 80)
         boinged = true
-        neb.send_note("synth", note_num, VEL, 8) --0.5)
+        neb.send_note(hsynth, note_num, synth_vol, 8) --0.5)
     end
     return boinged
 end
@@ -147,14 +141,14 @@ end
 
 sequences =
 {
-    template =
-    {
-        -- |........|........|........|........|........|........|........|........|
-        { "|        |        |        |        |        |        |        |        |", "??" },
-        { "|        |        |        |        |        |        |        |        |", "??" },
-    },
+    -- template =
+    -- {
+    --     -- |........|........|........|........|........|........|........|........|
+    --     { "|        |        |        |        |        |        |        |        |", "??" },
+    --     { "|        |        |        |        |        |        |        |        |", "??" },
+    -- },
 
-    example_seq = -- neb.SUBS_PER_BEAT
+    example_seq =
     {
         -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
         { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },

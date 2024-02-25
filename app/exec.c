@@ -20,7 +20,7 @@
 //----------------------- Definitions -----------------------//
 
 
-// TODO2 Script lua_State access syncronization. 
+// TODO1 Script lua_State access syncronization. 
 // CRITICAL_SECTION Not working, try:
 //https://learn.microsoft.com/en-us/windows/win32/sync/event-objects
 //https://learn.microsoft.com/en-us/windows/win32/sync/mutex-objects
@@ -51,7 +51,7 @@ typedef struct cli_command
     const char* long_name;
     // If you don't.
     const char short_name;
-    // TODO3 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.
+    // TODO2 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.
     const char immediate_key;
     // Free text for command description.
     const char* info;
@@ -109,16 +109,16 @@ static int _position = 0;
 static int _length = 0;
 
 
-//---------------------- Functions ------------------------//
+//---------------------- Functions TODO2 restore static------------------------//
 
 // Process user input.
-int _DoCli(void); // TODO2 static
+int _DoCli(void);
 
 // Clock tick corresponding to bpm. !!From Interrupt!!
-void _MidiClockHandler(double msec); // TODO2 static
+void _MidiClockHandler(double msec);
 
 // Handle incoming messages. !!From Interrupt!!
-void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2); // TODO2 static
+void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 /// Top level error handler for nebulua status.
 static bool _EvalStatus(int stat, int line, const char* format, ...);

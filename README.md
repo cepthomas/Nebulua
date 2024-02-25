@@ -2,7 +2,7 @@
 
 - An experimental version of Nebulator using Lua as the script flavor.
 - Windows only.
-- Windows 64 bit. Build with VS or mingw64.  I'm using 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
+- Windows 64 bit. Build with VS or mingw64. I'm using 64 bit Lua 5.4.2 from https://luabinaries.sourceforge.net/download.html.
 
 - Test code is Windows 64 bit build using CMake. Your PATH must include `...\mingw64\bin`. <<<<<?????
 
@@ -52,7 +52,7 @@ Script defs:
    BAR_TIME is a string of "BAR.BEAT.SUB" e.g. "1.2.3" or "1.2" or "1".
    VOLUME 0->9
 
-## error/status  --- Some should be in lbot maybe.
+## error/status/streams  --- Some should be in lbot maybe.
 
 New flavor:
 -- If one still insists on a dogma though, here is what I would say:
@@ -65,33 +65,8 @@ New flavor:
 -- Otherwise, consider the failure to be a first-class error and throw an exception.
 
 
-function try(f, catch_f)
-    local status, exception = pcall(f)
-    if not status then
-        catch_f(exception)
-    end
-end
-
-function foo()
-    try(function()
-        if some_task() then
-            return 10 -- does not cause foo() to return 10
-        end
-    end,
-    function(e)
-        -- Catch block. E.g.:
-        -- Use e for conditional catch
-        -- Re-raise with error(e)
-    end)
-    return 20 -- from foo()
-end
-
-
-
 
 Maybe:
-
-====================== errors/print/... ====================
 
 custom stream for error output? use stderr? https://www.gnu.org/software/libc/manual/html_node/Custom-Streams.html
 
@@ -128,6 +103,8 @@ host_api.log(level, msg) => calls the lua-C functions. there is no standalone lu
     - Only the app (top level - user visible) calls error(message [, level]) to notify the user of e.g. app syntax errors.
     - internal libs should never call error(), let the client deal.
 > use stdout or kustom only + maybe log_error()
+
+-- lua-L print => io.write() -- default is stdout, change with io.output(). probably print() is fine for debugging, no need for special stream.
 
 ! lua-L error(message [, level])  Raises an error (see §2.3) with message as the error object. This function never returns.
 ... these trickle up to the caller via luaex_docall/lua_pcall return

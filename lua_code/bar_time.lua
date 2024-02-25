@@ -35,8 +35,8 @@ function BT(arg1, arg2, arg3)
     elseif ut.is_integer(arg1) and ut.is_integer(arg2) and ut.is_integer(arg3) then
         -- From bar/beat/sub.
         e = v.val_integer(arg1, 0, MAX_BAR, 'bar')
-        if e == nil then e = v.val_integer(arg2, 0, BEATS_PER_BAR, 'beat') end
-        if e == nil then e = v.val_integer(arg3, 0, SUBS_PER_BEAT, 'sub') end
+        e = e or v.val_integer(arg2, 0, BEATS_PER_BAR, 'beat')
+        e = e or v.val_integer(arg3, 0, SUBS_PER_BEAT, 'sub')
         if e == nil then
             d.tick = (arg1 * SUBS_PER_BAR) + (arg2 * SUBS_PER_BEAT) + (arg3)
         else
