@@ -52,9 +52,44 @@ Script defs:
    BAR_TIME is a string of "BAR.BEAT.SUB" e.g. "1.2.3" or "1.2" or "1".
    VOLUME 0->9
 
-## error/status
+## error/status  --- Some should be in lbot maybe.
 
-Some should be in lbot maybe.
+New flavor:
+-- If one still insists on a dogma though, here is what I would say:
+-- - Use errors for things which can be fixed at the time of writing the code (i.e. invalid pattern in string.match)
+-- - return nil in case of errors which can always occur at runtime (i.e. couldn't open file in io.open)
+-- and use pcall to overrule a decision to make something error (i.e. pcall(require, "luarocks.loader"))...
+
+-- https://www.lua.org/gems/lpg113.pdf
+-- if a failure situation is most often handled by the immediate caller of your function, signal it by return value.
+-- Otherwise, consider the failure to be a first-class error and throw an exception.
+
+
+function try(f, catch_f)
+    local status, exception = pcall(f)
+    if not status then
+        catch_f(exception)
+    end
+end
+
+function foo()
+    try(function()
+        if some_task() then
+            return 10 -- does not cause foo() to return 10
+        end
+    end,
+    function(e)
+        -- Catch block. E.g.:
+        -- Use e for conditional catch
+        -- Re-raise with error(e)
+    end)
+    return 20 -- from foo()
+end
+
+
+
+
+Maybe:
 
 ====================== errors/print/... ====================
 

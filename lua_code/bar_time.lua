@@ -5,21 +5,10 @@ local sx = require("stringex")
 local v = require('validators')
 require('neb_common')
 
-local throw = false
-
 -- Forward refs.
 local mt
 
--- If one still insists on a dogma though, here is what I would say:
--- - Use errors for things which can be fixed at the time of writing the code (i.e. invalid pattern in string.match)
--- - return nil in case of errors which can always occur at runtime (i.e. couldn't open file in io.open)
--- and use pcall to overrule a decision to make something error (i.e. pcall(require, "luarocks.loader"))...
 
--- https://www.lua.org/gems/lpg113.pdf
--- if a failure situation is most often handled by the immediate caller of your function, signal it by return value.
--- Otherwise, consider the failure to be a first-class error and throw an exception.
-
--- 
 -----------------------------------------------------------------------------
 -- Construction. Can call error().
 -- @param overloads
@@ -74,13 +63,11 @@ function BT(arg1, arg2, arg3)
         end
 
         valid = valid and bar ~= nil and beat ~= nil and sub ~= nil
-        -- print(">>>", valid, d.tick, bar, beat, sub)
         if valid then
             d.tick = (bar * SUBS_PER_BAR) + (beat * SUBS_PER_BEAT) + (sub)
         else
-            err = "Invalid time", arg1
+            err = string.format("Invalid time: %s", tostring(arg1))
         end
-        -- print(">>>", valid, d.tick, bar, beat, sub)
     else
         err = string.format("Bad constructor: %s, %s, %s", tostring(arg1), tostring(arg2), tostring(arg3))
     end
@@ -109,9 +96,10 @@ function BT(arg1, arg2, arg3)
         return math.floor(d.tick % SUBS_PER_BEAT)
     end
 
+    -- Return success/fail.
     if err ~= nil then
         d = nil
-        if throw then error(err, 2) end
+        error(err, 3)
     end
     
     return d, err
@@ -139,7 +127,7 @@ local normalize_operands = function(a, b, op)
         asan = a.tick
         bsan = b.tick
     else
-        error("Invalid datatype for operator", 4)
+        error(string.format("Invalid datatype for operator %s", op), 4)
     end
 
     return asan, bsan
@@ -168,15 +156,20 @@ mt =
         end,
 
     __sub = function(a, b)
-            sana, sanb = normalize_operands(a, b, 'sub')
             ret = nil
-            if sana ~= nil and sanb ~= nil and sana >= sanb then ret = BT(sana - sanb) end
+            sana, sanb = normalize_operands(a, b, 'sub')
+            -- print(">>>", sana, sanb)
+            if sana ~= nil and sanb ~= nil and sana >= sanb then
+                ret = BT(sana - sanb)
+            else
+                error("result is negative", 3)
+            end
             return ret
         end,
 
     __lt = function(a, b)
-            sana, sanb = normalize_operands(a, b, 'lt')
             ret = nil
+            sana, sanb = normalize_operands(a, b, 'lt')
             if sana ~= nil and sanb ~= nil
                 then ret = sana < sanb
             else
@@ -186,8 +179,8 @@ mt =
         end,
 
     __le = function(a, b)
-            sana, sanb = normalize_operands(a, b, 'le')
             ret = nil
+            sana, sanb = normalize_operands(a, b, 'le')
             if sana ~= nil and sanb ~= nil
                 then ret = sana <= sanb
             else

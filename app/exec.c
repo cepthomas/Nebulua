@@ -21,10 +21,7 @@
 
 
 // TODO2 Script lua_State access syncronization. 
-// For:
-//void _MidiClockHandler(double msec);
-//void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
-// Not working, try:
+// CRITICAL_SECTION Not working, try:
 //https://learn.microsoft.com/en-us/windows/win32/sync/event-objects
 //https://learn.microsoft.com/en-us/windows/win32/sync/mutex-objects
 // https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
@@ -71,10 +68,7 @@ typedef struct cli_command
 static lua_State* _l;
 
 // Point this stream where you like.
-static FILE* _log_stream_out = NULL;
-
-// Point this stream where you like.
-static FILE* _error_stream_out = NULL;
+static FILE* _fperr = NULL;
 
 // The script execution state.
 static bool _script_running = false;
@@ -144,15 +138,15 @@ int exec_Main(const char* script_fn)
     const char* sret = NULL;
     int exit_code = 0;
 
-    #define EXEC_FAIL() fprintf(_error_stream_out, "ERROR %s\n", _last_error); exit_code = 1; goto init_done;
+    #define EXEC_FAIL() fprintf(_fperr, "ERROR %s\n", _last_error); exit_code = 1; goto init_done;
 
     // Init streams.
-    _error_stream_out = stdout;
+    _fperr = stdout;
     cli_open();
 
     // Init logger.
-    _log_stream_out = fopen("_log.txt", "a");
-    stat = logger_Init(_log_stream_out);
+    FILE* fplog = fopen("_log.txt", "a");
+    stat = logger_Init(fplog);
     ok = _EvalStatus(stat, __LINE__, "Failed to init logger");
     if (!ok) EXEC_FAIL();
     logger_SetFilters(LVL_DEBUG);
@@ -228,10 +222,9 @@ init_done:
     ftimer_Destroy();
     devmgr_Destroy();
 
-    if (_log_stream_out != stdout) { fclose(_log_stream_out); }
-    if (_error_stream_out != stdout) { fclose(_error_stream_out); }
+    if (_fperr != stdout) { fclose(_fperr); }
     cli_close();
-
+    fclose(fplog);
     lua_close(_l);
 
     return exit_code;
