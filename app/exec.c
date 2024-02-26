@@ -127,10 +127,7 @@ int exec_Main(const char* script_fn)
     int stat = NEB_OK;
 
     bool ok = false;
-    int iret = 0;
-    double dret = 0;
-    bool bret = false;
-    const char* sret = NULL;
+    int ret = 0;
     int exit_code = 0;
 
     #define EXEC_FAIL() fprintf(_fperr, "ERROR %s\n", _last_error); exit_code = 1; goto init_done;
@@ -193,7 +190,9 @@ int exec_Main(const char* script_fn)
     if (!ok) EXEC_FAIL();
 
     // Script setup.
-    int length = luainterop_Setup(_l, &iret);
+    stat = luainterop_Setup(_l, &_length);
+    ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
+    if (!ok) EXEC_FAIL();
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
@@ -202,10 +201,10 @@ int exec_Main(const char* script_fn)
     while (_app_running)
     {
         stat = _DoCli();
+        ok = _EvalStatus(stat, __LINE__, "_DoCli() failed [%s].", script_fn);
+        if (!ok) EXEC_FAIL();
     }
 
-    ok = _EvalStatus(stat, __LINE__, "Run failed [%s].", script_fn);
-    if (!ok) EXEC_FAIL();
 
 
 init_done:
@@ -303,12 +302,13 @@ void _MidiClockHandler(double msec)
 {
     // Process events -- this is in an interrupt handler!
     _last_msec = msec;
-    int iret;
+    int stat;
+    int ret = 0;
 
     // Lock access to lua context.
     ENTER_CRITICAL_SECTION;
 
-    int stat = luainterop_Step(_l, _position, &iret);
+    int stat = luainterop_Step(_l, _position, &ret);
     if (stat != NEB_OK)
     {
         // TODO2 do something non-fatal?
@@ -377,7 +377,7 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 
     int stat = NEB_OK;
     bool ok = true;
-    int iret;
+    int ret;
 
     switch (wMsg)
     {
@@ -419,18 +419,18 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
             case MIDI_NOTE_OFF:
                 // Translate velocity to volume.
                 double volume = bdata2 > 0 && evt == MIDI_NOTE_ON ? (double)bdata1 / MIDI_VAL_MAX : 0.0;
-                stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume, &iret);
+                stat = luainterop_InputNote(_l, chan_hnd, bdata1, volume, &ret);
                 ok = _EvalStatus(stat, __LINE__, "luainterop_InputNote() failed");
                 break;
 
             case MIDI_CONTROL_CHANGE:
-                stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2, &iret);
+                stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2, &ret);
                 ok = _EvalStatus(stat, __LINE__, "luainterop_InputController() failed");
                 break;
 
-            case MIDI_PITCH_WHEEL_CHANGE:
-                // PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
-                break;
+            // case MIDI_PITCH_WHEEL_CHANGE:
+            //     PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
+            //     break;
 
                 // Ignore other events for now.
             default:

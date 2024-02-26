@@ -12,7 +12,7 @@ local kit = md.drum_kits
 local ctrl = md.controllers
 
 
-neb.info("=============== go go go =======================")
+neb.log_info("=============== go go go =======================")
 
 
 ------------------------- Config ----------------------------------------
@@ -57,7 +57,7 @@ local mtom = drum.HiMidTom
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    neb.info("example initialization")
+    neb.log_info("example initialization")
     math.randomseed(os.time())
 
     -- Load her up.
@@ -85,27 +85,28 @@ function step(tick)
         neb.send_controller(hkeys,  ctrl.Pan, 30)
     end
 
-    -- -- Plays well with others.
-    -- coroutine.yield()
-
+    return 0
 end
 
 -----------------------------------------------------------------------------
 -- Handlers for input note events.
 function input_note(chan_hnd, note_num, velocity)
-    neb.info("input_note %d %d %d", chan_hnd, note_num, velocity)
+    neb.log_info("input_note %d %d %d", chan_hnd, note_num, velocity)
 
     if chan_hnd == hbing_bong then
         -- whiz = ...
     end
 
     neb.send_note(hsynth, note_num, velocity, 8)
+
+    return 0
 end
 
 -----------------------------------------------------------------------------
 -- Handlers for input controller events.
 function input_controller(chan_hnd, controller, value)
-    neb.info("input_controller") --, chan_hnd, ctlid, value)
+    neb.log_info("input_controller") --, chan_hnd, ctlid, value)
+    return 0
 end
 
 
@@ -128,7 +129,7 @@ end
 local function boing(note_num)
     local boinged = false;
 
-    neb.info("boing")
+    neb.log_info("boing")
     if note_num == 0 then
         note_num = math.random(30, 80)
         boinged = true

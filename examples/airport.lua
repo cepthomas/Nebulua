@@ -50,7 +50,7 @@ end
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    -- neb.info("example initialization")
+    -- neb.log_info("example initialization")
     -- math.randomseed(os.time())
 
     -- Set up the _loops.

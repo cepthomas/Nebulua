@@ -75,14 +75,13 @@ function M.suite_process_script(pn)
 
     s = ut.dump_table_string(tempdbg.steps, 'tempdbg.steps')
     -- print('+++', s)
-
     -- TODO1 examine contents
 
 end
 
 
 -----------------------------------------------------------------------------
--- function M.suite_exec_script(pn)
+-- function M.suite_exec_script(pn) --  TODO1?
 --     -- Test loading and executing script file.
 
 --     -- Load test file in protected mode.
@@ -110,7 +109,7 @@ end
 
 
 -----------------------------------------------------------------------------
--- function M.suite_script_input(pn) --  TODO1
+-- function M.suite_script_input(pn) --  TODO1?
 
 --     -- Load test file in protected mode.
 --     scrfn = 'script1'

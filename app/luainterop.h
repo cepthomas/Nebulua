@@ -28,7 +28,7 @@ int luainterop_Setup(lua_State* l, int* ret);
 /// Lua export function: Called every fast timer increment aka tick.
 /// @param[in] l Internal lua state.
 /// @param[in] tick Current tick 0 => N
-/// @param[out] int* NEB_XX status
+/// @param[out] int* Unused
 /// @return status
 int luainterop_Step(lua_State* l, int tick, int* ret);
 
@@ -37,7 +37,7 @@ int luainterop_Step(lua_State* l, int tick, int* ret);
 /// @param[in] chan_hnd Input channel handle
 /// @param[in] note_num Note number 0 => 127
 /// @param[in] volume Volume 0.0 => 1.0
-/// @param[out] int* NEB_XX status
+/// @param[out] int* Unused
 /// @return status
 int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume, int* ret);
 
@@ -46,7 +46,7 @@ int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume
 /// @param[in] chan_hnd Input channel handle
 /// @param[in] controller Specific controller id 0 => 127
 /// @param[in] value Payload 0 => 127
-/// @param[out] int* NEB_XX status
+/// @param[out] int* Unused
 /// @return status
 int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int value, int* ret);
 

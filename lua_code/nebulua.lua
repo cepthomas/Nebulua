@@ -1,6 +1,7 @@
 
--- Core generic functions for this app. Matches/requires the C libs.
--- Hides the C api so this is one stop shopping for the user script.
+-- Core generic functions for this app. Essentially the script api.
+-- Manages note collections as described by the composition.
+-- Hides or translates the raw C api.
 
 local api = require("host_api") -- C api
 local st = require("step_types")
@@ -30,7 +31,7 @@ M.set_tempo = api.set_tempo
 -- M.send_note = api.send_note
 M.send_controller = api.send_controller
 
--- Send note now. If it is note on, chase the corresponding note off.
+-- Send note. If it is note on, chase the corresponding note off.
 function M.send_note(chan_hnd, note_num, volume, dur)
     if volume > 0 then -- noteon
        if dur == 0 then dur = 1 end -- (for drum/hit)
@@ -253,39 +254,5 @@ function M.parse_chunk(chunk) --TODO2 should be local
 end
 
 
------------------------------------------------------------------------------
---- Process notes at this time.
--- @param tick desc
--- @return status
-function M.do_step(tick)
-    _current_tick = tick
-
-    -- Composition steps.
-    local steps = _seq_steps[tick] -- now
-    if steps ~= nil then
-        for _, step in ipairs(steps) do
-            if step.step_type == STEP_NOTE then
-               api.send_note(step.chan_hnd, step.note_num, step.volume)
-            elseif step.step_type == STEP_CONTROLLER then
-                api.send_controller(step.chan_hnd, step.controller, step.value)
-            elseif step.step_type == STEP_FUNCTION then
-                step.func(_current_tick)
-            end
-        end
-    end
-
-    -- Note offs. TODO2 any others?
-    steps = _transients[tick] -- now
-    if steps ~= nil then
-        for _, step in ipairs(steps) do
-            if step.step_type == STEP_NOTE then
-               api.send_note(step.chan_hnd, step.note_num, 0)
-            end
-        end
-        table.remove(_transients, tick)
-    end
-end
-
 -- Return module.
 return M
-
