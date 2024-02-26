@@ -1,6 +1,7 @@
 #ifndef DEVMGR_H
 #define DEVMGR_H
 
+#include <stdbool.h>
 #include <windows.h>
 
 

@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+// #include <stdbool.h>
 #include <math.h>
 // lua
 #include "lua.h"

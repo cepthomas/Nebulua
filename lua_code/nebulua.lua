@@ -2,48 +2,17 @@
 -- Core generic functions for this app. Matches/requires the C libs.
 -- Hides the C api so this is one stop shopping for the user script.
 
-local api = require("host_api") -- C api (or sim)
+local api = require("host_api") -- C api
 local st = require("step_types")
 local md = require("midi_defs")
 local mu = require("music_defs")
 require('neb_common')
 
 
--- {
---     sequence_1 =
---     {
---         sub_1 = { StepX, StepX, ... },
---         sub_2 = { StepX, StepX, ... },
---         ...
---     },
---     ...
--- }
-local _seq_steps = {}
-
-
--- {
---     section_1 =
---     {
---         { chan_hnd = { sequence_1,  sequence_2, ... },
---         { chan_hnd = { sequence_1,  sequence_2, ... },
---         ...
---     },
---     ...
--- }
-local _sections = {}
-local _length = 5000
-
-tempdbg = { steps = _seq_steps, sections = _sections }
-
 local M = {}
 
------------------------------------------------------------------------------
---- Report a user script syntax error. Calls error().
--- @param desc
-local function syntax_error(desc)
-    s = string.format("Syntax error: %s", desc)
-    error(s, 3)
-end
+local _current_tick = 0
+
 
 -----------------------------------------------------------------------------
 -- Impedance matching between C and Lua.
@@ -58,15 +27,75 @@ function M.log_trace(msg) api.log(1, msg) end
 M.create_input_channel = api.create_input_channel
 M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
+-- M.send_note = api.send_note
 M.send_controller = api.send_controller
 
--- TODO1 intercept and handle chasing note offs
+-- Send note now. If it is note on, chase the corresponding note off.
 function M.send_note(chan_hnd, note_num, volume, dur)
-    -- "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
-    api.send_note(chan_hnd, note_num, volume)
+    if volume > 0 then -- noteon
+       if dur == 0 then dur = 1 end -- (for drum/hit)
+       -- send note_on now
+       api.send_note(chan_hnd, note_num, volume)
+       -- stash future noteoff
+       table.insert(_transients, StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0))
+    else -- noteoff
+       -- send note_off now
+       api.send_note(chan_hnd, note_num, 0)
+
+    -- if volume is > 0 
+    --    if dur is 0, dur = 1 (for drum/hit)
+    --    send note_on now
+    --    add StepNote(now+dur, chan_hnd, note_num, 0, 0)  to _transients
+    -- else -- off
+    --    send note_off now
 end
+
 -----------------------------------------------------------------------------
 
+-- Steps in sequences.
+-- {
+--     sequence_1 =
+--     {
+--         sub_1 = { StepX, StepX, ... },
+--         sub_2 = { StepX, StepX, ... },
+--         ...
+--     },
+--     ...
+-- }
+local _seq_steps = {}
+
+
+-- Sequences in sections.
+-- {
+--     section_1 =
+--     {
+--         { chan_hnd = { sequence_1,  sequence_2, ... },
+--         { chan_hnd = { sequence_1,  sequence_2, ... },
+--         ...
+--     },
+--     ...
+-- }
+local _sections = {}
+
+
+-- Things that are executed once and disappear: NoteOffs, script send now. Key is the internal subbeat/time.
+-- {
+--     sub_1 = { StepX, StepX, ... },
+--     sub_2 = { StepX, StepX, ... },
+--     ...
+-- },
+local _transients = {}
+
+
+-- Total length of composition.
+local _length = 0
+-- function M.get_length() return _length end
+-- function M.set_length(l) _length = l end
+
+
+-----------------------------------------------------------------------------
+tempdbg = { steps = _seq_steps, sections = _sections } -- TODO2 Debug stuff - remove
+-----------------------------------------------------------------------------
 
     
 -----------------------------------------------------------------------------
@@ -95,7 +124,7 @@ function M.process_all(sequences, sections)
             end
 
             if gr_steps == nil then
-                syntax_error(string.format("Couldn't parse chunk: %s", seq_chunk))
+                error(string.format("Couldn't parse chunk: %s", seq_chunk), 2)
             else
                 steps[seq_name] = gr_steps
             end
@@ -108,11 +137,10 @@ function M.process_all(sequences, sections)
     table.sort(_seq_steps, function (left, right) return left.sub < right.sub end)
 
 
-    -- Process sections. TODO1?
+    -- Process sections. Calculate length. TODO1
     _sections = sections
-
-    -- Calculate length. TODO1
-
+    _length = 100
+    
     return _length
 end
 
@@ -141,7 +169,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
     elseif tn == "string" then
         notes = mu.get_notes_from_string(what_to_play)
     else
-        syntax_error(string.format("Invalid what_to_play %s", chunk[2]))
+        error(string.format("Invalid what_to_play %s", chunk[2]), 2)
     end
 
     -- Local function to package an event. chan_hnd is not know now and will get plugged in later.
@@ -187,7 +215,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
                 -- ok, do nothing
             else
                 -- invalid condition
-                syntax_error(string.format("Invalid \'-\'' in pattern string: %s", chunk[1]))
+                error(string.format("Invalid \'-\'' in pattern string: %s", chunk[1]), 2)
             end
         elseif cnum >= 1 and cnum <= 9 then
 
@@ -212,7 +240,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
         else
 -- dbg()
             -- Invalid char.
-            syntax_error(string.format("Invalid char %c in pattern string: %s", c, chunk[1]))
+            error(string.format("Invalid char %c in pattern string: %s", c, chunk[1]), 2)
         end
     end
 
@@ -229,10 +257,33 @@ end
 --- Process notes at this time.
 -- @param tick desc
 -- @return status
-function M.do_step(tick) -- TODO1
-    -- calc total sub
-    -- get all
-    -- return status?
+function M.do_step(tick)
+    _current_tick = tick
+
+    -- Composition steps.
+    local steps = _seq_steps[tick] -- now
+    if steps ~= nil then
+        for _, step in ipairs(steps) do
+            if step.step_type == STEP_NOTE then
+               api.send_note(step.chan_hnd, step.note_num, step.volume)
+            elseif step.step_type == STEP_CONTROLLER then
+                api.send_controller(step.chan_hnd, step.controller, step.value)
+            elseif step.step_type == STEP_FUNCTION then
+                step.func(_current_tick)
+            end
+        end
+    end
+
+    -- Note offs. TODO2 any others?
+    steps = _transients[tick] -- now
+    if steps ~= nil then
+        for _, step in ipairs(steps) do
+            if step.step_type == STEP_NOTE then
+               api.send_note(step.chan_hnd, step.note_num, 0)
+            end
+        end
+        table.remove(_transients, tick)
+    end
 end
 
 -- Return module.

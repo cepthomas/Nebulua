@@ -26,9 +26,11 @@ int exec_Main(const char* script_fn);
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(EXEC_1111, "Test ... functions.")
+UT_SUITE(EXEC_1111, "Test TODO1 functions.")
 {
     int stat = 0;
+
+    // These need _l.
 
     HMIDIIN hMidiIn = 0;
     UINT wMsg = 0;

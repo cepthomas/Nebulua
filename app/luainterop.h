@@ -21,14 +21,14 @@
 
 /// Lua export function: Called to initialize Nebulator stuff.
 /// @param[in] l Internal lua state.
-/// @param[out] int* LUA_STATUS
+/// @param[out] int* Total length of composition - 0 means no composition/free-form
 /// @return status
 int luainterop_Setup(lua_State* l, int* ret);
 
 /// Lua export function: Called every fast timer increment aka tick.
 /// @param[in] l Internal lua state.
 /// @param[in] tick Current tick 0 => N
-/// @param[out] int* LUA_STATUS
+/// @param[out] int* NEB_XX status
 /// @return status
 int luainterop_Step(lua_State* l, int tick, int* ret);
 
@@ -37,7 +37,7 @@ int luainterop_Step(lua_State* l, int tick, int* ret);
 /// @param[in] chan_hnd Input channel handle
 /// @param[in] note_num Note number 0 => 127
 /// @param[in] volume Volume 0.0 => 1.0
-/// @param[out] int* LUA_STATUS
+/// @param[out] int* NEB_XX status
 /// @return status
 int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume, int* ret);
 
@@ -46,7 +46,7 @@ int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume
 /// @param[in] chan_hnd Input channel handle
 /// @param[in] controller Specific controller id 0 => 127
 /// @param[in] value Payload 0 => 127
-/// @param[out] int* LUA_STATUS
+/// @param[out] int* NEB_XX status
 /// @return status
 int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int value, int* ret);
 
@@ -69,26 +69,26 @@ int luainteropwork_CreateInputChannel(char* dev_name, int chan_num);
 /// Script wants to log something.
 /// @param[in] level Log level
 /// @param[in] msg Log message
-/// @return LUA_STATUS
+/// @return NEB_XX status
 int luainteropwork_Log(int level, char* msg);
 
 /// Script wants to change tempo.
 /// @param[in] bpm BPM 40 => 240
-/// @return LUA_STATUS
+/// @return NEB_XX status
 int luainteropwork_SetTempo(int bpm);
 
 /// If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).
 /// @param[in] chan_hnd Output channel handle
 /// @param[in] note_num Note number
 /// @param[in] volume Volume 0.0 => 1.0
-/// @return LUA_STATUS
+/// @return NEB_XX status
 int luainteropwork_SendNote(int chan_hnd, int note_num, double volume);
 
 /// Send a controller immediately.
 /// @param[in] chan_hnd Output channel handle
 /// @param[in] controller Specific controller 0 => 127
 /// @param[in] value Payload 0 => 127
-/// @return LUA_STATUS
+/// @return NEB_XX status
 int luainteropwork_SendController(int chan_hnd, int controller, int value);
 
 //---------------- Infrastructure ----------------------//

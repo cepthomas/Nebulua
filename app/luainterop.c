@@ -217,7 +217,7 @@ static int luainterop_CreateInputChannel(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: level Log level
 // Lua arg: msg Log message
-// Lua return: int status LUA/NEB
+// Lua return: int NEB_XX status
 static int luainterop_Log(lua_State* l)
 {
     // Get arguments
@@ -239,7 +239,7 @@ static int luainterop_Log(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: bpm BPM 40 => 240
-// Lua return: int status LUA/NEB
+// Lua return: int NEB_XX status
 static int luainterop_SetTempo(lua_State* l)
 {
     // Get arguments
@@ -260,7 +260,7 @@ static int luainterop_SetTempo(lua_State* l)
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: note_num Note number
 // Lua arg: volume Volume 0.0 => 1.0
-// Lua return: int status LUA/NEB
+// Lua return: int NEB_XX status
 static int luainterop_SendNote(lua_State* l)
 {
     // Get arguments
@@ -287,7 +287,7 @@ static int luainterop_SendNote(lua_State* l)
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: controller Specific controller 0 => 127
 // Lua arg: value Payload 0 => 127
-// Lua return: int status LUA/NEB
+// Lua return: int NEB_XX status
 static int luainterop_SendController(lua_State* l)
 {
     // Get arguments

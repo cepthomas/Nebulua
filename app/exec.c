@@ -1,4 +1,6 @@
 // system
+#include <windows.h>
+#include <stdio.h>
 #include <time.h>
 // lua
 #include "lua.h"
@@ -19,22 +21,15 @@
 
 //----------------------- Definitions -----------------------//
 
-
-// TODO1 Script lua_State access syncronization. 
-// CRITICAL_SECTION Not working, try:
-//https://learn.microsoft.com/en-us/windows/win32/sync/event-objects
-//https://learn.microsoft.com/en-us/windows/win32/sync/mutex-objects
-// https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects
-// Performance? https://stackoverflow.com/questions/853316/is-critical-section-always-faster
-//static CRITICAL_SECTION _critical_section;
-#define ENTER_CRITICAL_SECTION ;//EnterCriticalSection(&_critical_section)
-#define EXIT_CRITICAL_SECTION  ;//LeaveCriticalSection(&_critical_section)
-
-
 #define CLI_BUFF_LEN    128
+#define ERR_BUFF_LEN    500
 #define MAX_CLI_ARGS     10
 #define MAX_CLI_ARG_LEN  32
 
+// Script lua_State access syncronization. 
+HANDLE ghMutex; 
+#define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE) //EnterCriticalSection(&_critical_section)
+#define EXIT_CRITICAL_SECTION ReleaseMutex(ghMutex) //LeaveCriticalSection(&_critical_section)
 
 //----------------------- Types -----------------------//
 
@@ -94,8 +89,8 @@ static char* _prompt = "$";
 // CLI buffer.
 static char _cli_buff[CLI_BUFF_LEN];
 
-//static char _last_log[500];
-static char _last_error[500];
+// Error handling.
+static char _last_error[ERR_BUFF_LEN];
 
 //----------------------- Vars - script ------------------------//
 
@@ -152,8 +147,13 @@ int exec_Main(const char* script_fn)
     logger_SetFilters(LVL_DEBUG);
     LOG_INFO("Logger is alive");
 
-    // Initialize the critical section. It is used to synchronize access to the lua context _l.
-    // ok = InitializeCriticalSectionAndSpinCount(&_critical_section, 0x00000400);
+    // Create a mutex with no initial owner.
+    ghMutex = CreateMutex(NULL, FALSE, NULL);
+    if (ghMutex == NULL)
+    {
+        snprintf(_last_error, ERR_BUFF_LEN, "CreateMutex() failed [%s].", script_fn);
+        EXEC_FAIL();
+    }
 
     // Lock access to lua context during init.
     ENTER_CRITICAL_SECTION;
@@ -193,9 +193,7 @@ int exec_Main(const char* script_fn)
     if (!ok) EXEC_FAIL();
 
     // Script setup.
-    stat = luainterop_Setup(_l, &iret);
-    ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
-    if (!ok) EXEC_FAIL();
+    int length = luainterop_Setup(_l, &iret);
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
@@ -218,9 +216,12 @@ init_done:
 
     ///// Finished. Clean up and go home. /////
     // DeleteCriticalSection(&_critical_section);
+    CloseHandle(ghMutex);
+
     ftimer_Run(0);
     ftimer_Destroy();
     devmgr_Destroy();
+
 
     if (_fperr != stdout) { fclose(_fperr); }
     cli_close();
@@ -301,7 +302,6 @@ int _DoCli(void)
 void _MidiClockHandler(double msec)
 {
     // Process events -- this is in an interrupt handler!
-    // msec is since last time.
     _last_msec = msec;
     int iret;
 
@@ -315,6 +315,56 @@ void _MidiClockHandler(double msec)
     }
     _position++;
 
+
+    // TODO1 need some of this stuff:
+    // if (_script is not null && chkPlay.Checked && !_needCompile)
+    // {
+    //     //_tan.Arm();
+    //     // Kick the script. Note: Need exception handling here to protect from user script errors.
+    //     _script.Step();
+    //     //if (_tan.Grab())
+    //     //{
+    //     //    _logger.Info($"NEB tan: {_tan.Mean}");
+    //     //}
+
+    //     bool anySolo = _channels.AnySolo();
+    //     // Process any sequence steps.
+    //     foreach (var ch in _channels.Values)
+    //     {
+    //         // Is it ok to play now?
+    //         bool play = ch.State == ChannelState.Solo || (ch.State == ChannelState.Normal && !anySolo);
+    //         if (play)
+    //         {
+    //             ch.DoStep(_stepTime.TotalSubbeats);
+    //         }
+    //     }
+    //     ///// Bump time.
+    //     _stepTime.Increment(1);
+    //     bool done = barBar.IncrementCurrent(1);
+    //     // Check for end of play. If no steps or not selected, free running mode so always keep going.
+    //     if (barBar.TimeDefs.Count > 1)
+    //     {
+    //         if (done)
+    //         {
+    //             _channels.Values.ForEach(ch => ch.Flush(_stepTime.TotalSubbeats));
+    //             ProcessPlay(PlayCommand.StopRewind);
+    //             KillAll(); // just in case
+    //         }
+    //     }
+    //     // else keep going
+    // }
+    //
+    /// <summary>
+    /// Execute any lingering transients and clear the collection.
+    /// </summary>
+    /// <param name="subbeat">After this time.</param>
+    // public void Flush(int subbeat)
+    // {
+    //  _transients.Where(t => t.Key >= subbeat).ForEach(t => t.Value.ForEach(evt => SendEvent(evt)));
+    //  _transients.Clear();
+    // }
+
+
     EXIT_CRITICAL_SECTION;
 }
 
@@ -323,7 +373,7 @@ void _MidiClockHandler(double msec)
 void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
     // Input midi event -- this is in an interrupt handler!
-    // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx
+    // http://msdn.microsoft.com/en-us/library/dd798458%28VS.85%29.aspx.
 
     int stat = NEB_OK;
     bool ok = true;
@@ -507,6 +557,7 @@ int _KillCmd(const cli_command_t* pcmd, int argc, char* argv[])
     {
         // TODO2 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
         // luainteropwork_SendController(chan_hnd, AllNotesOff=123, 0);
+        // Also Flush().
         stat = NEB_OK;
     }
 
@@ -524,7 +575,7 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         cli_printf("%s\n", nebcommon_FormatBarTime(_position));
         stat = NEB_OK;
     }
-    else if (argc == 2)
+    else if (argc == 2) // set
     {
         int position = nebcommon_ParseBarTime(argv[1]);
         if (position < 0)

@@ -25,7 +25,7 @@ local hin2  = neb.create_input_channel(dev_in2, 4)
 
 ------------------------- Vars ----------------------------------------
 
--- -- Local vars.
+-- Local vars.
 local master_vol = 0.8
 
 
@@ -34,11 +34,10 @@ local master_vol = 0.8
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    neb.log_info("initialization")
-    -- Do work.
+    neb.log_info("Is this thing on?")
     local length = neb.process_all(sequences, sections)
     neb.set_tempo(100)
-    return 0
+    return length
 end
 
 -----------------------------------------------------------------------------
@@ -186,4 +185,3 @@ sections =
         { hout2 = { bass_verse,  bass_verse,  bass_verse,  bass_verse } }
     }
 }
-

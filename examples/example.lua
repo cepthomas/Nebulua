@@ -67,7 +67,7 @@ function setup()
 
     neb.set_tempo(100)
 
-    return 0
+    return len
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
@@ -113,7 +113,7 @@ end
 
 -----------------------------------------------------------------------------
 -- Called from sequence.
-local function seq_func(bar, beat, sub)
+local function seq_func(tick)
     local note_num = math.random(0, #alg_scale)
     neb.send_note(hsynth, alg_scale[note_num], drum_vol, 8) --0.5)
 end

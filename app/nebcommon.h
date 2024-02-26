@@ -2,9 +2,9 @@
 #define NEBCOMMON_H
 
 // system
-#include <stdbool.h>
+// #include <stdbool.h>
 // lua
-#include "lua.h"
+// #include "lua.h"
 // cbot
 // application
 

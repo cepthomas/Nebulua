@@ -10,6 +10,11 @@
 
 extern "C"
 {
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+#include "luainterop.h"
 #include "nebcommon.h"
 #include "cbot.h"
 #include "devmgr.h"
@@ -156,6 +161,39 @@ UT_SUITE(CLI_MAIN, "Test cli functions.")
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
     UT_STR_EQUAL(_response_lines[1].c_str(), "invalid option: junk\n");
 
+    //for (std::vector<std::string>::iterator iter = _response_lines.begin(); iter != _response_lines.end(); ++iter)
+    //{
+    //    printf(iter->c_str());
+    //}
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+UT_SUITE(CLI_POSITION, "Test cli position functions.")
+{
+    int stat = 0;
+    int length = 0;
+
+    ///// Need to load a real file for position stuff.
+    lua_State* _l = luaL_newstate();
+    // Load std libraries.
+    luaL_openlibs(_l);
+    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
+    luainterop_Load(_l);
+    // Pop the table off the stack as it interferes with calling the module functions.
+    lua_pop(_l, 1);
+    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
+    stat = luaL_loadfile(_l, "script1.lua");
+    UT_EQUAL(stat, NEB_OK);
+    // Run the script to init everything.
+    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+    UT_EQUAL(stat, NEB_OK);
+    // Script setup.
+    stat = luainterop_Setup(_l, &length);
+    UT_EQUAL(stat, NEB_OK);
+    UT_GREATER(length, 0);
+
+    ///// Good to go now.
     _response_lines.clear();
     strncpy(_next_command, "position", MAX_LINE_LEN);
     stat = _DoCli();
@@ -178,7 +216,6 @@ UT_SUITE(CLI_MAIN, "Test cli functions.")
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 2);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    //TODO1 needs _length set
     UT_STR_EQUAL(_response_lines[1].c_str(), "203:2:6\n");
 
     _response_lines.clear();
@@ -189,10 +226,8 @@ UT_SUITE(CLI_MAIN, "Test cli functions.")
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
     UT_STR_EQUAL(_response_lines[1].c_str(), "invalid position: 111:9:6\n");
 
-    //for (std::vector<std::string>::iterator iter = _response_lines.begin(); iter != _response_lines.end(); ++iter)
-    //{
-    //    printf(iter->c_str());
-    //}
+    lua_close(_l);
+
     return 0;
 }
 

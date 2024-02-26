@@ -15,7 +15,7 @@ M.lua_export_funcs =
         host_func_name = "Setup",
         description = "Called to initialize Nebulator stuff.",
         -- no args
-        ret = { type = "I", description = "NEB_XX status" }
+        ret = { type = "I", description = "Total length of composition - 0 means no composition/free-form" }
     },
 
     {
