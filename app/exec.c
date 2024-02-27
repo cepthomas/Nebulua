@@ -57,7 +57,7 @@ typedef struct cli_command
 } cli_command_t;
 
 
-//----------------------- Vars - app ---------------------------//
+//----------------------- Vars --------------------------------//
 
 // The main Lua thread.
 static lua_State* _l;
@@ -74,7 +74,25 @@ static bool _app_running = true;
 // Last tick time.
 static double _last_msec = 0.0;
 
-// Monitor midi input.
+// Current tempo in bpm.
+static int _tempo = 100;
+
+// Where are we in steps.
+static int _current_tick = 0;
+
+// Length of composition in ticks.
+static int _length = 0;
+
+// Keep going. TODO2 cli implementation for all these.
+static bool _do_loop = false;
+
+// Loop start tick. -1 means start of composition.
+static int _loop_start = -1;
+
+// Loop end tick. -1 means end of composition.
+static int _loop_end = -1;
+
+// Monitor midi input. TODO2 implement both.
 static bool _mon_input = false;
 
 // Monitor midi output.
@@ -91,17 +109,6 @@ static char _cli_buff[CLI_BUFF_LEN];
 
 // Error handling.
 static char _last_error[ERR_BUFF_LEN];
-
-//----------------------- Vars - script ------------------------//
-
-// Current tempo in bpm.
-static int _tempo = 100;
-
-// Current sub.
-static int _position = 0;
-
-// Length of composition in ticks.
-static int _length = 0;
 
 
 //---------------------- Functions TODO2 restore static------------------------//
@@ -184,12 +191,12 @@ int exec_Main(const char* script_fn)
     ok = _EvalStatus(stat, __LINE__, "Load script file failed [%s].", script_fn);
     if (!ok) EXEC_FAIL();
 
-    // Run the script to init everything.
+    // Run the script to initialize it.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     ok = _EvalStatus(stat, __LINE__, "Execute script failed [%s].", script_fn);
     if (!ok) EXEC_FAIL();
 
-    // Script setup.
+    // Script nebulua setup.
     stat = luainterop_Setup(_l, &_length);
     ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
     if (!ok) EXEC_FAIL();
@@ -205,23 +212,18 @@ int exec_Main(const char* script_fn)
         if (!ok) EXEC_FAIL();
     }
 
-
-
+////////////
 init_done:
     if (exit_code != 0)
     {
         LOG_ERROR("FATAL init error: %s", _last_error);
     }
 
-    ///// Finished. Clean up and go home. /////
+    ///// Finished. Clean up resources and go home. /////
     // DeleteCriticalSection(&_critical_section);
     CloseHandle(ghMutex);
-
-    ftimer_Run(0);
     ftimer_Destroy();
     devmgr_Destroy();
-
-
     if (_fperr != stdout) { fclose(_fperr); }
     cli_close();
     fclose(fplog);
@@ -301,71 +303,70 @@ int _DoCli(void)
 void _MidiClockHandler(double msec)
 {
     // Process events -- this is in an interrupt handler!
+
+    // Update time.
+    double elapsed = msec - _last_msec;
     _last_msec = msec;
     int stat;
     int ret = 0;
 
-    // Lock access to lua context.
-    ENTER_CRITICAL_SECTION;
 
-    int stat = luainterop_Step(_l, _position, &ret);
-    if (stat != NEB_OK)
+
+
+    if (_script_running)
     {
-        // TODO2 do something non-fatal?
+
+        // Do script.
+
+
+        // TODO2 Process solo/mute see nebulator. Needs cli and/or script function.
+
+
+
+
+        // Lock access to lua context.
+        ENTER_CRITICAL_SECTION;
+        // Read stopwatch.
+        int stat = luainterop_Step(_l, _current_tick, &ret);
+        // Read stopwatch and diff/stats.
+        EXIT_CRITICAL_SECTION;
+
+        bool ok = _EvalStatus(stat, __LINE__, "Step() failed [%s].", script_fn);
+        if (!ok)
+        {
+            // Stop everything.
+            ftimer_Run(0);
+            _script_running = false;
+            _current_tick = 0;
+            cli_printf("Stopped: %s\n", _last_error);
+        }
+        else
+        {
+            // Bump time and check.
+            int start = _loop_start == -1 ? 0 : _loop_start;
+            int end = _loop_end == -1 ? _length : _loop_end;
+            if (++_current_tick >= end) // done
+            {
+                // Keep going? else stop/rewind.
+                _script_running = _do_loop;
+
+                if (_do_loop)
+                {
+                    // Keep going.
+                    _current_tick = start;
+                }
+                else
+                {
+                    // Stop and rewind.
+                    _current_tick = start;
+
+                    // just in case
+                    _KillCmd(NULL, 0, NULL);
+
+                }
+            }
+        }
     }
-    _position++;
-
-
-    // TODO1 need some of this stuff:
-    // if (_script is not null && chkPlay.Checked && !_needCompile)
-    // {
-    //     //_tan.Arm();
-    //     // Kick the script. Note: Need exception handling here to protect from user script errors.
-    //     _script.Step();
-    //     //if (_tan.Grab())
-    //     //{
-    //     //    _logger.Info($"NEB tan: {_tan.Mean}");
-    //     //}
-
-    //     bool anySolo = _channels.AnySolo();
-    //     // Process any sequence steps.
-    //     foreach (var ch in _channels.Values)
-    //     {
-    //         // Is it ok to play now?
-    //         bool play = ch.State == ChannelState.Solo || (ch.State == ChannelState.Normal && !anySolo);
-    //         if (play)
-    //         {
-    //             ch.DoStep(_stepTime.TotalSubbeats);
-    //         }
-    //     }
-    //     ///// Bump time.
-    //     _stepTime.Increment(1);
-    //     bool done = barBar.IncrementCurrent(1);
-    //     // Check for end of play. If no steps or not selected, free running mode so always keep going.
-    //     if (barBar.TimeDefs.Count > 1)
-    //     {
-    //         if (done)
-    //         {
-    //             _channels.Values.ForEach(ch => ch.Flush(_stepTime.TotalSubbeats));
-    //             ProcessPlay(PlayCommand.StopRewind);
-    //             KillAll(); // just in case
-    //         }
-    //     }
-    //     // else keep going
-    // }
-    //
-    /// <summary>
-    /// Execute any lingering transients and clear the collection.
-    /// </summary>
-    /// <param name="subbeat">After this time.</param>
-    // public void Flush(int subbeat)
-    // {
-    //  _transients.Where(t => t.Key >= subbeat).ForEach(t => t.Value.ForEach(evt => SendEvent(evt)));
-    //  _transients.Clear();
-    // }
-
-
-    EXIT_CRITICAL_SECTION;
 }
 
 
@@ -507,6 +508,7 @@ int _ExitCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
+        _script_running = false;
         _app_running = false;
         stat = NEB_OK;
     }
@@ -555,10 +557,25 @@ int _KillCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
-        // TODO2 send kill to all midi outputs. Need all output devices from devmgr. Or ask script to do it?
-        // luainteropwork_SendController(chan_hnd, AllNotesOff=123, 0);
-        // Also Flush().
         stat = NEB_OK;
+
+        // Send kill to all midi outputs.
+        midi_device_t* dev = devmgr_GetOutputDevices(NULL);
+        while (dev != NULL)
+        {
+            for (int i = 0; i < NUM_MIDI_CHANNELS; i++)
+            {
+                int chan_hnd = devmgr_GetChannelHandle(dev, i);
+                luainteropwork_SendController(chan_hnd, 123, 0); // AllNotesOff=123
+            }
+            // next
+            dev = devmgr_GetOutputDevices(dev);
+        }
+
+        // Hard reset.
+        _script_running = false;
+        stat = luainterop_Setup(_l, &_length);
+        bool ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
     }
 
     return stat;
@@ -572,7 +589,7 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // get
     {
-        cli_printf("%s\n", nebcommon_FormatBarTime(_position));
+        cli_printf("%s\n", nebcommon_FormatBarTime(_current_tick));
         stat = NEB_OK;
     }
     else if (argc == 2) // set
@@ -584,8 +601,8 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            _position = position >= _length ? _length - 1 : position;
-            cli_printf("%s\n", nebcommon_FormatBarTime(_position)); // echo
+            _current_tick = position >= _length ? _length - 1 : position; //TODO2 check against loop ends?
+            cli_printf("%s\n", nebcommon_FormatBarTime(_current_tick)); // echo
             stat = NEB_OK;
         }
     }

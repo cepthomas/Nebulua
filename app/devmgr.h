@@ -7,7 +7,7 @@
 
 //---------------- Public API ----------------------//
 
-// Midi cap.
+// Application cap.
 #define NUM_MIDI_DEVICES 16
 
 // Midi cap per device.
@@ -59,6 +59,11 @@ midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn);
 /// @param[in] chan_hnd Channel handle.
 /// @return midi_device_t The device or NULL if invalid.
 midi_device_t* devmgr_GetDeviceFromChannelHandle(int chan_hnd);
+
+/// Iterate through the output devices.
+/// @param[in] iter Last value or NULL to start.
+/// @return midi_device_t The device or NULL if done.
+midi_device_t* devmgr_GetOutputDevices(midi_device_t* iter);
 
 /// Register channel for the device. Input/output devices.
 /// @param[in] pdev Device.

@@ -13,7 +13,7 @@ M.lua_export_funcs =
     {
         lua_func_name = "setup",
         host_func_name = "Setup",
-        description = "Called to initialize Nebulator stuff.",
+        description = "Call to initialize Nebulator and composition.",
         -- no args
         ret = { type = "I", description = "Total length of composition - 0 means no composition/free-form" }
     },

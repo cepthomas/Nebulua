@@ -69,7 +69,7 @@ function setup()
 
     neb.set_tempo(70)
 
-    return 0
+    return 0 -- free-form
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.

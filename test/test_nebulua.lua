@@ -46,92 +46,53 @@ function M.suite_parse_chunk(pn)
 
     -- Function.
     local func = function() end
-    steps = neb.parse_chunk( { "|        |    6-  |        |        |        | 9999   |  111   |        |", func } )
+    ok, steps = parse_chunk( { "|        |    6-  |        |        |        | 9999   |  111   |        |", func } )
     -- print('+++', ut.dump_table_string(steps, 'steps4'))
 
     -- Bad syntax.
---    steps = neb.parse_chunk( { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 } )
+    ok, steps = pcall(neb.parse_chunk, { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 } )
     -- print('+++', ut.dump_table_string(steps, 'steps5'))
 end
 
 
 -----------------------------------------------------------------------------
 function M.suite_process_script(pn)
-    -- Test loading script file.
+    -- Test loading script file. TODO1 examine all.
 
     -- Load test file in protected mode.
     scrfn = 'script1'
-    local ok, msg = pcall(require, scrfn)
-    pn.UT_TRUE(ok, string.format("Failed to load script: %s\n%s ", scrfn, msg))
+    local ok, scr = pcall(require, scrfn)
+    pn.UT_TRUE(ok, string.format("Failed to load script: %s\n%s ", scrfn, scr))
 
     -- Look at global script raw data.
     pn.UT_NOT_NIL(sequences)
     pn.UT_NOT_NIL(sections)
 
-    local len = neb.process_all(sequences, sections)
+    neb.init(sequences, sections)
 
     pn.UT_NOT_NIL(tempdbg.steps)
     pn.UT_NOT_NIL(tempdbg.sections)
 
     s = ut.dump_table_string(tempdbg.steps, 'tempdbg.steps')
     -- print('+++', s)
-    -- TODO1 examine contents
 
+    -- -- Run setup.
+    -- ok, length = pcall(setup)
+    -- pn.UT_TRUE(ok, string.format("Script function setup() failed:\n%s ", length))
+
+    -- -- Execute the script steps.
+    -- for i = 0, 100 do
+    --     api.current_tick = 1
+    --     ok, ret = pcall(step, i)
+    --     pn.UT_TRUE(ok, string.format("Script function step() failed:\n%s ", ret))
+    -- end
+
+    -- ok, ret = pcall(input_note, 10, 11, 0.3)
+    -- pn.UT_TRUE(ok, string.format("Script function input_note() failed:\n%s ", ret))
+
+    -- -- Examine collected data.
+    -- for _, d in ipairs(api.activity) do
 end
-
-
------------------------------------------------------------------------------
--- function M.suite_exec_script(pn) --  TODO1?
---     -- Test loading and executing script file.
-
---     -- Load test file in protected mode.
---     scrfn = 'script1'
---     local ok, msg = pcall(require, scrfn)
---     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n%s ", scrfn, msg))
-
---     -- Run setup.
---     ok, msg = pcall(setup)
---     pn.UT_TRUE(ok, string.format("Script function setup() failed:\n%s ", msg))
-
---     -- Execute the script steps.
---     for i = 0, 100 do
---         api.current_tick = 1
---         ok, msg = pcall(step, i)
---         pn.UT_TRUE(ok, string.format("Script function step() failed:\n%s ", msg))
---     end
-
---     -- Examine collected data. TODO1
---     for _, d in ipairs(api.activity) do
-
-
---     end
--- end
-
-
------------------------------------------------------------------------------
--- function M.suite_script_input(pn) --  TODO1?
-
---     -- Load test file in protected mode.
---     scrfn = 'script1'
---     local ok, msg = pcall(require, scrfn)
---     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n%s ", scrfn, msg))
-
---     ok, msg = pcall(setup)
---     pn.UT_TRUE(ok, string.format("Script function setup() failed:\n%s ", msg))
-
---     ok, msg = pcall(input_note, 10, 11, 0.3)
---     pn.UT_TRUE(ok, string.format("Script function input_note() failed:\n%s ", msg))
-
---     ok, msg = pcall(input_controller, 21, 22, 23)
---     pn.UT_TRUE(ok, string.format("Script function input_controller() failed:\n%s ", msg))
-
---     for i = 0, 100 do
---         ok, msg = pcall(step, i)
---         pn.UT_TRUE(ok, string.format("Script function step() failed:\n%s ", msg))
---         sleep(10)
---     end
-
--- end
 
 
 -----------------------------------------------------------------------------

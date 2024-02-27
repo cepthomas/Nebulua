@@ -20,7 +20,9 @@
 #define GET_CHAN_NUM(chan_hnd) (chan_hnd & 0xFF)
 
 // First half are input, second half are output.
-#define NUM_MIDI_DEVICES 16
+#define NUM_MIDI_DEVICES     16
+#define INPUT_DEVICE_START    0
+#define OUTPUT_DEVICE_START   NUM_MIDI_DEVICES / 2
 
 // Midi cap per device.
 #define NUM_MIDI_CHANNELS 16
@@ -49,7 +51,7 @@ int devmgr_Init(midi_input_handler_t midi_input_handler)
     UINT num_out = midiOutGetNumDevs();
 
     // Inputs.
-    if (midi_input_handler > 0 && num_in <= NUM_MIDI_DEVICES / 2)
+    if (midi_input_handler > INPUT_DEVICE_START && num_in <= OUTPUT_DEVICE_START)
     {
         for (UINT i = 0; i < num_in; i++)
         {
@@ -71,11 +73,11 @@ int devmgr_Init(midi_input_handler_t midi_input_handler)
     }
 
     // Outputs.
-    if (num_out <= NUM_MIDI_DEVICES / 2)
+    if (num_out <= OUTPUT_DEVICE_START)
     {
         for (UINT i = 0; i < num_out; i++, i++)
         {
-            midi_device_t* pdev = _devices + NUM_MIDI_DEVICES / 2 + i;
+            midi_device_t* pdev = _devices + OUTPUT_DEVICE_START + i;
             // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midioutgetdevcaps
             MIDIOUTCAPS caps_out;
             MMRESULT mmres = midiOutGetDevCaps(i, &caps_out, sizeof(caps_out));
@@ -101,7 +103,7 @@ int devmgr_Destroy()
 {
     int stat = NEB_OK;
     
-    for (int i = 0; i < NUM_MIDI_DEVICES / 2; i++)
+    for (int i = 0; i < OUTPUT_DEVICE_START; i++)
     {
         if (_devices[i].handle > 0)
         {
@@ -110,7 +112,7 @@ int devmgr_Destroy()
         }
     }
     
-    for (int i = NUM_MIDI_DEVICES / 2; i < NUM_MIDI_DEVICES; i++)
+    for (int i = OUTPUT_DEVICE_START; i < NUM_MIDI_DEVICES; i++)
     {
         if (_devices[i].handle > 0)
         {
@@ -177,7 +179,7 @@ midi_device_t* devmgr_GetDeviceFromMidiHandle(HMIDIIN hMidiIn)
 
     if (hMidiIn > 0)
     {
-        for (int i = 0; i < NUM_MIDI_DEVICES / 2 && pdev == NULL; i++) // input only
+        for (int i = 0; i < OUTPUT_DEVICE_START && pdev == NULL; i++) // input only
         {
             if (_devices[i].handle == hMidiIn)
             {
@@ -201,7 +203,7 @@ midi_device_t* devmgr_GetDeviceFromChannelHandle(int chan_hnd)
     if (chan_hnd > 0 &&
         chan_num >= 1 &&
         chan_num <= NUM_MIDI_CHANNELS &&
-        dev_index > NUM_MIDI_DEVICES / 2 &&  // output only
+        dev_index > OUTPUT_DEVICE_START &&  // output only
         dev_index < NUM_MIDI_DEVICES)
     {
         if( _devices[dev_index].handle > 0 && _devices[dev_index].channels[chan_num - 1])
@@ -234,6 +236,40 @@ midi_device_t* devmgr_GetDeviceFromName(const char* sys_dev_name)
 
 
 //--------------------------------------------------------//
+midi_device_t* devmgr_GetOutputDevices(midi_device_t* iter)
+{
+    midi_device_t* ret = NULL;
+
+    if (iter == NULL || iter <= _devices || iter >= _devices + NUM_MIDI_DEVICES)
+    {
+        // Find first.
+        for (int i = OUTPUT_DEVICE_START; i < NUM_MIDI_DEVICES; i++)
+        {
+            if (_devices[i].handle > INVALID_DEV)
+            {
+                ret = _devices + i;
+                break;
+            }
+        }
+    }
+    else
+    {
+        iter += 1;
+        while (iter < _devices + NUM_MIDI_DEVICES)
+        {
+            if (iter->handle > INVALID_DEV)
+            {
+                ret = _devices + i;
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
+
+//--------------------------------------------------------//
 int devmgr_GetChannelNumber(int chan_hnd)
 {
     int chan_num = GET_CHAN_NUM(chan_hnd);
@@ -254,11 +290,11 @@ int devmgr_OpenMidi(midi_device_t* pdev)
         {
             if (pdev == _devices + i && pdev->handle == INACTIVE_DEV) // Open it if not already.
             {
-                if (i >= NUM_MIDI_DEVICES / 2) // output
+                if (i >= OUTPUT_DEVICE_START) // output
                 {
                     // https://learn.microsoft.com/en-us/windows/win32/api/mmeapi/nf-mmeapi-midioutopen
                     HMIDIOUT hmidi_out;
-                    mmres = midiOutOpen(&hmidi_out, (i - NUM_MIDI_DEVICES / 2), 0, 0, 0);
+                    mmres = midiOutOpen(&hmidi_out, (i - OUTPUT_DEVICE_START), 0, 0, 0);
                     if (mmres == MMSYSERR_NOERROR)
                     {
                         // Save the device info.
@@ -298,7 +334,7 @@ void devmgr_Dump(FILE* fout)
     for (int i = 0; i < NUM_MIDI_DEVICES; i++)
     {
         midi_device_t* pdev = _devices + i;
-        const char* dir = i >= NUM_MIDI_DEVICES / 2 ? "Output" : "Input";
+        const char* dir = i >= OUTPUT_DEVICE_START ? "Output" : "Input";
 
         fprintf(fout, "Midi %s %d:  name:%s handle:%p channels: ", dir, i, pdev->sys_dev_name, pdev->handle);
         for (int c = 0; c < NUM_MIDI_CHANNELS; c++)

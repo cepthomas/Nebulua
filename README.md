@@ -44,7 +44,8 @@ not: int dev_id -
     int bar (absolute)
     int beat (in bar)
     int sub (in beat) - "musical"
-    int tick (absolute order - maybe in sequence/section/composition) - same size as sub
+    int subs ??
+    int tick (absolute time - maybe in sequence/section/composition) - same size as sub
 
 Script defs:
    BAR is 0->N, BEAT is 0->neb.BEATS_PER_BAR-1, SUB is 0->neb.SUBS_PER_BEAT-1

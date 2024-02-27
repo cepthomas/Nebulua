@@ -55,30 +55,22 @@ local mtom = drum.HiMidTom
 --------------------- Called from core -----------------------------------
 
 -----------------------------------------------------------------------------
--- Init stuff.
+-- Init stuff. Required function.
 function setup()
     neb.log_info("example initialization")
     math.randomseed(os.time())
-
-    -- Load her up.
-    -- local steps = {}
-
-    local len = neb.process_all(sequences, sections)
-
-    neb.set_tempo(100)
-
-    return len
+    neb.set_tempo(88)
+    return neb.init(sequences, sections) -- required if using composition oherwise return 0
 
 -----------------------------------------------------------------------------
--- Main loop - called every mmtimer increment.
+-- Main loop - called every mmtimer increment. Required function.
 function step(tick)
-    -- boing(60)
-    t = bt.BT(tick)
-
     -- Main work.
-    neb.do_step(tick)
+    neb.process_step(tick) -- required if using composition
 
-    -- Selective work.
+    -- Other work.
+    boing(60)
+    t = bt.BT(tick)
     if t.get_beat() == 0 and t.get_sub() == 0 then
         neb.send_controller(hsynth, ctrl.Pan, 90)
         -- or...

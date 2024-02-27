@@ -3,7 +3,7 @@
 
 
 local bt = require("bar_time")
-local neb = require("nebulua") -- lua api
+local neb = require("nebulua") -- api
 
 
 neb.log_info("=============== go go go =======================")
@@ -32,19 +32,17 @@ local master_vol = 0.8
 --------------------- Called from C core -----------------------------------
 
 -----------------------------------------------------------------------------
--- Init stuff.
+-- Init stuff. Required function.
 function setup()
     neb.log_info("Is this thing on?")
-    local length = neb.process_all(sequences, sections)
-    neb.set_tempo(100)
-    return length
+    neb.set_tempo(95)
+    return neb.init(sequences, sections) -- required if using composition oherwise return 0
 end
 
 -----------------------------------------------------------------------------
--- Main loop - called every mmtimer increment.
+-- Main loop - called every mmtimer increment. Required function.
 function step(tick)
-    -- Main work.
-    neb.do_step(tick)
+    neb.process_step(tick) -- required if using composition
 
     t = BT(tick)
 
@@ -59,7 +57,7 @@ function step(tick)
 end
 
 -----------------------------------------------------------------------------
--- Handler for input note events.
+-- Handler for input note events. Optional.
 function input_note(chan_hnd, note_num, volume)
     local s = string.format("input_note: %d %d %f", chan_hnd, note_num, volume)
     neb.log_info(s)
@@ -70,24 +68,24 @@ function input_note(chan_hnd, note_num, volume)
 end
 
 -----------------------------------------------------------------------------
--- Handler for input controller events.
+-- Handler for input controller events. Optional.
 function input_controller(chan_hnd, controller, value)
     local s = string.format("input_controller: %d %d %d", chan_hnd, controller, value)
     neb.log_info(s)
 end
 
------------------------ User lua functions -------------------------
+----------------------- Custom user functions -------------------------
 
 -----------------------------------------------------------------------------
 -- Called from sequence.
-local function seq_func(tick)
+local function my_seq_func(tick)
     local note_num = math.random(0, #alg_scale)
     neb.send_note(hout1, alg_scale[note_num], 0.7, 1)
 end
 
 -----------------------------------------------------------------------------
 -- Called from section.
-function section_func(tick)
+function my_section_func(tick)
     -- do something
 end
 
@@ -143,7 +141,7 @@ sequences =
     {
         -- |........|........|........|........|........|........|........|........|
         { "|6-      |        |        |        |        |        |        |        |", "F4" },
-        { "|    5-  |        |        |        |        |        |        |        |", seq_func },
+        { "|    5-  |        |        |        |        |        |        |        |", my_seq_func },
         { "|        |6-      |        |        |        |        |        |        |", "C4" },
         { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
     },

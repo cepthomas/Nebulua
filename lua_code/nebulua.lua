@@ -1,9 +1,9 @@
 
--- Core generic functions for this app. Essentially the script api.
+-- Internal functions the script can call - essentially the script api.
+-- Impedance matching between C and Lua. Hides or translates the raw C api.
 -- Manages note collections as described by the composition.
--- Hides or translates the raw C api.
 
-local api = require("host_api") -- C api
+local api = require("host_api")
 local st = require("step_types")
 local md = require("midi_defs")
 local mu = require("music_defs")
@@ -12,45 +12,8 @@ require('neb_common')
 
 local M = {}
 
-local _current_tick = 0
-
-
 -----------------------------------------------------------------------------
--- Impedance matching between C and Lua.
-
--- Log functions. Magic numbers from C code.
-function M.log_error(msg) api.log(4, msg) end
-function M.log_info(msg)  api.log(3, msg) end
-function M.log_debug(msg) api.log(2, msg) end
-function M.log_trace(msg) api.log(1, msg) end
-
--- These go straight through so just thunk the C api.
-M.create_input_channel = api.create_input_channel
-M.create_output_channel = api.create_output_channel
-M.set_tempo = api.set_tempo
--- M.send_note = api.send_note
-M.send_controller = api.send_controller
-
--- Send note. If it is note on, chase the corresponding note off.
-function M.send_note(chan_hnd, note_num, volume, dur)
-    if volume > 0 then -- noteon
-       if dur == 0 then dur = 1 end -- (for drum/hit)
-       -- send note_on now
-       api.send_note(chan_hnd, note_num, volume)
-       -- stash future noteoff
-       table.insert(_transients, StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0))
-    else -- noteoff
-       -- send note_off now
-       api.send_note(chan_hnd, note_num, 0)
-
-    -- if volume is > 0 
-    --    if dur is 0, dur = 1 (for drum/hit)
-    --    send note_on now
-    --    add StepNote(now+dur, chan_hnd, note_num, 0, 0)  to _transients
-    -- else -- off
-    --    send note_off now
-end
-
+-----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
 -- Steps in sequences.
@@ -79,10 +42,10 @@ local _seq_steps = {}
 local _sections = {}
 
 
--- Things that are executed once and disappear: NoteOffs, script send now. Key is the internal subbeat/time.
+-- Things that are executed once and disappear: NoteOffs, script send now. Key is the tick.
 -- {
---     sub_1 = { StepX, StepX, ... },
---     sub_2 = { StepX, StepX, ... },
+--     tick_1 = { StepX, StepX, ... },
+--     tick_2 = { StepX, StepX, ... },
 --     ...
 -- },
 local _transients = {}
@@ -93,18 +56,86 @@ local _length = 0
 -- function M.get_length() return _length end
 -- function M.set_length(l) _length = l end
 
+local _current_tick = 0
 
------------------------------------------------------------------------------
+
 tempdbg = { steps = _seq_steps, sections = _sections } -- TODO2 Debug stuff - remove
------------------------------------------------------------------------------
 
-    
+
+-----------------------------------------------------------------------------
+-- Log functions. Magic numbers from C code.
+function M.log_error(msg) api.log(4, msg) end
+function M.log_info(msg)  api.log(3, msg) end
+function M.log_debug(msg) api.log(2, msg) end
+function M.log_trace(msg) api.log(1, msg) end
+
+
+-----------------------------------------------------------------------------
+-- These go straight through so just thunk the C api.
+M.create_input_channel = api.create_input_channel
+M.create_output_channel = api.create_output_channel
+M.set_tempo = api.set_tempo
+M.send_controller = api.send_controller
+
+
+-----------------------------------------------------------------------------
+-- Send note. Manages corresponding note off.
+function M.send_note(chan_hnd, note_num, volume, dur)
+    if volume > 0 then -- noteon
+       if dur == 0 then dur = 1 end -- (for drum/hit)
+       -- send note_on now
+       api.send_note(chan_hnd, note_num, volume)
+       -- chase with noteoff
+       noteoff = StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0)
+       table.insert(_transients, noteoff)
+    else -- noteoff
+       -- send note_off now
+       api.send_note(chan_hnd, note_num, 0)
+end
+
+
+-----------------------------------------------------------------------------
+--- Process notes due now.
+-- @param tick desc
+-- @return status
+function M.process_step(tick)
+    _current_tick = tick
+
+    -- Composition steps.
+    local steps = _seq_steps[tick] -- now
+    if steps ~= nil then
+        for _, step in ipairs(steps) do
+            if step.step_type == STEP_NOTE then
+               api.send_note(step.chan_hnd, step.note_num, step.volume)
+            elseif step.step_type == STEP_CONTROLLER then
+                api.send_controller(step.chan_hnd, step.controller, step.value)
+            elseif step.step_type == STEP_FUNCTION then
+                step.func(_current_tick)
+            end
+        end
+    end
+
+    -- Transients, mainly note off.
+    steps = _transients[tick] -- now
+    if steps ~= nil then
+        for _, step in ipairs(steps) do
+            if step.step_type == STEP_NOTE then
+               api.send_note(step.chan_hnd, step.note_num, 0)
+            end
+        end
+        table.remove(_transients, tick)
+    end
+end
+
+
 -----------------------------------------------------------------------------
 --- Process all sequences into discrete steps. Sections are stored as is.
 -- @param sequences table user sequence specs
 -- @param sections table user section specs
--- @return total length in subs.
-function M.process_all(sequences, sections)
+-- @return total length in ticks.
+function M.init(sequences, sections)
+    _seq_steps.clear()
+    _transients.clear()
 
     for seq_name, seq_chunks in ipairs(sequences) do
         -- test types?
@@ -137,11 +168,9 @@ function M.process_all(sequences, sections)
     -- Put in time order.
     table.sort(_seq_steps, function (left, right) return left.sub < right.sub end)
 
-
     -- Process sections. Calculate length. TODO1
     _sections = sections
     _length = 100
-    
     return _length
 end
 
@@ -219,9 +248,6 @@ function M.parse_chunk(chunk) --TODO2 should be local
                 error(string.format("Invalid \'-\'' in pattern string: %s", chunk[1]), 2)
             end
         elseif cnum >= 1 and cnum <= 9 then
-
--- dbg.assert(false, 'howdy')
-
             -- A new note starting.
             -- Do we need to end the current note?
             if current_vol > 0 then
@@ -231,7 +257,6 @@ function M.parse_chunk(chunk) --TODO2 should be local
             current_vol = cnum
             start_offset = i - 1
         elseif c == ' ' or c == '.' then
--- dbg()
             -- No sound.
             -- Do we need to end the current note?
             if current_vol > 0 then
@@ -239,7 +264,6 @@ function M.parse_chunk(chunk) --TODO2 should be local
             end
             current_vol = 0
         else
--- dbg()
             -- Invalid char.
             error(string.format("Invalid char %c in pattern string: %s", c, chunk[1]), 2)
         end

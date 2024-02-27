@@ -19,7 +19,7 @@
 
 //---------------- Call lua functions from host -------------//
 
-/// Lua export function: Called to initialize Nebulator stuff.
+/// Lua export function: Call to initialize Nebulator and composition.
 /// @param[in] l Internal lua state.
 /// @param[out] int* Total length of composition - 0 means no composition/free-form
 /// @return status

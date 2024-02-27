@@ -34,7 +34,7 @@ int luainteropwork_SetTempo(int bpm)
     {
         double sec_per_beat = 60.0 / bpm;
         double msec_per_sub = 1000 * sec_per_beat / SUBS_PER_BEAT;
-        int period = msec_per_sub > 1.0 ? (int)round(msec_per_sub) : 1;
+        double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
 
         ftimer_Run(period);
         stat = NEB_OK;
