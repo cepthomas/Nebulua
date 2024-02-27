@@ -59,7 +59,7 @@ local _length = 0
 local _current_tick = 0
 
 
-tempdbg = { steps = _seq_steps, sections = _sections } -- TODO2 Debug stuff - remove
+tempdbg = { steps = _seq_steps, sections = _sections } -- TODO1 Debug stuff - remove
 
 
 -----------------------------------------------------------------------------

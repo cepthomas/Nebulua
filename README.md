@@ -9,6 +9,9 @@
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 
 
+
+char buff[MAX_STRING]; // MAX_STRING kinda klunky.
+
 ## timing
 Midi DeltaTicksPerQuarterNote aka sub parts per beat/qtr_note = 8 = 32nd note resolution
 Gives 32nd note resolution.

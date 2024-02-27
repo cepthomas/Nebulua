@@ -46,7 +46,7 @@ typedef struct cli_command
     const char* long_name;
     // If you don't.
     const char short_name;
-    // TODO2 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.
+    // FUTURE Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.
     const char immediate_key;
     // Free text for command description.
     const char* info;
@@ -601,7 +601,7 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            _current_tick = position >= _length ? _length - 1 : position; //TODO2 check against loop ends?
+            _current_tick = position >= _length ? _length - 1 : position; //TODO1 check against loop ends?
             cli_printf("%s\n", nebcommon_FormatBarTime(_current_tick)); // echo
             stat = NEB_OK;
         }
