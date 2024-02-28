@@ -91,6 +91,7 @@ function M.send_note(chan_hnd, note_num, volume, dur)
     else -- noteoff
        -- send note_off now
        api.send_note(chan_hnd, note_num, 0)
+   end
 end
 
 
@@ -134,8 +135,8 @@ end
 -- @param sections table user section specs
 -- @return total length in ticks.
 function M.init(sequences, sections)
-    _seq_steps.clear()
-    _transients.clear()
+    _seq_steps = {}
+    _transients = {}
 
     for seq_name, seq_chunks in ipairs(sequences) do
         -- test types?
@@ -210,8 +211,8 @@ function M.parse_chunk(chunk) --TODO2 should be local
         local when = start_offset
         local si = nil
 
-        if func then -- func
-            si = StepFunction(when, 0, vol, func)
+        if func ~= nil then -- func
+            si = StepFunction(when, func)
             if si.err == nil then
                 table.insert(steps, si)
             else

@@ -72,7 +72,7 @@ end
 
 
 -----------------------------------------------------------------------------
-function StepFunction(tick, chan_hnd, volume, func)
+function StepFunction(tick, func)
     local d = {}
     d.step_type = STEP_FUNCTION
     d.err = nil
@@ -93,7 +93,7 @@ function StepFunction(tick, chan_hnd, volume, func)
 
     setmetatable(d,
     {
-        __tostring = function(self) return self.err or string.format('%05d -- FUNCTION', self.tick) end
+        __tostring = function(self) return self.err or string.format('%05d FUNCTION', self.tick) end
         -- __tostring = function(self) return self.err or string.format('%05d %d FUNCTION %.1f', self.tick, self.chan_hnd, self.volume) end
     })
 

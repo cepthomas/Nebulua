@@ -33,21 +33,32 @@ end
 function M.suite_parse_chunk(pn)
 
     -- Note number.
-    steps = neb.parse_chunk( { "|1       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 } )
+    local steps = neb.parse_chunk( { "|1       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 } )
     -- print('+++', ut.dump_table_string(steps, 'steps1'))
+    pn.UT_EQUAL(#steps, 16)
+    step = steps[6]
+    pn.UT_EQUAL(step.step_type, STEP_NOTE)
+    pn.UT_EQUAL(step.tick, 24)
+    pn.UT_EQUAL(step.chan_hnd, 0)
+    pn.UT_EQUAL(step.note_num, 89)
+    pn.UT_EQUAL(step.volume, 0.4)
+    pn.UT_EQUAL(step.duration, 1)
 
     -- Note name.
     steps = neb.parse_chunk( { "|7   7   |        |        |        |    4---|---     |        |        |", "C2" } )
     -- print('+++', ut.dump_table_string(steps, 'steps2'))
+    pn.UT_EQUAL(#steps, 3)
 
     -- Chord.
     steps = neb.parse_chunk( { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" } )
     -- print('+++', ut.dump_table_string(steps, 'steps3'))
+    pn.UT_EQUAL(#steps, 16)
 
     -- Function.
     local func = function() end
-    ok, steps = parse_chunk( { "|        |    6-  |        |        |        | 9999   |  111   |        |", func } )
+    steps = neb.parse_chunk( { "|        |    6-  |        |        |        | 9999   |  111   |        |", func } )
     -- print('+++', ut.dump_table_string(steps, 'steps4'))
+    pn.UT_EQUAL(#steps, 8)
 
     -- Bad syntax.
     ok, steps = pcall(neb.parse_chunk, { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 } )
@@ -60,7 +71,7 @@ function M.suite_process_script(pn)
     -- Test loading script file. TODO1 examine all.
 
     -- Load test file in protected mode.
-    scrfn = 'script1'
+    local scrfn = 'script1'
     local ok, scr = pcall(require, scrfn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n%s ", scrfn, scr))
 
@@ -73,7 +84,7 @@ function M.suite_process_script(pn)
     pn.UT_NOT_NIL(tempdbg.steps)
     pn.UT_NOT_NIL(tempdbg.sections)
 
-    s = ut.dump_table_string(tempdbg.steps, 'tempdbg.steps')
+    local s = ut.dump_table_string(tempdbg.steps, 'tempdbg.steps')
     -- print('+++', s)
 
     -- -- Run setup.
@@ -99,7 +110,7 @@ end
 function M.suite_step_info(pn)
     -- Test all functions in step_types.lua
 
-    n = StepNote(1234, 99, 101, 0.4, 10)
+    local n = StepNote(1234, 99, 101, 0.4, 10)
     pn.UT_NIL(n.err)
     pn.UT_STR_EQUAL(tostring(n), "01234 99 NOTE 101 0.4 10")
 
@@ -107,23 +118,19 @@ function M.suite_step_info(pn)
     pn.UT_NOT_NIL(n.err)
     pn.UT_STR_EQUAL(tostring(n), "Invalid integer tick: 100001")
 
-    c = StepController(344, 37, 88, 55)
+    local c = StepController(344, 37, 88, 55)
     pn.UT_NIL(c.err)
     pn.UT_STR_EQUAL(tostring(c), "00344 37 CONTROLLER 88 55")
 
-    c = StepController(344, 55, 260, 23)
+    local c = StepController(344, 55, 260, 23)
     pn.UT_NOT_NIL(c.err)
     pn.UT_STR_EQUAL(tostring(c), "Invalid integer controller: 260")
 
-    function stub() end
+    local function stub() end
 
-    f = StepFunction(122, 66, 0.5, stub)
+    local f = StepFunction(122, stub)
     pn.UT_NIL(f.err)
-    pn.UT_STR_EQUAL(tostring(f), "00122 66 FUNCTION 0.5")
-
-    f = StepFunction(122, 333, 0.6, stub)
-    pn.UT_NOT_NIL(f.err)
-    pn.UT_STR_EQUAL(tostring(f), "Invalid integer chan_hnd: 333")
+    pn.UT_STR_EQUAL(tostring(f), "00122 FUNCTION")
 end
 
 

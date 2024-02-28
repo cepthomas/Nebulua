@@ -83,7 +83,7 @@ static int _current_tick = 0;
 // Length of composition in ticks.
 static int _length = 0;
 
-// Keep going. TODO2 cli implementation for all these.
+// Keep going. TODO2 cli implementation for all these. set, reset
 static bool _do_loop = false;
 
 // Loop start tick. -1 means start of composition.
@@ -601,7 +601,12 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
         }
         else
         {
-            _current_tick = position >= _length ? _length - 1 : position; //TODO1 check against loop ends?
+            // Limit range maybe.
+            int start = _loop_start == -1 ? 0 : _loop_start;
+            int end = _loop_end == -1 ? _length : _loop_end;
+            position = mathutils_Constrain(position, start, end);
+
+            _current_tick = position >= _length ? _length - 1 : position;
             cli_printf("%s\n", nebcommon_FormatBarTime(_current_tick)); // echo
             stat = NEB_OK;
         }
