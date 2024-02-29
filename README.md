@@ -38,7 +38,7 @@ int chan_num
 int dev_index - internal index into device table
 char* dev_name - from system
 not: int dev_id - 
-    int chan_hnd (dev_index << 8 | chan_num)
+    int chan_hnd (16bit: dev_index << 8 | chan_num)
     int controller (name - midi_defs)
     int value (controller payload)
     int note_num (0-127)

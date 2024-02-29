@@ -19,9 +19,9 @@ local dev_out2 = "out2"
 
 -- Channels
 local hnd_instrument1 = neb.create_output_channel(dev_out1, 1, 33)
-local hnd_instrument2 = neb.create_output_channel(dev_out2, 2, 44)
+local hnd_instrument2 = neb.create_output_channel(dev_out2, 4, 44)
 local hnd_in1  = neb.create_input_channel(dev_in1, 3)
-local hnd_in2  = neb.create_input_channel(dev_in2, 4)
+local hnd_in2  = neb.create_input_channel(dev_in2, 11)
 
 
 ------------------------- Vars ----------------------------------------
@@ -44,6 +44,7 @@ end
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment. Required function.
 function step(tick)
+
     neb.process_step(tick) -- required if using composition
 
     t = BT(tick)
@@ -56,12 +57,6 @@ function step(tick)
     if t.beat == 1 and t.sub == 4 then
         neb.send_controller(hinstrument2,  60, 61)
     end
-
-
-    -- if t.bar == 0 and t.beat == 0 and t.sub == 0 then
-    --     play_sequence(tick, hnd_instrument1, keys_verse, )
-    -- end
-
 end
 
 -----------------------------------------------------------------------------
@@ -113,97 +108,89 @@ end
 
 ------------------------- Composition ---------------------------------------
 
-sequences =
+--[[
+Each section is 8 beats.
+Each sequence is 4 sections => 32 beats.
+A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences.
+
+If each sequence has average 8 notes => total of 320 notes per instrument.
+A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences => 320 notes.
+A "typical" sone would have about 4000 on/off events.
+]]
+
+
+-- Sequences --
+
+drums_verse =
 {
-    -- example_seq = -- neb.SUBS_PER_BEAT = 8
-    -- {
-    --     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
-    --     { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    -- },
-
-
-
-    --[[
-    Each section is 8 beats.
-    Each sequence is 4 sections => 32 beats.
-    A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences.
-
-    If each sequence has average 8 notes => total of 320 notes per instrument.
-    A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences => 320 notes.
-    A "typical" sone would have about 4000 on/off events.
-
-    ]]
-
-
-    -- Each section is 8 beats.
-
-    drums_verse =
-    {
-        -- |........|........|........|........|........|........|........|........|
-        { "|8       |        |8       |        |8       |        |8       |        |", 10 },
-        { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
-        { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
-    },
-
-    drums_chorus =
-    {
-        -- |........|........|........|........|........|........|........|........|
-        { "|6       |        |6       |        |6       |        |6       |        |", 10 },
-        { "|        |7 7     |        |7 7     |        |7 7     |        |        |", 13 },
-        { "|        |    4   |        |        |        |    4   |        |        |", 14 },
-        { "|        |        |        |        |        |        |        |8       |", 15 },
-    },
-
-    keys_verse =
-    {
-        -- |........|........|........|........|........|........|........|........|
-        { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-        { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
-    },
-
-    keys_chorus =
-    {
-        -- |........|........|........|........|........|........|........|........|
-        { "|6-      |        |        |        |        |        |        |        |", "F4" },
-        { "|    5-  |        |        |        |        |        |        |        |", my_seq_func },
-        { "|        |6-      |        |        |        |        |        |        |", "C4" },
-        { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
-    },
-
-    bass_verse =
-    {
-        -- |........|........|........|........|........|........|........|........|
-        { "|7   7   |        |        |        |        |        |        |        |", "C2" },
-        { "|        |        |        |    7   |        |        |        |        |", "E2" },
-        { "|        |        |        |        |        |        |        |    7   |", "A#2" },
-    },
-
-    bass_chorus =
-    {
-        -- |........|........|........|........|........|........|........|........|
-        { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
-    },
+    -- |........|........|........|........|........|........|........|........|
+    { "|8       |        |8       |        |8       |        |8       |        |", 10 },
+    { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
+    { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
 }
+
+drums_chorus =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|6       |        |6       |        |6       |        |6       |        |", 10 },
+    { "|        |7 7     |        |7 7     |        |7 7     |        |        |", 13 },
+    { "|        |    4   |        |        |        |    4   |        |        |", 14 },
+    { "|        |        |        |        |        |        |        |8       |", 15 },
+}
+
+keys_verse =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
+}
+
+keys_chorus =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|6-      |        |        |        |        |        |        |        |", "F4" },
+    { "|    5-  |        |        |        |        |        |        |        |", my_seq_func },
+    { "|        |6-      |        |        |        |        |        |        |", "C4" },
+    { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
+}
+
+bass_verse =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|7   7   |        |        |        |        |        |        |        |", "C2" },
+    { "|        |        |        |    7   |        |        |        |        |", "E2" },
+    { "|        |        |        |        |        |        |        |    7   |", "A#2" },
+}
+
+bass_chorus =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
+}
+
+-- Fill space. Can't use nil.
+empty = {}
 
 
 -----------------------------------------------------------------------------
+
 sections =
 {
-    beginning =
     {
-        { hnd_instrument1, nil,         keys_verse,    keys_verse,  keys_verse },
-        { hnd_instrument2, bass_verse,  bass_verse,    nil,         bass_verse }
+        name = "beginning",
+        { hnd_instrument1, empty,       keys_verse,    keys_verse,  keys_verse },
+        { hnd_instrument2, bass_verse,  bass_verse,    empty,       bass_verse }
     },
 
-    middle =
     {
-        { hnd_instrument1, nil,          keys_chorus,  keys_chorus,  keys_chorus },
+        name = "middle",
+        { hnd_instrument1, empty,        keys_chorus,  keys_chorus,  keys_chorus },
         { hnd_instrument2, bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus }
     },
 
-    ending =
     {
-        { hnd_instrument1, keys_verse,    keys_verse,  keys_verse,   nil        },
+        name = "ending",
+        { hnd_instrument1, keys_verse,    keys_verse,  keys_verse,   empty      },
         { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   bass_verse }
     }
 }

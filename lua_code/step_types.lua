@@ -10,6 +10,17 @@ STEP_NOTE = 1
 STEP_CONTROLLER = 2
 STEP_FUNCTION = 3
 
+
+local function _FormatChanHnd(chan_hnd)
+    local s = string.format("%d(I:%02x N:%02x)", chan_hnd, (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    return s
+end
+
+
+-- #define GET_DEV_INDEX(chan_hnd) ((chan_hnd >> 8) & 0xFF)
+-- #define GET_CHAN_NUM(chan_hnd) (chan_hnd & 0xFF)
+
+
 -----------------------------------------------------------------------------
 function StepNote(tick, chan_hnd, note_num, volume, duration)
     local d = {}
@@ -23,7 +34,7 @@ function StepNote(tick, chan_hnd, note_num, volume, duration)
 
     -- Validate.
     d.err = d.err or v.val_integer(d.tick, 0, MAX_TICK, 'tick')
-    d.err = d.err or v.val_integer(d.chan_hnd, 0, MAX_MIDI, 'chan_hnd')
+    d.err = d.err or v.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
     d.err = d.err or v.val_integer(d.note_num, 0, MAX_MIDI, 'note_num')
     d.err = d.err or v.val_number(d.volume, 0.0, 1.0, 'volume')
     d.err = d.err or v.val_integer(d.duration, 0, MAX_TICK, 'duration')
@@ -32,7 +43,7 @@ function StepNote(tick, chan_hnd, note_num, volume, duration)
     --     d.err = string.format("Invalid note: %s", d.err)
     -- end
 
-    d.format = function() return d.err or string.format('%05d %d NOTE %d %.1f %d', d.tick, d.chan_hnd, d.note_num, d.volume, d.duration) end
+    d.format = function() return d.err or string.format('%05d %s NOTE %d %.1f %d', d.tick, _FormatChanHnd(d.chan_hnd), d.note_num, d.volume, d.duration) end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
     return d
@@ -51,7 +62,7 @@ function StepController(tick, chan_hnd, controller, value)
     
     -- Validate.
     d.err = d.err or v.val_integer(d.tick, 0, MAX_TICK, 'tick')
-    d.err = d.err or v.val_integer(d.chan_hnd, 0, MAX_MIDI, 'chan_hnd')
+    d.err = d.err or v.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
     d.err = d.err or v.val_integer(d.controller, 0, MAX_MIDI, 'controller')
     d.err = d.err or v.val_integer(d.value, 0, MAX_MIDI, 'value')
 
@@ -59,7 +70,7 @@ function StepController(tick, chan_hnd, controller, value)
     --     d.err = string.format("Invalid controller: %s", d.err)
     -- end
 
-    d.format = function() return d.err or string.format('%05d %d CONTROLLER %d %d', d.tick, d.chan_hnd, d.controller, d.value) end
+    d.format = function() return d.err or string.format('%05d %s CONTROLLER %d %d', d.tick, _FormatChanHnd(d.chan_hnd), d.controller, d.value) end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
     return d
@@ -67,22 +78,26 @@ end
 
 
 -----------------------------------------------------------------------------
-function StepFunction(tick, func)
+function StepFunction(tick, chan_hnd, func, volume)
     local d = {}
     d.step_type = STEP_FUNCTION
     d.err = nil
     d.tick = tick
+    d.chan_hnd = chan_hnd
     d.func = func
+    d.volume = volume
 
     -- Validate.
     d.err = d.err or v.val_integer(d.tick, 0, MAX_TICK, 'tick')
+    d.err = d.err or v.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
     d.err = d.err or v.val_function(d.func, 0.0, 1.0, 'func')
+    d.err = d.err or v.val_number(d.volume, 0.0, 1.0, 'volume')
 
     -- if d.err ~= nil then
     --     d.err = string.format("Invalid function: %s", tostring(d.err))
     -- end
 
-    d.format = function() return d.err or string.format('%05d FUNCTION', d.tick) end
+    d.format = function() return d.err or string.format('%05d %s FUNCTION %.1f', d.tick, _FormatChanHnd(d.chan_hnd), d.volume) end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
     return d

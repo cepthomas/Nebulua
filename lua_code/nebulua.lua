@@ -17,13 +17,8 @@ local M = {}
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
--- Steps in sequences.
--- { seq_name_1 = { tick_1 = { StepX, StepX, ... }, tick_2 = { StepX, StepX, ... }, ... }, seq_name_2 = ..., }
-local _seq_steps = {}
-
--- Sequences in sections.
--- { section_name_1 = { { chan_hnd_1 = { seq_name_1,  seq_name_2, ... }, { chan_hnd_2 = { seq_name_3,  seq_name_4, ... }, ... }, section_name_2 = ..., }
-local _sections = {}
+-- All the coposition StepX. Key is tick/when.
+local _steps = {}
 
 -- Things that are executed once and disappear: NoteOffs, script send_note().
 -- { tick_1 = { StepX, StepX, ... }, tick_2 = ..., },
@@ -35,7 +30,8 @@ local _length = 0
 -- Where we be.
 local _current_tick = 0
 
-function _mole() return _seq_steps, _sections, _transients end
+
+function _mole() return _steps, _transients end -- TODO2 remove
 
 
 -----------------------------------------------------------------------------
@@ -52,6 +48,49 @@ M.create_input_channel = api.create_input_channel
 M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
+
+
+-----------------------------------------------------------------------------
+--- Process notes due now.
+-- @param tick desc
+-- @return status
+function M.process_step(tick)
+    _current_tick = tick
+
+    -- Composition steps.
+    local st = _steps[tick] -- now
+-- print(">>>", tick, st)
+-- print(">>>", tick, #_steps[tick], st)
+
+    if st ~= nil then
+        for _, step in ipairs(st) do
+
+-- print(">>>", step.format())
+
+            if step.step_type == STEP_NOTE then
+-- dbg()
+               api.send_note(step.chan_hnd, step.note_num, step.volume)
+            elseif step.step_type == STEP_CONTROLLER then
+                api.send_controller(step.chan_hnd, step.controller, step.value)
+            elseif step.step_type == STEP_FUNCTION then
+                step.func(_current_tick)
+            end
+        end
+    end
+
+    -- Transients, mainly noteoff.
+    st = _transients[tick] -- now
+    if st ~= nil then
+        for _, step in ipairs(st) do
+            if step.step_type == STEP_NOTE then
+               api.send_note(step.chan_hnd, step.note_num, 0)
+            end
+        end
+        table.remove(_transients, tick)
+    end
+
+    return 0
+end
 
 
 -----------------------------------------------------------------------------
@@ -72,141 +111,84 @@ end
 
 
 -----------------------------------------------------------------------------
---- Process notes due now.
--- @param tick desc
--- @return status
-function M.process_step(tick)
-    _current_tick = tick
-
-    -- Composition steps.
-    local steps = _seq_steps[tick] -- now
-    if steps ~= nil then
-        for _, step in ipairs(steps) do
-            if step.step_type == STEP_NOTE then
-               api.send_note(step.chan_hnd, step.note_num, step.volume)
-            elseif step.step_type == STEP_CONTROLLER then
-                api.send_controller(step.chan_hnd, step.controller, step.value)
-            elseif step.step_type == STEP_FUNCTION then
-                step.func(_current_tick)
-            end
-        end
-    end
-
-    -- Transients, mainly noteoff.
-    steps = _transients[tick] -- now
-    if steps ~= nil then
-        for _, step in ipairs(steps) do
-            if step.step_type == STEP_NOTE then
-               api.send_note(step.chan_hnd, step.note_num, 0)
-            end
-        end
-        table.remove(_transients, tick)
-    end
-
-    return 0
-end
-
-
------------------------------------------------------------------------------
---- Process all sequences into discrete steps. Sections are stored as is.
--- @param sequences table user sequence specs
+--- Process all sections into discrete steps.
 -- @param sections table user section specs
 -- @return total length in ticks.
-function M.init(sequences, sections)
+function M.init(sections)
     -- Hard reset.
-    _seq_steps = {}
+    _steps = {}
     _transients = {}
+    local num = 0
 
-    for seq_name, seq_chunks in pairs(sequences) do
-        local steps = {}
+    -- Absolute time for step calculation.
+    local abs_tick = 0
 
-        for _, seq_chunk in ipairs(seq_chunks) do
-            -- { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
-            local chunk_steps, seq_length = M.parse_chunk(seq_chunk)
-            if chunk_steps == nil then
-                error(string.format("Couldn't parse chunk: %s", seq_chunk), 2)
-            else -- save them
-                for c, st in ipairs(chunk_steps) do
-                    table.insert(steps, st)
+    for _, section in ipairs(sections) do
+        -- Sanity check.
+        if section.name == nil then error("Missing section name", 2) end
+        -- Save the start for markers.
+        section.start = abs_tick
+        local channel_max = 0
+
+        -- Iterate the contents.
+        for k, v in pairs(section) do
+            if k == "name" or k == "start" then
+                -- skip
+            elseif ut.is_table(v) then
+                -- Time offset for this channel events.
+                local tick = section.start
+
+                -- The sequences. Process each. First element is the channel.
+                local chan_hnd = 0
+                for i, seq in ipairs(v) do
+                    if i == 1 then
+                        chan_hnd = seq
+                    else
+                        for _, seq_chunk in ipairs(seq) do
+                            -- { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
+                            local chunk_steps, seq_length = M.parse_chunk(seq_chunk, chan_hnd, tick)
+                            if chunk_steps == nil then
+                                error(string.format("Couldn't parse chunk: %s", seq_chunk), 2)
+                            else -- save them
+                                for c, st in ipairs(chunk_steps) do
+
+                                    if _steps[st.tick] == nil then _steps[st.tick] = {} end
+                                    table.insert(_steps[st.tick], st)
+                                    num = num +1
+                                end
+                            end
+                            tick = tick + seq_length
+                        end
+                    end
                 end
+
+                -- Keep track of overall time.
+                channel_max = math.max(channel_max, tick)
+            else
+                error(string.format("Element [%s] is not a valid channel", tostring(v)), 2)
+                -- error(string.format("Key [%s] is not a valid channel handle", tostring(k)), 2)
             end
         end
 
-        -- Finished a sequence.
-        if #steps > 0 then
-            -- Put in time order and save.
-            table.sort(steps, function(left, right) return left.tick < right.tick end)
-            _seq_steps[seq_name] = steps
-        end
-    end
-
-    -- Process sections. Fill in Calculate length. TODO1
-    _sections = sections
-
-    for sect_name, chan_sections in pairs(sections) do
-
-        for chan_hnd, chan_sequences in pairs(chan_sections) do
-
-            for _, chan_sequence in ipairs(chan_sequences) do
-
-
-
-
-
-
-            end
-
-
-
-
-        end
-
-
-
+        -- Keep track of overall time.
+        abs_tick = abs_tick + channel_max
 
     end
 
+    -- All done. Put in time order.
+    table.sort(_steps, function(left, right) return left.tick < right.tick end)
 
-
-    -- beginning =
-    -- {
-    --     { hnd_instrument1, nil,         keys_verse,    keys_verse,  keys_verse },
-    --     { hnd_instrument2, bass_verse,  bass_verse,    nil,         bass_verse }
-    -- },
-
-    -- middle =
-    -- {
-    --     { hnd_instrument1, nil,          keys_chorus,  keys_chorus,  keys_chorus },
-    --     { hnd_instrument2, bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus }
-    -- },
-
-    -- drums_verse =
-    -- {
-    --     -- |........|........|........|........|........|........|........|........|
-    --     { "|8       |        |8       |        |8       |        |8       |        |", 10 },
-    --     { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
-    --     { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
-    -- },
-    -- keys_verse =
-    -- {
-    --     -- |........|........|........|........|........|........|........|........|
-    --     { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    --     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
-    -- },
-
-
-
-    _length = 100
-
-    return _length
+    return num -- #_steps
 end
 
 
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern. Should be local but this makes testing smoother.
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
--- @return steps, seq_length - list of Steps partially filled-in or nil if invalid.
-function M.parse_chunk(chunk)
+-- @param chan_hnd
+-- @param start_tick
+-- @return steps, seq_length - list of StepX or nil if invalid.
+function M.parse_chunk(chunk, chan_hnd, start_tick)
     if #chunk ~= 2 then return nil end
 
     local steps = { }
@@ -231,16 +213,17 @@ function M.parse_chunk(chunk)
         error(string.format("Invalid what_to_play %s", chunk[2]), 2)
     end
 
-    -- Local function to package an event. chan_hnd is not know now and will get plugged in later.
+    -----------------------------------------------------
+    -- Local function to package an event.
     function make_event(offset)
         -- offset is 0-based.
         local vol = current_vol / 10
         local dur = offset - start_offset
-        local when = start_offset
+        local when = start_offset + start_tick
         local si = nil
 
         if func ~= nil then -- func
-            si = StepFunction(when, func)
+            si = StepFunction(when, chan_hnd, func, vol)
             if si.err == nil then
                 table.insert(steps, si)
             else
@@ -249,7 +232,7 @@ function M.parse_chunk(chunk)
             end
         else -- note
             for _, n in ipairs(notes) do
-                si = StepNote(when, 0, n, vol, dur)
+                si = StepNote(when, chan_hnd, n, vol, dur)
                 if si.err == nil then
                     table.insert(steps, si)
                 else
@@ -259,6 +242,7 @@ function M.parse_chunk(chunk)
             end
         end
     end
+
 
     -- Process note instances.
     -- Remove visual markers from pattern.

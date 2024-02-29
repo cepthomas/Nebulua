@@ -10,13 +10,10 @@ M.activity = {}
 -- Current tick for synchronizing data collection.
 M.current_tick = 0
 
--- #define MAKE_HANDLE(dev_index, chan_num) ((dev_index << 8) | (chan_num))
--- #define GET_DEV_INDEX(chan_hnd) ((chan_hnd >> 8) & 0xFF)
--- #define GET_CHAN_NUM(chan_hnd) (chan_hnd & 0xFF)
-
 
 local function capture(msg)
-    table.concat(M.activity, string.format("%05d %s", M.current_tick, msg))
+    table.insert(M.activity, string.format("%05d %s", M.current_tick, msg))
+    M.current_tick = M.current_tick + 1
 end
 
 
@@ -36,7 +33,7 @@ end
 
 
 function M.create_output_channel(dev_name, chan_num, patch)
-    capture(string.format("create_output_channel: %s %d %d ", dev_name, chan_num, patch))
+    capture(string.format("create_output_channel: %s %d %d", dev_name, chan_num, patch))
     local dev_index = 10 -- upper half
     return ((dev_index << 8) | (chan_num))
 end
@@ -50,7 +47,7 @@ end
 
 function M.send_note(chan_hnd, note_num, volume)
     -- If volume is 0 note_off else note_on.
-    capture(string.format("send_note: %d %d %f", chan_hnd, note_num, volume))
+    capture(string.format("send_note: %d %d %0.1f", chan_hnd, note_num, volume))
     return 0
 end
 
