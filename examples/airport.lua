@@ -50,9 +50,6 @@ end
 -----------------------------------------------------------------------------
 -- Init stuff.
 function setup()
-    -- neb.log_info("example initialization")
-    -- math.randomseed(os.time())
-
     -- Set up the _loops.
     -- Key is Ab.
     add_loop("Ab4", tot(17,3),  tot(8,1))
@@ -69,7 +66,7 @@ function setup()
 
     neb.set_tempo(70)
 
-    return 0 -- free-form
+    return 0 -- not using composition aka freeform
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.
@@ -84,4 +81,6 @@ function step(tick)
                 loop.next_start = tick + loop.delay + loop.duration;
         end
     end
+
+    return 0
 end

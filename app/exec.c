@@ -111,7 +111,8 @@ static char _cli_buff[CLI_BUFF_LEN];
 static char _last_error[ERR_BUFF_LEN];
 
 
-//---------------------- Functions TODO2 restore static------------------------//
+//---------------------- Functions ------------------------//
+// FUTURE These should be static but this makes testing smoother.
 
 // Process user input.
 int _DoCli(void);

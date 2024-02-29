@@ -1,5 +1,5 @@
 
--- Nebulua test script.
+-- Script for unit test.
 
 
 local bt = require("bar_time")
@@ -18,16 +18,17 @@ local dev_out1 = "out1"
 local dev_out2 = "out2"
 
 -- Channels
-local hout1 = neb.create_output_channel(dev_out1, 1, 33)
-local hout2 = neb.create_output_channel(dev_out2, 2, 44)
-local hin1  = neb.create_input_channel(dev_in1, 3)
-local hin2  = neb.create_input_channel(dev_in2, 4)
+local hnd_instrument1 = neb.create_output_channel(dev_out1, 1, 33)
+local hnd_instrument2 = neb.create_output_channel(dev_out2, 2, 44)
+local hnd_in1  = neb.create_input_channel(dev_in1, 3)
+local hnd_in2  = neb.create_input_channel(dev_in2, 4)
+
 
 ------------------------- Vars ----------------------------------------
 
 -- Local vars.
 local master_vol = 0.8
-
+local length = 0
 
 --------------------- Called from C core -----------------------------------
 
@@ -36,7 +37,8 @@ local master_vol = 0.8
 function setup()
     neb.log_info("Is this thing on?")
     neb.set_tempo(95)
-    return neb.init(sequences, sections) -- required if using composition oherwise return 0
+    length = neb.init(sequences, sections) -- if using composition
+    return length -- if using composition oherwise return 0
 end
 
 -----------------------------------------------------------------------------
@@ -48,12 +50,18 @@ function step(tick)
 
     -- Selective work.
     if t.beat == 0 and t.sub == 0 then
-        neb.send_controller(hout1, 50, 51)
+        neb.send_controller(hinstrument1, 50, 51)
     end
 
     if t.beat == 1 and t.sub == 4 then
-        neb.send_controller(hout2,  60, 61)
+        neb.send_controller(hinstrument2,  60, 61)
     end
+
+
+    -- if t.bar == 0 and t.beat == 0 and t.sub == 0 then
+    --     play_sequence(tick, hnd_instrument1, keys_verse, )
+    -- end
+
 end
 
 -----------------------------------------------------------------------------
@@ -62,8 +70,8 @@ function input_note(chan_hnd, note_num, volume)
     local s = string.format("input_note: %d %d %f", chan_hnd, note_num, volume)
     neb.log_info(s)
 
-    if chan_hnd == hin1 then
-        neb.send_note(hout1, note_num + 1, volume * 0.5, 8)
+    if chan_hnd == hnd_in1 then
+        neb.send_note(hinstrument1, note_num + 1, volume * 0.5, 8)
     end
 end
 
@@ -80,7 +88,7 @@ end
 -- Called from sequence.
 local function my_seq_func(tick)
     local note_num = math.random(0, #alg_scale)
-    neb.send_note(hout1, alg_scale[note_num], 0.7, 1)
+    neb.send_note(hinstrument1, alg_scale[note_num], 0.7, 1)
 end
 
 -----------------------------------------------------------------------------
@@ -98,7 +106,7 @@ local function boing(note_num)
     if note_num == 0 then
         note_num = math.random(30, 80)
         boinged = true
-        neb.send_note(hout2, note_num, master_vol, 8)
+        neb.send_note(hinstrument2, note_num, master_vol, 8)
     end
     return boinged
 end
@@ -113,9 +121,25 @@ sequences =
     --     { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     -- },
 
+
+
+    --[[
+    Each section is 8 beats.
+    Each sequence is 4 sections => 32 beats.
+    A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences.
+
+    If each sequence has average 8 notes => total of 320 notes per instrument.
+    A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences => 320 notes.
+    A "typical" sone would have about 4000 on/off events.
+
+    ]]
+
+
+    -- Each section is 8 beats.
+
     drums_verse =
     {
-        --|........|........|........|........|........|........|........|........|
+        -- |........|........|........|........|........|........|........|........|
         { "|8       |        |8       |        |8       |        |8       |        |", 10 },
         { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
         { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
@@ -167,19 +191,19 @@ sections =
 {
     beginning =
     {
-        { hout1 = { keys_verse,  keys_verse,  keys_verse,  keys_verse } },
-        { hout2 = { bass_verse,  bass_verse,  bass_verse,  bass_verse } }
+        { hnd_instrument1, nil,         keys_verse,    keys_verse,  keys_verse },
+        { hnd_instrument2, bass_verse,  bass_verse,    nil,         bass_verse }
     },
 
     middle =
     {
-        { hout1 = { keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus } },
-        { hout2 = { bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus } },
+        { hnd_instrument1, nil,          keys_chorus,  keys_chorus,  keys_chorus },
+        { hnd_instrument2, bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus }
     },
 
     ending =
     {
-        { hout1 = { keys_verse,  keys_verse,  keys_verse,  keys_verse } },
-        { hout2 = { bass_verse,  bass_verse,  bass_verse,  bass_verse } }
+        { hnd_instrument1, keys_verse,    keys_verse,  keys_verse,   nil        },
+        { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   bass_verse }
     }
 }

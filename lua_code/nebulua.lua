@@ -3,7 +3,8 @@
 -- Impedance matching between C and Lua. Hides or translates the raw C api.
 -- Manages note collections as described by the composition.
 
-local api = require("host_api")
+local ut = require("utils")
+local api = require("host_api") -- C api core
 local st = require("step_types")
 local md = require("midi_defs")
 local mu = require("music_defs")
@@ -17,49 +18,24 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -- Steps in sequences.
--- {
---     sequence_1 =
---     {
---         sub_1 = { StepX, StepX, ... },
---         sub_2 = { StepX, StepX, ... },
---         ...
---     },
---     ...
--- }
+-- { seq_name_1 = { tick_1 = { StepX, StepX, ... }, tick_2 = { StepX, StepX, ... }, ... }, seq_name_2 = ..., }
 local _seq_steps = {}
 
-
 -- Sequences in sections.
--- {
---     section_1 =
---     {
---         { chan_hnd = { sequence_1,  sequence_2, ... },
---         { chan_hnd = { sequence_1,  sequence_2, ... },
---         ...
---     },
---     ...
--- }
+-- { section_name_1 = { { chan_hnd_1 = { seq_name_1,  seq_name_2, ... }, { chan_hnd_2 = { seq_name_3,  seq_name_4, ... }, ... }, section_name_2 = ..., }
 local _sections = {}
 
-
--- Things that are executed once and disappear: NoteOffs, script send now. Key is the tick.
--- {
---     tick_1 = { StepX, StepX, ... },
---     tick_2 = { StepX, StepX, ... },
---     ...
--- },
+-- Things that are executed once and disappear: NoteOffs, script send_note().
+-- { tick_1 = { StepX, StepX, ... }, tick_2 = ..., },
 local _transients = {}
-
 
 -- Total length of composition.
 local _length = 0
--- function M.get_length() return _length end
--- function M.set_length(l) _length = l end
 
+-- Where we be.
 local _current_tick = 0
 
-
-tempdbg = { steps = _seq_steps, sections = _sections } -- TODO1 Debug stuff - remove
+function _mole() return _seq_steps, _sections, _transients end
 
 
 -----------------------------------------------------------------------------
@@ -79,7 +55,7 @@ M.send_controller = api.send_controller
 
 
 -----------------------------------------------------------------------------
--- Send note. Manages corresponding note off.
+-- Send note now. Manages corresponding note off.
 function M.send_note(chan_hnd, note_num, volume, dur)
     if volume > 0 then -- noteon
        if dur == 0 then dur = 1 end -- (for drum/hit)
@@ -116,7 +92,7 @@ function M.process_step(tick)
         end
     end
 
-    -- Transients, mainly note off.
+    -- Transients, mainly noteoff.
     steps = _transients[tick] -- now
     if steps ~= nil then
         for _, step in ipairs(steps) do
@@ -126,6 +102,8 @@ function M.process_step(tick)
         end
         table.remove(_transients, tick)
     end
+
+    return 0
 end
 
 
@@ -135,52 +113,102 @@ end
 -- @param sections table user section specs
 -- @return total length in ticks.
 function M.init(sequences, sections)
+    -- Hard reset.
     _seq_steps = {}
     _transients = {}
 
-    for seq_name, seq_chunks in ipairs(sequences) do
-        -- test types?
-
+    for seq_name, seq_chunks in pairs(sequences) do
         local steps = {}
 
         for _, seq_chunk in ipairs(seq_chunks) do
-            -- example_seq =
-            -- {
-            --     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
-            --     { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-            -- },
-
-            local gr_steps = nil
-
-            if #seq_chunk == 2 then    -- { "|  ...  |", "ABC" }
-                gr_steps = parse_chunk(seq_chunk)
-            end
-
-            if gr_steps == nil then
+            -- { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
+            local chunk_steps, seq_length = M.parse_chunk(seq_chunk)
+            if chunk_steps == nil then
                 error(string.format("Couldn't parse chunk: %s", seq_chunk), 2)
-            else
-                steps[seq_name] = gr_steps
+            else -- save them
+                for c, st in ipairs(chunk_steps) do
+                    table.insert(steps, st)
+                end
             end
+        end
 
-            _seq_steps.insert(steps)
+        -- Finished a sequence.
+        if #steps > 0 then
+            -- Put in time order and save.
+            table.sort(steps, function(left, right) return left.tick < right.tick end)
+            _seq_steps[seq_name] = steps
         end
     end
 
-    -- Put in time order.
-    table.sort(_seq_steps, function (left, right) return left.sub < right.sub end)
-
-    -- Process sections. Calculate length. TODO1
+    -- Process sections. Fill in Calculate length. TODO1
     _sections = sections
+
+    for sect_name, chan_sections in pairs(sections) do
+
+        for chan_hnd, chan_sequences in pairs(chan_sections) do
+
+            for _, chan_sequence in ipairs(chan_sequences) do
+
+
+
+
+
+
+            end
+
+
+
+
+        end
+
+
+
+
+    end
+
+
+
+    -- beginning =
+    -- {
+    --     { hnd_instrument1, nil,         keys_verse,    keys_verse,  keys_verse },
+    --     { hnd_instrument2, bass_verse,  bass_verse,    nil,         bass_verse }
+    -- },
+
+    -- middle =
+    -- {
+    --     { hnd_instrument1, nil,          keys_chorus,  keys_chorus,  keys_chorus },
+    --     { hnd_instrument2, bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus }
+    -- },
+
+    -- drums_verse =
+    -- {
+    --     -- |........|........|........|........|........|........|........|........|
+    --     { "|8       |        |8       |        |8       |        |8       |        |", 10 },
+    --     { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
+    --     { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
+    -- },
+    -- keys_verse =
+    -- {
+    --     -- |........|........|........|........|........|........|........|........|
+    --     { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    --     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
+    -- },
+
+
+
     _length = 100
+
     return _length
 end
 
 
 -----------------------------------------------------------------------------
---- Parse a chunk pattern.
+--- Parse a chunk pattern. Should be local but this makes testing smoother.
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
--- @return list of Steps partially filled-in or nil if invalid.
-function M.parse_chunk(chunk) --TODO2 should be local
+-- @return steps, seq_length - list of Steps partially filled-in or nil if invalid.
+function M.parse_chunk(chunk)
+    if #chunk ~= 2 then return nil end
+
     local steps = { }
     local current_vol = 0 -- default, not sounding
     local start_offset = 0 -- in pattern for the start of the current event
@@ -235,8 +263,9 @@ function M.parse_chunk(chunk) --TODO2 should be local
     -- Process note instances.
     -- Remove visual markers from pattern.
     local pattern = string.gsub(chunk[1], "|", "")
+    local seq_length = #pattern
 
-    for i = 1, #pattern do
+    for i = 1, seq_length do
         local c = pattern:sub(i, i)
         local cnum = string.byte(c) - 48
 
@@ -275,7 +304,7 @@ function M.parse_chunk(chunk) --TODO2 should be local
         make_event(#pattern - 1)
     end
 
-    return steps
+    return steps, seq_length
 end
 
 
