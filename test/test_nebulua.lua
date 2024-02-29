@@ -10,7 +10,7 @@ local neb = require("nebulua") -- lua api
 require('neb_common')
 
 
-ut.config_debug(false) -- TODO2  an easy way to toggle this?
+ut.config_debug(false) -- TODO2 an easy way to toggle this? or insert/delete breakpoints from ST.
 
 -- Create the namespace/module.
 local M = {}
@@ -85,7 +85,6 @@ function M.suite_process_script(pn)
     local length = neb.init(sections)
     pn.UT_EQUAL(length, 201)
 
-    -- local steps, transients = _mole()
     -- for _, st in ipairs(steps) do print(">>>", st.format()) end
     -- s = ut.dump_table_string(steps, false, "hoohaa")
     -- print(">>>", s)
@@ -96,8 +95,10 @@ function M.suite_process_script(pn)
         pn.UT_EQUAL(stat, 0)
     end
 
-    -- s = ut.dump_table_string(api.activity, true, 'api.activity')
-    -- print(s)
+    local steps, transients = _mole()
+
+    pn.UT_EQUAL(#api.activity, 0)
+    pn.UT_EQUAL(#transients, 0)
 
     -- ok, ret = pcall(input_note, 10, 11, 0.3)
     -- pn.UT_TRUE(ok, string.format("Script function input_note() failed:\n%s ", ret))

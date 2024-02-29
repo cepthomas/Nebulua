@@ -10,6 +10,9 @@ local md = require("midi_defs")
 local mu = require("music_defs")
 require('neb_common')
 
+-- TODO2 bulletproof
+
+
 
 local M = {}
 
@@ -59,16 +62,10 @@ function M.process_step(tick)
 
     -- Composition steps.
     local st = _steps[tick] -- now
--- print(">>>", tick, st)
--- print(">>>", tick, #_steps[tick], st)
 
     if st ~= nil then
         for _, step in ipairs(st) do
-
--- print(">>>", step.format())
-
             if step.step_type == STEP_NOTE then
--- dbg()
                api.send_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == STEP_CONTROLLER then
                 api.send_controller(step.chan_hnd, step.controller, step.value)
@@ -135,7 +132,7 @@ function M.init(sections)
             if k == "name" or k == "start" then
                 -- skip
             elseif ut.is_table(v) then
-                -- Time offset for this channel events.
+                -- Time offset for this channel events. TODO2 need a way to get these names back to host.
                 local tick = section.start
 
                 -- The sequences. Process each. First element is the channel.
@@ -166,7 +163,6 @@ function M.init(sections)
                 channel_max = math.max(channel_max, tick)
             else
                 error(string.format("Element [%s] is not a valid channel", tostring(v)), 2)
-                -- error(string.format("Key [%s] is not a valid channel handle", tostring(k)), 2)
             end
         end
 
@@ -178,7 +174,7 @@ function M.init(sections)
     -- All done. Put in time order.
     table.sort(_steps, function(left, right) return left.tick < right.tick end)
 
-    return num -- #_steps
+    return num
 end
 
 
@@ -201,20 +197,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local notes = {}
     local func = nil
 
-    if tn == "number" then
-        -- use as is
-        notes = { what_to_play }
-    elseif tn == "function" then
-        -- use as is
-        func = what_to_play
-    elseif tn == "string" then
-        notes = mu.get_notes_from_string(what_to_play)
-    else
-        error(string.format("Invalid what_to_play %s", chunk[2]), 2)
-    end
-
-    -----------------------------------------------------
-    -- Local function to package an event.
+    ----- Local function to package an event. ------
     function make_event(offset)
         -- offset is 0-based.
         local vol = current_vol / 10
@@ -243,6 +226,18 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         end
     end
 
+    -- Start here
+    if tn == "number" then
+        -- use as is
+        notes = { what_to_play }
+    elseif tn == "function" then
+        -- use as is
+        func = what_to_play
+    elseif tn == "string" then
+        notes = mu.get_notes_from_string(what_to_play)
+    else
+        error(string.format("Invalid what_to_play %s", chunk[2]), 2)
+    end
 
     -- Process note instances.
     -- Remove visual markers from pattern.

@@ -83,7 +83,7 @@ static int _current_tick = 0;
 // Length of composition in ticks.
 static int _length = 0;
 
-// Keep going. TODO2 cli implementation for all these. set, reset
+// Keep going. TODO1 cli implementation for all these. set: start, end, section, reset/all
 static bool _do_loop = false;
 
 // Loop start tick. -1 means start of composition.
@@ -92,7 +92,7 @@ static int _loop_start = -1;
 // Loop end tick. -1 means end of composition.
 static int _loop_end = -1;
 
-// Monitor midi input. TODO2 implement both.
+// Monitor midi input. TODO1 implement all these.
 static bool _mon_input = false;
 
 // Monitor midi output.
@@ -311,19 +311,10 @@ void _MidiClockHandler(double msec)
     int stat;
     int ret = 0;
 
-
-
-
     if (_script_running)
     {
-
         // Do script.
-
-
-        // TODO2 Process solo/mute see nebulator. Needs cli and/or script function.
-
-
-
+        // FUTURE Process solo/mute like nebulator.
 
         // Lock access to lua context.
         ENTER_CRITICAL_SECTION;
