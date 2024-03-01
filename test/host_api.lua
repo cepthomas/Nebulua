@@ -13,27 +13,31 @@ M.current_tick = 0
 
 local function capture(msg)
     table.insert(M.activity, string.format("%05d %s", M.current_tick, msg))
-    M.current_tick = M.current_tick + 1
+    -- M.current_tick = M.current_tick + 1
 end
 
+local function format_chan_hnd(chan_hnd)
+    local s = string.format("%02X-%02X", chan_hnd, (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    return s
+end
 
 -----------------------------------------------------------
 
 function M.log(level, msg)
-    capture(string.format("log: %d %s", level, msg))
+    capture(string.format("log: level:%d msg:%s", level, msg))
     return 0
 end
 
 
 function M.create_input_channel(dev_name, chan_num)
-    capture(string.format("create_input_channel: %s %d", dev_name, chan_num))
+    capture(string.format("create_input_channel: dev_name:%s chan_num:%d", dev_name, chan_num))
     local dev_index = 1 -- lower half
     return ((dev_index << 8) | (chan_num))
 end
 
 
 function M.create_output_channel(dev_name, chan_num, patch)
-    capture(string.format("create_output_channel: %s %d %d", dev_name, chan_num, patch))
+    capture(string.format("create_output_channel: dev_name:%s chan_num:%d patch:%d", dev_name, chan_num, patch))
     local dev_index = 10 -- upper half
     return ((dev_index << 8) | (chan_num))
 end
@@ -47,13 +51,13 @@ end
 
 function M.send_note(chan_hnd, note_num, volume)
     -- If volume is 0 note_off else note_on.
-    capture(string.format("send_note: %d %d %0.1f", chan_hnd, note_num, volume))
+    capture(string.format("send_note: chan_hnd:%s note_num:%d volume:%0.1f", format_chan_hnd(chan_hnd), note_num, volume))
     return 0
 end
 
 
 function M.send_controller(chan_hnd, controller, value)
-    capture(string.format("send_controller: %d %d %d", chan_hnd, controller, value))
+    capture(string.format("send_controller: chan_hnd:%s controller:%d value:%d", format_chan_hnd(chan_hnd), controller, value))
     return 0
 end
 

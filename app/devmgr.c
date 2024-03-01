@@ -247,7 +247,7 @@ midi_device_t* devmgr_GetOutputDevices(midi_device_t* iter)
         {
             if (_devices[i].handle > INVALID_DEV)
             {
-                ret = _devices + i;
+                ret = iter;
                 break;
             }
         }
@@ -259,7 +259,7 @@ midi_device_t* devmgr_GetOutputDevices(midi_device_t* iter)
         {
             if (iter->handle > INVALID_DEV)
             {
-                ret = _devices + i;
+                ret = iter;
                 break;
             }
         }

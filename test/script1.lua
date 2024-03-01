@@ -6,7 +6,7 @@ local bt = require("bar_time")
 local neb = require("nebulua") -- api
 
 
-neb.log_info("=============== go go go =======================")
+neb.log_info("=============== Is this thing on? ===============")
 
 
 ------------------------- Config ----------------------------------------
@@ -35,7 +35,6 @@ local length = 0
 -----------------------------------------------------------------------------
 -- Init stuff. Required function.
 function setup()
-    neb.log_info("Is this thing on?")
     neb.set_tempo(95)
     length = neb.init(sequences, sections) -- if using composition
     return length -- if using composition oherwise return 0

@@ -76,7 +76,7 @@ function step(tick)
             if tick >= loop.next_start then
                 -- print("Starting note", loop.snote)
                 for _, note_num in ipairs(loop.notes) do
-                    neb.send_note(chan_hnd, note_num, volume, loop.dur)
+                    neb.send_note(chan_hnd, note_num, volume, loop.duration)
                 -- Calc next time.
                 loop.next_start = tick + loop.delay + loop.duration;
         end

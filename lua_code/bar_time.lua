@@ -158,7 +158,6 @@ mt =
     __sub = function(a, b)
             ret = nil
             sana, sanb = normalize_operands(a, b, 'sub')
-            -- print(">>>", sana, sanb)
             if sana ~= nil and sanb ~= nil and sana >= sanb then
                 ret = BT(sana - sanb)
             else

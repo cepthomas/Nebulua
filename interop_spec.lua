@@ -7,8 +7,8 @@ M.config =
     -- add_refs = { "<abc.h>", },
 }
 
--- Host calls lua.
-M.lua_export_funcs =
+-- Host calls script.
+M.script_funcs =
 {
     {
         lua_func_name = "setup",
@@ -57,8 +57,8 @@ M.lua_export_funcs =
 
 }
 
--- Lua calls host.
-M.host_export_funcs =
+-- Script calls host.
+M.host_funcs =
 {
 
     {

@@ -34,9 +34,12 @@ E = expression?
 
 
 ## Glossary
-int chan_num
+L2C - Lua to C aka script calls host functions.
+C2L - C to Lua aka host calls script functions
+
+int chan_num - 
 int dev_index - internal index into device table
-char* dev_name - from system
+char* dev_name - from Windows system
 not: int dev_id - 
     int chan_hnd (16bit: dev_index << 8 | chan_num)
     int controller (name - midi_defs)

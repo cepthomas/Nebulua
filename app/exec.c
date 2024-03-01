@@ -9,6 +9,7 @@
 // cbot
 #include "cbot.h"
 #include "logger.h"
+#include "mathutils.h"
 // lbot
 #include "luautils.h"
 #include "ftimer.h"
@@ -21,15 +22,20 @@
 
 //----------------------- Definitions -----------------------//
 
+// Caps.
 #define CLI_BUFF_LEN    128
 #define ERR_BUFF_LEN    500
 #define MAX_CLI_ARGS     10
 #define MAX_CLI_ARG_LEN  32
 
+// Midi defs.
+#define ALL_NOTES_OFF     123
+
 // Script lua_State access syncronization. 
 HANDLE ghMutex; 
-#define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE) //EnterCriticalSection(&_critical_section)
-#define EXIT_CRITICAL_SECTION ReleaseMutex(ghMutex) //LeaveCriticalSection(&_critical_section)
+#define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE)
+#define EXIT_CRITICAL_SECTION ReleaseMutex(ghMutex)
+
 
 //----------------------- Types -----------------------//
 
@@ -59,8 +65,8 @@ typedef struct cli_command
 
 //----------------------- Vars --------------------------------//
 
-// The main Lua thread.
-static lua_State* _l;
+// The main Lua thread. TODO2 public so unit test can see it. kinda ugly.
+lua_State* _l;
 
 // Point this stream where you like.
 static FILE* _fperr = NULL;
@@ -92,7 +98,7 @@ static int _loop_start = -1;
 // Loop end tick. -1 means end of composition.
 static int _loop_end = -1;
 
-// Monitor midi input. TODO1 implement all these.
+// Monitor midi input. TODO1 implement all these monitors. Output to cli stream and/or log and/or ???
 static bool _mon_input = false;
 
 // Monitor midi output.
@@ -112,7 +118,7 @@ static char _last_error[ERR_BUFF_LEN];
 
 
 //---------------------- Functions ------------------------//
-// FUTURE These should be static but this makes testing smoother.
+// These should all be static but external visibility makes testing possible.
 
 // Process user input.
 int _DoCli(void);
@@ -126,6 +132,9 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 /// Top level error handler for nebulua status.
 static bool _EvalStatus(int stat, int line, const char* format, ...);
 
+/// General kill everything.
+static int _Kill();
+
 
 //----------------------------------------------------//
 
@@ -138,7 +147,7 @@ int exec_Main(const char* script_fn)
     int ret = 0;
     int exit_code = 0;
 
-    #define EXEC_FAIL() fprintf(_fperr, "ERROR %s\n", _last_error); exit_code = 1; goto init_done;
+    #define EXEC_FAIL(code) { fprintf(_fperr, "ERROR %s\n", _last_error); exit_code = code; goto init_done; }
 
     // Init streams.
     _fperr = stdout;
@@ -148,7 +157,7 @@ int exec_Main(const char* script_fn)
     FILE* fplog = fopen("_log.txt", "a");
     stat = logger_Init(fplog);
     ok = _EvalStatus(stat, __LINE__, "Failed to init logger");
-    if (!ok) EXEC_FAIL();
+    if (!ok) EXEC_FAIL(10);
     logger_SetFilters(LVL_DEBUG);
     LOG_INFO("Logger is alive");
 
@@ -157,7 +166,7 @@ int exec_Main(const char* script_fn)
     if (ghMutex == NULL)
     {
         snprintf(_last_error, ERR_BUFF_LEN, "CreateMutex() failed [%s].", script_fn);
-        EXEC_FAIL();
+        EXEC_FAIL(11);
     }
 
     // Lock access to lua context during init.
@@ -178,29 +187,29 @@ int exec_Main(const char* script_fn)
     // Tempo timer and interrupt.
     stat = ftimer_Init(_MidiClockHandler, 1); // 1 msec resolution.
     ok = _EvalStatus(stat, __LINE__, "Failed to init ftimer.");
-    if (!ok) EXEC_FAIL();
+    if (!ok) EXEC_FAIL(12);
     luainteropwork_SetTempo(60);
 
     stat = devmgr_Init(_MidiInHandler);
     ok = _EvalStatus(stat, __LINE__, "Failed to init device manager.");
-    if (!ok) EXEC_FAIL();
+    if (!ok) EXEC_FAIL(13);
 
     ///// Load and run the application. /////
 
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, script_fn);
     ok = _EvalStatus(stat, __LINE__, "Load script file failed [%s].", script_fn);
-    if (!ok) EXEC_FAIL();
+    if (!ok) EXEC_FAIL(14);
 
     // Run the script to initialize it.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     ok = _EvalStatus(stat, __LINE__, "Execute script failed [%s].", script_fn);
-    if (!ok) EXEC_FAIL();
+    if (!ok) EXEC_FAIL(15);
 
     // Script nebulua setup.
     stat = luainterop_Setup(_l, &_length);
     ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
-    if (!ok) EXEC_FAIL();
+    if (!ok) EXEC_FAIL(16);
 
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
@@ -210,7 +219,7 @@ int exec_Main(const char* script_fn)
     {
         stat = _DoCli();
         ok = _EvalStatus(stat, __LINE__, "_DoCli() failed [%s].", script_fn);
-        if (!ok) EXEC_FAIL();
+        if (!ok) EXEC_FAIL(17);
     }
 
 ////////////
@@ -319,11 +328,11 @@ void _MidiClockHandler(double msec)
         // Lock access to lua context.
         ENTER_CRITICAL_SECTION;
         // Read stopwatch.
-        int stat = luainterop_Step(_l, _current_tick, &ret);
+        stat = luainterop_Step(_l, _current_tick, &ret);
         // Read stopwatch and diff/stats.
         EXIT_CRITICAL_SECTION;
 
-        bool ok = _EvalStatus(stat, __LINE__, "Step() failed [%s].", script_fn);
+        bool ok = _EvalStatus(stat, __LINE__, "Step() failed");
         if (!ok)
         {
             // Stop everything.
@@ -353,8 +362,7 @@ void _MidiClockHandler(double msec)
                     _current_tick = start;
 
                     // just in case
-                    _KillCmd(NULL, 0, NULL);
-
+                    _Kill();
                 }
             }
         }
@@ -420,10 +428,6 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
                 stat = luainterop_InputController(_l, chan_hnd, bdata1, bdata2, &ret);
                 ok = _EvalStatus(stat, __LINE__, "luainterop_InputController() failed");
                 break;
-
-            // case MIDI_PITCH_WHEEL_CHANGE:
-            //     PitchWheelChangeEvent(ts, channel, data1 + (data2 << 7));
-            //     break;
 
                 // Ignore other events for now.
             default:
@@ -549,25 +553,7 @@ int _KillCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
-        stat = NEB_OK;
-
-        // Send kill to all midi outputs.
-        midi_device_t* dev = devmgr_GetOutputDevices(NULL);
-        while (dev != NULL)
-        {
-            for (int i = 0; i < NUM_MIDI_CHANNELS; i++)
-            {
-                int chan_hnd = devmgr_GetChannelHandle(dev, i);
-                luainteropwork_SendController(chan_hnd, 123, 0); // AllNotesOff=123
-            }
-            // next
-            dev = devmgr_GetOutputDevices(dev);
-        }
-
-        // Hard reset.
-        _script_running = false;
-        stat = luainterop_Setup(_l, &_length);
-        bool ok = _EvalStatus(stat, __LINE__, "Script setup() failed [%s].", script_fn);
+        stat = _Kill();
     }
 
     return stat;
@@ -615,7 +601,7 @@ int _ReloadCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
-        // TODO2 do something to reload script =>
+        // TODO1 do something to reload script =>
         // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
         // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
         stat = NEB_OK;
@@ -667,6 +653,34 @@ static cli_command_t _commands[] =
     { "reload",     'l',   0,    "re/load current script",                 "",                          _ReloadCmd },
     { NULL,          0,    0,    NULL,                                     NULL,                        NULL }
 };
+
+
+
+//--------------------------------------------------------//
+int _Kill()
+{
+    int stat = NEB_OK;
+
+    // Send kill to all midi outputs.
+    midi_device_t* dev = devmgr_GetOutputDevices(NULL);
+    while (dev != NULL)
+    {
+        for (int i = 0; i < NUM_MIDI_CHANNELS; i++)
+        {
+            int chan_hnd = devmgr_GetChannelHandle(dev, i);
+            luainteropwork_SendController(chan_hnd, ALL_NOTES_OFF, 0);
+        }
+        // next
+        dev = devmgr_GetOutputDevices(dev);
+    }
+
+    // Hard reset.
+    _script_running = false;
+    stat = luainterop_Setup(_l, &_length);
+    bool ok = _EvalStatus(stat, __LINE__, "Script setup() failed.");
+
+    return stat;
+}
 
 
 //--------------------------------------------------------//

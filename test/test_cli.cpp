@@ -21,6 +21,8 @@ extern "C"
 #include "cli.h"
 #include "logger.h"
 
+extern lua_State* _l;
+
 int _DoCli(void);
 }
 
@@ -35,6 +37,8 @@ std::vector<std::string> _response_lines = {};
 UT_SUITE(CLI_MAIN, "Test cli functions.")
 {
     int stat = 0;
+
+    _l = luaL_newstate();
 
     ///// Fat fingers.
     _response_lines.clear();
@@ -165,6 +169,9 @@ UT_SUITE(CLI_MAIN, "Test cli functions.")
     //{
     //    printf(iter->c_str());
     //}
+
+    lua_close(_l);
+
     return 0;
 }
 

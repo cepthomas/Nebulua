@@ -4,14 +4,18 @@
 -- Manages note collections as described by the composition.
 
 local ut = require("utils")
-local api = require("host_api") -- C api core
+local api = require("host_api")
 local st = require("step_types")
 local md = require("midi_defs")
 local mu = require("music_defs")
 require('neb_common')
 
--- TODO2 bulletproof
+-- TODO2 bulletproof this.
 
+-- TODO2 If you're only using it within a single block, you be even better off performance-wise by simply making it a local 
+-- function instead (saves the overhead of a global lookup for each call). I quite often import table.insert and table.remove into 
+-- the local namespace if I'm using them frequently, often as something like tinsert() and tremove()
+-- also? table.removekey() would my best choice, too)
 
 
 local M = {}
@@ -20,11 +24,10 @@ local M = {}
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
--- All the coposition StepX. Key is tick/when.
+-- All the composition StepX. Key is tick aka when-to-play.
 local _steps = {}
 
--- Things that are executed once and disappear: NoteOffs, script send_note().
--- { tick_1 = { StepX, StepX, ... }, tick_2 = ..., },
+-- Things that are executed once and disappear: NoteOffs, script send_note(). Same structure as _steps.
 local _transients = {}
 
 -- Total length of composition.
@@ -36,9 +39,13 @@ local _current_tick = 0
 
 function _mole() return _steps, _transients end -- TODO2 remove
 
+local function lazy_add(tbl, key, obj)
+   if tbl[key] == nil then tbl[key] = {} end
+   table.insert(tbl[key], obj)
+end
 
 -----------------------------------------------------------------------------
--- Log functions. Magic numbers from C code.
+-- Log functions. Magic numbers from host C code.
 function M.log_error(msg) api.log(4, msg) end
 function M.log_info(msg)  api.log(3, msg) end
 function M.log_debug(msg) api.log(2, msg) end
@@ -46,7 +53,7 @@ function M.log_trace(msg) api.log(1, msg) end
 
 
 -----------------------------------------------------------------------------
--- These go straight through so just thunk the C api.
+-- These go straight through to the host api.
 M.create_input_channel = api.create_input_channel
 M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
@@ -61,12 +68,19 @@ function M.process_step(tick)
     _current_tick = tick
 
     -- Composition steps.
-    local st = _steps[tick] -- now
-
-    if st ~= nil then
-        for _, step in ipairs(st) do
+    local steps_now = _steps[tick] -- now
+    if steps_now ~= nil then
+        for _, step in ipairs(steps_now) do
             if step.step_type == STEP_NOTE then
-               api.send_note(step.chan_hnd, step.note_num, step.volume)
+                if step.volume > 0 then -- noteon - chase
+                    dur = step.duration
+                    if dur == 0 then dur = 1 end -- (for drum/hit)
+                    -- chase with noteoff
+                    noteoff = StepNote(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
+                    lazy_add(_transients, noteoff.tick, noteoff)
+                end
+                -- now send
+                api.send_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == STEP_CONTROLLER then
                 api.send_controller(step.chan_hnd, step.controller, step.value)
             elseif step.step_type == STEP_FUNCTION then
@@ -76,14 +90,15 @@ function M.process_step(tick)
     end
 
     -- Transients, mainly noteoff.
-    st = _transients[tick] -- now
-    if st ~= nil then
-        for _, step in ipairs(st) do
+    steps_now = _transients[tick] -- now
+    if steps_now ~= nil then
+        for _, step in ipairs(steps_now) do
             if step.step_type == STEP_NOTE then
                api.send_note(step.chan_hnd, step.note_num, 0)
             end
         end
-        table.remove(_transients, tick)
+        -- Disappear it.
+        _transients[tick] = nil
     end
 
     return 0
@@ -93,15 +108,15 @@ end
 -----------------------------------------------------------------------------
 -- Send note now. Manages corresponding note off.
 function M.send_note(chan_hnd, note_num, volume, dur)
+    -- print("send", chan_hnd, note_num, volume, dur)
     if volume > 0 then -- noteon
-       if dur == 0 then dur = 1 end -- (for drum/hit)
-       -- send note_on now
-       api.send_note(chan_hnd, note_num, volume)
-       -- chase with noteoff
-       noteoff = StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0)
-       table.insert(_transients, noteoff)
-    else -- noteoff
-       -- send note_off now
+        if dur == 0 then dur = 1 end -- (for drum/hit)
+        -- send note_on now
+        api.send_note(chan_hnd, note_num, volume)
+        -- chase with noteoff
+        noteoff = StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0)
+        lazy_add(_transients, noteoff.tick, noteoff)
+    else -- send note_off now
        api.send_note(chan_hnd, note_num, 0)
    end
 end
@@ -132,7 +147,8 @@ function M.init(sections)
             if k == "name" or k == "start" then
                 -- skip
             elseif ut.is_table(v) then
-                -- Time offset for this channel events. TODO2 need a way to get these names back to host.
+                -- Time offset for this channel events.
+                -- TODO1 need a way to get the names/offsets back to host. maybe part of position command?
                 local tick = section.start
 
                 -- The sequences. Process each. First element is the channel.
@@ -148,9 +164,7 @@ function M.init(sections)
                                 error(string.format("Couldn't parse chunk: %s", seq_chunk), 2)
                             else -- save them
                                 for c, st in ipairs(chunk_steps) do
-
-                                    if _steps[st.tick] == nil then _steps[st.tick] = {} end
-                                    table.insert(_steps[st.tick], st)
+                                    lazy_add(_steps, st.tick, st)
                                     num = num +1
                                 end
                             end
@@ -171,8 +185,7 @@ function M.init(sections)
 
     end
 
-    -- All done. Put in time order.
-    table.sort(_steps, function(left, right) return left.tick < right.tick end)
+    -- All done.
 
     return num
 end

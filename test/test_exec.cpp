@@ -16,6 +16,12 @@ extern "C"
 #include "cli.h"
 #include "logger.h"
 
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+
+extern lua_State* _l;
+
 void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 void _MidiClockHandler(double msec);
 int exec_Main(const char* script_fn);
@@ -25,12 +31,15 @@ int exec_Main(const char* script_fn);
 // const char* _my_midi_out1 = "Microsoft GS Wavetable Synth";
 
 
+
+
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(EXEC_1111, "Test TODO2 any functions.")
+UT_SUITE(EXEC_MAIN, "Test exec functions.")
 {
     int stat = 0;
 
-    // These need _l.
+    _l = luaL_newstate();
+
 
     HMIDIIN hMidiIn = 0;
     UINT wMsg = 0;
@@ -43,9 +52,12 @@ UT_SUITE(EXEC_1111, "Test TODO2 any functions.")
     double msec = 12.34;
     _MidiClockHandler(msec);
 
-
-    const char* script_fn = "aaaaaa";
+    // Needs luapath.
+    //const char* script_fn = "script1.lua";
     //stat = exec_Main(script_fn);
+
+
+    lua_close(_l);
 
     return 0;
 }

@@ -12,7 +12,7 @@ STEP_FUNCTION = 3
 
 
 local function _FormatChanHnd(chan_hnd)
-    local s = string.format("%d(I:%02x N:%02x)", chan_hnd, (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    local s = string.format("%02X-%02X)", chan_hnd, (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
     return s
 end
 

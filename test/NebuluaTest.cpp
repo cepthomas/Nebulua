@@ -14,9 +14,6 @@ int main()
 
     // Run the requested tests.
     std::vector<std::string> whichSuites;
-
-    // TODO2 tests for exec, interopwork??   
-
     whichSuites.emplace_back("NEBCOM");
     whichSuites.emplace_back("DEVMGR");
     whichSuites.emplace_back("EXEC");
