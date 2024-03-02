@@ -20,10 +20,6 @@ require('neb_common')
 
 local M = {}
 
-__nebulua = 292929
-
------------------------------------------------------------------------------
------------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
 -- All the composition StepX. Key is tick aka when-to-play.
@@ -32,8 +28,8 @@ local _steps = {}
 -- Things that are executed once and disappear: NoteOffs, script send_note(). Same structure as _steps.
 local _transients = {}
 
--- Total length of composition.
-local _length = 0
+-- Total length of composition. Global for access by app.
+_length = 0
 
 -- Where we be.
 local _current_tick = 0

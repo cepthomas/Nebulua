@@ -9,9 +9,6 @@ local neb = require("nebulua") -- api
 neb.log_info("=============== Is this thing on? ===============")
 
 
-__script1 = 656565
-
-
 ------------------------- Config ----------------------------------------
 
 -- Device names
@@ -31,7 +28,6 @@ local hnd_in2  = neb.create_input_channel(dev_in2, 11)
 
 -- Local vars.
 local master_vol = 0.8
-local length = 0
 
 --------------------- Called from C core -----------------------------------
 
@@ -39,8 +35,8 @@ local length = 0
 -- Init stuff. Required function.
 function setup()
     neb.set_tempo(95)
-    length = neb.init(sections) -- if using composition
-    return length -- if using composition oherwise return 0
+    neb.init(sections)
+    return 0
 end
 
 -----------------------------------------------------------------------------
@@ -59,6 +55,7 @@ function step(tick)
     if t.beat == 1 and t.sub == 4 then
         neb.send_controller(hinstrument2,  60, 61)
     end
+    return 0
 end
 
 -----------------------------------------------------------------------------
@@ -70,6 +67,7 @@ function input_note(chan_hnd, note_num, volume)
     if chan_hnd == hnd_in1 then
         neb.send_note(hinstrument1, note_num + 1, volume * 0.5, 8)
     end
+    return 0
 end
 
 -----------------------------------------------------------------------------
@@ -77,6 +75,7 @@ end
 function input_controller(chan_hnd, controller, value)
     local s = string.format("input_controller: %d %d %d", chan_hnd, controller, value)
     neb.log_info(s)
+    return 0
 end
 
 ----------------------- Custom user functions -------------------------

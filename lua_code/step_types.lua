@@ -17,10 +17,6 @@ local function _FormatChanHnd(chan_hnd)
 end
 
 
--- #define GET_DEV_INDEX(chan_hnd) ((chan_hnd >> 8) & 0xFF)
--- #define GET_CHAN_NUM(chan_hnd) (chan_hnd & 0xFF)
-
-
 -----------------------------------------------------------------------------
 function StepNote(tick, chan_hnd, note_num, volume, duration)
     local d = {}

@@ -31,8 +31,6 @@ local hnd_inp1  = neb.create_input_channel(midi_in, 2)
 
 ------------------------- Vars ----------------------------------------
 
-local length = 0
-
 -- local vars - Volumes.
 local synth_vol = 0.8
 local drum_vol = 0.8
@@ -62,8 +60,8 @@ function setup()
     neb.log_info("example initialization")
     math.randomseed(os.time())
     neb.set_tempo(88)
-    length = neb.init(sections) -- if using composition
-    return length -- if using composition oherwise return 0
+    neb.init(sections)
+    return 0
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment. Required function.

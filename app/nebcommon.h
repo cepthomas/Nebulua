@@ -4,7 +4,7 @@
 // system
 // #include <stdbool.h>
 // lua
-// #include "lua.h"
+ #include "lua.h"
 // cbot
 // application
 
@@ -89,6 +89,13 @@ int nebcommon_ParseBarTime(const char* sbt);
 /// @param[in] position
 /// @return string
 const char* nebcommon_FormatBarTime(int position);
+
+/// Checks stat and returns an error message if it failed.
+/// @param[in] l lua context
+/// @param[in] stat to be tested
+/// @param[in] format extra info to add if fail
+/// @return if fail the error string else NULL
+const char* nebcommon_EvalStatus(lua_State* l, int stat, const char* format, ...);
 
 
 #endif // NEBCOMMON_H

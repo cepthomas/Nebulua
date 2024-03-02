@@ -36,7 +36,7 @@ std::vector<std::string> _response_lines = {};
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(CLI_MAIN, "Test cli functions.")
+UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
 {
     int stat = 0;
 
@@ -88,13 +88,6 @@ UT_SUITE(CLI_MAIN, "Test cli functions.")
 
     _response_lines.clear();
     strncpy(_next_command, "run", MAX_LINE_LEN);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "kill", MAX_LINE_LEN);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
@@ -173,10 +166,10 @@ UT_SUITE(CLI_MAIN, "Test cli functions.")
 }
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(CLI_POSITION, "Test cli position functions.")
+UT_SUITE(CLI_CONTEXT, "Test cli functions that requiire a lua context.")
 {
     int stat = 0;
-    int length = 0;
+    int iret = 0;
 
     ///// Need to load a real file for position stuff.
     lua_State* _l = luaL_newstate();
@@ -193,21 +186,20 @@ UT_SUITE(CLI_POSITION, "Test cli position functions.")
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, "script1.lua");
     UT_EQUAL(stat, NEB_OK);
-    if (stat >= LUA_ERRRUN) { UT_INFO("Lua error", lua_tostring(_l, -1)); }
+    const char* e = nebcommon_EvalStatus(_l, stat, "load script");
+    UT_NULL(e);
 
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     UT_EQUAL(stat, NEB_OK);
-    if (stat >= LUA_ERRRUN) { UT_INFO("Lua error", lua_tostring(_l, -1)); }
-
-    luautils_DumpGlobals(_l, stdout);
-
+    e = nebcommon_EvalStatus(_l, stat, "run script");
+    UT_NULL(e);
 
     // Script setup.
-    stat = luainterop_Setup(_l, &length);
+    stat = luainterop_Setup(_l, &iret);
     UT_EQUAL(stat, NEB_OK);
-    if (stat >= LUA_ERRRUN) { UT_INFO("Lua error", lua_tostring(_l, -1)); }
-    UT_GREATER(length, 0);
+    e = nebcommon_EvalStatus(_l, stat, "setup()");
+    UT_NULL(e);
 
     ///// Good to go now.
     _response_lines.clear();
@@ -241,6 +233,13 @@ UT_SUITE(CLI_POSITION, "Test cli position functions.")
     UT_EQUAL(_response_lines.size(), 2);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
     UT_STR_EQUAL(_response_lines[1].c_str(), "invalid position: 111:9:6\n");
+
+    _response_lines.clear();
+    strncpy(_next_command, "kill", MAX_LINE_LEN);
+    stat = _DoCli();
+    UT_EQUAL(stat, NEB_OK);
+    UT_EQUAL(_response_lines.size(), 1);
+    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     lua_close(_l);
 

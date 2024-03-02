@@ -165,6 +165,9 @@
     <ClInclude Include="luainteropwork.h" />
     <ClInclude Include="nebcommon.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="_log.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

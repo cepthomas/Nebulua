@@ -65,8 +65,7 @@ function setup()
     add_loop("F5",  tot(20,0),  tot(14,1))
 
     neb.set_tempo(70)
-
-    return 0 -- not using composition aka freeform
+    return 0
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment.

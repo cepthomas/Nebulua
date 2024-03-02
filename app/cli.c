@@ -41,5 +41,6 @@ int cli_printf(const char* format, ...)
 char* cli_gets(char* buff, int len)
 {
     char* s = fgets(buff, len, stdin);
+    buff[strcspn(buff, "\n")] = 0;
     return s;
 }

@@ -46,7 +46,7 @@ int luainterop_Setup(lua_State* l, int* ret)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tointeger(l, -1)) { *ret = lua_tointeger(l, -1); }
+        if (lua_isinteger(l, -1)) { *ret = lua_tointeger(l, -1); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }
@@ -78,7 +78,7 @@ int luainterop_Step(lua_State* l, int tick, int* ret)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tointeger(l, -1)) { *ret = lua_tointeger(l, -1); }
+        if (lua_isinteger(l, -1)) { *ret = lua_tointeger(l, -1); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }
@@ -114,7 +114,7 @@ int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tointeger(l, -1)) { *ret = lua_tointeger(l, -1); }
+        if (lua_isinteger(l, -1)) { *ret = lua_tointeger(l, -1); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }
@@ -150,7 +150,7 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_tointeger(l, -1)) { *ret = lua_tointeger(l, -1); }
+        if (lua_isinteger(l, -1)) { *ret = lua_tointeger(l, -1); }
         else { stat = INTEROP_BAD_RET_TYPE; }
         lua_pop(l, num_ret); // Clean up results.
     }

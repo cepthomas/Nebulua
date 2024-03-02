@@ -15,7 +15,7 @@ M.script_funcs =
         host_func_name = "Setup",
         description = "Call to initialize Nebulator and composition.",
         -- no args
-        ret = { type = "I", description = "Total length of composition - 0 means no composition/free-form" }
+        ret = { type = "I", description = "Unused" }
     },
 
     {

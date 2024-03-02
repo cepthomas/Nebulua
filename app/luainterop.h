@@ -13,15 +13,16 @@
 
 #include "lua.h"
 
-#define INTEROP_BAD_FUNC_NAME 10
-#define INTEROP_BAD_RET_TYPE  11
+#define INTEROP_BAD_FUNC_NAME 200
+#define INTEROP_BAD_RET_TYPE  201
+
 #define MAX_STRING 100
 
 //---------------- Call lua functions from host -------------//
 
 /// Lua export function: Call to initialize Nebulator and composition.
 /// @param[in] l Internal lua state.
-/// @param[out] int* Total length of composition - 0 means no composition/free-form
+/// @param[out] int* Unused
 /// @return status
 int luainterop_Setup(lua_State* l, int* ret);
 
