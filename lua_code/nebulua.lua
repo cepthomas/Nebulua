@@ -20,7 +20,15 @@ require('neb_common')
 
 local M = {}
 
------------------------------------------------------------------------------
+----- Global vars for access by app. ------
+
+-- Total length of composition.
+_length = 0
+
+-- Key is section name, value is sart tick.
+_section_names = {}
+
+----- Private vars ------
 
 -- All the composition StepX. Key is tick aka when-to-play.
 local _steps = {}
@@ -28,19 +36,11 @@ local _steps = {}
 -- Things that are executed once and disappear: NoteOffs, script send_note(). Same structure as _steps.
 local _transients = {}
 
--- Total length of composition. Global for access by app.
-_length = 0
-
 -- Where we be.
 local _current_tick = 0
 
 
 function _mole() return _steps, _transients end -- TODO2 remove
-
-local function lazy_add(tbl, key, obj)
-   if tbl[key] == nil then tbl[key] = {} end
-   table.insert(tbl[key], obj)
-end
 
 -----------------------------------------------------------------------------
 -- Log functions. Magic numbers from host C code.
@@ -57,6 +57,12 @@ M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
 
+
+-----------------------------------------------------------------------------
+local function lazy_add(tbl, key, obj)
+   if tbl[key] == nil then tbl[key] = {} end
+   table.insert(tbl[key], obj)
+end
 
 -----------------------------------------------------------------------------
 --- Process notes due now.
@@ -123,30 +129,28 @@ end
 -----------------------------------------------------------------------------
 --- Process all sections into discrete steps.
 -- @param sections table user section specs
--- @return total length in ticks.
 function M.init(sections)
     -- Hard reset.
     _steps = {}
     _transients = {}
-    local num = 0
-
-    -- Absolute time for step calculation.
-    local abs_tick = 0
+    _section_names = {}
+    _length = 0
 
     for _, section in ipairs(sections) do
         -- Sanity check.
         if section.name == nil then error("Missing section name", 2) end
         -- Save the start for markers.
-        section.start = abs_tick
-        local channel_max = 0
+        section.start = _length
+        _section_names[section.name] = _length
 
-        -- Iterate the contents.
+        local section_max = 0
+
+        -- Iterate the contents by sections.
         for k, v in pairs(section) do
             if k == "name" or k == "start" then
                 -- skip
             elseif ut.is_table(v) then
                 -- Time offset for this channel events.
-                -- TODO1 need a way to get the names/offsets back to host. maybe part of position command?
                 local tick = section.start
 
                 -- The sequences. Process each. First element is the channel.
@@ -163,7 +167,7 @@ function M.init(sections)
                             else -- save them
                                 for c, st in ipairs(chunk_steps) do
                                     lazy_add(_steps, st.tick, st)
-                                    num = num +1
+                                    _length = _length +1
                                 end
                             end
                             tick = tick + seq_length
@@ -171,21 +175,20 @@ function M.init(sections)
                     end
                 end
 
-                -- Keep track of overall time.
-                channel_max = math.max(channel_max, tick)
+                -- Keep track of overall time for section.
+                section_max = math.max(section_max, tick)
             else
                 error(string.format("Element [%s] is not a valid channel", tostring(v)), 2)
             end
         end
 
         -- Keep track of overall time.
-        abs_tick = abs_tick + channel_max
+        _length = _length + section_max
 
     end
 
     -- All done.
 
-    return num
 end
 
 

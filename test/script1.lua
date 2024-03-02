@@ -35,6 +35,7 @@ local master_vol = 0.8
 -- Init stuff. Required function.
 function setup()
     neb.set_tempo(95)
+    print("sections", sections)
     neb.init(sections)
     return 0
 end
@@ -89,7 +90,7 @@ end
 
 -----------------------------------------------------------------------------
 -- Called from section.
-function my_section_func(tick)
+local function my_section_func(tick)
     -- do something
 end
 
@@ -122,7 +123,7 @@ A "typical" sone would have about 4000 on/off events.
 
 -- Sequences --
 
-drums_verse =
+local drums_verse =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|8       |        |8       |        |8       |        |8       |        |", 10 },
@@ -130,7 +131,7 @@ drums_verse =
     { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 12 }
 }
 
-drums_chorus =
+local drums_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|6       |        |6       |        |6       |        |6       |        |", 10 },
@@ -139,14 +140,14 @@ drums_chorus =
     { "|        |        |        |        |        |        |        |8       |", 15 },
 }
 
-keys_verse =
+local keys_verse =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
 }
 
-keys_chorus =
+local keys_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|6-      |        |        |        |        |        |        |        |", "F4" },
@@ -155,7 +156,7 @@ keys_chorus =
     { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
 }
 
-bass_verse =
+local bass_verse =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|7   7   |        |        |        |        |        |        |        |", "C2" },
@@ -163,14 +164,14 @@ bass_verse =
     { "|        |        |        |        |        |        |        |    7   |", "A#2" },
 }
 
-bass_chorus =
+local bass_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
 }
 
 -- Fill space. Can't use nil.
-empty = {}
+local empty = {}
 
 
 -----------------------------------------------------------------------------

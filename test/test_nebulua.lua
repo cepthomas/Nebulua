@@ -91,8 +91,9 @@ function M.suite_process_script(pn)
     pn.UT_EQUAL(#sections, 3)
 
     -- Process the data.
-    local length = neb.init(sections)
-    pn.UT_EQUAL(length, 201)
+    neb.init(sections)
+    -- local length = neb.init(sections)
+    -- pn.UT_EQUAL(length, 201)
 
     local steps, transients = _mole()
 

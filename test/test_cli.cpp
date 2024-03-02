@@ -16,6 +16,7 @@ extern "C"
 
 #include "luautils.h"
 #include "luainterop.h"
+
 #include "nebcommon.h"
 #include "cbot.h"
 #include "devmgr.h"
@@ -31,7 +32,7 @@ int _DoCli(void);
 // For mock cli.
 char _next_command[MAX_LINE_LEN];
 
-// Collected mock output lines.
+// Collected mock cli output lines.
 std::vector<std::string> _response_lines = {};
 
 
@@ -165,8 +166,9 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
     return 0;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(CLI_CONTEXT, "Test cli functions that requiire a lua context.")
+UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
 {
     int stat = 0;
     int iret = 0;
@@ -189,13 +191,13 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that requiire a lua context.")
     const char* e = nebcommon_EvalStatus(_l, stat, "load script");
     UT_NULL(e);
 
-    // Run the script to init everything.
+    // Execute the loaded script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     UT_EQUAL(stat, NEB_OK);
     e = nebcommon_EvalStatus(_l, stat, "run script");
     UT_NULL(e);
 
-    // Script setup.
+    // Script setup function.
     stat = luainterop_Setup(_l, &iret);
     UT_EQUAL(stat, NEB_OK);
     e = nebcommon_EvalStatus(_l, stat, "setup()");

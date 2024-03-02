@@ -139,7 +139,7 @@ int exec_Main(const char* script_fn)
     int stat = NEB_OK;
 
     const char* e = NULL;
-    int ret = 0;
+    int iret = 0;
     int exit_code = 0;
 
     #define EXEC_FAIL(code, msg) { LOG_ERROR(msg); fprintf(_fp_err, "ERROR %s\n", msg); exit_code = code; goto init_done; }
@@ -198,10 +198,10 @@ int exec_Main(const char* script_fn)
     if (e != NULL) EXEC_FAIL(15, e);
 
     // Script nebulua setup.
-    stat = luainterop_Setup(_l, &_length);
+    stat = luainterop_Setup(_l, &iret);
     e = nebcommon_EvalStatus(_l, stat, "Script setup() failed [%s].", script_fn);
     if (e != NULL) EXEC_FAIL(16, e);
-
+//TODO1 get length etc
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
@@ -585,7 +585,7 @@ int _ReloadCmd(const cli_command_t* pcmd, int argc, char* argv[])
 
     if (argc == 1) // no args
     {
-        // TODO1 do something to reload script =>
+        // TODO2 do something to reload script =>
         // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
         // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
         stat = NEB_OK;
@@ -645,6 +645,7 @@ static cli_command_t _commands[] =
 int _Kill()
 {
     int stat = NEB_OK;
+    int iret;
 
     // Send kill to all midi outputs.
     midi_device_t* dev = devmgr_GetOutputDevices(NULL);
@@ -661,7 +662,7 @@ int _Kill()
 
     // Hard reset.
     _script_running = false;
-    stat = luainterop_Setup(_l, &_length);
+    stat = luainterop_Setup(_l, &iret);
     const char* e = nebcommon_EvalStatus(_l, stat, "Script setup() failed in kill");
     if (e != NULL)
     {
