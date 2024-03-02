@@ -134,6 +134,7 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\ftimer.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\list.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\logger.c" />
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\mathutils.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stopwatch.c" />
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\stringx.c" />
     <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
@@ -152,6 +153,7 @@
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\ftimer.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\list.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\logger.h" />
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\mathutils.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\private\cbot_internal.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stopwatch.h" />
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\stringx.h" />

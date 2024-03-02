@@ -9,6 +9,9 @@ local neb = require("nebulua") -- api
 neb.log_info("=============== Is this thing on? ===============")
 
 
+__script1 = 656565
+
+
 ------------------------- Config ----------------------------------------
 
 -- Device names
@@ -36,7 +39,7 @@ local length = 0
 -- Init stuff. Required function.
 function setup()
     neb.set_tempo(95)
-    length = neb.init(sequences, sections) -- if using composition
+    length = neb.init(sections) -- if using composition
     return length -- if using composition oherwise return 0
 end
 

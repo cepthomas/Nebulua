@@ -14,6 +14,7 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 
+#include "luautils.h"
 #include "luainterop.h"
 #include "nebcommon.h"
 #include "cbot.h"
@@ -24,6 +25,7 @@ extern "C"
 extern lua_State* _l;
 
 int _DoCli(void);
+
 }
 
 // For mock cli.
@@ -165,11 +167,6 @@ UT_SUITE(CLI_MAIN, "Test cli functions.")
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
     UT_STR_EQUAL(_response_lines[1].c_str(), "invalid option: junk\n");
 
-    //for (std::vector<std::string>::iterator iter = _response_lines.begin(); iter != _response_lines.end(); ++iter)
-    //{
-    //    printf(iter->c_str());
-    //}
-
     lua_close(_l);
 
     return 0;
@@ -183,21 +180,33 @@ UT_SUITE(CLI_POSITION, "Test cli position functions.")
 
     ///// Need to load a real file for position stuff.
     lua_State* _l = luaL_newstate();
+
     // Load std libraries.
     luaL_openlibs(_l);
+
     // Load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);
+
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
+
     // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, "script1.lua");
     UT_EQUAL(stat, NEB_OK);
+    if (stat >= LUA_ERRRUN) { UT_INFO("Lua error", lua_tostring(_l, -1)); }
+
     // Run the script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     UT_EQUAL(stat, NEB_OK);
+    if (stat >= LUA_ERRRUN) { UT_INFO("Lua error", lua_tostring(_l, -1)); }
+
+    luautils_DumpGlobals(_l, stdout);
+
+
     // Script setup.
     stat = luainterop_Setup(_l, &length);
     UT_EQUAL(stat, NEB_OK);
+    if (stat >= LUA_ERRRUN) { UT_INFO("Lua error", lua_tostring(_l, -1)); }
     UT_GREATER(length, 0);
 
     ///// Good to go now.
@@ -245,7 +254,6 @@ extern "C"
 {
 int cli_open()
 {
-    //_next_response[0] = 0;
     _next_command[0] = 0;
     _response_lines.clear();
     return 0;

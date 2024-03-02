@@ -130,7 +130,7 @@ function M.create_definition(name, intervals)
     local sints = sx.strsplit(intervals, " ", true)
     local iints = {}
     for _, sint in ipairs(sints) do
-        iint = M.interval_name_to_number(sint)
+        local iint = M.interval_name_to_number(sint)
         if iint ~= nil then
             table.insert(iints, iint)
         else

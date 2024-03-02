@@ -89,7 +89,7 @@ static int _current_tick = 0;
 // Length of composition in ticks.
 static int _length = 0;
 
-// Keep going. TODO1 cli implementation for all these. set: start, end, section, reset/all
+// Keep going. TODO1 cli implementation for all these. set: start, end, section, reset/all.
 static bool _do_loop = false;
 
 // Loop start tick. -1 means start of composition.
@@ -130,7 +130,7 @@ void _MidiClockHandler(double msec);
 void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 /// Top level error handler for nebulua status.
-static bool _EvalStatus(int stat, int line, const char* format, ...);
+bool _EvalStatus(int stat, int line, const char* format, ...);
 
 /// General kill everything.
 static int _Kill();
@@ -584,7 +584,6 @@ int _PositionCmd(const cli_command_t* pcmd, int argc, char* argv[])
             int end = _loop_end == -1 ? _length : _loop_end;
             position = mathutils_Constrain(position, start, end);
 
-            _current_tick = position >= _length ? _length - 1 : position;
             cli_printf("%s\n", nebcommon_FormatBarTime(_current_tick)); // echo
             stat = NEB_OK;
         }
@@ -694,7 +693,7 @@ bool _EvalStatus(int stat, int line, const char* format, ...)
         ok = false;
 
         // Format info string.
-        char info[100];
+        char info[ERR_BUFF_LEN];
         va_list args;
         va_start(args, format);
         vsnprintf(info, sizeof(info) - 1, format, args);

@@ -55,6 +55,9 @@
     <ClCompile Include="cli.c">
       <Filter>app</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\mathutils.c">
+      <Filter>cbot</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="devmgr.h">
@@ -101,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="cli.h">
       <Filter>app</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\mathutils.h">
+      <Filter>cbot</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
