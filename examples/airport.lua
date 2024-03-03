@@ -24,7 +24,7 @@ local midi_out = "Microsoft GS Wavetable Synth"
 -- Channels
 local hout = create_output_channel(midi_out, 1, md.instruments.Pad2Warm)
 
--- note string, BT dur, BT delay
+-- note string, BarTime dur, BarTime delay
 local function add_loop(snote, duration, delay)
     -- List of note numbers or nil, error if invalid nstr.
     notes, err = md.get_notes_from_string(snote)
@@ -42,7 +42,7 @@ local function add_loop(snote, duration, delay)
 end
 
 local function tot(beat, sub)
-    bt = BT(beat, sub)
+    bt = BarTime(beat, sub)
     return bt.get_tick()
 end
 

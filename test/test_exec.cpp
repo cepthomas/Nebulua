@@ -115,7 +115,7 @@ UT_SUITE(EXEC_STUFF, "Test exec stuff.")
 
     ///// Good to go now.
 
-    // Get some nebulator script globals. TODO2 error checking?
+    // Get some nebulator script globals.
     // => length
     int ltype = lua_getglobal(_l, "_length");
     if (ltype != LUA_TNUMBER) { stat = 9999; }

@@ -115,8 +115,8 @@ static char _cli_buff[CLI_BUFF_LEN];
 
 
 //---------------------- Functions ------------------------//
-// 
-// Technically these should all be static but external visibility makes testing possible.
+
+// Technically these should all be static but external visibility makes unit testing possible.
 
 // Process user input.
 int _DoCli(void);
@@ -130,6 +130,20 @@ void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR 
 /// General kill everything.
 static int _Kill();
 
+
+
+//----------------------- TODO2 section array stuff ---------------------//
+#define SECTION_NAME_LEN 32
+#define NUM_SECTIONS 32
+typedef struct { char name[SECTION_NAME_LEN]; int start; } section_desc_t;
+section_desc_t _section_descs[NUM_SECTIONS];
+
+int comp_sections(const void* elem1, const void* elem2)
+{
+    section_desc_t* f = (section_desc_t*)elem1;
+    section_desc_t* s = (section_desc_t*)elem2;
+    return (f->start > s->start) - (f->start < s->start);
+}
 
 //----------------------- Main Functions ---------------------//
 
@@ -203,9 +217,26 @@ int exec_Main(const char* script_fn)
     if (e != NULL) EXEC_FAIL(16, e);
 
 
-//TODO1 get length etc
+    // Get length and section info. TODO2 error checking? overflow.
+    int ltype = lua_getglobal(_l, "_length");
+    int length = (int)lua_tointeger(_l, -1);
+    lua_pop(_l, 1); // Clean up stack.
 
-    
+    memset(_section_descs, 0, sizeof(_section_descs));
+    section_desc_t* ps = _section_descs;
+    ltype = lua_getglobal(_l, "_section_names");
+    lua_pushnil(_l);
+    while (lua_next(_l, -2) != 0)
+    {
+        strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
+        ps->start = (int)lua_tointeger(_l, -1);
+        lua_pop(_l, 1);
+        ps++;
+    }
+    qsort(_section_descs, ps - _section_descs, sizeof(section_desc_t), comp_sections);
+    lua_pop(_l, 1); // Clean up stack.
+
+
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
@@ -217,7 +248,7 @@ int exec_Main(const char* script_fn)
         if (e != NULL) EXEC_FAIL(17, e);
     }
 
-////////////
+/////
 init_done:
 
     ///// Finished. Clean up resources and go home. /////

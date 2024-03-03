@@ -46,7 +46,7 @@ function step(tick)
 
     neb.process_step(tick) -- required if using composition
 
-    t = BT(tick)
+    t = BarTime(tick)
 
     -- Selective work.
     if t.beat == 0 and t.sub == 0 then
@@ -177,7 +177,7 @@ local nothing = {}
 
 -----------------------------------------------------------------------------
 
--- local sections = not local...
+-- local sections = TODO2 not local...
 sections =
 {
     {

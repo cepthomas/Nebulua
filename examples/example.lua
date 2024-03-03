@@ -52,6 +52,87 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
+
+--------------------- Called from app -----------------------------------
+
+-----------------------------------------------------------------------------
+-- Init stuff. Required function.
+function setup()
+    neb.log_info("example initialization")
+    math.randomseed(os.time())
+    neb.set_tempo(88)
+    neb.init(sections)
+    return 0
+
+-----------------------------------------------------------------------------
+-- Main loop - called every mmtimer increment. Required function.
+function step(tick)
+    -- Main work.
+    neb.process_step(tick) -- required if using composition
+
+    -- Other work.
+    boing(60)
+    t = BarTime(tick)
+    if t.get_beat() == 0 and t.get_sub() == 0 then
+        neb.send_controller(hnd_synth, ctrl.Pan, 90)
+        -- or...
+        neb.send_controller(hnd_keys,  ctrl.Pan, 30)
+    end
+
+    return 0
+end
+
+-----------------------------------------------------------------------------
+-- Handlers for input note events.
+function input_note(chan_hnd, note_num, velocity)
+    neb.log_info("input_note %d %d %d", chan_hnd, note_num, velocity)
+
+    if chan_hnd == hbing_bong then
+        -- whiz = ...
+    end
+
+    neb.send_note(hnd_synth, note_num, velocity, 8)
+
+    return 0
+end
+
+-----------------------------------------------------------------------------
+-- Handlers for input controller events.
+function input_controller(chan_hnd, controller, value)
+    neb.log_info("input_controller") --, chan_hnd, ctlid, value)
+    return 0
+end
+
+
+----------------------- User lua functions -------------------------
+
+-----------------------------------------------------------------------------
+-- Called from sequence.
+local function seq_func(tick)
+    local note_num = math.random(0, #alg_scale)
+    neb.send_note(hnd_synth, alg_scale[note_num], drum_vol, 8) --0.5)
+end
+
+-- Called from section.
+function section_func(bar, beat, sub)
+    -- do something
+end
+
+-----------------------------------------------------------------------------
+-- Make a noise.
+local function boing(note_num)
+    local boinged = false;
+
+    neb.log_info("boing")
+    if note_num == 0 then
+        note_num = math.random(30, 80)
+        boinged = true
+        neb.send_note(hnd_synth, note_num, synth_vol, 8) --0.5)
+    end
+    return boinged
+end
+
+
 ------------------------- Composition ---------------------------------------
 
 -- Sequences --
@@ -121,7 +202,7 @@ local bass_chorus =
 
 
 -----------------------------------------------------------------------------
-local sections =
+sections =
 {
     beginning =
     {
@@ -145,84 +226,4 @@ local sections =
         { hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
     }
 }
-
-
---------------------- Called from app -----------------------------------
-
------------------------------------------------------------------------------
--- Init stuff. Required function.
-function setup()
-    neb.log_info("example initialization")
-    math.randomseed(os.time())
-    neb.set_tempo(88)
-    neb.init(sections)
-    return 0
-
------------------------------------------------------------------------------
--- Main loop - called every mmtimer increment. Required function.
-function step(tick)
-    -- Main work.
-    neb.process_step(tick) -- required if using composition
-
-    -- Other work.
-    boing(60)
-    t = bt.BT(tick)
-    if t.get_beat() == 0 and t.get_sub() == 0 then
-        neb.send_controller(hnd_synth, ctrl.Pan, 90)
-        -- or...
-        neb.send_controller(hnd_keys,  ctrl.Pan, 30)
-    end
-
-    return 0
-end
-
------------------------------------------------------------------------------
--- Handlers for input note events.
-function input_note(chan_hnd, note_num, velocity)
-    neb.log_info("input_note %d %d %d", chan_hnd, note_num, velocity)
-
-    if chan_hnd == hbing_bong then
-        -- whiz = ...
-    end
-
-    neb.send_note(hnd_synth, note_num, velocity, 8)
-
-    return 0
-end
-
------------------------------------------------------------------------------
--- Handlers for input controller events.
-function input_controller(chan_hnd, controller, value)
-    neb.log_info("input_controller") --, chan_hnd, ctlid, value)
-    return 0
-end
-
-
------------------------ User lua functions -------------------------
-
------------------------------------------------------------------------------
--- Called from sequence.
-local function seq_func(tick)
-    local note_num = math.random(0, #alg_scale)
-    neb.send_note(hnd_synth, alg_scale[note_num], drum_vol, 8) --0.5)
-end
-
--- Called from section.
-function section_func(bar, beat, sub)
-    -- do something
-end
-
------------------------------------------------------------------------------
--- Make a noise.
-local function boing(note_num)
-    local boinged = false;
-
-    neb.log_info("boing")
-    if note_num == 0 then
-        note_num = math.random(30, 80)
-        boinged = true
-        neb.send_note(hnd_synth, note_num, synth_vol, 8) --0.5)
-    end
-    return boinged
-end
 

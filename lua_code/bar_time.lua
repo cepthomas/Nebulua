@@ -17,7 +17,7 @@ local mt
 --  - ("1:2:3")
 -- @param sections table user section specs
 -- @return object or nil, err if invalid
-function BT(arg1, arg2, arg3)
+function BarTime(arg1, arg2, arg3)
     local d = { tick = 0 } -- default
     local err = nil
     -- Meta.
@@ -151,7 +151,7 @@ mt =
     __add = function(a, b)
         sana, sanb = normalize_operands(a, b, 'add')
             ret = nil
-            if sana ~= nil and sanb ~= nil then ret = BT(sana + sanb) end
+            if sana ~= nil and sanb ~= nil then ret = BarTime(sana + sanb) end
             return ret
         end,
 
@@ -159,7 +159,7 @@ mt =
             ret = nil
             sana, sanb = normalize_operands(a, b, 'sub')
             if sana ~= nil and sanb ~= nil and sana >= sanb then
-                ret = BT(sana - sanb)
+                ret = BarTime(sana - sanb)
             else
                 error("result is negative", 3)
             end

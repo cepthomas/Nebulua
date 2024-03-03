@@ -8,9 +8,9 @@ local M = {}
 -- ut.config_debug(true)
 
 --- Music definitions
-NOTES_PER_OCTAVE = 12
-MIDDLE_C4 = 60
-DEFAULT_OCTAVE = 4 -- middle C
+local NOTES_PER_OCTAVE = 12
+local MIDDLE_C4 = 60
+local DEFAULT_OCTAVE = 4 -- middle C
 
 
 --- All the builtin chord defs.

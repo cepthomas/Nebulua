@@ -29,7 +29,7 @@ end
 function M.suite_bar_time_create(pn)
 
     -- Basic construction.
-    bt = BT(12345)
+    bt = BarTime(12345)
     pn.UT_NOT_NIL(bt)
 
     pn.UT_EQUAL(bt.get_tick(), 12345)
@@ -39,7 +39,7 @@ function M.suite_bar_time_create(pn)
     pn.UT_STR_EQUAL(tostring(bt), "385:3:1")
 
     -- Create from music terminology.
-    bt = BT(129, 1, 6)
+    bt = BarTime(129, 1, 6)
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 4142)
     pn.UT_EQUAL(bt.get_bar(), 129)
@@ -48,56 +48,56 @@ function M.suite_bar_time_create(pn)
     pn.UT_STR_EQUAL(tostring(bt), "129:1:6")
 
     -- Parse three part form - time usually.
-    bt = BT("108:0:7")
+    bt = BarTime("108:0:7")
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 3463)
     pn.UT_STR_EQUAL(tostring(bt), "108:0:7")
 
-    bt = BT("711:3:0")
+    bt = BarTime("711:3:0")
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 22776)
     pn.UT_STR_EQUAL(tostring(bt), "711:3:0")
 
     -- Parse two part form - duration usually.
-    bt = BT("1:4")
+    bt = BarTime("1:4")
     pn.UT_NOT_NIL(bt)
     pn.UT_EQUAL(bt.get_tick(), 12)
     pn.UT_STR_EQUAL(tostring(bt), "0:1:4")
 
     -- Bad input in many ways. Need to use pcall().
-    ok, bt = pcall(BT, 5.78)
+    ok, bt = pcall(BarTime, 5.78)
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Bad constructor: 5.78, nil, nil")
 
-    ok, bt = pcall(BT, { me="bad" })
+    ok, bt = pcall(BarTime, { me="bad" })
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Bad constructor: table:")
 
-    ok, bt = pcall(BT, 25, 5, 2)
+    ok, bt = pcall(BarTime, 25, 5, 2)
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Bad constructor: Invalid integer beat: 5")
 
-    ok, bt = pcall(BT, 25, 1, 9)
+    ok, bt = pcall(BarTime, 25, 1, 9)
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Bad constructor: Invalid integer sub: 9")
 
-    ok, bt = pcall(BT, "1.2.3")
+    ok, bt = pcall(BarTime, "1.2.3")
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Invalid time: 1.2.3")
 
-    ok, bt = pcall(BT, "78")
+    ok, bt = pcall(BarTime, "78")
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "attempt to compare string with number")
 
-    ok, bt = pcall(BT, "3.45")
+    ok, bt = pcall(BarTime, "3.45")
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Invalid time: 3.45")
 
-    ok, bt = pcall(BT, "1:2:3:4")
+    ok, bt = pcall(BarTime, "1:2:3:4")
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Invalid time: 1:2:3:4")
 
-    ok, bt = pcall(BT, "1:alpha:5")
+    ok, bt = pcall(BarTime, "1:alpha:5")
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Invalid time: 1:alpha:5")
 end
@@ -108,10 +108,10 @@ function M.suite_bar_time_meta(pn)
     -- Test metamethods: + - == < <="
 
     -- Test objects.
-    bt1 = BT(1109)
+    bt1 = BarTime(1109)
     pn.UT_NOT_NIL(bt1)
 
-    bt2 = BT(472)
+    bt2 = BarTime(472)
     pn.UT_NOT_NIL(bt2)
 
     -- add
@@ -145,7 +145,7 @@ function M.suite_bar_time_meta(pn)
     pn.UT_STR_EQUAL(bt, "result is negative")
 
     -- comparison
-    bt3 = BT(1109)
+    bt3 = BarTime(1109)
     pn.UT_TRUE(bt1 == bt3)
     pn.UT_FALSE(bt1 ~= bt3)
 
