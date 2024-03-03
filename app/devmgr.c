@@ -84,7 +84,7 @@ int devmgr_Init(midi_input_handler_t midi_input_handler)
             if (mmres == MMSYSERR_NOERROR)
             {
                 // Save the device info.
-                strncpy(pdev->sys_dev_name, caps_out.szPname, MAXPNAMELEN);
+                strncpy(pdev->sys_dev_name, caps_out.szPname, MAXPNAMELEN - 1);
                 pdev->handle = INACTIVE_DEV; // exists but not opened
             }
         }

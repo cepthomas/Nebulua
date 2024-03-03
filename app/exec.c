@@ -201,7 +201,11 @@ int exec_Main(const char* script_fn)
     stat = luainterop_Setup(_l, &iret);
     e = nebcommon_EvalStatus(_l, stat, "Script setup() failed [%s].", script_fn);
     if (e != NULL) EXEC_FAIL(16, e);
+
+
 //TODO1 get length etc
+
+    
     ///// Good to go now. /////
     EXIT_CRITICAL_SECTION;
 
@@ -609,7 +613,7 @@ int _Usage(const cli_command_t* pcmd, int argc, char* argv[])
         {
             // Maybe multiline args. Make writable copy and tokenize it.
             char cp[128];
-            strncpy(cp, cmditer->args, sizeof(cp));
+            strncpy(cp, cmditer->args, sizeof(cp) - 1);
             char* tok = strtok(cp, "$");
             while (tok != NULL)
             {

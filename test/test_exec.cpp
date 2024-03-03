@@ -66,6 +66,17 @@ UT_SUITE(EXEC_MAIN, "Test exec functions.")
 }
 
 
+#define SECTION_NAME_LEN 32
+#define NUM_SECTIONS 32
+typedef struct { char name[SECTION_NAME_LEN]; int start; } section_name_t;
+
+int comp_sections(const void* elem1, const void* elem2)
+{
+    section_name_t* f = (section_name_t*)elem1;
+    section_name_t* s = (section_name_t*)elem2;
+    return (f->start > s->start) - (f->start < s->start);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(EXEC_STUFF, "Test exec stuff.")
 {
@@ -103,16 +114,31 @@ UT_SUITE(EXEC_STUFF, "Test exec stuff.")
     UT_NULL(e);
 
     ///// Good to go now.
+
+    // Get some nebulator script globals. TODO2 error checking?
+    // => length
     int ltype = lua_getglobal(_l, "_length");
-    int length = lua_tointeger(_l, -1);
-
-    ltype = lua_getglobal(_l, "_section_names"); //TTODO1 get these.
-
-    
-    //lua_Integer lua_tointegerx(lua_State * L, int index, int* isnum);
+    if (ltype != LUA_TNUMBER) { stat = 9999; }
+    int length = (int)lua_tointeger(_l, -1);
     lua_pop(_l, 1); // Clean up.
 
-    //luautils_DumpStack(_l, stdout, "xxx");
+    section_name_t sections[NUM_SECTIONS];
+    memset(sections, 0, sizeof(sections));
+    section_name_t* ps = sections;
+
+    ltype = lua_getglobal(_l, "_section_names");
+    lua_pushnil(_l);
+    while (lua_next(_l, -2) != 0)
+    {
+        strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
+        ps->start = (int)lua_tointeger(_l, -1);
+        lua_pop(_l, 1);
+        ps++;
+    }
+
+    qsort(sections, ps - sections, sizeof(section_name_t), comp_sections);
+
+    lua_pop(_l, 1); // Clean up.
 
     lua_close(_l);
 

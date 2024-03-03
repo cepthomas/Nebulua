@@ -29,13 +29,13 @@ local hnd_in2  = neb.create_input_channel(dev_in2, 11)
 -- Local vars.
 local master_vol = 0.8
 
---------------------- Called from C core -----------------------------------
+
+--------------------- Called from app -----------------------------------
 
 -----------------------------------------------------------------------------
 -- Init stuff. Required function.
 function setup()
     neb.set_tempo(95)
-    print("sections", sections)
     neb.init(sections)
     return 0
 end
@@ -108,6 +108,7 @@ local function boing(note_num)
     return boinged
 end
 
+
 ------------------------- Composition ---------------------------------------
 
 --[[
@@ -171,28 +172,30 @@ local bass_chorus =
 }
 
 -- Fill space. Can't use nil.
-local empty = {}
+local nothing = {}
 
 
 -----------------------------------------------------------------------------
 
+-- local sections = not local...
 sections =
 {
     {
         name = "beginning",
-        { hnd_instrument1, empty,       keys_verse,    keys_verse,  keys_verse },
-        { hnd_instrument2, bass_verse,  bass_verse,    empty,       bass_verse }
+        { hnd_instrument1, nothing,     keys_verse,    keys_verse,  keys_verse },
+        { hnd_instrument2, bass_verse,  bass_verse,    nothing,     bass_verse }
     },
 
     {
         name = "middle",
-        { hnd_instrument1, empty,        keys_chorus,  keys_chorus,  keys_chorus },
+        { hnd_instrument1, nothing,      keys_chorus,  keys_chorus,  keys_chorus },
         { hnd_instrument2, bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus }
     },
 
     {
         name = "ending",
-        { hnd_instrument1, keys_verse,    keys_verse,  keys_verse,   empty      },
+        { hnd_instrument1, keys_verse,    keys_verse,  keys_verse,   nothing    },
         { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   bass_verse }
     }
 }
+

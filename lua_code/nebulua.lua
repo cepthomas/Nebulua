@@ -25,7 +25,7 @@ local M = {}
 -- Total length of composition.
 _length = 0
 
--- Key is section name, value is sart tick.
+-- Key is section name, value is start tick.
 _section_names = {}
 
 ----- Private vars ------
@@ -135,8 +135,9 @@ function M.init(sections)
     _transients = {}
     _section_names = {}
     _length = 0
+    -- print(">>>", #sections)
 
-    for _, section in ipairs(sections) do
+    for i, section in ipairs(sections) do
         -- Sanity check.
         if section.name == nil then error("Missing section name", 2) end
         -- Save the start for markers.
@@ -146,31 +147,35 @@ function M.init(sections)
         local section_max = 0
 
         -- Iterate the contents by sections.
+        local row_num = 0
         for k, v in pairs(section) do
+            row_num = row_num + 1
             if k == "name" or k == "start" then
                 -- skip
             elseif ut.is_table(v) then
                 -- Time offset for this channel events.
                 local tick = section.start
 
-                -- The sequences. Process each. First element is the channel.
+                -- The sequences. Process each. First element is the channel followed by the sequences.
                 local chan_hnd = 0
-                for i, seq in ipairs(v) do
+                for i, seq_elem in ipairs(v) do
                     if i == 1 then
-                        chan_hnd = seq
-                    else
-                        for _, seq_chunk in ipairs(seq) do
+                        chan_hnd = seq_elem
+                    else -- sequence
+                        for c, seq_chunk in ipairs(seq_elem) do
                             -- { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
+                            -- { "|    5-  |        |        |        |        |        |        |        |", my_seq_func }
+                            -- print(">>>", seq_chunk[1], seq_chunk[2])
                             local chunk_steps, seq_length = M.parse_chunk(seq_chunk, chan_hnd, tick)
                             if chunk_steps == nil then
-                                error(string.format("Couldn't parse chunk: %s", seq_chunk), 2)
+                                error(string.format("Couldn't parse sequence in section:%s row:%d elem:%d", section.name, row_num, i), 2)
                             else -- save them
                                 for c, st in ipairs(chunk_steps) do
                                     lazy_add(_steps, st.tick, st)
                                     _length = _length +1
                                 end
+                                tick = tick + seq_length
                             end
-                            tick = tick + seq_length
                         end
                     end
                 end
@@ -188,7 +193,6 @@ function M.init(sections)
     end
 
     -- All done.
-
 end
 
 
@@ -199,11 +203,15 @@ end
 -- @param start_tick
 -- @return steps, seq_length - list of StepX or nil if invalid.
 function M.parse_chunk(chunk, chan_hnd, start_tick)
-    if #chunk ~= 2 then return nil end
+    if #chunk ~= 2 then
+        dbg()
+        return nil, 0
+    end
 
     local steps = { }
     local current_vol = 0 -- default, not sounding
     local start_offset = 0 -- in pattern for the start of the current event
+    local ed = 3
 
     -- Process the note descriptor first. Could be number, string, function.
     local what_to_play = chunk[2]
@@ -225,7 +233,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 table.insert(steps, si)
             else
                 -- Internal error
-                error(si.err, 2)
+                error(si.err, ed)
             end
         else -- note
             for _, n in ipairs(notes) do
@@ -234,7 +242,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                     table.insert(steps, si)
                 else
                     -- Internal error
-                    error(si.err, 2)
+                    error(si.err, ed)
                 end
             end
         end
@@ -250,7 +258,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     elseif tn == "string" then
         notes = mu.get_notes_from_string(what_to_play)
     else
-        error(string.format("Invalid what_to_play %s", chunk[2]), 2)
+        error(string.format("Invalid what_to_play %s", chunk[2]), ed)
     end
 
     -- Process note instances.
@@ -268,7 +276,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 -- ok, do nothing
             else
                 -- invalid condition
-                error(string.format("Invalid \'-\'' in pattern string: %s", chunk[1]), 2)
+                error(string.format("Invalid \'-\'' in pattern string: %s", chunk[1]), ed)
             end
         elseif cnum >= 1 and cnum <= 9 then
             -- A new note starting.
@@ -288,7 +296,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
             current_vol = 0
         else
             -- Invalid char.
-            error(string.format("Invalid char %c in pattern string: %s", c, chunk[1]), 2)
+            error(string.format("Invalid char %c in pattern string: %s", c, chunk[1]), ed)
         end
     end
 

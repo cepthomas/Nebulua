@@ -52,7 +52,102 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
---------------------- Called from core -----------------------------------
+------------------------- Composition ---------------------------------------
+
+-- Sequences --
+-- template =
+-- {
+--     -- |........|........|........|........|........|........|........|........|
+--     { "|        |        |        |        |        |        |        |        |", "??" },
+--     { "|        |        |        |        |        |        |        |        |", "??" },
+-- },
+
+local example_seq =
+{
+    -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+    { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
+    { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
+    { "|        |        |        |5---    |        |        |        |5-8---  |",  seq_func }
+},
+
+local drums_verse =
+{
+    --|........|........|........|........|........|........|........|........|
+    {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
+    {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
+    {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
+},
+
+local drums_chorus =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|6       |        |6       |        |6       |        |6       |        |", bdrum },
+    { "|        |7 7     |        |7 7     |        |7 7     |        |        |", ride },
+    { "|        |    4   |        |        |        |    4   |        |        |", mtom },
+    { "|        |        |        |        |        |        |        |8       |", crash },
+},
+
+local keys_verse =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
+},
+
+local keys_chorus =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|6-      |        |        |        |        |        |        |        |", "F4" },
+    { "|    5-  |        |        |        |        |        |        |        |", "D#4" },
+    { "|        |6-      |        |        |        |        |        |        |", "C4" },
+    { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
+    -- ... 2.0: "F5", 2.4: "D#5", 3.0: "C5", 3.4: "B5.m7", 4.0: "F3", 4.4: "D#3", 5.0: "C3", 5.4: "B3.m7", 6.0: "F2", 6.4: "D#2", 7.0: "C2", 7.4: "B2.m7",
+},
+
+local bass_verse =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|7   7   |        |        |        |        |        |        |        |", "C2" },
+    { "|        |        |        |    7   |        |        |        |        |", "E2" },
+    { "|        |        |        |        |        |        |        |    7   |", "A#2" },
+},
+
+local bass_chorus =
+{
+    -- |........|........|........|........|........|........|........|........|
+    { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
+}
+
+
+-----------------------------------------------------------------------------
+local sections =
+{
+    beginning =
+    {
+        { hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
+        { hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse },
+        { hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+    },
+
+    middle =
+    {
+        { hnd_keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
+        { hnd_drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
+        { hnd_bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
+        { hnd_synth,   synth_chorus, nil,          synth_chorus, section_func }
+    },
+
+    ending =
+    {
+        { hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
+        { hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse },
+        { hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
+    }
+}
+
+
+--------------------- Called from app -----------------------------------
 
 -----------------------------------------------------------------------------
 -- Init stuff. Required function.
@@ -131,99 +226,3 @@ local function boing(note_num)
     return boinged
 end
 
-------------------------- Composition ---------------------------------------
-
--- Sequences --
--- template =
--- {
---     -- |........|........|........|........|........|........|........|........|
---     { "|        |        |        |        |        |        |        |        |", "??" },
---     { "|        |        |        |        |        |        |        |        |", "??" },
--- },
-
-example_seq =
-{
-    -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
-    { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
-    { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
-    { "|        |        |        |5---    |        |        |        |5-8---  |",  seq_func }
-},
-
-drums_verse =
-{
-    --|........|........|........|........|........|........|........|........|
-    {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
-    {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
-    {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
-},
-
-drums_chorus =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|6       |        |6       |        |6       |        |6       |        |", bdrum },
-    { "|        |7 7     |        |7 7     |        |7 7     |        |        |", ride },
-    { "|        |    4   |        |        |        |    4   |        |        |", mtom },
-    { "|        |        |        |        |        |        |        |8       |", crash },
-},
-
-keys_verse =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
-},
-
-keys_chorus =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|6-      |        |        |        |        |        |        |        |", "F4" },
-    { "|    5-  |        |        |        |        |        |        |        |", "D#4" },
-    { "|        |6-      |        |        |        |        |        |        |", "C4" },
-    { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
-    -- ... 2.0: "F5", 2.4: "D#5", 3.0: "C5", 3.4: "B5.m7", 4.0: "F3", 4.4: "D#3", 5.0: "C3", 5.4: "B3.m7", 6.0: "F2", 6.4: "D#2", 7.0: "C2", 7.4: "B2.m7",
-},
-
-bass_verse =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|7   7   |        |        |        |        |        |        |        |", "C2" },
-    { "|        |        |        |    7   |        |        |        |        |", "E2" },
-    { "|        |        |        |        |        |        |        |    7   |", "A#2" },
-},
-
-bass_chorus =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
-}
-
-
------------------------------------------------------------------------------
-sections =
-{
-    beginning =
-    {
-        { hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-    },
-
-    middle =
-    {
-        { hnd_keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
-        { hnd_drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
-        { hnd_bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-        { hnd_synth,   synth_chorus, nil,          synth_chorus, section_func }
-    },
-
-    ending =
-    {
-        { hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-    }
-}
-
--- -- Return the module.
--- return M

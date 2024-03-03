@@ -45,7 +45,7 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
 
     ///// Fat fingers.
     _response_lines.clear();
-    strncpy(_next_command, "bbbbb", MAX_LINE_LEN);
+    strncpy(_next_command, "bbbbb", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 2);
@@ -53,7 +53,7 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "Invalid command\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "z", MAX_LINE_LEN);
+    strncpy(_next_command, "z", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 2);
@@ -62,7 +62,7 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
 
     ///// These next two confirm proper full/short name handling.
     _response_lines.clear();
-    strncpy(_next_command, "help", MAX_LINE_LEN);
+    strncpy(_next_command, "help", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 12);
@@ -72,7 +72,7 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
     UT_STR_EQUAL(_response_lines[11].c_str(), "reload|l: re/load current script\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "?", MAX_LINE_LEN);
+    strncpy(_next_command, "?", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 12);
@@ -81,28 +81,28 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
 
     ///// The rest of the commands.
     _response_lines.clear();
-    strncpy(_next_command, "exit", MAX_LINE_LEN);
+    strncpy(_next_command, "exit", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     _response_lines.clear();
-    strncpy(_next_command, "run", MAX_LINE_LEN);
+    strncpy(_next_command, "run", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     _response_lines.clear();
-    strncpy(_next_command, "reload", MAX_LINE_LEN);
+    strncpy(_next_command, "reload", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     _response_lines.clear();
-    strncpy(_next_command, "tempo", MAX_LINE_LEN);
+    strncpy(_next_command, "tempo", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 2);
@@ -110,14 +110,14 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "100\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "tempo 182", MAX_LINE_LEN);
+    strncpy(_next_command, "tempo 182", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     _response_lines.clear();
-    strncpy(_next_command, "tempo 242", MAX_LINE_LEN);
+    strncpy(_next_command, "tempo 242", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
     UT_EQUAL(_response_lines.size(), 2);
@@ -125,7 +125,7 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "invalid tempo: 242\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "tempo 39", MAX_LINE_LEN);
+    strncpy(_next_command, "tempo 39", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
     UT_EQUAL(_response_lines.size(), 2);
@@ -133,28 +133,28 @@ UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "invalid tempo: 39\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "monitor in", MAX_LINE_LEN);
+    strncpy(_next_command, "monitor in", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     _response_lines.clear();
-    strncpy(_next_command, "monitor out", MAX_LINE_LEN);
+    strncpy(_next_command, "monitor out", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     _response_lines.clear();
-    strncpy(_next_command, "monitor off", MAX_LINE_LEN);
+    strncpy(_next_command, "monitor off", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
     UT_STR_EQUAL(_response_lines[0].c_str(), "$");
 
     _response_lines.clear();
-    strncpy(_next_command, "monitor junk", MAX_LINE_LEN);
+    strncpy(_next_command, "monitor junk", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
     UT_EQUAL(_response_lines.size(), 2);
@@ -205,7 +205,7 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
 
     ///// Good to go now.
     _response_lines.clear();
-    strncpy(_next_command, "position", MAX_LINE_LEN);
+    strncpy(_next_command, "position", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 2);
@@ -213,7 +213,7 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "0:0:0\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "position 203:2:6", MAX_LINE_LEN);
+    strncpy(_next_command, "position 203:2:6", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 2);
@@ -221,7 +221,7 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "203:2:6\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "position", MAX_LINE_LEN);
+    strncpy(_next_command, "position", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 2);
@@ -229,7 +229,7 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "203:2:6\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "position 111:9:6", MAX_LINE_LEN);
+    strncpy(_next_command, "position 111:9:6", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
     UT_EQUAL(_response_lines.size(), 2);
@@ -237,7 +237,7 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
     UT_STR_EQUAL(_response_lines[1].c_str(), "invalid position: 111:9:6\n");
 
     _response_lines.clear();
-    strncpy(_next_command, "kill", MAX_LINE_LEN);
+    strncpy(_next_command, "kill", MAX_LINE_LEN - 1);
     stat = _DoCli();
     UT_EQUAL(stat, NEB_OK);
     UT_EQUAL(_response_lines.size(), 1);
@@ -274,7 +274,7 @@ int cli_printf(const char* format, ...)
     char line[MAX_LINE_LEN];
     va_list args;
     va_start(args, format);
-    vsnprintf(line, MAX_LINE_LEN, format, args);
+    vsnprintf(line, MAX_LINE_LEN - 1, format, args);
     va_end(args);
 
     std::string str(line);
@@ -288,7 +288,7 @@ char* cli_gets(char* buff, int len)
 {
     if (strlen(_next_command) > 0)
     {
-        strncpy(buff, _next_command, len);
+        strncpy(buff, _next_command, len - 1);
         return buff;
     }
     else

@@ -31,7 +31,7 @@ int cli_printf(const char* format, ...)
     char s[MAX_LINE_LEN];
     va_list args;
     va_start(args, format);
-    vsnprintf(s, MAX_LINE_LEN, format, args);
+    vsnprintf(s, MAX_LINE_LEN - 1, format, args);
     va_end(args);
 
     return fputs(s, stdout);

@@ -31,7 +31,7 @@ const char* nebcommon_FormatMidiStatus(int mstat)
         midiInGetErrorText(mstat, buff, BUFF_LEN);
         if (strlen(buff) == 0)
         {
-            snprintf(buff, BUFF_LEN, "MidiStatus:%d", mstat);
+            snprintf(buff, BUFF_LEN - 1, "MidiStatus:%d", mstat);
         }
     }
 
@@ -46,7 +46,7 @@ const char* nebcommon_FormatBarTime(int tick)
     int bar = BAR(tick);
     int beat = BEAT(tick);
     int sub = SUB(tick);
-    snprintf(buff, BUFF_LEN, "%d:%d:%d", bar, beat, sub);
+    snprintf(buff, BUFF_LEN - 1, "%d:%d:%d", bar, beat, sub);
 
     return buff;
 }
@@ -61,7 +61,7 @@ int nebcommon_ParseBarTime(const char* sbt)
 
     // Make writable copy and tokenize it.
     char cp[32];
-    strncpy(cp, sbt, sizeof(cp));
+    strncpy(cp, sbt, sizeof(cp) - 1);
 
     char* tok = strtok(cp, ":");
     if (tok != NULL)
@@ -153,18 +153,18 @@ const char* nebcommon_EvalStatus(lua_State* l, int stat, const char* format, ...
             lua_pop(l, 1);
         }
 
-        snprintf(full_msg, sizeof(full_msg), "%s %s\n%s", sstat, info, smsg);
+        snprintf(full_msg, sizeof(full_msg) - 1, "%s %s\n%s", sstat, info, smsg);
         sret = full_msg;
 
 
         // // Log the error info.
         // if (errmsg == NULL)
         // {
-        //     snprintf(_last_error, sizeof(_last_error), "%s %s", sstat, info);
+        //     snprintf(_last_error, sizeof(_last_error) - 1, "%s %s", sstat, info);
         // }
         // else
         // {
-        //     snprintf(_last_error, sizeof(_last_error), "%s %s\n%s", sstat, info, errmsg);
+        //     snprintf(_last_error, sizeof(_last_error) - 1, "%s %s\n%s", sstat, info, errmsg);
         // }
     }
 
