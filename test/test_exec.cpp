@@ -135,7 +135,7 @@ UT_SUITE(EXEC_MAIN, "Test happy path.")
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(EXEC_ERR_XXX, "Test failure modes.")
+UT_SUITE(EXEC_ERR1, "Test basic failure modes.")
 {
     int stat = 0;
     int iret = 0;
@@ -152,7 +152,7 @@ UT_SUITE(EXEC_ERR_XXX, "Test failure modes.")
         "this is a bad statement\n";
     stat = luaL_loadstring(_l, s1);
     UT_EQUAL(stat, LUA_ERRSYNTAX);
-    const char* e = nebcommon_EvalStatus(_l, stat, "1");
+    const char* e = nebcommon_EvalStatus(_l, stat, "ERR1");
     UT_STR_CONTAINS(e, "syntax error near 'is'");
 
     ///// General syntax error - lua_pcall(_l, 0, LUA_MULTRET, 0);
@@ -163,7 +163,7 @@ UT_SUITE(EXEC_ERR_XXX, "Test failure modes.")
     UT_EQUAL(stat, LUA_OK);
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     UT_EQUAL(stat, LUA_ERRRUN); // runtime error
-    e = nebcommon_EvalStatus(_l, stat, "2");
+    e = nebcommon_EvalStatus(_l, stat, "ERR2");
     UT_STR_CONTAINS(e, "attempt to perform arithmetic on a nil value");
 
 
@@ -177,7 +177,7 @@ UT_SUITE(EXEC_ERR_XXX, "Test failure modes.")
     UT_EQUAL(stat, LUA_OK);
     stat = luainterop_Setup(_l, &iret);
     UT_EQUAL(stat, INTEROP_BAD_FUNC_NAME);
-    e = nebcommon_EvalStatus(_l, stat, "3");
+    e = nebcommon_EvalStatus(_l, stat, "ERR3");
     UT_STR_CONTAINS(e, "INTEROP_BAD_FUNC_NAME");
 
 
@@ -194,15 +194,33 @@ UT_SUITE(EXEC_ERR_XXX, "Test failure modes.")
     UT_EQUAL(stat, LUA_OK);
     stat = luainterop_Setup(_l, &iret);
     UT_EQUAL(stat, LUA_ERRRUN);
-    e = nebcommon_EvalStatus(_l, stat, "4");
+    e = nebcommon_EvalStatus(_l, stat, "ERR4");
     UT_STR_CONTAINS(e, "attempt to call a nil value (field 'no_good')");
 
+    lua_close(_l);
+
+    return 0;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+UT_SUITE(EXEC_ERR2, "Test error() failure modes.")
+{
+    int stat = 0;
+    int iret = 0;
+
+    // Load lua.
+    lua_State* _l = luaL_newstate();
+    luaL_openlibs(_l);
+    luainterop_Load(_l);
+    lua_pop(_l, 1);
 
     ///// General explicit error.
-    s1 =
+    const char* s1 =
         "local neb = require(\"nebulua\")\n"
         "function setup()\n"
         "    error(\"setup() raises error()\")\n"
+        "    return 0\n"
         "end\n";
     stat = luaL_loadstring(_l, s1);
     UT_EQUAL(stat, LUA_OK);
@@ -210,46 +228,42 @@ UT_SUITE(EXEC_ERR_XXX, "Test failure modes.")
     UT_EQUAL(stat, LUA_OK);
     stat = luainterop_Setup(_l, &iret);
     UT_EQUAL(stat, LUA_ERRRUN);
-    e = nebcommon_EvalStatus(_l, stat, "5");
-    UT_STR_CONTAINS(e, "xxxxx");
+    const char* e = nebcommon_EvalStatus(_l, stat, "ERR5");
+    UT_STR_CONTAINS(e, "setup() raises error()");
 
+    lua_close(_l);
+
+    return 0;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+UT_SUITE(EXEC_ERR3, "Test fatal internal failure modes.")
+{
+    int stat = 0;
+    int iret = 0;
+
+    // Load lua.
+    lua_State* _l = luaL_newstate();
+    luaL_openlibs(_l);
+    luainterop_Load(_l);
+    lua_pop(_l, 1);
 
     ///// Runtime error.
-    s1 =
+    const char* s1 =
         "local neb = require(\"nebulua\")\n"
-        "function setup()\n"
-        "    local zero = 0\n"
-        "    boom = 123 / zero\n"
+        "function setup()\n" 
+        "    local bad = 123 + ng\n"
+        "    return 0\n"
         "end\n";
-    stat = luaL_loadstring(_l, s1);
+     stat = luaL_loadstring(_l, s1);
     UT_EQUAL(stat, LUA_OK);
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
     UT_EQUAL(stat, LUA_OK);
     stat = luainterop_Setup(_l, &iret);
-    UT_EQUAL(stat, 999);
-    e = nebcommon_EvalStatus(_l, stat, "6");
-    UT_STR_CONTAINS(e, "xxxxx");
-
-
-
-    ///// xxxx
-//-- >>>> TODO1 Invalid sequence and section values.
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-    // Execute the loaded script to init everything.
-    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    UT_EQUAL(stat, LUA_OK);
-    e = nebcommon_EvalStatus(_l, stat, "run script");
-    UT_NULL(e);
-
-    // Script setup function.
-    stat = luainterop_Setup(_l, &iret);
-    UT_EQUAL(stat, LUA_OK);
-    e = nebcommon_EvalStatus(_l, stat, "setup()");
-    UT_NULL(e);
+    UT_EQUAL(stat, LUA_ERRRUN);
+    const char* e = nebcommon_EvalStatus(_l, stat, "ERR6");
+    UT_STR_CONTAINS(e, "attempt to perform arithmetic on a nil value (global 'ng')");
 
     lua_close(_l);
 

@@ -153,7 +153,7 @@ const char* nebcommon_EvalStatus(lua_State* l, int stat, const char* format, ...
             lua_pop(l, 1);
         }
 
-        snprintf(full_msg, sizeof(full_msg) - 1, "%s %s\n%s", sstat, info, smsg);
+        snprintf(full_msg, sizeof(full_msg) - 1, "stat:%s info:%s\n%s", sstat, info, smsg);
         sret = full_msg;
     }
 
