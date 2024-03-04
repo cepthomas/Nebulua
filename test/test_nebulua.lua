@@ -83,7 +83,7 @@ function M.suite_process_script(pn)
     -- Test loading script file.
 
     -- Load test file in protected mode.
-    local scrfn = 'script1'
+    local scrfn = 'script_happy'
     local ok, scr = pcall(require, scrfn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n%s ", scrfn, scr))
 
@@ -101,7 +101,7 @@ function M.suite_process_script(pn)
     -- s = ut.dump_table_string(steps, true, "steps")
     -- print(s)
 
-    -- Execute some script steps. Times and counts are based on script1.lua observed.
+    -- Execute some script steps. Times and counts are based on script_happy.lua observed.
     -- valid ticks: 0000, 0004, 0032, 0088, 0092, 0120, 0122, 0128, 0160, 0188, 0192, 0196,
     --              0216, 0248, 0250, 0256, 0284, 0288, 0344, 0376, 0378, 0380, 0384, 0388, 0476
     for i = 0, 200 do

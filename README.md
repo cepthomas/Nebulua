@@ -59,6 +59,17 @@ Script defs:
    BAR_TIME is a string of "BAR.BEAT.SUB" e.g. "1.2.3" or "1.2" or "1".
    VOLUME 0->9
 
+--[[
+Each section is 8 beats.
+Each sequence is 4 sections => 32 beats.
+A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences.
+
+If each sequence has average 8 notes => total of 320 notes per instrument.
+A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences => 320 notes.
+A "typical" song would have about 4000 on/off events.
+]]
+
+
 ## error/status/streams  --- Some should be in lbot maybe.
 
 New flavor:

@@ -65,7 +65,7 @@ typedef struct cli_command
 
 //----------------------- Vars --------------------------------//
 
-// The main Lua thread. TODO2 public so unit test can see it. kinda ugly.
+// The main Lua thread. TODO1 public so unit test can see and use it.
 lua_State* _l;
 
 // Point this stream where you like.
@@ -132,7 +132,7 @@ static int _Kill();
 
 
 
-//----------------------- TODO2 section array stuff ---------------------//
+//----------------------- TODO2 tidy up? combine with test. section array stuff ---------------------//
 #define SECTION_NAME_LEN 32
 #define NUM_SECTIONS 32
 typedef struct { char name[SECTION_NAME_LEN]; int start; } section_desc_t;
@@ -217,7 +217,7 @@ int exec_Main(const char* script_fn)
     if (e != NULL) EXEC_FAIL(16, e);
 
 
-    // Get length and section info. TODO2 error checking? overflow.
+    // Get length and section info. TODO2 error checking? it's in my lib...
     int ltype = lua_getglobal(_l, "_length");
     int length = (int)lua_tointeger(_l, -1);
     lua_pop(_l, 1); // Clean up stack.
@@ -226,7 +226,7 @@ int exec_Main(const char* script_fn)
     section_desc_t* ps = _section_descs;
     ltype = lua_getglobal(_l, "_section_names");
     lua_pushnil(_l);
-    while (lua_next(_l, -2) != 0)
+    while (lua_next(_l, -2) != 0) // TODO2 overflow
     {
         strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
         ps->start = (int)lua_tointeger(_l, -1);
@@ -674,7 +674,7 @@ static cli_command_t _commands[] =
 };
 
 
-//----------------------- Private Functions ---------------------//
+//-------------------- Private Functions -----------------//
 
 //--------------------------------------------------------//
 int _Kill()

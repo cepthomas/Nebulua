@@ -1,5 +1,5 @@
 
--- Script for unit test.
+-- Script for unit test - the happy path.
 
 
 local bt = require("bar_time")
