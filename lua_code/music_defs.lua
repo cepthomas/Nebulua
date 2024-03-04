@@ -8,9 +8,9 @@ local M = {}
 -- ut.config_debug(true)
 
 --- Music definitions
-local NOTES_PER_OCTAVE = 12
-local MIDDLE_C4 = 60
-local DEFAULT_OCTAVE = 4 -- middle C
+M.NOTES_PER_OCTAVE = 12
+M.MIDDLE_C4 = 60
+M.DEFAULT_OCTAVE = 4 -- middle C
 
 
 --- All the builtin chord defs.
@@ -167,7 +167,7 @@ function M.get_notes_from_string(nstr)
         local soct = snote:sub(#snote, -1)
         local octave = tonumber(soct)
         if not octave then -- not specified
-            octave = DEFAULT_OCTAVE
+            octave = M.DEFAULT_OCTAVE
         else -- trim original note
             snote = snote:sub(1, #snote - 1)
         end
@@ -178,8 +178,8 @@ function M.get_notes_from_string(nstr)
             notes = {}
 
             -- Transpose octave.
-            -- note_num = note_num + (octave - 1) * NOTES_PER_OCTAVE
-            abs_note_num = note_num + MIDDLE_C4 - (DEFAULT_OCTAVE - octave) * NOTES_PER_OCTAVE
+            -- note_num = note_num + (octave - 1) * M.NOTES_PER_OCTAVE
+            abs_note_num = note_num + M.MIDDLE_C4 - (M.DEFAULT_OCTAVE - octave) * M.NOTES_PER_OCTAVE
 
             if c_or_s ~= nil then
                 -- It's a chord or scale.
@@ -223,8 +223,8 @@ function M.note_name_to_number(snote)
         end
         inote = note_names[snote]
         -- Adjust for octave shift.
-        if inote and up then inote = inote + NOTES_PER_OCTAVE end
-        if inote and dn then inote = inote - NOTES_PER_OCTAVE end
+        if inote and up then inote = inote + M.NOTES_PER_OCTAVE end
+        if inote and dn then inote = inote - M.NOTES_PER_OCTAVE end
     end
 
     return inote
@@ -250,8 +250,8 @@ function M.interval_name_to_number(sinterval)
         end
         iinterval = intervals[sinterval]
         -- Adjust for octave shift.
-        if iinterval and up then iinterval = iinterval + NOTES_PER_OCTAVE end
-        if iinterval and dn then iinterval = iinterval - NOTES_PER_OCTAVE end
+        if iinterval and up then iinterval = iinterval + M.NOTES_PER_OCTAVE end
+        if iinterval and dn then iinterval = iinterval - M.NOTES_PER_OCTAVE end
     end
 
     return iinterval
@@ -266,8 +266,8 @@ function M.split_note_number(note_num)
     local root = nil
     local octave = nil
     if note_num ~= nil then
-        root = note_num % NOTES_PER_OCTAVE
-        octave = (note_num // NOTES_PER_OCTAVE) + 1
+        root = note_num % M.NOTES_PER_OCTAVE
+        octave = (note_num // M.NOTES_PER_OCTAVE) + 1
     end        
     return root, octave
 end
