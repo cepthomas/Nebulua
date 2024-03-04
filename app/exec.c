@@ -17,6 +17,7 @@
 #include "nebcommon.h"
 #include "cli.h"
 #include "devmgr.h"
+#include "scriptinfo.h"
 #include "luainterop.h"
 
 
@@ -216,25 +217,27 @@ int exec_Main(const char* script_fn)
     e = nebcommon_EvalStatus(_l, stat, "Script setup() failed [%s].", script_fn);
     if (e != NULL) EXEC_FAIL(16, e);
 
+    // 
+    scriptinfo_Init(_l);
+    
+    // // Get length and section info. TODO2 error checking? it's in my lib...
+    // int ltype = lua_getglobal(_l, "_length");
+    // int length = (int)lua_tointeger(_l, -1);
+    // lua_pop(_l, 1); // Clean up stack.
 
-    // Get length and section info. TODO2 error checking? it's in my lib...
-    int ltype = lua_getglobal(_l, "_length");
-    int length = (int)lua_tointeger(_l, -1);
-    lua_pop(_l, 1); // Clean up stack.
-
-    memset(_section_descs, 0, sizeof(_section_descs));
-    section_desc_t* ps = _section_descs;
-    ltype = lua_getglobal(_l, "_section_names");
-    lua_pushnil(_l);
-    while (lua_next(_l, -2) != 0) // TODO2 overflow
-    {
-        strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
-        ps->start = (int)lua_tointeger(_l, -1);
-        lua_pop(_l, 1);
-        ps++;
-    }
-    qsort(_section_descs, ps - _section_descs, sizeof(section_desc_t), comp_sections);
-    lua_pop(_l, 1); // Clean up stack.
+    // memset(_section_descs, 0, sizeof(_section_descs));
+    // section_desc_t* ps = _section_descs;
+    // ltype = lua_getglobal(_l, "_section_names");
+    // lua_pushnil(_l);
+    // while (lua_next(_l, -2) != 0) // TODO2 overflow
+    // {
+    //     strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
+    //     ps->start = (int)lua_tointeger(_l, -1);
+    //     lua_pop(_l, 1);
+    //     ps++;
+    // }
+    // qsort(_section_descs, ps - _section_descs, sizeof(section_desc_t), comp_sections);
+    // lua_pop(_l, 1); // Clean up stack.
 
 
     ///// Good to go now. /////
