@@ -146,6 +146,7 @@
     <ClCompile Include="luainteropwork.c" />
     <ClCompile Include="nebcommon.c" />
     <ClCompile Include="Nebulua.cpp" />
+    <ClCompile Include="scriptinfo.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\cbot.h" />
@@ -164,6 +165,7 @@
     <ClInclude Include="luainterop.h" />
     <ClInclude Include="luainteropwork.h" />
     <ClInclude Include="nebcommon.h" />
+    <ClInclude Include="scriptinfo.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="_log.txt" />

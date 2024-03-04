@@ -58,6 +58,9 @@
     <ClCompile Include="..\..\..\C\c_bag_of_tricks\source_code\private\mathutils.c">
       <Filter>cbot</Filter>
     </ClCompile>
+    <ClCompile Include="scriptinfo.c">
+      <Filter>app</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="devmgr.h">
@@ -107,6 +110,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\C\c_bag_of_tricks\source_code\mathutils.h">
       <Filter>cbot</Filter>
+    </ClInclude>
+    <ClInclude Include="scriptinfo.h">
+      <Filter>app</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

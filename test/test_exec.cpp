@@ -63,7 +63,6 @@ UT_SUITE(EXEC_FUNCS, "Test exec functions. TODO2 need flesh")
     DWORD_PTR dwParam2 = 0;
     _MidiInHandler(hMidiIn, wMsg, dwInstance, dwParam1, dwParam2);
 
-
     //////
     double msec = 12.34;
     _MidiClockHandler(msec);
@@ -117,30 +116,6 @@ UT_SUITE(EXEC_MAIN, "Test happy path.")
 
     // Get some nebulator script globals.
     scriptinfo_Init(_l);
-
-
-    // // => length
-    // int ltype = lua_getglobal(_l, "_length");
-    // int length = (int)lua_tointeger(_l, -1);
-    // lua_pop(_l, 1); // Clean up global.
-    // UT_EQUAL(length, 9999);
-
-    // // => section info
-    // section_name_t sections[NUM_SECTIONS];
-    // memset(sections, 0, sizeof(sections));
-    // section_name_t* ps = sections;
-    // ltype = lua_getglobal(_l, "_section_names");
-    // lua_pushnil(_l);
-    // while (lua_next(_l, -2) != 0)
-    // {
-    //     strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
-    //     ps->start = (int)lua_tointeger(_l, -1);
-    //     lua_pop(_l, 1);
-    //     ps++;
-    // }
-    // qsort(sections, ps - sections, sizeof(section_name_t), comp_sections);
-    // lua_pop(_l, 1); // Clean up global.
-
 
     const char* sect_name = scriptinfo_GetSectionName(0);
     int sect_start = scriptinfo_GetSectionStart(0);
