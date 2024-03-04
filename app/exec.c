@@ -188,7 +188,7 @@ int exec_Main(const char* script_fn)
 
     ///// Load and run the application. /////
 
-    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
+    // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, script_fn);
     e = nebcommon_EvalStatus(_l, stat, "Load script file failed [%s].", script_fn);
     if (e != NULL) EXEC_FAIL(14, e);

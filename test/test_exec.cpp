@@ -36,18 +36,6 @@ int exec_Main(const char* script_fn);
 // const char* _my_midi_out1 = "Microsoft GS Wavetable Synth";
 
 
-// #define SECTION_NAME_LEN 32
-// #define NUM_SECTIONS 32
-// typedef struct { char name[SECTION_NAME_LEN]; int start; } section_name_t;
-
-// int comp_sections(const void* elem1, const void* elem2)
-// {
-//     section_name_t* f = (section_name_t*)elem1;
-//     section_name_t* s = (section_name_t*)elem2;
-//     return (f->start > s->start) - (f->start < s->start);
-// }
-
-
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(EXEC_FUNCS, "Test exec functions. TODO2 need flesh")
 {
@@ -94,7 +82,7 @@ UT_SUITE(EXEC_MAIN, "Test happy path.")
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
 
-    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
+    // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, "script_happy.lua");
     UT_EQUAL(stat, NEB_OK);
     const char* e = nebcommon_EvalStatus(_l, stat, "load script");
@@ -147,7 +135,7 @@ UT_SUITE(EXEC_MAIN, "Test happy path.")
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(EXEC_ERR_XXX, "Test failure mode.")
+UT_SUITE(EXEC_ERR_XXX, "Test failure modes.")
 {
     int stat = 0;
     int iret = 0;
@@ -158,21 +146,108 @@ UT_SUITE(EXEC_ERR_XXX, "Test failure mode.")
     luainterop_Load(_l);
     lua_pop(_l, 1);
 
-    // Load the bad script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
-    stat = luaL_loadfile(_l, "xxxx.lua");
-    UT_EQUAL(stat, NEB_OK);
-    const char* e = nebcommon_EvalStatus(_l, stat, "load script");
-    UT_NULL(e);
+    ///// General syntax error during load.
+    const char* s1 =
+        "local neb = require(\"nebulua\")\n"
+        "this is a bad statement\n";
+    stat = luaL_loadstring(_l, s1);
+    UT_EQUAL(stat, LUA_ERRSYNTAX);
+    const char* e = nebcommon_EvalStatus(_l, stat, "1");
+    UT_STR_CONTAINS(e, "syntax error near 'is'");
+
+    ///// General syntax error - lua_pcall(_l, 0, LUA_MULTRET, 0);
+    s1 =
+        "local neb = require(\"nebulua\")\n"
+        "res1 = 345 + nil_value\n";
+    stat = luaL_loadstring(_l, s1);
+    UT_EQUAL(stat, LUA_OK);
+    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+    UT_EQUAL(stat, LUA_ERRRUN); // runtime error
+    e = nebcommon_EvalStatus(_l, stat, "2");
+    UT_STR_CONTAINS(e, "attempt to perform arithmetic on a nil value");
+
+
+    ///// Missing required C2L api element - luainterop_Setup(_l, &iret);
+    s1 =
+        "local neb = require(\"nebulua\")\n"
+        "resx = 345 + 456\n";
+    stat = luaL_loadstring(_l, s1);
+    UT_EQUAL(stat, LUA_OK);
+    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+    UT_EQUAL(stat, LUA_OK);
+    stat = luainterop_Setup(_l, &iret);
+    UT_EQUAL(stat, INTEROP_BAD_FUNC_NAME);
+    e = nebcommon_EvalStatus(_l, stat, "3");
+    UT_STR_CONTAINS(e, "INTEROP_BAD_FUNC_NAME");
+
+
+    ///// Bad L2C api function
+    s1 =
+        "local neb = require(\"nebulua\")\n"
+        "function setup()\n"
+        "    neb.no_good(95)\n"
+        "    return 0\n"
+        "end\n";
+    stat = luaL_loadstring(_l, s1);
+    UT_EQUAL(stat, LUA_OK);
+    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+    UT_EQUAL(stat, LUA_OK);
+    stat = luainterop_Setup(_l, &iret);
+    UT_EQUAL(stat, LUA_ERRRUN);
+    e = nebcommon_EvalStatus(_l, stat, "4");
+    UT_STR_CONTAINS(e, "attempt to call a nil value (field 'no_good')");
+
+
+    ///// General explicit error.
+    s1 =
+        "local neb = require(\"nebulua\")\n"
+        "function setup()\n"
+        "    error(\"setup() raises error()\")\n"
+        "end\n";
+    stat = luaL_loadstring(_l, s1);
+    UT_EQUAL(stat, LUA_OK);
+    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+    UT_EQUAL(stat, LUA_OK);
+    stat = luainterop_Setup(_l, &iret);
+    UT_EQUAL(stat, LUA_ERRRUN);
+    e = nebcommon_EvalStatus(_l, stat, "5");
+    UT_STR_CONTAINS(e, "xxxxx");
+
+
+    ///// Runtime error.
+    s1 =
+        "local neb = require(\"nebulua\")\n"
+        "function setup()\n"
+        "    local zero = 0\n"
+        "    boom = 123 / zero\n"
+        "end\n";
+    stat = luaL_loadstring(_l, s1);
+    UT_EQUAL(stat, LUA_OK);
+    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+    UT_EQUAL(stat, LUA_OK);
+    stat = luainterop_Setup(_l, &iret);
+    UT_EQUAL(stat, 999);
+    e = nebcommon_EvalStatus(_l, stat, "6");
+    UT_STR_CONTAINS(e, "xxxxx");
+
+
+
+    ///// xxxx
+//-- >>>> TODO1 Invalid sequence and section values.
+
+
+
+///////////////////////////////////////////////////////////////////////////////
 
     // Execute the loaded script to init everything.
     stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    UT_EQUAL(stat, NEB_OK);
+    UT_EQUAL(stat, LUA_OK);
     e = nebcommon_EvalStatus(_l, stat, "run script");
     UT_NULL(e);
 
     // Script setup function.
     stat = luainterop_Setup(_l, &iret);
-    UT_EQUAL(stat, NEB_OK);
+    UT_EQUAL(stat, LUA_OK);
     e = nebcommon_EvalStatus(_l, stat, "setup()");
     UT_NULL(e);
 

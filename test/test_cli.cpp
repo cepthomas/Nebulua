@@ -185,7 +185,7 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
 
-    // Load the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
+    // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_l, "script_happy.lua");
     UT_EQUAL(stat, NEB_OK);
     const char* e = nebcommon_EvalStatus(_l, stat, "load script");
