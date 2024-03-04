@@ -22,6 +22,8 @@ extern "C"
 #include "devmgr.h"
 #include "cli.h"
 #include "logger.h"
+#include "scriptinfo.h"
+
 
 extern lua_State* _l;
 
@@ -34,16 +36,16 @@ int exec_Main(const char* script_fn);
 // const char* _my_midi_out1 = "Microsoft GS Wavetable Synth";
 
 
-#define SECTION_NAME_LEN 32
-#define NUM_SECTIONS 32
-typedef struct { char name[SECTION_NAME_LEN]; int start; } section_name_t;
+// #define SECTION_NAME_LEN 32
+// #define NUM_SECTIONS 32
+// typedef struct { char name[SECTION_NAME_LEN]; int start; } section_name_t;
 
-int comp_sections(const void* elem1, const void* elem2)
-{
-    section_name_t* f = (section_name_t*)elem1;
-    section_name_t* s = (section_name_t*)elem2;
-    return (f->start > s->start) - (f->start < s->start);
-}
+// int comp_sections(const void* elem1, const void* elem2)
+// {
+//     section_name_t* f = (section_name_t*)elem1;
+//     section_name_t* s = (section_name_t*)elem2;
+//     return (f->start > s->start) - (f->start < s->start);
+// }
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -114,32 +116,54 @@ UT_SUITE(EXEC_MAIN, "Test happy path.")
     ///// Good to go now.
 
     // Get some nebulator script globals.
-    // => length
-    int ltype = lua_getglobal(_l, "_length");
-    int length = (int)lua_tointeger(_l, -1);
-    lua_pop(_l, 1); // Clean up global.
-    UT_EQUAL(length, 9999);
+    scriptinfo_Init(_l);
 
-    // => section info
-    section_name_t sections[NUM_SECTIONS];
-    memset(sections, 0, sizeof(sections));
-    section_name_t* ps = sections;
-    ltype = lua_getglobal(_l, "_section_names");
-    lua_pushnil(_l);
-    while (lua_next(_l, -2) != 0)
-    {
-        strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
-        ps->start = (int)lua_tointeger(_l, -1);
-        lua_pop(_l, 1);
-        ps++;
-    }
-    qsort(sections, ps - sections, sizeof(section_name_t), comp_sections);
-    lua_pop(_l, 1); // Clean up global.
-    UT_STR_EQUAL(sections[0].name, "9999");
-    UT_EQUAL(sections[1].start, 9999);
-    UT_STR_EQUAL(sections[2].name, "9999");
-    UT_STR_EQUAL(sections[3].name, "9999");
-    UT_EQUAL(sections[3].start, 0);
+
+    // // => length
+    // int ltype = lua_getglobal(_l, "_length");
+    // int length = (int)lua_tointeger(_l, -1);
+    // lua_pop(_l, 1); // Clean up global.
+    // UT_EQUAL(length, 9999);
+
+    // // => section info
+    // section_name_t sections[NUM_SECTIONS];
+    // memset(sections, 0, sizeof(sections));
+    // section_name_t* ps = sections;
+    // ltype = lua_getglobal(_l, "_section_names");
+    // lua_pushnil(_l);
+    // while (lua_next(_l, -2) != 0)
+    // {
+    //     strncpy(ps->name, lua_tostring(_l, -2), SECTION_NAME_LEN-1);
+    //     ps->start = (int)lua_tointeger(_l, -1);
+    //     lua_pop(_l, 1);
+    //     ps++;
+    // }
+    // qsort(sections, ps - sections, sizeof(section_name_t), comp_sections);
+    // lua_pop(_l, 1); // Clean up global.
+
+
+    const char* sect_name = scriptinfo_GetSectionName(0);
+    int sect_start = scriptinfo_GetSectionStart(0);
+    UT_NOT_NULL(sect_name);
+    UT_STR_EQUAL(sect_name, "beginning");
+    UT_EQUAL(sect_start, 0);
+
+    sect_name = scriptinfo_GetSectionName(1);
+    sect_start = scriptinfo_GetSectionStart(1);
+    UT_NOT_NULL(sect_name);
+    UT_STR_EQUAL(sect_name, "middle");
+    UT_EQUAL(sect_start, 648);
+
+    sect_name = scriptinfo_GetSectionName(2);
+    sect_start = scriptinfo_GetSectionStart(2);
+    UT_NOT_NULL(sect_name);
+    UT_STR_EQUAL(sect_name, "ending");
+    UT_EQUAL(sect_start, 2117);
+
+    sect_name = scriptinfo_GetSectionName(3);
+    sect_start = scriptinfo_GetSectionStart(3);
+    UT_NULL(sect_name);
+    UT_EQUAL(sect_start, -1);
 
     lua_close(_l);
 

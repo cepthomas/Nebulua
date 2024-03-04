@@ -42,6 +42,9 @@
 /// The sub in the beat.
 #define SUB(tick) (tick % SUBS_PER_BEAT)
 
+/// Arbitrary setting.
+#define MAX_SECTIONS 32
+
 
 //----------------------- Midi -----------------------------//
 

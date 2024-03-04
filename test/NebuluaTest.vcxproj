@@ -145,6 +145,7 @@
     <ClCompile Include="..\app\luainterop.c" />
     <ClCompile Include="..\app\luainteropwork.c" />
     <ClCompile Include="..\app\nebcommon.c" />
+    <ClCompile Include="..\app\scriptinfo.c" />
     <ClCompile Include="test_cli.cpp" />
     <ClCompile Include="test_devmgr.cpp" />
     <ClCompile Include="test_exec.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="..\app\devmgr.h" />
     <ClInclude Include="..\app\luainterop.h" />
     <ClInclude Include="..\app\nebcommon.h" />
+    <ClInclude Include="..\app\scriptinfo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

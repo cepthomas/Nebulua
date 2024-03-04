@@ -155,17 +155,6 @@ const char* nebcommon_EvalStatus(lua_State* l, int stat, const char* format, ...
 
         snprintf(full_msg, sizeof(full_msg) - 1, "%s %s\n%s", sstat, info, smsg);
         sret = full_msg;
-
-
-        // // Log the error info.
-        // if (errmsg == NULL)
-        // {
-        //     snprintf(_last_error, sizeof(_last_error) - 1, "%s %s", sstat, info);
-        // }
-        // else
-        // {
-        //     snprintf(_last_error, sizeof(_last_error) - 1, "%s %s\n%s", sstat, info, errmsg);
-        // }
     }
 
     return sret;
