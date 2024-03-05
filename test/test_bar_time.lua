@@ -4,8 +4,7 @@
 local v  = require('validators')
 local ut = require("utils")
 local bt = require("bar_time")
-require('neb_common')
-throw_error = false
+local com = require('neb_common')
 
 -- ut.config_debug(true)
 

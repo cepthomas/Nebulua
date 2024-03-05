@@ -3,12 +3,7 @@
 local ut = require("utils")
 local v = require('validators')
 local md = require('midi_defs')
-require('neb_common')
-
--- Types. TODO1 or implement is_a()?
-STEP_NOTE = 1
-STEP_CONTROLLER = 2
-STEP_FUNCTION = 3
+local com = require('neb_common')
 
 
 local function _FormatChanHnd(chan_hnd)
@@ -20,7 +15,7 @@ end
 -----------------------------------------------------------------------------
 function StepNote(tick, chan_hnd, note_num, volume, duration)
     local d = {}
-    d.step_type = STEP_NOTE
+    d.step_type = "note"
     d.err = nil
     d.tick = tick
     d.chan_hnd = chan_hnd
@@ -29,11 +24,11 @@ function StepNote(tick, chan_hnd, note_num, volume, duration)
     d.duration = duration
 
     -- Validate.
-    d.err = d.err or v.val_integer(d.tick, 0, MAX_TICK, 'tick')
+    d.err = d.err or v.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
     d.err = d.err or v.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or v.val_integer(d.note_num, 0, MAX_MIDI, 'note_num')
+    d.err = d.err or v.val_integer(d.note_num, 0, com.MAX_MIDI, 'note_num')
     d.err = d.err or v.val_number(d.volume, 0.0, 1.0, 'volume')
-    d.err = d.err or v.val_integer(d.duration, 0, MAX_TICK, 'duration')
+    d.err = d.err or v.val_integer(d.duration, 0, com.MAX_TICK, 'duration')
 
     -- if d.err ~= nil then
     --     d.err = string.format("Invalid note: %s", d.err)
@@ -49,7 +44,7 @@ end
 -----------------------------------------------------------------------------
 function StepController(tick, chan_hnd, controller, value)
     local d = {}
-    d.step_type = STEP_CONTROLLER
+    d.step_type = "controller"
     d.err = nil
     d.tick = tick
     d.chan_hnd = chan_hnd
@@ -57,10 +52,10 @@ function StepController(tick, chan_hnd, controller, value)
     d.value = value
     
     -- Validate.
-    d.err = d.err or v.val_integer(d.tick, 0, MAX_TICK, 'tick')
+    d.err = d.err or v.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
     d.err = d.err or v.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or v.val_integer(d.controller, 0, MAX_MIDI, 'controller')
-    d.err = d.err or v.val_integer(d.value, 0, MAX_MIDI, 'value')
+    d.err = d.err or v.val_integer(d.controller, 0, com.MAX_MIDI, 'controller')
+    d.err = d.err or v.val_integer(d.value, 0, com.MAX_MIDI, 'value')
 
     -- if d.err ~= nil then
     --     d.err = string.format("Invalid controller: %s", d.err)
@@ -76,7 +71,7 @@ end
 -----------------------------------------------------------------------------
 function StepFunction(tick, chan_hnd, func, volume)
     local d = {}
-    d.step_type = STEP_FUNCTION
+    d.step_type = "function"
     d.err = nil
     d.tick = tick
     d.chan_hnd = chan_hnd
@@ -84,7 +79,7 @@ function StepFunction(tick, chan_hnd, func, volume)
     d.volume = volume
 
     -- Validate.
-    d.err = d.err or v.val_integer(d.tick, 0, MAX_TICK, 'tick')
+    d.err = d.err or v.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
     d.err = d.err or v.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
     d.err = d.err or v.val_function(d.func, 0.0, 1.0, 'func')
     d.err = d.err or v.val_number(d.volume, 0.0, 1.0, 'volume')

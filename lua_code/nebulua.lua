@@ -8,7 +8,7 @@ local api = require("host_api")
 local st = require("step_types")
 local md = require("midi_defs")
 local mu = require("music_defs")
-require('neb_common')
+local com = require('neb_common')
 
 -- TODO2 bulletproof this.
 
@@ -75,7 +75,7 @@ function M.process_step(tick)
     local steps_now = _steps[tick] -- now
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
-            if step.step_type == STEP_NOTE then
+            if step.step_type == "note" then
                 if step.volume > 0 then -- noteon - chase
                     dur = step.duration
                     if dur == 0 then dur = 1 end -- (for drum/hit)
@@ -85,9 +85,9 @@ function M.process_step(tick)
                 end
                 -- now send
                 api.send_note(step.chan_hnd, step.note_num, step.volume)
-            elseif step.step_type == STEP_CONTROLLER then
+            elseif step.step_type == "controller" then
                 api.send_controller(step.chan_hnd, step.controller, step.value)
-            elseif step.step_type == STEP_FUNCTION then
+            elseif step.step_type == "function" then
                 step.func(_current_tick)
             end
         end
@@ -97,7 +97,7 @@ function M.process_step(tick)
     steps_now = _transients[tick] -- now
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
-            if step.step_type == STEP_NOTE then
+            if step.step_type == "note" then
                api.send_note(step.chan_hnd, step.note_num, 0)
             end
         end

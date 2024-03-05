@@ -7,7 +7,7 @@ local st = require("step_types")
 local bt = require("bar_time")
 local api = require("host_api") -- host api mock
 local neb = require("nebulua") -- lua api
-require('neb_common')
+local com = require('neb_common')
 
 
 ut.config_debug(false) -- TODO2 an easy way to toggle this? and/or insert/delete breakpoints from ST.
@@ -16,14 +16,6 @@ ut.config_debug(false) -- TODO2 an easy way to toggle this? and/or insert/delete
 -- Create the namespace/module.
 local M = {}
 
--- Can't use # for maps only lists. TODO1 put in utils?
-local function table_count(tbl)
-    num = 0
-    for k, _ in pairs(tbl) do
-        num = num + 1
-    end
-    return num
-end
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
@@ -45,7 +37,7 @@ function M.suite_parse_chunk(pn)
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
     step = steps[6]
-    pn.UT_EQUAL(step.step_type, STEP_NOTE)
+    pn.UT_STR_EQUAL(step.step_type, "note")
     pn.UT_EQUAL(step.tick, 1024)
     pn.UT_EQUAL(step.chan_hnd, 88)
     pn.UT_EQUAL(step.note_num, 89)
@@ -110,21 +102,21 @@ function M.suite_process_script(pn)
         api.current_tick = i
         stat = neb.process_step(i)
         pn.UT_EQUAL(stat, 0)
-        -- print(">>>", table_count(transients))
+        -- print(">>>", ut.table_count(transients))
 
         if i == 4 then
             pn.UT_EQUAL(#api.activity, 12)
-            pn.UT_EQUAL(table_count(transients), 2)
+            pn.UT_EQUAL(ut.table_count(transients), 2)
         end
 
         if i == 40 then
             pn.UT_EQUAL(#api.activity, 21)
-            pn.UT_EQUAL(table_count(transients), 1)
+            pn.UT_EQUAL(ut.table_count(transients), 1)
         end
     end
 
     pn.UT_EQUAL(#api.activity, 73)
-    pn.UT_EQUAL(table_count(transients), 0)
+    pn.UT_EQUAL(ut.table_count(transients), 0)
 
     -- -- Examine collected data.
     -- for _, d in ipairs(api.activity) do

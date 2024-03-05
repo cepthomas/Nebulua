@@ -3,8 +3,8 @@
 
 local md = require("music_defs")
 local ut = require("utils")
-require('neb_common')
-throw_error = false
+local com = require('neb_common')
+
 
 -- Create the namespace/module.
 local M = {}

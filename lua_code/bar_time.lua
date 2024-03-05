@@ -3,7 +3,7 @@
 local ut = require("utils")
 local sx = require("stringex")
 local v = require('validators')
-require('neb_common')
+local com = require('neb_common')
 
 -- Forward refs.
 local mt
@@ -26,7 +26,7 @@ function BarTime(arg1, arg2, arg3)
     -- Determine flavor.
     if ut.is_integer(arg1) and arg2 == nil and arg3 == nil then
         -- From ticks.
-        e = v.val_integer(arg1, 0, MAX_TICK, 'tick')
+        e = v.val_integer(arg1, 0, com.MAX_TICK, 'tick')
         if e == nil then
             d.tick = arg1
         else
@@ -34,11 +34,11 @@ function BarTime(arg1, arg2, arg3)
         end
     elseif ut.is_integer(arg1) and ut.is_integer(arg2) and ut.is_integer(arg3) then
         -- From bar/beat/sub.
-        e = v.val_integer(arg1, 0, MAX_BAR, 'bar')
-        e = e or v.val_integer(arg2, 0, BEATS_PER_BAR, 'beat')
-        e = e or v.val_integer(arg3, 0, SUBS_PER_BEAT, 'sub')
+        e = v.val_integer(arg1, 0, com.MAX_BAR, 'bar')
+        e = e or v.val_integer(arg2, 0, com.BEATS_PER_BAR, 'beat')
+        e = e or v.val_integer(arg3, 0, com.SUBS_PER_BEAT, 'sub')
         if e == nil then
-            d.tick = (arg1 * SUBS_PER_BAR) + (arg2 * SUBS_PER_BEAT) + (arg3)
+            d.tick = (arg1 * com.SUBS_PER_BAR) + (arg2 * com.SUBS_PER_BEAT) + (arg3)
         else
             err = string.format("Bad constructor: %s", e)
         end
@@ -64,7 +64,7 @@ function BarTime(arg1, arg2, arg3)
 
         valid = valid and bar ~= nil and beat ~= nil and sub ~= nil
         if valid then
-            d.tick = (bar * SUBS_PER_BAR) + (beat * SUBS_PER_BEAT) + (sub)
+            d.tick = (bar * com.SUBS_PER_BAR) + (beat * com.SUBS_PER_BEAT) + (sub)
         else
             err = string.format("Invalid time: %s", tostring(arg1))
         end
@@ -81,19 +81,19 @@ function BarTime(arg1, arg2, arg3)
     ----------------------------------------
     -- Get the bar number.
     d.get_bar = function()
-        return math.floor(d.tick / SUBS_PER_BAR)
+        return math.floor(d.tick / com.SUBS_PER_BAR)
     end
 
     ----------------------------------------
     -- Get the beat number in the bar.
     d.get_beat = function()
-        return math.floor(d.tick / SUBS_PER_BEAT % BEATS_PER_BAR)
+        return math.floor(d.tick / com.SUBS_PER_BEAT % com.BEATS_PER_BAR)
     end
 
     ----------------------------------------
     -- Get the sub in the beat.
     d.get_sub = function()
-        return math.floor(d.tick % SUBS_PER_BEAT)
+        return math.floor(d.tick % com.SUBS_PER_BEAT)
     end
 
     -- Return success/fail.
