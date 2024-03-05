@@ -64,7 +64,7 @@ int scriptinfo_Init(lua_State* l)
     ltype = lua_getglobal(l, "_section_names");
     lua_pushnil(l);
     int n = 0;
-    while (lua_next(l, -2) != 0 && stat == NEB_OK) // TODO2 overflow
+    while (lua_next(l, -2) != 0 && stat == NEB_OK)
     {
         if (n < MAX_SECTIONS)
         {

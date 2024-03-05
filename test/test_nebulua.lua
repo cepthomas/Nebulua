@@ -16,7 +16,7 @@ ut.config_debug(false) -- TODO2 an easy way to toggle this? and/or insert/delete
 -- Create the namespace/module.
 local M = {}
 
--- Can't use # for maps only lists. TODO2 put in utils?
+-- Can't use # for maps only lists. TODO1 put in utils?
 local function table_count(tbl)
     num = 0
     for k, _ in pairs(tbl) do
@@ -39,8 +39,8 @@ end
 -----------------------------------------------------------------------------
 function M.suite_parse_chunk(pn)
 
-    -- Note number.
-    local steps, seq_length = neb.parse_chunk( { "|1       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 }, 88, 1000 )
+    -- Note number. This also checks the list of steps in more detail
+    local seq_length, steps = neb.parse_chunk( { "|1       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 }, 88, 1000 )
     -- print('+++', ut.dump_table_string(steps, true, 'steps1'))
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
@@ -53,28 +53,30 @@ function M.suite_parse_chunk(pn)
     pn.UT_EQUAL(step.duration, 1)
 
     -- Note name.
-    steps, seq_length = neb.parse_chunk( { "|7   7   |        |        |        |    4---|---     |        |        |", "C2" }, 90, 1000 )
+    seq_length, steps = neb.parse_chunk( { "|7   7   |        |        |        |    4---|---     |        |        |", "C2" }, 90, 234 )
     -- print('+++', ut.dump_table_string(steps, true, 'steps2'))
     pn.UT_EQUAL(#steps, 3)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Chord.
-    steps, seq_length = neb.parse_chunk( { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" }, 91, 1000 )
+    seq_length, steps = neb.parse_chunk( { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" }, 91, 1111 )
     -- print('+++', ut.dump_table_string(steps, true, 'steps3'))
     pn.UT_EQUAL(#steps, 16) -- 4 x 4 notes in chord
     pn.UT_EQUAL(seq_length, 64)
 
     -- Function.
     local dummy = function() end
-    steps, seq_length = neb.parse_chunk( { "|        |    6-  |        |        |        | 9999   |  111   |        |", dummy }, 92, 1000 )
+    seq_length, steps = neb.parse_chunk( { "|        |    6-  |        |        |        | 9999   |  111   |        |", dummy }, 92, 1555 )
     -- print('+++', ut.dump_table_string(steps, true, 'steps4'))
     pn.UT_EQUAL(#steps, 8)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Bad syntax.
-    ok, steps = pcall(neb.parse_chunk, { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 }, 93, 1000 )
+    dbg()
+    seq_length, steps = neb.parse_chunk( { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 }, 93, 678 )
     -- print('+++', ut.dump_table_string(steps, true, 'steps5'))
-    pn.UT_FALSE(ok)
+    pn.UT_EQUAL(seq_length, 0)
+    pn.UT_STR_CONTAINS(steps, "Invalid '-' in pattern string")
 end
 
 

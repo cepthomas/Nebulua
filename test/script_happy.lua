@@ -36,19 +36,17 @@ local master_vol = 0.8
 -- Init stuff. Required function.
 function setup()
     neb.set_tempo(95)
-    neb.init(sections)
+    neb.init(sections) -- required if using composition
     return 0
 end
 
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment. Required function.
 function step(tick)
-
     neb.process_step(tick) -- required if using composition
 
-    t = BarTime(tick)
-
     -- Selective work.
+    t = BarTime(tick)
     if t.beat == 0 and t.sub == 0 then
         neb.send_controller(hinstrument1, 50, 51)
     end
@@ -56,6 +54,7 @@ function step(tick)
     if t.beat == 1 and t.sub == 4 then
         neb.send_controller(hinstrument2,  60, 61)
     end
+
     return 0
 end
 
@@ -177,8 +176,7 @@ local nothing = {}
 
 -----------------------------------------------------------------------------
 
--- local sections = TODO2 not local...
-sections =
+sections =  -- TODO2 should be local.
 {
     {
         name = "beginning",

@@ -14,10 +14,10 @@ int main()
 
     // Run the requested tests.
     std::vector<std::string> whichSuites;
-    //whichSuites.emplace_back("NEBCOM");
-    //whichSuites.emplace_back("DEVMGR");
+    whichSuites.emplace_back("NEBCOM");
+    whichSuites.emplace_back("DEVMGR");
     whichSuites.emplace_back("EXEC");
-    //whichSuites.emplace_back("CLI");
+    whichSuites.emplace_back("CLI");
 
     // Init system before running tests.
     FILE* fp_log = fopen("_log.txt", "w");

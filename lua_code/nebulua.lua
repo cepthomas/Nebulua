@@ -136,39 +136,44 @@ function M.init(sections)
     _section_names = {}
     _length = 0
     -- print(">>>", #sections)
+    local ed = 2
 
-    for i, section in ipairs(sections) do
-        -- Sanity check.
-        if section.name == nil then error("Missing section name", 2) end
-        -- Save the start for markers.
+    for index_section, section in ipairs(sections) do
+        -- Process one section.
+        -- Requires a name.
+        if section.name == nil then error(string.format("Missing section name in section %d", index_section), ed) end
+        -- Save the start tick for markers.
         section.start = _length
-        _section_names[section.name] = _length
+        _section_names[section.name] = section.start
 
+        -- The longest sequence in the section.
         local section_max = 0
 
-        -- Iterate the contents by sections.
-        local row_num = 0
+        -- Iterate the channel sequences.
+        local chan_seq_index = 0
         for k, v in pairs(section) do
-            row_num = row_num + 1
             if k == "name" or k == "start" then
-                -- skip
+                -- skip, already handled
             elseif ut.is_table(v) then
+                chan_seq_index = chan_seq_index + 1
                 -- Time offset for this channel events.
                 local tick = section.start
 
-                -- The sequences. Process each. First element is the channel followed by the sequences.
+                -- Process the sequences. First element is the channel followed by the sequences.
                 local chan_hnd = 0
-                for i, seq_elem in ipairs(v) do
-                    if i == 1 then
+                for index_elem, seq_elem in ipairs(v) do
+                    if index_elem == 1 then
                         chan_hnd = seq_elem
-                    else -- sequence
+                    else -- it's a sequence sequence
+                        -- Process the chunks in the sequence.
                         for c, seq_chunk in ipairs(seq_elem) do
                             -- { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
                             -- { "|    5-  |        |        |        |        |        |        |        |", my_seq_func }
                             -- print(">>>", seq_chunk[1], seq_chunk[2])
-                            local chunk_steps, seq_length = M.parse_chunk(seq_chunk, chan_hnd, tick)
-                            if chunk_steps == nil then
-                                error(string.format("Couldn't parse sequence in section:%s row:%d elem:%d", section.name, row_num, i), 2)
+                            local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+                            if seq_length == 0 then
+                                error(string.format("Couldn't parse sequence in section:%s row:%d elem:%d\n%s",
+                                    section.name, chan_seq_index, index_elem, chunk_steps), ed)
                             else -- save them
                                 for c, st in ipairs(chunk_steps) do
                                     lazy_add(_steps, st.tick, st)
@@ -182,8 +187,8 @@ function M.init(sections)
 
                 -- Keep track of overall time for section.
                 section_max = math.max(section_max, tick)
-            else
-                error(string.format("Element [%s] is not a valid channel", tostring(v)), 2)
+            -- else just blow it up??
+            --     error(string.format("Element:%s in section:%s is not a valid channel", tostring(v)), ed)
             end
         end
 
@@ -197,21 +202,22 @@ end
 
 
 -----------------------------------------------------------------------------
---- Parse a chunk pattern. Should be local but this makes testing smoother.
+--- Parse a chunk pattern. Global for unit testing. TODO1 need a better/safer way to do this.
+--- This does not call error() so caller can process in context. However this results in a somewhat messy
+--- multiple early return scenario. Sorry.
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
 -- @param chan_hnd
 -- @param start_tick
--- @return steps, seq_length - list of StepX or nil if invalid.
+-- @return seq_length, steps - length, list of StepX OR 0, error message if invalid.
 function M.parse_chunk(chunk, chan_hnd, start_tick)
     if #chunk ~= 2 then
-        dbg()
-        return nil, 0
+        return 0, "Improperly formed chunk."
     end
 
     local steps = { }
     local current_vol = 0 -- default, not sounding
     local start_offset = 0 -- in pattern for the start of the current event
-    local ed = 3
+    -- local chunk_error = nil
 
     -- Process the note descriptor first. Could be number, string, function.
     local what_to_play = chunk[2]
@@ -222,30 +228,33 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     ----- Local function to package an event. ------
     function make_event(offset)
         -- offset is 0-based.
+        -- returns nil if ok else error string.
         local vol = current_vol / 10
         local dur = offset - start_offset
         local when = start_offset + start_tick
-        local si = nil
+        local evt_err = nil
 
         if func ~= nil then -- func
-            si = StepFunction(when, chan_hnd, func, vol)
+            local si = StepFunction(when, chan_hnd, func, vol)
             if si.err == nil then
                 table.insert(steps, si)
             else
                 -- Internal error
-                error(si.err, ed)
+                evt_err = si.err
             end
         else -- note
             for _, n in ipairs(notes) do
-                si = StepNote(when, chan_hnd, n, vol, dur)
+                local si = StepNote(when, chan_hnd, n, vol, dur)
                 if si.err == nil then
                     table.insert(steps, si)
                 else
                     -- Internal error
-                    error(si.err, ed)
+                    evt_err = si.err
                 end
             end
         end
+
+        return evt_err
     end
 
     -- Start here
@@ -258,7 +267,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     elseif tn == "string" then
         notes = mu.get_notes_from_string(what_to_play)
     else
-        error(string.format("Invalid what_to_play %s", chunk[2]), ed)
+        return 0, string.format("Invalid what_to_play %s", chunk[2])
     end
 
     -- Process note instances.
@@ -268,7 +277,8 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
 
     for i = 1, seq_length do
         local c = pattern:sub(i, i)
-        local cnum = string.byte(c) - 48
+        local cnum = string.byte(c) - 48 -- '0'
+        local seq_err = nil
 
         if c == '-' then
             -- Continue current note.
@@ -276,13 +286,13 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 -- ok, do nothing
             else
                 -- invalid condition
-                error(string.format("Invalid \'-\'' in pattern string: %s", chunk[1]), ed)
+                seq_err = string.format("Invalid \'-\' in pattern string: %s", chunk[1])
             end
         elseif cnum >= 1 and cnum <= 9 then
             -- A new note starting.
             -- Do we need to end the current note?
             if current_vol > 0 then
-                make_event(i - 1)
+                seq_err = make_event(i - 1)
             end
             -- Start new note.
             current_vol = cnum
@@ -291,21 +301,24 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
             -- No sound.
             -- Do we need to end the current note?
             if current_vol > 0 then
-                make_event(i - 1)
+                seq_err = make_event(i - 1)
             end
             current_vol = 0
         else
             -- Invalid char.
-            error(string.format("Invalid char %c in pattern string: %s", c, chunk[1]), ed)
+            seq_err = string.format("Invalid char %c in pattern string: %s", c, chunk[1])
         end
+
+        if seq_err ~= nil then return 0, seq_err end
     end
 
     -- Straggler?
     if current_vol > 0 then
-        make_event(#pattern - 1)
+        local seq_err = make_event(#pattern - 1)
+        if seq_err ~= nil then return 0, seq_err end
     end
 
-    return steps, seq_length
+    return seq_length, steps
 end
 
 
