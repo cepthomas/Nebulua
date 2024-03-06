@@ -164,7 +164,7 @@ function M.init(sections)
                 for index_elem, seq_elem in ipairs(v) do
                     if index_elem == 1 then
                         chan_hnd = seq_elem
-                    else -- it's a sequence sequence
+                    else -- it's a sequence
                         -- Process the chunks in the sequence.
                         for c, seq_chunk in ipairs(seq_elem) do
                             -- { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
@@ -239,7 +239,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
             if si.err == nil then
                 table.insert(steps, si)
             else
-                -- Internal error
+                -- Syntax error
                 evt_err = si.err
             end
         else -- note
@@ -248,7 +248,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 if si.err == nil then
                     table.insert(steps, si)
                 else
-                    -- Internal error
+                    -- Syntax error
                     evt_err = si.err
                 end
             end
@@ -264,8 +264,14 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     elseif tn == "function" then
         -- use as is
         func = what_to_play
+        if func == nil then
+            return 0, string.format("Invalid func %s", chunk[2])
+        end
     elseif tn == "string" then
         notes = mu.get_notes_from_string(what_to_play)
+        if notes == nil then
+            return 0, string.format("Invalid notes %s", chunk[2])
+        end
     else
         return 0, string.format("Invalid what_to_play %s", chunk[2])
     end

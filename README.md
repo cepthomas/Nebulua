@@ -59,6 +59,8 @@ Script defs:
    BAR_TIME is a string of "BAR.BEAT.SUB" e.g. "1.2.3" or "1.2" or "1".
    VOLUME 0->9
 
+# composition
+
 --[[
 Each section is 8 beats.
 Each sequence is 4 sections => 32 beats.

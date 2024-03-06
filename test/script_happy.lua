@@ -110,17 +110,6 @@ end
 
 ------------------------- Composition ---------------------------------------
 
---[[
-Each section is 8 beats.
-Each sequence is 4 sections => 32 beats.
-A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences.
-
-If each sequence has average 8 notes => total of 320 notes per instrument.
-A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences => 320 notes.
-A "typical" sone would have about 4000 on/off events.
-]]
-
-
 -- Sequences --
 
 local drums_verse =
@@ -143,7 +132,7 @@ local drums_chorus =
 local keys_verse =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    { "|7-------|--      |        |        |7-------|--      |        |        |", "xxxG4.m7" },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
 }
 
