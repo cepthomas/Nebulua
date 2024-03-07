@@ -159,30 +159,46 @@ local bass_chorus =
     { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
 }
 
--- Fill space. Can't use nil.
-local nothing = {}
-
 
 -----------------------------------------------------------------------------
 
-sections =  -- TODO2 should be local.
-{
-    {
-        name = "beginning",
-        { hnd_instrument1, nothing,     keys_verse,    drums_verse, keys_verse },
-        { hnd_instrument2, bass_verse,  bass_verse,    nothing,     bass_verse }
-    },
 
-    {
-        name = "middle",
-        { hnd_instrument1, nothing,      keys_chorus,  keys_chorus,  keys_chorus },
-        { hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus }
-    },
+-- Identify space. Can't use nil.
+nothing = {}
 
-    {
-        name = "ending",
-        { hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   nothing    },
-        { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus }
-    }
-}
+
+
+neb.section_name("beginning")
+neb.section_add(hnd_instrument1, nothing,     keys_verse,    keys_verse,   keys_verse)
+neb.section_add(hnd_instrument2, bass_verse,  bass_verse,    nothing,      bass_verse)
+
+neb.section_name("middle")
+neb.section_add(hnd_instrument1, nothing,      keys_chorus,  keys_chorus,  keys_chorus )
+neb.section_add(hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus )
+
+neb.section_name("ending")
+neb.section_add(hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   nothing     )
+neb.section_add(hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus)
+
+
+-- sections =  -- TODO2 should be local.
+-- {
+--     {
+--         name = "beginning",
+--         { hnd_instrument1, nothing,     keys_verse,    drums_verse, keys_verse },
+--         { hnd_instrument2, bass_verse,  bass_verse,    nothing,     bass_verse }
+--     },
+
+--     {
+--         name = "middle",
+--         { hnd_instrument1, nothing,      keys_chorus,  keys_chorus,  keys_chorus },
+--         { hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus }
+--     },
+
+--     {
+--         name = "ending",
+--         { hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   nothing    },
+--         { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus }
+--     }
+-- }
 

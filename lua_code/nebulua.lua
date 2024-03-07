@@ -20,7 +20,10 @@ local com = require('neb_common')
 
 local M = {}
 
------ Global vars for access by app. ------
+
+-----------------------------------------------------------------------------
+----- Global vars for access by app
+-----------------------------------------------------------------------------
 
 -- Total length of composition.
 _length = 0
@@ -28,7 +31,9 @@ _length = 0
 -- Key is section name, value is start tick.
 _section_names = {}
 
------ Private vars ------
+-----------------------------------------------------------------------------
+----- Private vars
+-----------------------------------------------------------------------------
 
 -- All the composition StepX. Key is tick aka when-to-play.
 local _steps = {}
@@ -39,10 +44,98 @@ local _transients = {}
 -- Where we be.
 local _current_tick = 0
 
+-----------------------------------------------------------------------------
+----- Debug stuff
+-----------------------------------------------------------------------------
 
 function _mole() return _steps, _transients end -- TODO2 remove
 
 -----------------------------------------------------------------------------
+----- Local helpers
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+local function lazy_add(tbl, key, obj)
+   if tbl[key] == nil then tbl[key] = {} end
+   table.insert(tbl[key], obj)
+end
+
+
+
+
+-- sections =  -- TODO2 should be local.
+-- {
+--     {
+--         name = "beginning",
+--         { hnd_instrument1, nothing,     keys_verse,    drums_verse, keys_verse },
+--         { hnd_instrument2, bass_verse,  bass_verse,    nothing,     bass_verse }
+--     },
+
+--     {
+--         name = "middle",
+--         { hnd_instrument1, nothing,      keys_chorus,  keys_chorus,  keys_chorus },
+--         { hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus }
+--     },
+
+--     {
+--         name = "ending",
+--         { hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   nothing    },
+--         { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus }
+--     }
+-- }
+
+
+_sections = {}
+
+-- local _section_name = nil
+
+local _current_section = nil
+
+function M.section_name(name)
+    _current_section = {}
+    _current_section.name = name
+    table.insert(_sections, _current_section)
+end
+
+
+function M.section_add(hnd, ...)
+
+-- select (index, ···)
+-- If index is a number, returns all arguments after argument number index; a negative number indexes from the end (-1 is the last argument).
+-- Otherwise, index must be the string "#", and select returns the total number of extra arguments it received.
+
+
+
+
+    if _current_section ~= nil then
+        elems = {}
+
+        print(hnd, #arg)
+
+        if hnd ~= nil then
+            table.insert(elems, hnd)
+
+            for _, seq in ipairs(arg) do
+                if seq ~= nil then
+                    table.insert(elems, seq)
+                else
+                    error("nil seq")
+                end
+            end
+        else
+            error("nil hnd")
+        end
+    else
+        error("nil _current_section")
+    end
+end
+
+
+
+-----------------------------------------------------------------------------
+----- Script api
+-----------------------------------------------------------------------------
+
 -- Log functions. Magic numbers from host C code.
 function M.log_error(msg) api.log(4, msg) end
 function M.log_info(msg)  api.log(3, msg) end
@@ -50,19 +143,12 @@ function M.log_debug(msg) api.log(2, msg) end
 function M.log_trace(msg) api.log(1, msg) end
 
 
------------------------------------------------------------------------------
 -- These go straight through to the host api.
 M.create_input_channel = api.create_input_channel
 M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
 
-
------------------------------------------------------------------------------
-local function lazy_add(tbl, key, obj)
-   if tbl[key] == nil then tbl[key] = {} end
-   table.insert(tbl[key], obj)
-end
 
 -----------------------------------------------------------------------------
 --- Process notes due now.
@@ -129,7 +215,7 @@ end
 -----------------------------------------------------------------------------
 --- Process all sections into discrete steps.
 -- @param sections table user section specs
-function M.init(sections)
+function M.init()--sections)
     -- Hard reset.
     _steps = {}
     _transients = {}
@@ -138,7 +224,9 @@ function M.init(sections)
     -- print(">>>", #sections)
     local ed = 2
 
-    for index_section, section in ipairs(sections) do
+    -- sections = _sections
+
+    for index_section, section in ipairs(_sections) do
         -- Process one section.
         -- Requires a name.
         if section.name == nil then error(string.format("Missing section name in section %d", index_section), ed) end
@@ -202,7 +290,7 @@ end
 
 
 -----------------------------------------------------------------------------
---- Parse a chunk pattern. Global for unit testing. TODO1 need a better/safer way to do this.
+--- Parse a chunk pattern. Global for unit testing.
 --- This does not call error() so caller can process in context. However this results in a somewhat messy
 --- multiple early return scenario. Sorry.
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
