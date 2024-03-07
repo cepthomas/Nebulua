@@ -24,7 +24,7 @@ int main()
     logger_Init(fp_log);
 
     std::ofstream s_ut("_test.txt", std::ofstream::out);
-    tm.RunSuites(whichSuites, 'r', true, &s_ut); //false
+    tm.RunSuites(whichSuites, 'r', false, &s_ut);
 
     fclose(fp_log);
     s_ut.close();

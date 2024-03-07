@@ -97,6 +97,7 @@ UT_SUITE(EXEC_MAIN, "Test happy path.")
     UT_NULL(e);
 
     ///// Good to go now.
+    UT_STOP_ON_FAIL(true);
 
     // Get some nebulator script globals.
     scriptinfo_Init(_ltest);
@@ -109,15 +110,16 @@ UT_SUITE(EXEC_MAIN, "Test happy path.")
 
     sect_name = scriptinfo_GetSectionName(1);
     sect_start = scriptinfo_GetSectionStart(1);
+
     UT_NOT_NULL(sect_name);
     UT_STR_EQUAL(sect_name, "middle");
-    UT_EQUAL(sect_start, 648);
+    UT_EQUAL(sect_start, 646);
 
     sect_name = scriptinfo_GetSectionName(2);
     sect_start = scriptinfo_GetSectionStart(2);
     UT_NOT_NULL(sect_name);
     UT_STR_EQUAL(sect_name, "ending");
-    UT_EQUAL(sect_start, 2117);
+    UT_EQUAL(sect_start, 2118);
 
     sect_name = scriptinfo_GetSectionName(3);
     sect_start = scriptinfo_GetSectionStart(3);

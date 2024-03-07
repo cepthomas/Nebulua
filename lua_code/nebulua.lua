@@ -145,6 +145,7 @@ function M.init(sections)
         -- Save the start tick for markers.
         section.start = _length
         _section_names[section.name] = section.start
+        -- print(">>>", section.name)
 
         -- The longest sequence in the section.
         local section_max = 0
@@ -167,8 +168,7 @@ function M.init(sections)
                     else -- it's a sequence
                         -- Process the chunks in the sequence.
                         for c, seq_chunk in ipairs(seq_elem) do
-                            -- { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
-                            -- { "|    5-  |        |        |        |        |        |        |        |", my_seq_func }
+                            -- { "|5-------|--      |        |        |7-------|--      |        |        |", notes... }
                             -- print(">>>", seq_chunk[1], seq_chunk[2])
                             local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
                             if seq_length == 0 then
@@ -214,6 +214,8 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         return 0, "Improperly formed chunk."
     end
 
+    -- print(chunk[1], chunk[2])
+
     local steps = { }
     local current_vol = 0 -- default, not sounding
     local start_offset = 0 -- in pattern for the start of the current event
@@ -224,6 +226,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local tn = type(what_to_play)
     local notes = {}
     local func = nil
+    -- print(tn, what_to_play)
 
     ----- Local function to package an event. ------
     function make_event(offset)
@@ -245,6 +248,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         else -- note
             for _, n in ipairs(notes) do
                 local si = StepNote(when, chan_hnd, n, vol, dur)
+                -- print(n, si.err)
                 if si.err == nil then
                     table.insert(steps, si)
                 else
@@ -261,6 +265,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     if tn == "number" then
         -- use as is
         notes = { what_to_play }
+        -- print(what_to_play)
     elseif tn == "function" then
         -- use as is
         func = what_to_play

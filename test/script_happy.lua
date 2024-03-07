@@ -123,7 +123,7 @@ local drums_verse =
 local drums_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|6       |        |6       |        |6       |        |6       |        |", 10 },
+    { "|6       |        |6       |        |6       |        |6       |        |", 100 },
     { "|        |7 7     |        |7 7     |        |7 7     |        |        |", 13 },
     { "|        |    4   |        |        |        |    4   |        |        |", 14 },
     { "|        |        |        |        |        |        |        |8       |", 15 },
@@ -132,7 +132,7 @@ local drums_chorus =
 local keys_verse =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|7-------|--      |        |        |7-------|--      |        |        |", "xxxG4.m7" },
+    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
 }
 
@@ -169,20 +169,20 @@ sections =  -- TODO2 should be local.
 {
     {
         name = "beginning",
-        { hnd_instrument1, nothing,     keys_verse,    keys_verse,  keys_verse },
+        { hnd_instrument1, nothing,     keys_verse,    drums_verse, keys_verse },
         { hnd_instrument2, bass_verse,  bass_verse,    nothing,     bass_verse }
     },
 
     {
         name = "middle",
         { hnd_instrument1, nothing,      keys_chorus,  keys_chorus,  keys_chorus },
-        { hnd_instrument2, bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus }
+        { hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus }
     },
 
     {
         name = "ending",
-        { hnd_instrument1, keys_verse,    keys_verse,  keys_verse,   nothing    },
-        { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   bass_verse }
+        { hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   nothing    },
+        { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus }
     }
 }
 

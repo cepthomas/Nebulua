@@ -5,8 +5,9 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NebuluaTest", "NebuluaTest.vcxproj", "{2902A50D-CDC6-4AFC-81F7-DCF28453ECFD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{45C13960-DC4B-457D-9B69-DA5DE8C56BE4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6DD1E198-BBB8-4E50-8392-E81719462475}"
 	ProjectSection(SolutionItems) = preProject
+		script_happy.lua = script_happy.lua
 		_log.txt = _log.txt
 		_test.txt = _test.txt
 	EndProjectSection
