@@ -57,10 +57,6 @@ local _current_tick = 0
 
 function _mole() return _steps, _transients end
 
------------------------------------------------------------------------------
------ Local helpers
------------------------------------------------------------------------------
-
 
 
 -----------------------------------------------------------------------------
@@ -79,7 +75,6 @@ M.create_input_channel = api.create_input_channel
 M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
-
 
 -----------------------------------------------------------------------------
 --- Process notes due now.
@@ -125,7 +120,6 @@ function M.process_step(tick)
     return 0
 end
 
-
 -----------------------------------------------------------------------------
 -- Send note now. Manages corresponding note off.
 function M.send_note(chan_hnd, note_num, volume, dur)
@@ -141,7 +135,6 @@ function M.send_note(chan_hnd, note_num, volume, dur)
        api.send_note(chan_hnd, note_num, 0)
    end
 end
-
 
 -----------------------------------------------------------------------------
 --- Process all sections into discrete steps.
@@ -220,7 +213,6 @@ function M.init()--sections)
 
     -- All done.
 end
-
 
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern. Global for unit testing.
@@ -353,7 +345,6 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     return seq_length, steps
 end
 
-
 -----------------------------------------------------------------------------
 --- Parsing: start a new section definition.
 -- @param name what to call it
@@ -362,7 +353,6 @@ function M.sect_start(name)
     _current_section.name = name
     table.insert(_sections, _current_section)
 end
-
 
 -----------------------------------------------------------------------------
 --- Parsing: add sequences to the current section.
@@ -395,7 +385,6 @@ function M.sect_seqs(chan_hnd, ...)
         error("No section name", 1)
     end
 end
-
 
 -----------------------------------------------------------------------------
 -- Return module.

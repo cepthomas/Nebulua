@@ -33,7 +33,7 @@ int exec_Main(const char* script_fn);
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(EXEC_FUNCS, "Test exec functions.") // TODO2 need flesh
+UT_SUITE(EXEC_FUNCS, "Test exec functions.") // TODO2 need flesh?
 {
     int stat = 0;
 

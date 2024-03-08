@@ -11,6 +11,7 @@
 #include "cli.h"
 
 
+//--------------------------------------------------------//
 int cli_open()
 {
     // Nothing to do.
@@ -18,6 +19,7 @@ int cli_open()
 }
 
 
+//--------------------------------------------------------//
 int cli_close()
 {
     // Nothing to do.
@@ -25,6 +27,7 @@ int cli_close()
 }
 
 
+//--------------------------------------------------------//
 int cli_printf(const char* format, ...)
 {
     // Format string.
@@ -38,6 +41,7 @@ int cli_printf(const char* format, ...)
 }
 
 
+//--------------------------------------------------------//
 char* cli_gets(char* buff, int len)
 {
     char* s = fgets(buff, len, stdin);
