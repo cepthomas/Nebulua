@@ -99,34 +99,30 @@ end
 
 
 function M.section_add(hnd, ...)
-
--- select (index, ···)
--- If index is a number, returns all arguments after argument number index; a negative number indexes from the end (-1 is the last argument).
--- Otherwise, index must be the string "#", and select returns the total number of extra arguments it received.
-
-
-
-
     if _current_section ~= nil then
         elems = {}
 
-        print(hnd, #arg)
-
-        if hnd ~= nil then
-            table.insert(elems, hnd)
-
-            for _, seq in ipairs(arg) do
-                if seq ~= nil then
-                    table.insert(elems, seq)
-                else
-                    error("nil seq")
-                end
-            end
-        else
-            error("nil hnd")
+        if type(hnd) ~= "number" then -- should check for valid/known handle
+            error("Invalid channel", 1)
         end
+        table.insert(elems, hnd)
+
+        num_args = select('#', ...)
+        if num_args < 1 then
+            error("No sequences", 1)
+        end
+
+        for i = 1, num_args do
+            seq = select(i, ...)
+            if type(seq) ~= "table" then -- should check for valid/known
+                error("Invalid sequence "..i, 1)
+            end
+            table.insert(elems, seq)
+        end
+
+        table.insert(_current_section, elems)
     else
-        error("nil _current_section")
+        error("No section name", 1)
     end
 end
 
@@ -221,7 +217,9 @@ function M.init()--sections)
     _transients = {}
     _section_names = {}
     _length = 0
-    -- print(">>>", #sections)
+    -- print(">>>", #_sections)
+    -- print('+++', ut.dump_table_string(_sections, true, '_sections'))
+
     local ed = 2
 
     -- sections = _sections

@@ -79,14 +79,14 @@ function M.suite_process_script(pn)
     -- Load test file in protected mode.
     local scrfn = 'script_happy'
     local ok, scr = pcall(require, scrfn)
-    pn.UT_TRUE(ok, string.format("Failed to load script: %s\n%s ", scrfn, scr))
+    pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
     -- Look at script raw data -- now in global space.
     pn.UT_NOT_NIL(_sections)
     pn.UT_EQUAL(#_sections, 3)
 
-    s = ut.dump_table_string(_sections, true, "_sections")
-    print(s)
+    -- s = ut.dump_table_string(_sections, true, "_sections")
+    -- print(s)
 
     -- Process the data.
     neb.init()--sections)
@@ -95,8 +95,8 @@ function M.suite_process_script(pn)
 
     local steps, transients = _mole()
 
-    s = ut.dump_table_string(steps, true, "steps")
-    print(s)
+    -- s = ut.dump_table_string(steps, true, "steps")
+    -- print(s)
 
     -- Execute some script steps. Times and counts are based on script_happy.lua observed.
     -- valid ticks: 0000, 0004, 0032, 0088, 0092, 0120, 0122, 0128, 0160, 0188, 0192, 0196,
