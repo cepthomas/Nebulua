@@ -31,9 +31,16 @@ _length = 0
 -- Key is section name, value is start tick.
 _section_names = {}
 
+
 -----------------------------------------------------------------------------
 ----- Private vars
 -----------------------------------------------------------------------------
+
+-- All the sections defined in the script.
+local _sections = {}
+
+-- For parsing script sections.
+local _current_section = nil
 
 -- All the composition StepX. Key is tick aka when-to-play.
 local _steps = {}
@@ -45,86 +52,14 @@ local _transients = {}
 local _current_tick = 0
 
 -----------------------------------------------------------------------------
------ Debug stuff
+----- Debug stuff TODO2 remove
 -----------------------------------------------------------------------------
 
-function _mole() return _steps, _transients end -- TODO2 remove
+function _mole() return _steps, _transients end
 
 -----------------------------------------------------------------------------
 ----- Local helpers
 -----------------------------------------------------------------------------
-
------------------------------------------------------------------------------
-local function lazy_add(tbl, key, obj)
-   if tbl[key] == nil then tbl[key] = {} end
-   table.insert(tbl[key], obj)
-end
-
-
-
-
--- sections =  -- TODO2 should be local.
--- {
---     {
---         name = "beginning",
---         { hnd_instrument1, nothing,     keys_verse,    drums_verse, keys_verse },
---         { hnd_instrument2, bass_verse,  bass_verse,    nothing,     bass_verse }
---     },
-
---     {
---         name = "middle",
---         { hnd_instrument1, nothing,      keys_chorus,  keys_chorus,  keys_chorus },
---         { hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus }
---     },
-
---     {
---         name = "ending",
---         { hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   nothing    },
---         { hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus }
---     }
--- }
-
-
-_sections = {}
-
--- local _section_name = nil
-
-local _current_section = nil
-
-function M.section_name(name)
-    _current_section = {}
-    _current_section.name = name
-    table.insert(_sections, _current_section)
-end
-
-
-function M.section_add(hnd, ...)
-    if _current_section ~= nil then
-        elems = {}
-
-        if type(hnd) ~= "number" then -- should check for valid/known handle
-            error("Invalid channel", 1)
-        end
-        table.insert(elems, hnd)
-
-        num_args = select('#', ...)
-        if num_args < 1 then
-            error("No sequences", 1)
-        end
-
-        for i = 1, num_args do
-            seq = select(i, ...)
-            if type(seq) ~= "table" then -- should check for valid/known
-                error("Invalid sequence "..i, 1)
-            end
-            table.insert(elems, seq)
-        end
-
-        table.insert(_current_section, elems)
-    else
-        error("No section name", 1)
-    end
-end
 
 
 
@@ -163,7 +98,7 @@ function M.process_step(tick)
                     if dur == 0 then dur = 1 end -- (for drum/hit)
                     -- chase with noteoff
                     noteoff = StepNote(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
-                    lazy_add(_transients, noteoff.tick, noteoff)
+                    ut.table_add(_transients, noteoff.tick, noteoff)
                 end
                 -- now send
                 api.send_note(step.chan_hnd, step.note_num, step.volume)
@@ -201,7 +136,7 @@ function M.send_note(chan_hnd, note_num, volume, dur)
         api.send_note(chan_hnd, note_num, volume)
         -- chase with noteoff
         noteoff = StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0)
-        lazy_add(_transients, noteoff.tick, noteoff)
+        ut.table_add(_transients, noteoff.tick, noteoff)
     else -- send note_off now
        api.send_note(chan_hnd, note_num, 0)
    end
@@ -262,7 +197,7 @@ function M.init()--sections)
                                     section.name, chan_seq_index, index_elem, chunk_steps), ed)
                             else -- save them
                                 for c, st in ipairs(chunk_steps) do
-                                    lazy_add(_steps, st.tick, st)
+                                    ut.table_add(_steps, st.tick, st)
                                     _length = _length +1
                                 end
                                 tick = tick + seq_length
@@ -419,5 +354,49 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
 end
 
 
+-----------------------------------------------------------------------------
+--- Parsing: start a new section definition.
+-- @param name what to call it
+function M.sect_start(name)
+    _current_section = {}
+    _current_section.name = name
+    table.insert(_sections, _current_section)
+end
+
+
+-----------------------------------------------------------------------------
+--- Parsing: add sequences to the current section.
+-- @param chan_hnd the channel
+-- @param ... the sequences
+function M.sect_seqs(chan_hnd, ...)
+    if _current_section ~= nil then
+        elems = {}
+
+        if type(chan_hnd) ~= "number" then -- should check for valid/known handle
+            error("Invalid channel", 1)
+        end
+        table.insert(elems, chan_hnd)
+
+        num_args = select('#', ...)
+        if num_args < 1 then
+            error("No sequences", 1)
+        end
+
+        for i = 1, num_args do
+            seq = select(i, ...)
+            if type(seq) ~= "table" then -- should check for valid/known
+                error("Invalid sequence "..i, 1)
+            end
+            table.insert(elems, seq)
+        end
+
+        table.insert(_current_section, elems)
+    else
+        error("No section name", 1)
+    end
+end
+
+
+-----------------------------------------------------------------------------
 -- Return module.
 return M

@@ -66,7 +66,7 @@ typedef struct cli_command
 
 //----------------------- Vars --------------------------------//
 
-// The main Lua thread. TODO2 public so unit test can see and use it.
+// The main Lua thread. FUTURE Global so unit test can see it.
 lua_State* _l;
 
 // Point this stream where you like.

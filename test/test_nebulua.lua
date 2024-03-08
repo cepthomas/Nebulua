@@ -82,8 +82,8 @@ function M.suite_process_script(pn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
     -- Look at script raw data -- now in global space.
-    pn.UT_NOT_NIL(_sections)
-    pn.UT_EQUAL(#_sections, 3)
+--    pn.UT_NOT_NIL(_sections)
+--    pn.UT_EQUAL(#_sections, 3)
 
     -- s = ut.dump_table_string(_sections, true, "_sections")
     -- print(s)

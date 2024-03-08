@@ -162,17 +162,17 @@ local bass_chorus =
 
 -- Sections --
 
--- Identify space. Can't use nil.
+-- Identify space. Can't use nil!
 quiet = {}
 
-neb.section_name("beginning")
-neb.section_add(hnd_instrument1, quiet,       keys_verse,    keys_verse,   keys_verse   )
-neb.section_add(hnd_instrument2, bass_verse,  bass_verse,    quiet,        bass_verse   )
+neb.sect_start("beginning")
+neb.sect_seqs(hnd_instrument1, quiet,       keys_verse,    keys_verse,   keys_verse   )
+neb.sect_seqs(hnd_instrument2, bass_verse,  bass_verse,    quiet,        bass_verse   )
 
-neb.section_name("middle")
-neb.section_add(hnd_instrument1, quiet,        keys_chorus,  keys_chorus,  keys_chorus  )
-neb.section_add(hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus  )
+neb.sect_start("middle")
+neb.sect_seqs(hnd_instrument1, quiet,        keys_chorus,  keys_chorus,  keys_chorus  )
+neb.sect_seqs(hnd_instrument2, bass_chorus,  drums_chorus, bass_chorus,  bass_chorus  )
 
-neb.section_name("ending")
-neb.section_add(hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   quiet        )
-neb.section_add(hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus )
+neb.sect_start("ending")
+neb.sect_seqs(hnd_instrument1, drums_verse,   keys_verse,  keys_verse,   quiet        )
+neb.sect_seqs(hnd_instrument2, bass_verse,    bass_verse,  bass_verse,   drums_chorus )
