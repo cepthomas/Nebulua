@@ -18,6 +18,7 @@
 
 
 #define BUFF_LEN 100
+#define ERR_BUFF_LEN 500
 
 
 //--------------------------------------------------------//
@@ -93,8 +94,6 @@ nogood:
     return -1;
 }
 
-
-#define ERR_BUFF_LEN 500
 
 //--------------------------------------------------------//
 const char* nebcommon_EvalStatus(lua_State* l, int stat, const char* format, ...)
