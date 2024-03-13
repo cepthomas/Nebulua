@@ -63,7 +63,7 @@ function _mole() return _steps, _transients end
 ----- Script api
 -----------------------------------------------------------------------------
 
--- Log functions. Magic numbers from host C code.
+-- Log functions. Magic numbers from host C code. TODO2 could use a lua log?
 function M.log_error(msg) api.log(4, msg) end
 function M.log_info(msg)  api.log(3, msg) end
 function M.log_debug(msg) api.log(2, msg) end
@@ -138,19 +138,13 @@ end
 
 -----------------------------------------------------------------------------
 --- Process all sections into discrete steps.
--- @param sections table user section specs
-function M.init()--sections)
+function M.init()
     -- Hard reset.
     _steps = {}
     _transients = {}
     _section_names = {}
     _length = 0
-    -- print(">>>", #_sections)
-    -- print('+++', ut.dump_table_string(_sections, true, '_sections'))
-
     local ed = 2
-
-    -- sections = _sections
 
     for index_section, section in ipairs(_sections) do
         -- Process one section.

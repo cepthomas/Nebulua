@@ -8,6 +8,7 @@ local neb = require("nebulua") -- api
 
 neb.log_info("=============== Is this thing on? ===============")
 
+print("here in lualand!!!!!!!!!!!")
 
 ------------------------- Config ----------------------------------------
 
