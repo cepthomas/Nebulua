@@ -90,7 +90,7 @@ static int _current_tick = 0;
 // Length of composition in ticks.
 static int _length = 0;
 
-// TODO1 cli implementation: loop on/off, set to section|all|start/end-bartime.
+// TODO2 cli implementation: loop on/off, set to section|all|start/end-bartime.
 // Keep going.
 static bool _do_loop = false;
 // Loop start tick. -1 means start of composition.
@@ -98,7 +98,7 @@ static int _loop_start = -1;
 // Loop end tick. -1 means end of composition.
 static int _loop_end = -1;
 
-// TODO1 implement all these monitors. Output to cli stream and/or log and/or ???
+// TODO2 implement all these monitors. Output to cli stream and/or log and/or ???
 // Monitor midi input.
 static bool _mon_input = false;
 // Monitor midi output.
