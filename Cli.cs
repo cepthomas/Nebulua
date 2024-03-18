@@ -41,7 +41,7 @@ namespace Nebulua
         /// <summary>
         /// Set up command table.
         /// </summary>
-        void InitCommands()
+        void InitCli()
         {
             _commands =
             [
@@ -60,7 +60,7 @@ namespace Nebulua
         /// Process user input.
         /// </summary>
         /// <returns>Status</returns>
-        int DoCli()
+        public int DoCli() //TODO2 public for test.
         {
             int stat = Defs.NEB_OK;
 

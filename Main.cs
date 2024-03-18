@@ -21,7 +21,7 @@ namespace Nebulua
         void EXIT_CRITICAL_SECTION() { }
 
 
-        // TODO1 run control: 
+        // TODO1 better run control: 
         // cli implementation: loop on/off, set to section|all|start/end-bartime.
         // Keep going.
         bool _doLoop = false;
@@ -99,7 +99,7 @@ namespace Nebulua
             //ghMutex = CreateMutex(NULL, FALSE, NULL);
             //if (ghMutex == NULL) { EXEC_FAIL(11, "CreateMutex() failed."); }
 
-            InitCommands();
+            InitCli();
         }
         #endregion
 

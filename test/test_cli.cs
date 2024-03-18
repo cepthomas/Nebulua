@@ -7,60 +7,47 @@ using Ephemera.NBagOfTricks.PNUT;
 
 namespace Nebulua.Test
 {
-    public class CLI_ONE : TestSuite
+    // UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
+
+    public class CLI_MAIN : TestSuite
     {
         public override void RunSuite()
         {
-            int int1 = 321;
-            int int2 = 987;
-            string str1 = "round and round";
-            string str2 = "the mulberry bush";
-            double dbl1 = 1.500;   
-            double dbl2 = 1.600;
-            double dblTol = 0.001;
+            int stat = Defs.NEB_OK;
+            string capture = "";
+            var app = new App();
+            app.HookCli();
+            //app.Run(fn);
 
-            UT_INFO("Test UT_INFO with args", int1, dbl2);
+            ///// Fat fingers.
+            app.CliOut.Capture.Clear();
+            app.CliIn.NextLine = "bbbbb";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CliOut.Capture.ToString();
+            UT_EQUAL(capture.Length, 18);
+            UT_EQUAL(capture, $"$Invalid command{Environment.NewLine}");
 
-            UT_EQUAL(str1, str2);
+            app.CliOut.Capture.Clear();
+            app.CliIn.NextLine = "z";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CliOut.Capture.ToString();
+            UT_EQUAL(capture.Length, 18);
+            UT_EQUAL(capture, $"$Invalid command{Environment.NewLine}");
 
-            UT_EQUAL(str2, "the mulberry bush");
+
+
         }
     }
 }
 
 
 /*
-// For mock cli.
-char _next_command[MAX_LINE_LEN];
-
-// Collected mock cli output lines.
-std::vector<std::string> _response_lines = {};
-
 
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
 {
-    int stat = 0;
-
-    _l = luaL_newstate();
-
-    ///// Fat fingers.
-    _response_lines.clear();
-    strncpy(_next_command, "bbbbb", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "Invalid command\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "z", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "Invalid command\n");
-
     ///// These next two confirm proper full/short name handling.
     _response_lines.clear();
     strncpy(_next_command, "help", MAX_LINE_LEN - 1);
@@ -247,55 +234,5 @@ UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
     lua_close(_l);
 
     return 0;
-}
-
-
-////////////////////////////////////// mock cli ////////////////////////////////
-
-extern "C"
-{
-int cli_open()
-{
-    _next_command[0] = 0;
-    _response_lines.clear();
-    return 0;
-}
-
-
-int cli_close()
-{
-    // Nothing to do.
-    return 0;
-}
-
-
-int cli_printf(const char* format, ...)
-{
-    // Format string.
-    char line[MAX_LINE_LEN];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(line, MAX_LINE_LEN - 1, format, args);
-    va_end(args);
-
-    std::string str(line);
-    _response_lines.push_back(str);
-
-    return 0;
-}
-
-
-char* cli_gets(char* buff, int len)
-{
-    if (strlen(_next_command) > 0)
-    {
-        strncpy(buff, _next_command, len - 1);
-        return buff;
-    }
-    else
-    {
-        return NULL;
-    }
-}
 }
 */
