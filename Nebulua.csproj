@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".gitignore" />
+    <None Remove="gen_interop.cmd" />
+    <None Remove="interop_spec.lua" />
+    <None Remove="LICENSE" />
+    <None Remove="nebulua.sublime-project" />
+    <None Remove="nebulua.sublime-workspace" />
+    <None Remove="_files.txt" />
+    <None Remove="_nebnotes.ntr" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
   </ItemGroup>
 

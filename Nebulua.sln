@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nebulua", "Nebulua\Nebulua.csproj", "{51802A9E-7547-4E9D-B0CF-F5487D3BA926}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nebulua", "Nebulua.csproj", "{51802A9E-7547-4E9D-B0CF-F5487D3BA926}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Interop", "Interop\Interop.vcxproj", "{953F3806-EB5D-444E-A500-09B455E35E53}"
 EndProject
