@@ -10,8 +10,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.IO;
 
 
-
-
 namespace Nebulua
 {
     public partial class App
@@ -24,7 +22,8 @@ namespace Nebulua
         void EXIT_CRITICAL_SECTION() { }
 
 
-        // TODO1 cli implementation: loop on/off, set to section|all|start/end-bartime.
+        // TODO1 run control: 
+        // cli implementation: loop on/off, set to section|all|start/end-bartime.
         // Keep going.
         bool _doLoop = false;
         // Loop start tick. -1 means start of composition.
@@ -35,14 +34,6 @@ namespace Nebulua
         // /// <summary>Internal status.</summary>
         // enum PlayCommand { Start, Stop, Rewind, StopRewind, UpdateUiTime }
         // #endregion
-
-
-        // TODO1 implement all these monitors. Output to cli stream and/or log and/or ???
-        // Monitor midi input.
-        bool _monInput = false;
-        // Monitor midi output.
-        bool _monOutput = false;
-
 
 
         #region Fields
@@ -84,6 +75,12 @@ namespace Nebulua
 
         /// <summary>Where are we in composition.</summary>
         int _currentTick = 0;
+
+        /// <summary>Monitor midi input.</summary>
+        bool _monInput = false;
+
+        /// <summary>Monitor midi output.</summary>
+        bool _monOutput = false;
         #endregion
 
         #region Lifecycle
@@ -210,7 +207,7 @@ namespace Nebulua
         {
             if (_scriptRunning)
             {
-                // Do script. FUTURE Handle solo/mute like nebulator.
+                // Do script. TODO3 Handle solo/mute like nebulator.
                 //_tan.Arm(); TODO2
 
                 // Lock access to lua context.

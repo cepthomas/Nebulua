@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Windows.Forms;
+using Ephemera.NBagOfTricks.PNUT;
+
+
+namespace Nebulua.Test //TestZ
+{
+    static class Program
+    {
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main(string[] _)
+        {
+            // Run pnut tests from cmd line.
+            TestRunner runner = new(OutputFormat.Readable);
+            var cases = new[] { "CLI" };
+            //var cases = new[] { "NEBCOM", "DEVMGR", "EXEC" };
+
+            // Init system before running tests.
+            // FILE* fp_log = fopen("_log.txt", "w");
+            // logger_Init(fp_log);
+
+            runner.RunSuites(cases);
+            File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
+
+            // fclose(fp_log);
+        }
+    }
+}

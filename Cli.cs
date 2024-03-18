@@ -19,7 +19,7 @@ namespace Nebulua
             string long_name,
             /// <summary>If you don't.</summary>
             char short_name,
-            /// <summary>FUTURE Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.</summary>
+            /// <summary>TODO3 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.</summary>
             char immediate_key,
             /// <summary>Free text for command description.</summary>
             string info,

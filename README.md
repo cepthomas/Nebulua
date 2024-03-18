@@ -74,6 +74,12 @@ A "typical" song would have about 4000 on/off events.
 
 ## error/status/streams  --- Some should be in lbot maybe.
 
+
+Doc:
+// fatal errors - log + cli
+// non-fatal (script) - 
+
+
 New flavor:
 -- If one still insists on a dogma though, here is what I would say:
 -- - Use errors for things which can be fixed at the time of writing the code (i.e. invalid pattern in string.match)
