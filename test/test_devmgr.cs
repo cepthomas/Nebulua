@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test //TestZ
+namespace Nebulua.Test
 {
     public class DEVMGR_ONE : TestSuite
     {
@@ -29,7 +29,7 @@ namespace Nebulua.Test //TestZ
 }
 
 
-
+/*
 #include <windows.h>
 #include <cstdio>
 #include <cstring>
@@ -131,3 +131,4 @@ UT_SUITE(DEVMGR_MAIN, "Test device manager.")
 
     return 0;
 }    
+*/

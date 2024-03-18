@@ -95,9 +95,8 @@ namespace Interop
         /// Called every fast timer increment aka tick.
         /// </summary>
         /// <param name="tick">Current tick 0 => N</param>
-        /// <param name="ret">Script function return - unused</param>
-        /// <returns>Fail = true</returns>
-        bool Step(int tick);
+        /// <returns>Standard status</returns>
+        int Step(int tick);
 
         /// <summary>
         /// Called when input arrives.
@@ -105,9 +104,8 @@ namespace Interop
         /// <param name="chan_hnd">Input channel handle</param>
         /// <param name="note_num">Note number 0 => 127</param>
         /// <param name="volume">Volume 0.0 => 1.0</param>
-        /// <param name="ret">Script function return - unused</param>
-        /// <returns>Fail = true</returns>
-        bool InputNote(int chan_hnd, int note_num, double volume);
+        /// <returns>Standard status</returns>
+        int InputNote(int chan_hnd, int note_num, double volume);
 
         /// <summary>
         /// Called when input arrives.
@@ -115,9 +113,8 @@ namespace Interop
         /// <param name="chan_hnd">Input channel handle</param>
         /// <param name="controller">Specific controller id 0 => 127</param>
         /// <param name="value">Payload 0 => 127</param>
-        /// <param name="ret">Script function return - unused</param>
-        /// <returns>Fail = true</returns>
-        bool InputController(int chan_hnd, int controller, int value);
+        /// <returns>Standard status</returns>
+        int InputController(int chan_hnd, int controller, int value);
 #pragma endregion
 
 #pragma region Events

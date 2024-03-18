@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test //TestZ
+namespace Nebulua.Test
 {
     public class CLI_ONE : TestSuite
     {
@@ -29,7 +29,7 @@ namespace Nebulua.Test //TestZ
 }
 
 
-
+/*
 // For mock cli.
 char _next_command[MAX_LINE_LEN];
 
@@ -298,3 +298,4 @@ char* cli_gets(char* buff, int len)
     }
 }
 }
+*/

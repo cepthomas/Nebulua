@@ -17,6 +17,7 @@
 #define NEB_ERR_SYNTAX          14
 #define NEB_ERR_MIDI_TX         15
 #define NEB_ERR_MIDI_RX         16
+#define NEB_ERR_API             17
 
 #define INTEROP_BAD_FUNC_NAME 200
 #define INTEROP_BAD_RET_TYPE  201

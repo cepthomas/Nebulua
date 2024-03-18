@@ -118,38 +118,41 @@ int Interop::Api::OpenScript(String^ fn)
 }
 
 //--------------------------------------------------------//
-bool Interop::Api::Step(int tick)
+int Interop::Api::Step(int tick)
 {
+    int ret = NEB_ERR_API;
     luainterop_Step(_l, tick);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        return true;
+        ret = NEB_OK;
     }
-    return false;
+    return ret;
 }
 
 //--------------------------------------------------------//
-bool Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
+int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 {
+    int ret = NEB_ERR_API;
     luainterop_InputNote(_l, chan_hnd, note_num, volume);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        return true;
+        ret = NEB_OK;
     }
-    return false;
+    return ret;
 }
 
 //--------------------------------------------------------//
-bool Interop::Api::InputController(int chan_hnd, int controller, int value)
+int Interop::Api::InputController(int chan_hnd, int controller, int value)
 {
+    int ret = NEB_ERR_API;
     luainterop_InputController(_l, chan_hnd, controller, value);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        return true;
+        ret = NEB_OK;
     }
-    return false;
+    return ret;
 }
 #pragma endregion

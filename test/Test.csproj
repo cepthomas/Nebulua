@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <StartupObject>Nebulua.Test.Program</StartupObject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="host_api.lua" />
+    <None Remove="run_lua_test.cmd" />
+    <None Remove="test_bar_time.lua" />
+    <None Remove="test_defs.lua" />
+    <None Remove="test_nebulua.lua" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Cli.cs" Link="Cli.cs" />
+    <Compile Include="..\Common.cs" Link="Common.cs" />
+    <Compile Include="..\Main.cs" Link="Main.cs" />
+    <Compile Include="..\Midi.cs" Link="Midi.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Ephemera.NBagOfTricks">
+      <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

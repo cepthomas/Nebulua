@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test //TestZ
+namespace Nebulua.Test
 {
     public class EXEC_ONE : TestSuite
     {
@@ -28,7 +28,7 @@ namespace Nebulua.Test //TestZ
     }
 }
 
-
+/*
 
 #include <cstdio>
 #include <string>
@@ -299,3 +299,4 @@ UT_SUITE(EXEC_ERR3, "Test fatal internal failure modes.")
 
     return 0;
 }
+*/

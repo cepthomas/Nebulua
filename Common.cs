@@ -40,6 +40,7 @@ namespace Nebulua
         public const int NEB_ERR_SYNTAX        =  14;
         public const int NEB_ERR_MIDI_TX       =  15;
         public const int NEB_ERR_MIDI_RX       =  16;
+        public const int NEB_ERR_API           =  17;
 
         /// Only 4/4 time supported.
         public const int BEATS_PER_BAR = 4;
@@ -51,7 +52,7 @@ namespace Nebulua
         public const int SUBS_PER_BAR = (SUBS_PER_BEAT * BEATS_PER_BAR);
 
         /// Arbitrary setting.
-        public const int  MAX_SECTIONS = 32;
+        public const int MAX_SECTIONS = 32;
 
         // Midi caps.
         public const int MIDI_VAL_MIN = 0;

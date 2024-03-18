@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test //TestZ
+namespace Nebulua.Test
 {
     public class NEBCOMMON_ONE : TestSuite
     {
@@ -29,7 +29,7 @@ namespace Nebulua.Test //TestZ
 }
 
 
-
+/*
 #include <cstdio>
 #include <cstring>
 
@@ -78,3 +78,4 @@ UT_SUITE(NEBCOM_MAIN, "Test nebulua common.")
 
     return 0;
 }    
+*/
