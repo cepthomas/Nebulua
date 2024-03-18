@@ -163,7 +163,7 @@ Calls a function (or a callable object) in protected mode.
 - `source_code` folder:
     - exec.c/h - Does all the top-level work.
     - etc...
-- `lua_lib` folder:
+- `lib\lua` folder:
 - `lua_code` folder:
     - nebulua.lua - Lua script for a simplistic multithreaded coroutine application. Uses luatoc.
     - utils.lua - Used by demoapp.lua.

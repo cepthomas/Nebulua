@@ -4,7 +4,6 @@ local M = {}
 M.config =
 {
     lua_lib_name = "host_api",
-    -- add_refs = { "<abc.h>", },
 }
 
 -- Host calls script.
@@ -13,6 +12,7 @@ M.script_funcs =
     {
         lua_func_name = "setup",
         host_func_name = "Setup",
+        required = "true",
         description = "Call to initialize Nebulator and composition.",
         -- no args
         ret = { type = "I", description = "Unused" }
@@ -21,6 +21,7 @@ M.script_funcs =
     {
         lua_func_name = "step",
         host_func_name = "Step",
+        required = "true",
         description = "Called every fast timer increment aka tick.",
         args =
         {
@@ -32,6 +33,7 @@ M.script_funcs =
     {
         lua_func_name = "input_note",
         host_func_name = "InputNote",
+        required = "false",
         description = "Called when input arrives.",
         args =
         {
@@ -45,6 +47,7 @@ M.script_funcs =
     {
         lua_func_name = "input_controller",
         host_func_name = "InputController",
+        required = "false",
         description = "Called when input arrives.",
         args =
         {
@@ -95,7 +98,7 @@ M.host_funcs =
             { name = "level", type = "I", description = "Log level" },
             { name = "msg", type = "S", description = "Log message" },
         },
-        ret = { type = "I", description = "NEB_XX status" }
+        ret = { type = "I", description = "Status" }
     },
 
     {
@@ -106,7 +109,7 @@ M.host_funcs =
         {
             { name = "bpm", type = "I", description = "BPM 40 => 240" },
         },
-        ret = { type = "I", description = "NEB_XX status" }
+        ret = { type = "I", description = "Status" }
     },
 
     {
@@ -119,7 +122,7 @@ M.host_funcs =
             { name = "note_num", type = "I", description = "Note number" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
-        ret = { type = "I", description = "NEB_XX status" }
+        ret = { type = "I", description = "Status" }
     },
 
     {
@@ -132,7 +135,7 @@ M.host_funcs =
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
-        ret = { type = "I", description = "NEB_XX status" }
+        ret = { type = "I", description = "Status" }
     },
 }
 

@@ -7,3 +7,4 @@ x64/
 *.sublime-*
 _log.txt
 _test.txt
+/Properties

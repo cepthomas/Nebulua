@@ -105,12 +105,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>C:\Dev\repos\Lua\Nebulua\lua_lib\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;C:\Dev\repos\Lua\Nebulua\app;C:\Dev\repos\Lua\LuaBagOfTricks\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\repos\Lua\Nebulua\lib\lua\include;C:\Dev\repos\C\c_bag_of_tricks\pnut;C:\Dev\repos\C\c_bag_of_tricks\source_code;C:\Dev\repos\Lua\Nebulua\app;C:\Dev\repos\Lua\LuaBagOfTricks\source_code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>winmm.lib;C:\Dev\repos\Lua\Nebulua\lua_lib\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;C:\Dev\repos\Lua\Nebulua\lib\lua\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:MSVCR %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
