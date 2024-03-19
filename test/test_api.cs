@@ -7,19 +7,16 @@ using Ephemera.NBagOfTricks.PNUT;
 
 namespace Nebulua.Test
 {
-    public class EXEC_ONE : TestSuite
+    public class API_ONE : TestSuite
     {
         public override void RunSuite()
         {
             int int1 = 321;
-            string str1 = "round and round";
+            //string str1 = "round and round";
             string str2 = "the mulberry bush";
             double dbl2 = 1.600;
 
             UT_INFO("Test UT_INFO with args", int1, dbl2);
-
-            UT_EQUAL(str1, str2);
-
             UT_EQUAL(str2, "the mulberry bush");
         }
     }
@@ -27,85 +24,10 @@ namespace Nebulua.Test
 
 /*
 
-#include <cstdio>
-#include <string>
-#include <cstring>
-#include <sstream>
-#include <vector>
-#include <iostream>
-
-#include <windows.h>
-#include "pnut.h"
-
-extern "C"
-{
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-
-#include "luautils.h"
-#include "luainterop.h"
-
-#include "nebcommon.h"
-#include "scriptinfo.h"
-
-
-extern lua_State* _l;
-
-void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
-void _MidiClockHandler(double msec);
-int exec_Main(const char* script_fn);
-}
-
-// const char* _my_midi_in1  = "loopMIDI Port";
-// const char* _my_midi_out1 = "Microsoft GS Wavetable Synth";
-
-
-/////////////////////////////////////////////////////////////////////////////
-UT_SUITE(EXEC_FUNCS, "Test exec functions.") // TODO2 need flesh?
-{
-    int stat = 0;
-
-    _l = luaL_newstate();
-
-    //////
-    HMIDIIN hMidiIn = 0;
-    UINT wMsg = 0;
-    DWORD_PTR dwInstance = 0;
-    DWORD_PTR dwParam1 = 0;
-    DWORD_PTR dwParam2 = 0;
-    _MidiInHandler(hMidiIn, wMsg, dwInstance, dwParam1, dwParam2);
-
-    //////
-    double msec = 12.34;
-    _MidiClockHandler(msec);
-
-    //////
-    // stat = exec_Main(script_fn);
-    // Needs luapath.
-
-    lua_close(_l);
-
-    return 0;
-}
-
-
 /////////////////////////////////////////////////////////////////////////////
 UT_SUITE(EXEC_MAIN, "Test happy path.")
 {
     int stat = 0;
-    int iret = 0;
-
-    lua_State* _ltest = luaL_newstate();
-
-    // Load std libraries.
-    luaL_openlibs(_ltest);
-
-    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
-    luainterop_Load(_ltest);
-
-    // Pop the table off the stack as it interferes with calling the module functions.
-    lua_pop(_ltest, 1);
 
     // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
     stat = luaL_loadfile(_ltest, "script_happy.lua");

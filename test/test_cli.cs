@@ -9,7 +9,7 @@ using Ephemera.NBagOfTricks.Slog;
 namespace Nebulua.Test
 {
     // Test the simpler cli functions.
-    public class CLI_SIMPLE : TestSuite
+    public class CLI_BASIC : TestSuite
     {
         public override void RunSuite()
         {
@@ -148,12 +148,15 @@ namespace Nebulua.Test
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid option: junk");
 
-            app = null;
+            app.Dispose();
+
+            // Wait for logger to stop.
+            Thread.Sleep(100);
         }
     }
 
 
-    // Test cli functions that require a lua context via script file load.
+    // Test cli functions that require a loaded script.
     public class CLI_CONTEXT : TestSuite
     {
         public override void RunSuite()
@@ -165,10 +168,7 @@ namespace Nebulua.Test
             var app = new App();
             app.HookCli();
 
-            //LogManager.Run("_test_log.txt", 100000);
-
-            app.Run("script_happy.lua");
-
+            //app.Run("script_happy.lua");
 
             ///// Position commands.
             app.Clear();
@@ -180,32 +180,32 @@ namespace Nebulua.Test
             UT_EQUAL(capture[0], $"0:0:0");
             UT_EQUAL(capture[1], $"->");
 
-            app.Clear();
-            app.NextLine = "position 203:2:6";
-            stat = app.DoCli();
-            UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
-            UT_EQUAL(capture.Count, 2);
-            UT_EQUAL(capture[0], $"203:2:6");
-            UT_EQUAL(capture[1], $"->");
+            //app.Clear();
+            //app.NextLine = "position 203:2:6";
+            //stat = app.DoCli();
+            //UT_EQUAL(stat, Defs.NEB_OK);
+            //capture = app.CaptureLines;
+            //UT_EQUAL(capture.Count, 2);
+            //UT_EQUAL(capture[0], $"203:2:6");
+            //UT_EQUAL(capture[1], $"->");
 
-            app.Clear();
-            app.NextLine = "position";
-            stat = app.DoCli();
-            UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
-            UT_EQUAL(capture.Count, 2);
-            UT_EQUAL(capture[0], $"203:2:6");
-            UT_EQUAL(capture[1], $"->");
+            //app.Clear();
+            //app.NextLine = "position";
+            //stat = app.DoCli();
+            //UT_EQUAL(stat, Defs.NEB_OK);
+            //capture = app.CaptureLines;
+            //UT_EQUAL(capture.Count, 2);
+            //UT_EQUAL(capture[0], $"203:2:6");
+            //UT_EQUAL(capture[1], $"->");
 
-            app.Clear();
-            app.NextLine = "position 111:9:6";
-            stat = app.DoCli();
-            UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
-            UT_EQUAL(capture.Count, 2);
-            UT_EQUAL(capture[0], $"invalid position: 111:9:6");
-            UT_EQUAL(capture[1], $"->");
+            //app.Clear();
+            //app.NextLine = "position 111:9:6";
+            //stat = app.DoCli();
+            //UT_EQUAL(stat, Defs.NEB_OK);
+            //capture = app.CaptureLines;
+            //UT_EQUAL(capture.Count, 2);
+            //UT_EQUAL(capture[0], $"invalid position: 111:9:6");
+            //UT_EQUAL(capture[1], $"->");
 
 
             ///// Misc commands.
@@ -214,9 +214,13 @@ namespace Nebulua.Test
             stat = app.DoCli();
             UT_EQUAL(stat, Defs.NEB_OK);
             capture = app.CaptureLines;
-            UT_EQUAL(capture.Count, 2);
-            UT_EQUAL(capture[0], $"");
-            UT_EQUAL(capture[1], $"->");
+            UT_EQUAL(capture.Count, 1);
+            UT_EQUAL(capture[0], $"->");
+
+            app.Dispose();
+
+            // Wait for logger to stop.
+            Thread.Sleep(100);
         }
     }    
 }

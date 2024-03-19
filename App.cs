@@ -7,11 +7,12 @@ using System.IO;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
+using System.Threading;
 
 
 namespace Nebulua
 {
-    public partial class App
+    public partial class App : IDisposable
     {
 
         // TODO2 Script lua_State access syncronization. 
@@ -81,6 +82,7 @@ namespace Nebulua
 
         /// <summary>Monitor midi output.</summary>
         bool _monOutput = false;
+        private bool disposedValue;
         #endregion
 
         #region Lifecycle
@@ -105,34 +107,57 @@ namespace Nebulua
 
             InitCli();
         }
-        #endregion
 
-        #region Primary workers
         /// <summary>
-        /// Capture bad events and display them to the user. If error shut down.
+        /// 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
         {
-            switch (e.Level)
+            if (!disposedValue)
             {
-                case LogLevel.Error:
-                    CliWrite(e.Message);
-                    // Fatal, shut down.
-                    _appRunning = false;
-                    break;
+                if (disposing)
+                {
+                    // TO-DO: dispose managed state (managed objects)
+                    _mmTimer.Stop();
+                    _mmTimer.Dispose();
 
-                case LogLevel.Warn:
-                    CliWrite(e.Message);
-                    break;
+                    LogManager.Stop();
 
-                default:
-                    // ignore
-                    break;
+                    // Destroy devices
+                    _inputs.ForEach(d => d.Dispose());
+                    _inputs.Clear();
+                    _outputs.ForEach(d => d.Dispose());
+                    _outputs.Clear();
+                }
+
+                // TO-DO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TO-DO: set large fields to null
+                disposedValue = true;
             }
         }
 
+        /// <summary>
+        /// TO-DO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        /// </summary>
+        ~App()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        #region Primary workers
         /// <summary>
         /// 
         /// </summary>
@@ -140,7 +165,7 @@ namespace Nebulua
         public int Run(string fn)
         {
             int stat = Defs.NEB_OK;
-            CliWrite("Greetings from Nebulua Cli!!!");
+            CliWrite("Greetings from Nebulua!");
 
             // Lock access to lua context during init.
             ENTER_CRITICAL_SECTION();
@@ -185,18 +210,12 @@ namespace Nebulua
             }
 
             ///// Done. /////
-            _mmTimer.Stop();
-            _mmTimer.Dispose();
 
             // Wait a bit in case there are some lingering events.
-            System.Threading.Thread.Sleep(100);
+            Thread.Sleep(100);
 
             // Just in case.
             KillAll();
-
-            // Destroy devices
-            _inputs.ForEach(d => d.Dispose());
-            _outputs.ForEach(d => d.Dispose());
 
             return stat;
         }
@@ -261,6 +280,31 @@ namespace Nebulua
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Capture bad events and display them to the user. If error shut down.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            switch (e.Level)
+            {
+                case LogLevel.Error:
+                    CliWrite(e.Message);
+                    // Fatal, shut down.
+                    _appRunning = false;
+                    break;
+
+                case LogLevel.Warn:
+                    CliWrite(e.Message);
+                    break;
+
+                default:
+                    // ignore
+                    break;
             }
         }
 
@@ -522,6 +566,5 @@ namespace Nebulua
             File.WriteAllLines(@"..\..\out\intervals_sorted.csv", ls);
         }
         #endregion
-
     }
 }

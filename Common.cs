@@ -65,7 +65,6 @@ namespace Nebulua
     }
     #endregion
 
-
     public class Utils
     {
         // Channel handle management.

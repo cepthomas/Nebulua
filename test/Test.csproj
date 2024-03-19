@@ -25,9 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\App.cs" Link="App.cs" />
     <Compile Include="..\Cli.cs" Link="Cli.cs" />
     <Compile Include="..\Common.cs" Link="Common.cs" />
-    <Compile Include="..\Main.cs" Link="Main.cs" />
     <Compile Include="..\Midi.cs" Link="Midi.cs" />
   </ItemGroup>
 
