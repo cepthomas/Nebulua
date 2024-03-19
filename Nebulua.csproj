@@ -7,6 +7,25 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="test\**" />
+    <Compile Remove="x64\**" />
+    <EmbeddedResource Remove="test\**" />
+    <EmbeddedResource Remove="x64\**" />
+    <None Remove="test\**" />
+    <None Remove="x64\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Remove=".gitignore" />
     <None Remove="gen_interop.cmd" />

@@ -3,236 +3,220 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
+using Ephemera.NBagOfTricks.Slog;
 
 
 namespace Nebulua.Test
 {
-    // UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
-
-    public class CLI_MAIN : TestSuite
+    // Test the simpler cli functions.
+    public class CLI_SIMPLE : TestSuite
     {
         public override void RunSuite()
         {
-            int stat = Defs.NEB_OK;
-            string capture = "";
+            int stat;
+            List<string> capture;
+            UT_STOP_ON_FAIL(true);
+
             var app = new App();
             app.HookCli();
-            //app.Run(fn);
 
             ///// Fat fingers.
-            app.CliOut.Capture.Clear();
-            app.CliIn.NextLine = "bbbbb";
+            app.Clear();
+            app.NextLine = "bbbbb";
             stat = app.DoCli();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CliOut.Capture.ToString();
-            UT_EQUAL(capture.Length, 18);
-            UT_EQUAL(capture, $"$Invalid command{Environment.NewLine}");
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"Invalid command");
+            UT_EQUAL(capture[1], $"->");
 
-            app.CliOut.Capture.Clear();
-            app.CliIn.NextLine = "z";
+            app.Clear();
+            app.NextLine = "z";
             stat = app.DoCli();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CliOut.Capture.ToString();
-            UT_EQUAL(capture.Length, 18);
-            UT_EQUAL(capture, $"$Invalid command{Environment.NewLine}");
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"Invalid command");
+            UT_EQUAL(capture[1], $"->");
 
+            ///// These next two confirm proper full/short name handling.
+            app.Clear();
+            app.NextLine = "help";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 12);
+            UT_EQUAL(capture[0], "help|?: tell me everything");
+            UT_EQUAL(capture[1], "exit|x: exit the application");
+            UT_EQUAL(capture[10], "reload|l: re/load current script");
+            UT_EQUAL(capture[11], $"->");
 
+            app.Clear();
+            app.NextLine = "?";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 12);
+            UT_EQUAL(capture[0], "help|?: tell me everything");
 
+            ///// The rest of the commands.
+            app.Clear();
+            app.NextLine = "exit";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"goodbye!");
+
+            app.Clear();
+            app.NextLine = "run";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"running");
+
+            app.Clear();
+            app.NextLine = "reload";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 1);
+            UT_EQUAL(capture[0], $"->");
+
+            app.Clear();
+            app.NextLine = "tempo";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], "100");
+
+            app.Clear();
+            app.NextLine = "tempo 182";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 1);
+            UT_EQUAL(capture[0], $"->");
+
+            app.Clear();
+            app.NextLine = "tempo 242";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], "invalid tempo: 242");
+
+            app.Clear();
+            app.NextLine = "tempo 39";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], "invalid tempo: 39");
+
+            app.Clear();
+            app.NextLine = "monitor in";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 1);
+            UT_EQUAL(capture[0], $"->");
+
+            app.Clear();
+            app.NextLine = "monitor out";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 1);
+            UT_EQUAL(capture[0], $"->");
+
+            app.Clear();
+            app.NextLine = "monitor off";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 1);
+            UT_EQUAL(capture[0], $"->");
+
+            app.Clear();
+            app.NextLine = "monitor junk";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], "invalid option: junk");
+
+            app = null;
         }
     }
+
+
+    // Test cli functions that require a lua context via script file load.
+    public class CLI_CONTEXT : TestSuite
+    {
+        public override void RunSuite()
+        {
+            int stat;
+            List<string> capture;
+            UT_STOP_ON_FAIL(true);
+
+            var app = new App();
+            app.HookCli();
+
+            //LogManager.Run("_test_log.txt", 100000);
+
+            app.Run("script_happy.lua");
+
+
+            ///// Position commands.
+            app.Clear();
+            app.NextLine = "position";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"0:0:0");
+            UT_EQUAL(capture[1], $"->");
+
+            app.Clear();
+            app.NextLine = "position 203:2:6";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"203:2:6");
+            UT_EQUAL(capture[1], $"->");
+
+            app.Clear();
+            app.NextLine = "position";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"203:2:6");
+            UT_EQUAL(capture[1], $"->");
+
+            app.Clear();
+            app.NextLine = "position 111:9:6";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"invalid position: 111:9:6");
+            UT_EQUAL(capture[1], $"->");
+
+
+            ///// Misc commands.
+            app.Clear();
+            app.NextLine = "kill";
+            stat = app.DoCli();
+            UT_EQUAL(stat, Defs.NEB_OK);
+            capture = app.CaptureLines;
+            UT_EQUAL(capture.Count, 2);
+            UT_EQUAL(capture[0], $"");
+            UT_EQUAL(capture[1], $"->");
+        }
+    }    
 }
-
-
-/*
-
-/////////////////////////////////////////////////////////////////////////////
-UT_SUITE(CLI_MAIN, "Test the simpler cli functions.")
-{
-    ///// These next two confirm proper full/short name handling.
-    _response_lines.clear();
-    strncpy(_next_command, "help", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 12);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "help|?: tell me everything\n");
-    UT_STR_EQUAL(_response_lines[2].c_str(), "exit|x: exit the application\n");
-    UT_STR_EQUAL(_response_lines[11].c_str(), "reload|l: re/load current script\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "?", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 12);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "help|?: tell me everything\n");
-
-    ///// The rest of the commands.
-    _response_lines.clear();
-    strncpy(_next_command, "exit", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "run", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "reload", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "tempo", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "100\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "tempo 182", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "tempo 242", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "invalid tempo: 242\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "tempo 39", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "invalid tempo: 39\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "monitor in", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "monitor out", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "monitor off", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    _response_lines.clear();
-    strncpy(_next_command, "monitor junk", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "invalid option: junk\n");
-
-    lua_close(_l);
-
-    return 0;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-UT_SUITE(CLI_CONTEXT, "Test cli functions that require a lua context.")
-{
-    int stat = 0;
-    int iret = 0;
-
-    ///// Need to load a real file for position stuff.
-    lua_State* _l = luaL_newstate();
-
-    // Load std libraries.
-    luaL_openlibs(_l);
-
-    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
-    luainterop_Load(_l);
-
-    // Pop the table off the stack as it interferes with calling the module functions.
-    lua_pop(_l, 1);
-
-    // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
-    stat = luaL_loadfile(_l, "script_happy.lua");
-    UT_EQUAL(stat, NEB_OK);
-    const char* e = nebcommon_EvalStatus(_l, stat, "load script");
-    UT_NULL(e);
-
-    // Execute the loaded script to init everything.
-    stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-    UT_EQUAL(stat, NEB_OK);
-    e = nebcommon_EvalStatus(_l, stat, "run script");
-    UT_NULL(e);
-
-    // Script setup function.
-    stat = luainterop_Setup(_l, &iret);
-    UT_EQUAL(stat, NEB_OK);
-    e = nebcommon_EvalStatus(_l, stat, "setup()");
-    UT_NULL(e);
-
-    ///// Good to go now.
-    _response_lines.clear();
-    strncpy(_next_command, "position", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "0:0:0\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "position 203:2:6", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "203:2:6\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "position", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "203:2:6\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "position 111:9:6", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_ERR_BAD_CLI_ARG);
-    UT_EQUAL(_response_lines.size(), 2);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-    UT_STR_EQUAL(_response_lines[1].c_str(), "invalid position: 111:9:6\n");
-
-    _response_lines.clear();
-    strncpy(_next_command, "kill", MAX_LINE_LEN - 1);
-    stat = _DoCli();
-    UT_EQUAL(stat, NEB_OK);
-    UT_EQUAL(_response_lines.size(), 1);
-    UT_STR_EQUAL(_response_lines[0].c_str(), "$");
-
-    lua_close(_l);
-
-    return 0;
-}
-*/

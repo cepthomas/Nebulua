@@ -12,12 +12,9 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             int int1 = 321;
-            int int2 = 987;
             string str1 = "round and round";
             string str2 = "the mulberry bush";
-            double dbl1 = 1.500;   
             double dbl2 = 1.600;
-            double dblTol = 0.001;
 
             UT_INFO("Test UT_INFO with args", int1, dbl2);
 

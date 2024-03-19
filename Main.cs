@@ -13,6 +13,7 @@ namespace Nebulua
 {
     public partial class App
     {
+
         // TODO2 Script lua_State access syncronization. 
         // HANDLE ghMutex; 
         // #define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE)
@@ -43,10 +44,10 @@ namespace Nebulua
         readonly Interop.Api _api = Interop.Api.Instance;
 
         /// <summary>CLI.</summary>
-        System.IO.TextWriter _cliOut = Console.Out;
+        TextWriter _cliOut;
 
         /// <summary>CLI.</summary>
-        System.IO.TextReader _cliIn = Console.In;
+        TextReader _cliIn;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -88,6 +89,9 @@ namespace Nebulua
         /// </summary>
         public App()
         {
+            _cliOut = Console.Out;
+            _cliIn = Console.In;
+
             // Init logging.
             LogManager.MinLevelFile = LogLevel.Debug;
             LogManager.MinLevelNotif = LogLevel.Warn;
@@ -105,7 +109,7 @@ namespace Nebulua
 
         #region Primary workers
         /// <summary>
-        /// Capture bad events and display them to the user, maybe shut down.
+        /// Capture bad events and display them to the user. If error shut down.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -114,13 +118,13 @@ namespace Nebulua
             switch (e.Level)
             {
                 case LogLevel.Error:
-                    _cliOut.WriteLine(e.Message);
+                    CliWrite(e.Message);
                     // Fatal, shut down.
                     _appRunning = false;
                     break;
 
                 case LogLevel.Warn:
-                    _cliOut.WriteLine(e.Message);
+                    CliWrite(e.Message);
                     break;
 
                 default:
@@ -136,7 +140,7 @@ namespace Nebulua
         public int Run(string fn)
         {
             int stat = Defs.NEB_OK;
-            _cliOut.WriteLine("Greetings from Nebulua Cli!!!");
+            CliWrite("Greetings from Nebulua Cli!!!");
 
             // Lock access to lua context during init.
             ENTER_CRITICAL_SECTION();
@@ -212,12 +216,8 @@ namespace Nebulua
                 // Lock access to lua context.
                 ENTER_CRITICAL_SECTION();
                 // Read stopwatch.
-                bool stepFail = _api.Step(_currentTick);
+                int stat = _api.Step(_currentTick);
                 EXIT_CRITICAL_SECTION();
-
-                if (stepFail)
-                {
-                }
 
                 // // Read stopwatch and diff/stats.
                 // if (_tan.Grab())
@@ -227,7 +227,7 @@ namespace Nebulua
 
                 // Update state.
 
-                if (stepFail)
+                if (stat != Defs.NEB_OK)
                 {
                     // Stop everything.
                     SetTimer(0);
@@ -271,7 +271,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void InputReceiveEvent(object? sender, MidiEvent e)
         {
-            bool fail = false;
+            int stat = Defs.NEB_OK;
             int index = _inputs.IndexOf((MidiInput)sender!);
             int chan_hnd = Utils.MAKE_IN_HANDLE(index, e.Channel);
 
@@ -279,19 +279,19 @@ namespace Nebulua
             {
                 case NoteOnEvent evt:
                     ENTER_CRITICAL_SECTION();
-                    fail = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                    stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
                     EXIT_CRITICAL_SECTION();
                     break;
 
                 case NoteEvent evt:
                     ENTER_CRITICAL_SECTION();
-                    fail = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                    stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
                     EXIT_CRITICAL_SECTION();
                     break;
 
                 case ControlChangeEvent evt:
                     ENTER_CRITICAL_SECTION();
-                    fail = _api.InputController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                    stat = _api.InputController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
                     EXIT_CRITICAL_SECTION();
                     break;
 
@@ -300,7 +300,7 @@ namespace Nebulua
                     break;
             }
 
-            if (fail)
+            if (stat != Defs.NEB_OK)
             {
                 _logger.Error(_api.Error);
             }
@@ -503,16 +503,16 @@ namespace Nebulua
         void DumpTan()
         {
             // Time ordered.
-            List<string> ls = new();
+            List<string> ls = [];
             _tan.Times.ForEach(t => ls.Add($"{t}"));
             File.WriteAllLines(@"..\..\out\intervals_ordered.csv", ls);
 
             // Sorted by (rounded) times.
-            Dictionary<double, int> _bins = new();
+            Dictionary<double, int> _bins = [];
             for (int i = 0; i < _tan.Times.Count; i++)
             {
                 var t = Math.Round(_tan.Times[i], 2);
-                _bins[t] = _bins.ContainsKey(t) ? _bins[t] + 1 : 1;
+                _bins[t] = _bins.TryGetValue(t, out int value) ? value + 1 : 1;
             }
             ls.Clear();
             ls.Add($"Msec,Count");

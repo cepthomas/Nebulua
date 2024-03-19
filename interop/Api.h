@@ -50,6 +50,9 @@ namespace Interop
 
 #pragma region Lifecycle
     public:
+        /// <summary>Prevent client instantiation.</summary>
+        Interop::Api() {}
+
         /// <summary>
         /// Initialize everything.
         /// </summary>
@@ -77,9 +80,6 @@ namespace Interop
     private:
         /// <summary>The singleton instance.</summary>
         static Interop::Api^ _instance;
-
-        /// <summary>Prevent client instantiation.</summary>
-        Interop::Api() {}
 #pragma endregion
 
 #pragma region Run script - Call lua functions from host

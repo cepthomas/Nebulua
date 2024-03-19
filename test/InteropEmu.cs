@@ -1,10 +1,14 @@
 
+using Nebulua;
+
 namespace Interop
 {
+#pragma warning disable CA1822 // Mark members as static
+
     #region Event args
     public class CreateChannelEventArgs : EventArgs
     {
-        public string DevName;
+        public string? DevName;
         public int ChanNum;
         public bool IsOutput; // else input
         public int Patch;     // output only
@@ -24,7 +28,7 @@ namespace Interop
     {
         public int LogLevel;
         public int Bpm;
-        public string Msg;
+        public string? Msg;
         public int Ret;       // handler return value
     };
     #endregion
@@ -33,12 +37,15 @@ namespace Interop
     public class Api
     {
         /// <summary>If a function failed this contains info.</summary>
-        public string Error;
+        public string Error = "";
 
         /// <summary>What's in the script.</summary>
-        public Dictionary<int, string> SectionInfo;
+        public Dictionary<int, string> SectionInfo = [];
 
         #region Lifecycle
+        /// <summary>Prevent client instantiation.</summary>
+        Api() { }
+
         /// <summary>
         /// Initialize everything.
         /// </summary>
@@ -47,90 +54,53 @@ namespace Interop
         {
             return 0;
         }
-
-        /// <summary>
-        /// Clean up resources.
-        /// </summary>
-        ~Api()
-        {
-        }
         #endregion
 
         #region Singleton support
         /// <summary>The singleton instance.</summary>
-        public static Api Instance 
+        public static Api Instance
         {
             get
             {
-                if (_instance is null) { _instance = new Api(); }
+                _instance ??= new Api();
                 return _instance;
             }
         }
         /// <summary>The singleton instance.</summary>
-        static Api _instance;
-
-        /// <summary>Prevent client instantiation.</summary>
-        Api() { }
+        static Api? _instance;
         #endregion
 
         #region Run script - Call lua functions from host
-        /// <summary>
-        /// Load and process.
-        /// </summary>
-        /// <param name="fn">Full path</param>
-        /// <returns>Standard status</returns>
         public int OpenScript(string fn)
         {
             return 0;
         }
 
-        /// <summary>
-        /// Called every fast timer increment aka tick.
-        /// </summary>
-        /// <param name="tick">Current tick 0 => N</param>
-        /// <param name="ret">Script function return - unused</param>
-        /// <returns>Fail = true</returns>
-        public bool Step(int tick)
+        public int Step(int tick)
         {
-            return false;
+            return Defs.NEB_OK;
         }
 
-        /// <summary>
-        /// Called when input arrives.
-        /// </summary>
-        /// <param name="chan_hnd">Input channel handle</param>
-        /// <param name="note_num">Note number 0 => 127</param>
-        /// <param name="volume">Volume 0.0 => 1.0</param>
-        /// <param name="ret">Script function return - unused</param>
-        /// <returns>Fail = true</returns>
-        public bool InputNote(int chan_hnd, int note_num, double volume)
+        public int InputNote(int chan_hnd, int note_num, double volume)
         {
-            return false;
+            return Defs.NEB_OK;
         }
 
-        /// <summary>
-        /// Called when input arrives.
-        /// </summary>
-        /// <param name="chan_hnd">Input channel handle</param>
-        /// <param name="controller">Specific controller id 0 => 127</param>
-        /// <param name="value">Payload 0 => 127</param>
-        /// <param name="ret">Script function return - unused</param>
-        /// <returns>Fail = true</returns>
-        public bool InputController(int chan_hnd, int controller, int value)
+        public int InputController(int chan_hnd, int controller, int value)
         {
-            return false;
+            return Defs.NEB_OK;
         }
         #endregion
 
         #region Events
-        public event EventHandler<CreateChannelEventArgs> CreateChannelEvent;
-        void RaiseCreateChannel(CreateChannelEventArgs args) { CreateChannelEvent(this, args); }
+        public event EventHandler<CreateChannelEventArgs>? CreateChannelEvent;
+        void RaiseCreateChannel(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
 
-        public event EventHandler<SendEventArgs> SendEvent;
-        void RaiseSend(SendEventArgs args) { SendEvent(this, args); }
+        public event EventHandler<SendEventArgs>? SendEvent;
+        void RaiseSend(SendEventArgs args) { SendEvent?.Invoke(this, args); }
 
-        public event EventHandler<MiscInternalEventArgs> MiscInternalEvent;
-        void RaiseMiscInternal(MiscInternalEventArgs args) { MiscInternalEvent(this, args); }
+        public event EventHandler<MiscInternalEventArgs>? MiscInternalEvent;
+        void RaiseMiscInternal(MiscInternalEventArgs args) { MiscInternalEvent?.Invoke(this, args); }
         #endregion
     };
 }

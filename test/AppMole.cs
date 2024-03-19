@@ -11,20 +11,50 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
+    // Insert some hooks to support testing.
     public partial class App
     {
-        public CliTextWriter CliOut { get; set; } = new();
-        public CliTextReader CliIn { get; set; } = new();
+        // Fake cli output.
+        CliTextWriter _myCliOut = new();
+
+        // Fake cli input.
+        CliTextReader _myCliIn = new();
+
+        public List<string> CaptureLines
+        {
+            get { return StringUtils.SplitByTokens(_myCliOut.Capture.ToString(), "\r\n"); }
+        }
+
+        public string NextLine
+        {
+            get { return _myCliIn.NextLine; }
+            set { _myCliIn.NextLine = value; }
+        }
+
+        public string Prompt
+        {
+            get { return _prompt; }
+        }
+
+        public void Clear()
+        {
+            _myCliOut.Capture.Clear();
+            _myCliIn.NextLine = "";
+        }
+
+        public string GetPrompt()
+        {
+            return _prompt;
+        }
 
         public void HookCli()
         {
-            _cliOut = CliOut;
-            _cliIn = CliIn;
+            _cliOut = _myCliOut;
+            _cliIn = _myCliIn;
         }
     }
 
 
-    // Fake cli output.
     public class CliTextWriter: TextWriter
     {
         public StringBuilder Capture { get; } = new();
@@ -37,12 +67,17 @@ namespace Nebulua
         {
             get { return Encoding.Default; }
         }
+
+        public void Clear()
+        {
+        Capture.Clear();
+        }
     }
 
-    // Fake cli input.
+
     public class CliTextReader: TextReader
     {
-        public string NextLine { get;  set; } = "";
+        public string NextLine { get; set; } = "";
 
         public override int Read()
         {
@@ -72,56 +107,4 @@ namespace Nebulua
             }
         }
     }
-
-
-
-////////////////////////////////////// mock cli ////////////////////////////////
-
-// extern "C"
-// {
-// int cli_open()
-// {
-//     _next_command[0] = 0;
-//     _response_lines.clear();
-//     return 0;
-// }
-
-
-// int cli_close()
-// {
-//     // Nothing to do.
-//     return 0;
-// }
-
-
-// int cli_printf(const char* format, ...)
-// {
-//     // Format string.
-//     char line[MAX_LINE_LEN];
-//     va_list args;
-//     va_start(args, format);
-//     vsnprintf(line, MAX_LINE_LEN - 1, format, args);
-//     va_end(args);
-
-//     std::string str(line);
-//     _response_lines.push_back(str);
-
-//     return 0;
-// }
-
-
-// char* cli_gets(char* buff, int len)
-// {
-//     if (strlen(_next_command) > 0)
-//     {
-//         strncpy(buff, _next_command, len - 1);
-//         return buff;
-//     }
-//     else
-//     {
-//         return NULL;
-//     }
-// }
-
-
 }
