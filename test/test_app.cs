@@ -33,7 +33,7 @@ int exec_Main(const char* script_fn);
 
 
 /////////////////////////////////////////////////////////////////////////////
-UT_SUITE(EXEC_FUNCS, "Test exec functions. TODO1 Doesn't do anything yet")
+UT_SUITE(EXEC_FUNCS, "Test exec functions. TODO2 Doesn't do anything yet")
 {
     int stat = 0;
 
