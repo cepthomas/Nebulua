@@ -14,23 +14,14 @@ namespace Nebulua
 {
     public partial class App : IDisposable
     {
-
-        // TODO2 Script lua_State access syncronization. 
-        // HANDLE ghMutex; 
-        // #define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE)
-        // #define EXIT_CRITICAL_SECTION ReleaseMutex(ghMutex)
-        void ENTER_CRITICAL_SECTION() { }
-        void EXIT_CRITICAL_SECTION() { }
-
-
-        // TODO1 better run control: 
+        // TODO1 better run control:
         // cli implementation: loop on/off, set to section|all|start/end-bartime.
         // Keep going.
-        bool _doLoop = false;
-        // Loop start tick. -1 means start of composition.
-        int _loopStart = -1;
-        // Loop end tick. -1 means end of composition.
-        int _loopEnd = -1;
+        //bool _doLoop = false;
+        //// Loop start tick. -1 means start of composition.
+        //int State.Instance.LoopStart = -1;
+        //// Loop end tick. -1 means end of composition.
+        //int State.Instance.LoopEnd = -1;
         // #region Enums
         // /// <summary>Internal status.</summary>
         // enum PlayCommand { Start, Stop, Rewind, StopRewind, UpdateUiTime }
@@ -44,11 +35,13 @@ namespace Nebulua
         /// <summary>The singleton API.</summary>
         readonly Interop.Api _api = Interop.Api.Instance;
 
-        /// <summary>CLI.</summary>
-        TextWriter _cliOut;
+        ///// <summary>CLI.</summary>
+        //TextWriter _cliOut;
 
-        /// <summary>CLI.</summary>
-        TextReader _cliIn;
+        ///// <summary>CLI.</summary>
+        //TextReader _cliIn;
+
+        Cli _cli;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -62,26 +55,27 @@ namespace Nebulua
         /// <summary>All devices to use for receive.</summary>
         readonly List<MidiInput> _inputs = [];
 
-        /// <summary>The script execution state.</summary>
-        bool _scriptRunning = false;
+        ///// <summary>The script execution state.</summary>
+        //bool _scriptRunning = false;
 
-        /// <summary>The app execution state.</summary>
-        bool _appRunning = true;
+        ///// <summary>The app execution state.</summary>
+        //bool _appRunning = true;
 
-        /// <summary>Length of composition in ticks.</summary>
-        int _length = 0;
+        ///// <summary>Length of composition in ticks.</summary>
+        //int _length = 0;
 
-        /// <summary>Current tempo in bpm.</summary>
-        int _tempo = 100;
+        ///// <summary>Current tempo in bpm.</summary>
+        //int _tempo = 100;
 
-        /// <summary>Where are we in composition.</summary>
-        int _currentTick = 0;
+        ///// <summary>Where are we in composition.</summary>
+        //int State.Instance.CurrentTick = 0;
 
-        /// <summary>Monitor midi input.</summary>
-        bool _monInput = false;
+        ///// <summary>Monitor midi input.</summary>
+        //bool _monInput = false;
 
-        /// <summary>Monitor midi output.</summary>
-        bool _monOutput = false;
+        ///// <summary>Monitor midi output.</summary>
+        //bool _monOutput = false;
+
         private bool disposedValue;
         #endregion
 
@@ -91,8 +85,8 @@ namespace Nebulua
         /// </summary>
         public App()
         {
-            _cliOut = Console.Out;
-            _cliIn = Console.In;
+            //_cliOut = Console.Out;
+            //_cliIn = Console.In;
 
             // Init logging.
             LogManager.MinLevelFile = LogLevel.Debug;
@@ -105,7 +99,10 @@ namespace Nebulua
             //ghMutex = CreateMutex(NULL, FALSE, NULL);
             //if (ghMutex == NULL) { EXEC_FAIL(11, "CreateMutex() failed."); }
 
-            InitCli();
+            _cli = new();
+            _cli.Init(Console.In, Console.Out);
+
+            //InitCli();
         }
 
         /// <summary>
@@ -165,10 +162,10 @@ namespace Nebulua
         public int Run(string fn)
         {
             int stat = Defs.NEB_OK;
-            CliWrite("Greetings from Nebulua!");
+            _cli.Write("Greetings from Nebulua!");
 
             // Lock access to lua context during init.
-            ENTER_CRITICAL_SECTION();
+            Utils.ENTER_CRITICAL_SECTION();
 
             // Create and init script api.
             stat = _api.Init();
@@ -189,23 +186,23 @@ namespace Nebulua
                 _logger.Error(_api.Error);
             }
 
-            _length = _api.SectionInfo.Last().Key;
+            State.Instance.Length = _api.SectionInfo.Last().Key;
 
             // Start timer.
-            SetTimer(_tempo);
+            SetTimer(State.Instance.Tempo);
             _mmTimer.Start();
 
             ///// Good to go now. /////
-            EXIT_CRITICAL_SECTION();
+            Utils.EXIT_CRITICAL_SECTION();
 
             ///// Loop forever doing cli requests. /////
-            while (_appRunning)
+            while (State.Instance.AppRunning)
             {
-                stat = DoCli();
+                stat = _cli.Read();
                 if (stat != Defs.NEB_OK)
                 {
                     _logger.Error(_api.Error);
-                    _appRunning = false;
+                    State.Instance.AppRunning = false;
                 }
             }
 
@@ -227,16 +224,16 @@ namespace Nebulua
         /// <param name="periodElapsed"></param>
         void MmTimerCallback(double totalElapsed, double periodElapsed)
         {
-            if (_scriptRunning)
+            if (State.Instance.ScriptState == PlayState.Start)
             {
                 // Do script. TODO3 Handle solo/mute like nebulator.
                 //_tan.Arm(); TODO2
 
                 // Lock access to lua context.
-                ENTER_CRITICAL_SECTION();
+                Utils.ENTER_CRITICAL_SECTION();
                 // Read stopwatch.
-                int stat = _api.Step(_currentTick);
-                EXIT_CRITICAL_SECTION();
+                int stat = _api.Step(State.Instance.CurrentTick);
+                Utils.EXIT_CRITICAL_SECTION();
 
                 // // Read stopwatch and diff/stats.
                 // if (_tan.Grab())
@@ -252,28 +249,28 @@ namespace Nebulua
                     SetTimer(0);
                     KillAll();
                     _logger.Error(_api.Error);
-                    _scriptRunning = false;
-                    _currentTick = 0;
+                    State.Instance.ScriptState = PlayState.Stop;
+                    State.Instance.CurrentTick = 0;
                 }
                 else
                 {
                     // Bump time and check state.
-                    int start = _loopStart == -1 ? 0 : _loopStart;
-                    int end = _loopEnd == -1 ? _length : _loopEnd;
-                    if (++_currentTick >= end) // done
+                    int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+                    int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+                    if (++State.Instance.CurrentTick >= end) // done
                     {
                         // Keep going? else stop/rewind.
-                        _scriptRunning = _doLoop;
+                        State.Instance.ScriptState = PlayState.Start;// State.Instance.DoLoop;
  
-                        if (_doLoop)
+                        if (State.Instance.DoLoop)
                         {
                             // Keep going.
-                            _currentTick = start;
+                            State.Instance.CurrentTick = start;
                         }
                         else
                         {
                             // Stop and rewind.
-                            _currentTick = start;
+                            State.Instance.CurrentTick = start;
  
                             // just in case
                             KillAll();
@@ -293,13 +290,13 @@ namespace Nebulua
             switch (e.Level)
             {
                 case LogLevel.Error:
-                    CliWrite(e.Message);
+                    _cli.Write(e.Message);
                     // Fatal, shut down.
-                    _appRunning = false;
+                    State.Instance.AppRunning = false;
                     break;
 
                 case LogLevel.Warn:
-                    CliWrite(e.Message);
+                    _cli.Write(e.Message);
                     break;
 
                 default:
@@ -322,21 +319,21 @@ namespace Nebulua
             switch (e)
             {
                 case NoteOnEvent evt:
-                    ENTER_CRITICAL_SECTION();
+                    Utils.ENTER_CRITICAL_SECTION();
                     stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                    EXIT_CRITICAL_SECTION();
+                    Utils.EXIT_CRITICAL_SECTION();
                     break;
 
                 case NoteEvent evt:
-                    ENTER_CRITICAL_SECTION();
+                    Utils.ENTER_CRITICAL_SECTION();
                     stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                    EXIT_CRITICAL_SECTION();
+                    Utils.EXIT_CRITICAL_SECTION();
                     break;
 
                 case ControlChangeEvent evt:
-                    ENTER_CRITICAL_SECTION();
+                    Utils.ENTER_CRITICAL_SECTION();
                     stat = _api.InputController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                    EXIT_CRITICAL_SECTION();
+                    Utils.EXIT_CRITICAL_SECTION();
                     break;
 
                 default:
@@ -349,7 +346,7 @@ namespace Nebulua
                 _logger.Error(_api.Error);
             }
 
-            if (_monInput)
+            if (State.Instance.MonInput)
             {
                 _logger.Trace($"MIDI_IN{e}");
             }
@@ -385,7 +382,7 @@ namespace Nebulua
                         }
                     }
 
-                    output.LogEnable = _monOutput;
+                    output.LogEnable = State.Instance.MonOutput;
                     output.Channels[e.ChanNum - 1] = true;
                     e.Ret = Utils.MAKE_OUT_HANDLE(_outputs.Count - 1, e.ChanNum);
 
@@ -411,7 +408,7 @@ namespace Nebulua
                         }
                     }
 
-                    input.LogEnable = _monInput;
+                    input.LogEnable = State.Instance.MonInput;
                     input.Channels[e.ChanNum - 1] = true;
                     e.Ret = Utils.MAKE_IN_HANDLE(_inputs.Count - 1, e.ChanNum);
                 }
@@ -470,7 +467,7 @@ namespace Nebulua
                 return; //*** early return
             }
 
-            if (_monOutput)
+            if (State.Instance.MonOutput)
             {
                 _logger.Trace($"MIDI_OUT{e}");
             }
@@ -487,8 +484,8 @@ namespace Nebulua
             {
                 if (e.Bpm >= 30 && e.Bpm <= 240)
                 {
-                    _tempo = e.Bpm;
-                    SetTimer(_tempo);
+                    State.Instance.Tempo = e.Bpm;
+                    SetTimer(State.Instance.Tempo);
                 }
                 else
                 {
@@ -538,7 +535,7 @@ namespace Nebulua
             }
 
             // Hard reset.
-            _scriptRunning = false;
+            State.Instance.ScriptState = PlayState.Stop;
         }
 
         /// <summary>

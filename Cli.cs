@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
@@ -10,8 +11,10 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
-    public partial class App
+    //public partial class App
+    public class Cli
     {
+        #region Commands
         /// <summary>Cli command descriptor.</summary>
         readonly record struct CommandDescriptor
         (
@@ -37,12 +40,26 @@ namespace Nebulua
 
         /// <summary>CLI prompt.</summary>
         readonly string _prompt = "->";
+        #endregion
+
+        #region IO
+        /// <summary>CLI.</summary>
+        TextWriter _cliOut;
+
+        /// <summary>CLI.</summary>
+        TextReader _cliIn;
+        #endregion
+
+
 
         /// <summary>
         /// Set up command table.
         /// </summary>
-        void InitCli()
+        public void Init(TextReader cliIn, TextWriter cliOut)
         {
+            _cliIn = cliIn;
+            _cliOut = cliOut;
+
             _commands =
             [
                 new("help", '?', '\0', "tell me everything", "", UsageCmd),
@@ -60,7 +77,7 @@ namespace Nebulua
         /// Takes care of prompt.
         /// </summary>
         /// <param name="s"></param>
-        void CliWrite(string s)
+        public void Write(string s)
         {
             _cliOut.WriteLine(s);
             _cliOut.Write(_prompt);
@@ -70,12 +87,9 @@ namespace Nebulua
         /// Process user input.
         /// </summary>
         /// <returns>Status</returns>
-        public int DoCli() //TODO2 public for test.
+        public int Read()
         {
             int stat = Defs.NEB_OK;
-
-            //// Prompt.
-            //_cliOut.Write(_prompt);
 
             // Listen.
             string? res = _cliIn.ReadLine();
@@ -96,24 +110,24 @@ namespace Nebulua
                             // Execute the command. They handle any errors internally.
                             valid = true;
                             // Lock access to lua context.
-                            ENTER_CRITICAL_SECTION();
+                            Utils.ENTER_CRITICAL_SECTION();
                             stat = cmd.Handler(cmd, args);
                             // ok = _EvalStatus(stat, "handler failed: %s", cmd->desc.long_name);
-                            EXIT_CRITICAL_SECTION();
+                            Utils.EXIT_CRITICAL_SECTION();
                             break;
                         }
                     }
 
                     if (!valid)
                     {
-                        CliWrite("Invalid command");
+                        Write("Invalid command");
                     }
                 }
             }
             else
             {
                 // Assume finished.
-                _appRunning = false;
+                State.Instance.AppRunning = false;
             }
 
             return stat;
@@ -126,20 +140,20 @@ namespace Nebulua
 
             if (args.Count == 1) // get
             {
-                CliWrite($"{_tempo}");
+                Write($"{State.Instance.Tempo}");
                 stat = Defs.NEB_OK;
             }
             else if (args.Count == 2) // set
             {
                 if (int.TryParse(args[1], out int t) && t >= 40 && t <= 240)
                 {
-                    _tempo = t;
-                    SetTimer(_tempo);
-                    CliWrite("");
+                    State.Instance.Tempo = t;
+                    SetTimer(State.Instance.Tempo);
+                    Write("");
                 }
                 else
                 {
-                    CliWrite($"invalid tempo: {args[1]}");
+                    Write($"invalid tempo: {args[1]}");
                 }
             }
 
@@ -153,13 +167,13 @@ namespace Nebulua
 
             if (args.Count == 1) // no args
             {
-                _scriptRunning = !_scriptRunning;
+                State.Instance.ScriptState = PlayState.Start;// TODO1 !State.Instance.ScriptRunning;
                 stat = Defs.NEB_OK;
-                CliWrite(_scriptRunning ? "running" : "stopped");
+                Write(State.Instance.ScriptState == PlayState.Start ? "running" : "stopped");
             }
             else
             {
-                CliWrite($"invalid command");
+                Write($"invalid command");
             }
 
             return stat;
@@ -170,9 +184,9 @@ namespace Nebulua
         {
             int stat = Defs.NEB_OK;
 
-            _scriptRunning = false;
-            _appRunning = false;
-            CliWrite($"goodbye!");
+            State.Instance.ScriptState = PlayState.Stop;
+            State.Instance.AppRunning = false;
+            Write($"goodbye!");
 
             return stat;
         }
@@ -187,26 +201,26 @@ namespace Nebulua
                 switch(args[1])
                 {
                     case "in":
-                        _monInput = !_monInput;
+                        State.Instance.MonInput = !State.Instance.MonInput;
                         stat = Defs.NEB_OK;
-                        CliWrite("");
+                        Write("");
                         break;
 
                     case "out":
-                        _monOutput = !_monOutput;
+                        State.Instance.MonOutput = !State.Instance.MonOutput;
                         stat = Defs.NEB_OK;
-                        CliWrite("");
+                        Write("");
                         break;
 
                     case "off":
-                        _monInput = false;
-                        _monOutput = false;
+                        State.Instance.MonInput = false;
+                        State.Instance.MonOutput = false;
                         stat = Defs.NEB_OK;
-                        CliWrite("");
+                        Write("");
                         break;
 
                     default:
-                        CliWrite($"invalid option: {args[1]}");
+                        Write($"invalid option: {args[1]}");
                         break;
                 }
             }
@@ -224,7 +238,7 @@ namespace Nebulua
                 KillAll();
                 stat = Defs.NEB_OK;
             }
-            CliWrite("");
+            Write("");
 
             return stat;
         }
@@ -236,7 +250,7 @@ namespace Nebulua
 
             if (args.Count == 1) // get
             {
-                CliWrite(Utils.FormatBarTime(_currentTick));
+                Write(Utils.FormatBarTime(State.Instance.CurrentTick));
                 stat = Defs.NEB_OK;
             }
             else if (args.Count == 2) // set
@@ -244,16 +258,16 @@ namespace Nebulua
                 int position = Utils.ParseBarTime(args[1]);
                 if (position < 0)
                 {
-                    CliWrite($"invalid position: {args[1]}");
+                    Write($"invalid position: {args[1]}");
                 }
                 else
                 {
                     // Limit range maybe.
-                    int start = _loopStart == -1 ? 0 : _loopStart;
-                    int end = _loopEnd == -1 ? _length : _loopEnd;
-                    _currentTick = MathUtils.Constrain(position, start, end);
+                    int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+                    int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+                    State.Instance.CurrentTick = MathUtils.Constrain(position, start, end);
 
-                    CliWrite(Utils.FormatBarTime(_currentTick)); // echo
+                    Write(Utils.FormatBarTime(State.Instance.CurrentTick)); // echo
                     stat = Defs.NEB_OK;
                 }
             }
@@ -273,7 +287,7 @@ namespace Nebulua
                 // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
                 stat = Defs.NEB_OK;
             }
-            CliWrite("");
+            Write("");
 
             return stat;
         }
@@ -296,7 +310,7 @@ namespace Nebulua
                     }
                 }
             }
-            CliWrite("");
+            Write("");
 
             return stat;
         }

@@ -120,13 +120,13 @@ namespace Interop
 #pragma region Events
     public:
         event EventHandler<CreateChannelEventArgs^>^ CreateChannelEvent;
-        void RaiseCreateChannel(CreateChannelEventArgs^ args) { CreateChannelEvent(this, args); }
+        void NotifyCreateChannel(CreateChannelEventArgs^ args) { CreateChannelEvent(this, args); }
 
         event EventHandler<SendEventArgs^>^ SendEvent;
-        void RaiseSend(SendEventArgs^ args) { SendEvent(this, args); }
+        void NotifySend(SendEventArgs^ args) { SendEvent(this, args); }
 
         event EventHandler<MiscInternalEventArgs^>^ MiscInternalEvent;
-        void RaiseMiscInternal(MiscInternalEventArgs^ args) { MiscInternalEvent(this, args); }
+        void NotifyMiscInternal(MiscInternalEventArgs^ args) { MiscInternalEvent(this, args); }
 #pragma endregion
     };
 }

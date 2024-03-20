@@ -94,13 +94,13 @@ namespace Interop
 
         #region Events
         public event EventHandler<CreateChannelEventArgs>? CreateChannelEvent;
-        void RaiseCreateChannel(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
+        void NotifyCreateChannel(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
 
         public event EventHandler<SendEventArgs>? SendEvent;
-        void RaiseSend(SendEventArgs args) { SendEvent?.Invoke(this, args); }
+        void NotifySend(SendEventArgs args) { SendEvent?.Invoke(this, args); }
 
         public event EventHandler<MiscInternalEventArgs>? MiscInternalEvent;
-        void RaiseMiscInternal(MiscInternalEventArgs args) { MiscInternalEvent?.Invoke(this, args); }
+        void NotifyMiscInternal(MiscInternalEventArgs args) { MiscInternalEvent?.Invoke(this, args); }
         #endregion
     };
 }

@@ -3,9 +3,13 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
-    //TODO2 this is a lot of dupe from cpp side. Import/share?
+    // TODO1 this is a lot of dupe from cpp side. Import/share?
 
     #region Enums
+
+    /// <summary>Internal status.</summary>
+    public enum PlayState { Start, Stop, Rewind, StopRewind }
+
     public enum midi_event_t
     {
         // Channel events 0x80-0x8F
@@ -67,17 +71,24 @@ namespace Nebulua
 
     public class Utils
     {
-        // Channel handle management.
+        // TODO2 Script lua_State access syncronization. 
+        // HANDLE ghMutex; 
+        // #define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE)
+        // #define EXIT_CRITICAL_SECTION ReleaseMutex(ghMutex)
+        public static void ENTER_CRITICAL_SECTION() { }
+
+        public static void EXIT_CRITICAL_SECTION() { }
+
+
+        ///// Channel handle management.
         public static int MAKE_OUT_HANDLE(int index, int chan_num) { return (index << 8) | chan_num | 0x8000; }
 
-        // Channel handle management.
         public static int MAKE_IN_HANDLE(int index, int chan_num) { return (index << 8) | chan_num; }
 
-        // Channel handle management.
         public static (int index, int chan_num) SPLIT_HANDLE(int chan_hnd) { return (((chan_hnd & ~0x8000) >> 8) & 0xFF, (chan_hnd & ~0x8000) & 0xFF); }
 
 
-        //----------------------- Timing -----------------------------//
+        ///// Musical timing
 
         /// The bar number.
         public static int BAR(int tick) { return tick / Defs.SUBS_PER_BAR; }
