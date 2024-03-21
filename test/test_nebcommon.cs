@@ -7,7 +7,7 @@ using Ephemera.NBagOfTricks.PNUT;
 
 namespace Nebulua.Test
 {
-    public class NEBCOM_MAIN : TestSuite
+    public class NEBCOM_MAIN : TestSuite // TODO1 needs project
     {
         public override void RunSuite()
         {

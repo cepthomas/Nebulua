@@ -11,7 +11,6 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
-    //public partial class App
     public class Cli
     {
         #region Commands
@@ -36,40 +35,39 @@ namespace Nebulua
         delegate int CommandHandler(CommandDescriptor cmd, List<string> args);
 
         /// <summary>All the commands.</summary>
-        CommandDescriptor[]? _commands;
+        readonly CommandDescriptor[]? _commands;
 
         /// <summary>CLI prompt.</summary>
-        readonly string _prompt = "->";
+        readonly string _prompt = "?";
         #endregion
 
         #region IO
         /// <summary>CLI.</summary>
-        TextWriter _cliOut;
+        readonly TextWriter _cliOut;
 
         /// <summary>CLI.</summary>
-        TextReader _cliIn;
+        readonly TextReader _cliIn;
         #endregion
-
-
 
         /// <summary>
         /// Set up command table.
         /// </summary>
-        public void Init(TextReader cliIn, TextWriter cliOut)
+        public Cli(TextReader cliIn, TextWriter cliOut, string prompt)
         {
             _cliIn = cliIn;
             _cliOut = cliOut;
+            _prompt = prompt;
 
             _commands =
             [
-                new("help", '?', '\0', "tell me everything", "", UsageCmd),
-                new("exit", 'x', '\0', "exit the application", "", ExitCmd),
-                new("run", 'r', ' ', "toggle running the script", "", RunCmd),
-                new("tempo", 't', '\0', "get or set the tempo", "(bpm): 40-240", TempoCmd),
-                new("monitor", 'm', '^', "toggle monitor midi traffic", "(in|out|off): action", MonCmd),
-                new("kill", 'k', '~', "stop all midi", "", KillCmd),
-                new("position", 'p', '\0', "set position to where or tell current", "(where): bar:beat:sub", PositionCmd),
-                new("reload", 'l', '\0', "re/load current script", "", ReloadCmd)
+                new("help",     '?',    '\0',   "tell me everything",                       "",                         UsageCmd),
+                new("exit",     'x',    '\0',   "exit the application",                     "",                         ExitCmd),
+                new("run",      'r',    ' ',    "toggle running the script",                "",                         RunCmd),
+                new("tempo",    't',    '\0',   "get or set the tempo",                     "(bpm): 40-240",            TempoCmd),
+                new("monitor",  'm',    '^',    "toggle monitor midi traffic",              "(in|out|off): action",     MonCmd),
+                new("kill",     'k',    '~',    "stop all midi",                            "",                         KillCmd),
+                new("position", 'p',    '\0',   "set position to where or tell current",    "(where): bar:beat:sub",    PositionCmd),
+                new("reload",   'l',    '\0',   "re/load current script",                   "",                         ReloadCmd)
             ];
         }
 
@@ -127,7 +125,7 @@ namespace Nebulua
             else
             {
                 // Assume finished.
-                State.Instance.AppRunning = false;
+                State.Instance.ExecState = ExecState.Exit;
             }
 
             return stat;
@@ -148,7 +146,6 @@ namespace Nebulua
                 if (int.TryParse(args[1], out int t) && t >= 40 && t <= 240)
                 {
                     State.Instance.Tempo = t;
-                    SetTimer(State.Instance.Tempo);
                     Write("");
                 }
                 else
@@ -167,9 +164,8 @@ namespace Nebulua
 
             if (args.Count == 1) // no args
             {
-                State.Instance.ScriptState = PlayState.Start;// TODO1 !State.Instance.ScriptRunning;
                 stat = Defs.NEB_OK;
-                Write(State.Instance.ScriptState == PlayState.Start ? "running" : "stopped");
+                Write(State.Instance.ExecState == ExecState.Run ? "running" : "stopped");
             }
             else
             {
@@ -184,8 +180,7 @@ namespace Nebulua
         {
             int stat = Defs.NEB_OK;
 
-            State.Instance.ScriptState = PlayState.Stop;
-            State.Instance.AppRunning = false;
+            State.Instance.ExecState = ExecState.Exit;
             Write($"goodbye!");
 
             return stat;
@@ -235,7 +230,7 @@ namespace Nebulua
 
             if (args.Count == 1) // no args
             {
-                KillAll();
+                State.Instance.ExecState = ExecState.Kill;
                 stat = Defs.NEB_OK;
             }
             Write("");

@@ -4,30 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Threading;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using System.Threading;
 
 
 namespace Nebulua
 {
     public partial class App : IDisposable
     {
-        // TODO1 better run control:
-        // cli implementation: loop on/off, set to section|all|start/end-bartime.
-        // Keep going.
-        //bool _doLoop = false;
-        //// Loop start tick. -1 means start of composition.
-        //int State.Instance.LoopStart = -1;
-        //// Loop end tick. -1 means end of composition.
-        //int State.Instance.LoopEnd = -1;
-        // #region Enums
-        // /// <summary>Internal status.</summary>
-        // enum PlayCommand { Start, Stop, Rewind, StopRewind, UpdateUiTime }
-        // #endregion
-
-
         #region Fields
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("App");
@@ -35,48 +21,23 @@ namespace Nebulua
         /// <summary>The singleton API.</summary>
         readonly Interop.Api _api = Interop.Api.Instance;
 
-        ///// <summary>CLI.</summary>
-        //TextWriter _cliOut;
-
-        ///// <summary>CLI.</summary>
-        //TextReader _cliIn;
-
-        Cli _cli;
+        /// <summary>Talk to the user.</summary>
+        readonly Cli _cli;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
 
         /// <summary>Diagnostics for timing measurement.</summary>
-        readonly TimingAnalyzer _tan = new() { SampleSize = 100 };
+        readonly TimingAnalyzer? _tan = null; //new() { SampleSize = 100 };
 
         /// <summary>All devices to use for send.</summary>
-        readonly List< MidiOutput> _outputs = [];
+        readonly List<MidiOutput> _outputs = [];
 
         /// <summary>All devices to use for receive.</summary>
         readonly List<MidiInput> _inputs = [];
 
-        ///// <summary>The script execution state.</summary>
-        //bool _scriptRunning = false;
-
-        ///// <summary>The app execution state.</summary>
-        //bool _appRunning = true;
-
-        ///// <summary>Length of composition in ticks.</summary>
-        //int _length = 0;
-
-        ///// <summary>Current tempo in bpm.</summary>
-        //int _tempo = 100;
-
-        ///// <summary>Where are we in composition.</summary>
-        //int State.Instance.CurrentTick = 0;
-
-        ///// <summary>Monitor midi input.</summary>
-        //bool _monInput = false;
-
-        ///// <summary>Monitor midi output.</summary>
-        //bool _monOutput = false;
-
-        private bool disposedValue;
+        /// <summary>Resource management.</summary>
+        private bool _disposed;
         #endregion
 
         #region Lifecycle
@@ -85,9 +46,6 @@ namespace Nebulua
         /// </summary>
         public App()
         {
-            //_cliOut = Console.Out;
-            //_cliIn = Console.In;
-
             // Init logging.
             LogManager.MinLevelFile = LogLevel.Debug;
             LogManager.MinLevelNotif = LogLevel.Warn;
@@ -99,10 +57,23 @@ namespace Nebulua
             //ghMutex = CreateMutex(NULL, FALSE, NULL);
             //if (ghMutex == NULL) { EXEC_FAIL(11, "CreateMutex() failed."); }
 
-            _cli = new();
-            _cli.Init(Console.In, Console.Out);
+            _cli = new(Console.In, Console.Out, "->");
+            _cli.Write("Greetings from Nebulua!");
 
-            //InitCli();
+            // Create script api.
+            int stat = _api.Init();
+            if (stat != Defs.NEB_OK)
+            {
+                _logger.Error(_api.Error);
+                Environment.Exit(1);
+            }
+            
+            // Hook script events.
+            _api.CreateChannelEvent += Api_CreateChannelEvent;
+            _api.SendEvent += Api_SendEvent;
+            _api.MiscInternalEvent += Api_MiscInternalEvent;
+
+            State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
         }
 
         /// <summary>
@@ -111,11 +82,11 @@ namespace Nebulua
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    // TO-DO: dispose managed state (managed objects)
+                    // TODO3: dispose managed state (managed objects)
                     _mmTimer.Stop();
                     _mmTimer.Dispose();
 
@@ -128,14 +99,14 @@ namespace Nebulua
                     _outputs.Clear();
                 }
 
-                // TO-DO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TO-DO: set large fields to null
-                disposedValue = true;
+                // TODO3: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO3: set large fields to null
+                _disposed = true;
             }
         }
 
         /// <summary>
-        /// TO-DO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        /// TODO3: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         /// </summary>
         ~App()
         {
@@ -154,30 +125,51 @@ namespace Nebulua
         }
         #endregion
 
+        /// <summary>
+        /// Handler for state changes. Some may originate in this component, others from elsewhere.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void State_PropertyChangeEvent(object? sender, string name)
+        {
+            switch (name)
+            {
+                case "CurrentTick":
+                    if (sender != this) {}
+                    break;
+
+                case "Tempo":
+                    SetTimer(State.Instance.Tempo);
+                    break;
+
+                case "ScriptState":
+                    switch (State.Instance.ExecState)
+                    {
+                        case ExecState.Idle:
+                        case ExecState.Run:
+                        case ExecState.Exit:
+                            break;
+
+                        case ExecState.Kill:
+                            KillAll();
+                            State.Instance.ExecState = ExecState.Idle;
+                            break;
+                    }
+                    break;
+            }
+        }
+
         #region Primary workers
         /// <summary>
-        /// 
+        /// Load and execute script.
         /// </summary>
         /// <param name="fn"></param>
         public int Run(string fn)
         {
-            int stat = Defs.NEB_OK;
-            _cli.Write("Greetings from Nebulua!");
+            int stat;
 
             // Lock access to lua context during init.
             Utils.ENTER_CRITICAL_SECTION();
-
-            // Create and init script api.
-            stat = _api.Init();
-            if (stat != Defs.NEB_OK)
-            {
-                _logger.Error(_api.Error);
-            }
-
-            // Hook script events.
-            _api.CreateChannelEvent += CreateChannelEventHandler;
-            _api.SendEvent += SendEventHandler;
-            _api.MiscInternalEvent += MiscInternalEventHandler;
 
             // Load the script.
             stat = _api.OpenScript(fn);
@@ -196,13 +188,13 @@ namespace Nebulua
             Utils.EXIT_CRITICAL_SECTION();
 
             ///// Loop forever doing cli requests. /////
-            while (State.Instance.AppRunning)
+            while (State.Instance.ExecState != ExecState.Exit)
             {
                 stat = _cli.Read();
                 if (stat != Defs.NEB_OK)
                 {
                     _logger.Error(_api.Error);
-                    State.Instance.AppRunning = false;
+                    State.Instance.ExecState = ExecState.Exit;
                 }
             }
 
@@ -224,10 +216,10 @@ namespace Nebulua
         /// <param name="periodElapsed"></param>
         void MmTimerCallback(double totalElapsed, double periodElapsed)
         {
-            if (State.Instance.ScriptState == PlayState.Start)
+            if (State.Instance.ExecState == ExecState.Run)
             {
                 // Do script. TODO3 Handle solo/mute like nebulator.
-                //_tan.Arm(); TODO2
+                _tan?.Arm();
 
                 // Lock access to lua context.
                 Utils.ENTER_CRITICAL_SECTION();
@@ -235,11 +227,8 @@ namespace Nebulua
                 int stat = _api.Step(State.Instance.CurrentTick);
                 Utils.EXIT_CRITICAL_SECTION();
 
-                // // Read stopwatch and diff/stats.
-                // if (_tan.Grab())
-                // {
-                //     DumpTan();
-                // }
+                // Read stopwatch and diff/stats.
+                string? s = _tan?.Dump();
 
                 // Update state.
 
@@ -249,7 +238,7 @@ namespace Nebulua
                     SetTimer(0);
                     KillAll();
                     _logger.Error(_api.Error);
-                    State.Instance.ScriptState = PlayState.Stop;
+                    State.Instance.ExecState = ExecState.Idle;
                     State.Instance.CurrentTick = 0;
                 }
                 else
@@ -257,11 +246,10 @@ namespace Nebulua
                     // Bump time and check state.
                     int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
                     int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+
                     if (++State.Instance.CurrentTick >= end) // done
                     {
                         // Keep going? else stop/rewind.
-                        State.Instance.ScriptState = PlayState.Start;// State.Instance.DoLoop;
- 
                         if (State.Instance.DoLoop)
                         {
                             // Keep going.
@@ -270,6 +258,7 @@ namespace Nebulua
                         else
                         {
                             // Stop and rewind.
+                            State.Instance.ExecState = ExecState.Idle;
                             State.Instance.CurrentTick = start;
  
                             // just in case
@@ -292,7 +281,7 @@ namespace Nebulua
                 case LogLevel.Error:
                     _cli.Write(e.Message);
                     // Fatal, shut down.
-                    State.Instance.AppRunning = false;
+                    State.Instance.ExecState = ExecState.Exit;
                     break;
 
                 case LogLevel.Warn:
@@ -310,7 +299,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void InputReceiveEvent(object? sender, MidiEvent e)
+        void Midi_InputReceiveEvent(object? sender, MidiEvent e)
         {
             int stat = Defs.NEB_OK;
             int index = _inputs.IndexOf((MidiInput)sender!);
@@ -348,7 +337,7 @@ namespace Nebulua
 
             if (State.Instance.MonInput)
             {
-                _logger.Trace($"MIDI_IN{e}");
+                _logger.Trace($"MIDI_IN {e}");
             }
         }
         #endregion
@@ -359,7 +348,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void CreateChannelEventHandler(object? sender, Interop.CreateChannelEventArgs e)
+        void Api_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
         {
             e.Ret = 0; // default means invalid chan_hnd
 
@@ -396,7 +385,7 @@ namespace Nebulua
                     if (input == null)
                     {
                         input = new(e.DevName);
-                        input.InputReceiveEvent += InputReceiveEvent;
+                        input.InputReceiveEvent += Midi_InputReceiveEvent;
                         if (input.Valid)
                         {
                             _inputs.Add(input);
@@ -425,7 +414,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SendEventHandler(object? sender, Interop.SendEventArgs e)
+        void Api_SendEvent(object? sender, Interop.SendEventArgs e)
         {
             // Dig out the device.
             var (index, chan_num) = Utils.SPLIT_HANDLE(e.ChanHnd);
@@ -469,7 +458,7 @@ namespace Nebulua
 
             if (State.Instance.MonOutput)
             {
-                _logger.Trace($"MIDI_OUT{e}");
+                _logger.Trace($"MIDI_OUT {e}");
             }
         }
 
@@ -478,7 +467,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void MiscInternalEventHandler(object? sender, Interop.MiscInternalEventArgs e)
+        void Api_MiscInternalEvent(object? sender, Interop.MiscInternalEventArgs e)
         {
             if (e.Bpm > 0)
             {
@@ -535,32 +524,7 @@ namespace Nebulua
             }
 
             // Hard reset.
-            State.Instance.ScriptState = PlayState.Stop;
-        }
-
-        /// <summary>
-        /// Diagnostics.
-        /// </summary>
-        void DumpTan()
-        {
-            // Time ordered.
-            List<string> ls = [];
-            _tan.Times.ForEach(t => ls.Add($"{t}"));
-            File.WriteAllLines(@"..\..\out\intervals_ordered.csv", ls);
-
-            // Sorted by (rounded) times.
-            Dictionary<double, int> _bins = [];
-            for (int i = 0; i < _tan.Times.Count; i++)
-            {
-                var t = Math.Round(_tan.Times[i], 2);
-                _bins[t] = _bins.TryGetValue(t, out int value) ? value + 1 : 1;
-            }
-            ls.Clear();
-            ls.Add($"Msec,Count");
-            var vv = _bins.Keys.ToList();
-            vv.Sort();
-            vv.ForEach(v => ls.Add($"{v},{_bins[v]}"));
-            File.WriteAllLines(@"..\..\out\intervals_sorted.csv", ls);
+            State.Instance.ExecState = ExecState.Idle;
         }
         #endregion
     }

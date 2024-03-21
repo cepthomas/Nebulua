@@ -981,6 +981,12 @@
             </summary>
             <returns>New stats are available.</returns>
         </member>
+        <member name="M:Ephemera.NBagOfTricks.TimingAnalyzer.Dump">
+            <summary>
+            Detail of captured values.
+            </summary>
+            <returns>String csv.</returns>
+        </member>
         <member name="M:Ephemera.NBagOfTricks.TimingAnalyzer.TicksToMsec(System.Int64)">
             <summary>
             Conversion for stopwatch values.

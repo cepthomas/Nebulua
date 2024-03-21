@@ -181,6 +181,7 @@ namespace Nebulua
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
+            // TODO3
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
             // _logger.Trace(ErrorInfo);
         }
