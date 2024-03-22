@@ -17,8 +17,8 @@ namespace Nebulua.Test
         {
             // Run pnut tests from cmd line.
             TestRunner runner = new(OutputFormat.Readable);
-            var cases = new[] { "NEBCOM" };
-            //var cases = new[] { "NEBCOM", "DEVMGR", "EXEC", "CLI" };
+            //var cases = new[] { "MISC" };
+            var cases = new[] { "MISC", "INTOP", "APP", "CLI" };
 
             // Init system before running tests.
             // FILE* fp_log = fopen("_log.txt", "w");
