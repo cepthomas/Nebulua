@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test.App
+namespace Nebulua.Test
 {
     public class APP_ONE : TestSuite
     {

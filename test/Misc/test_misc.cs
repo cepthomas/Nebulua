@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test.Misc
+namespace Nebulua.Test
 {
     public class MISC_COMMON : TestSuite
     {

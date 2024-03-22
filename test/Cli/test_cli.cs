@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfTricks.Slog;
 
 
-namespace Nebulua.Test.Cli
+namespace Nebulua.Test
 {
     // Test the simpler cli functions.
     public class CLI_BASIC : TestSuite
