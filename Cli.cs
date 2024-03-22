@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using NAudio.Midi;
+using System.Text;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
 
 
 namespace Nebulua
@@ -164,8 +160,24 @@ namespace Nebulua
 
             if (args.Count == 1) // no args
             {
-                stat = Defs.NEB_OK;
-                Write(State.Instance.ExecState == ExecState.Run ? "running" : "stopped");
+                switch (State.Instance.ExecState)
+                {
+                    case ExecState.Idle:
+                        State.Instance.ExecState = ExecState.Run;
+                        Write("running");
+                        stat = Defs.NEB_OK;
+                        break;
+
+                    case ExecState.Run:
+                        State.Instance.ExecState = ExecState.Idle;
+                        Write("stopped");
+                        stat = Defs.NEB_OK;
+                        break;
+
+                    default:
+                        Write("invalid state");
+                        break;
+                }
             }
             else
             {

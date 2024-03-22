@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test
+namespace Nebulua.Test.App
 {
     public class APP_ONE : TestSuite
     {
@@ -20,7 +20,21 @@ namespace Nebulua.Test
             UT_EQUAL(str2, "the mulberry bush");
         }
     }
+
+    static class Program
+    {
+        [STAThread]
+        static void Main(string[] _)
+        {
+            TestRunner runner = new(OutputFormat.Readable);
+            var cases = new[] { "APP" };
+            runner.RunSuites(cases);
+            File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
+        }
+    }
 }
+
+
 
 /*
 

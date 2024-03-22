@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfTricks.Slog;
 
 
-namespace Nebulua.Test
+namespace Nebulua.Test.Cli
 {
     // Test the simpler cli functions.
     public class CLI_BASIC : TestSuite
@@ -17,138 +17,143 @@ namespace Nebulua.Test
             List<string> capture;
             UT_STOP_ON_FAIL(true);
 
-            var app = new App();
-            app.HookCli();
+            var st = State.Instance;
+            st.PropertyChangeEvent += (sender, e) => { };
+
+            MockCliIn cliIn = new();
+            MockCliOut cliOut = new();
+            var prompt = "%";
+            var cli = new Nebulua.Cli(cliIn, cliOut, prompt);
 
             ///// Fat fingers.
-            app.Clear();
-            app.NextLine = "bbbbb";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "bbbbb";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"Invalid command");
-            UT_EQUAL(capture[1], $"->");
+            UT_EQUAL(capture[1], prompt);
 
-            app.Clear();
-            app.NextLine = "z";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "z";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"Invalid command");
-            UT_EQUAL(capture[1], $"->");
+            UT_EQUAL(capture[1], prompt);
 
             ///// These next two confirm proper full/short name handling.
-            app.Clear();
-            app.NextLine = "help";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "help";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 12);
             UT_EQUAL(capture[0], "help|?: tell me everything");
             UT_EQUAL(capture[1], "exit|x: exit the application");
             UT_EQUAL(capture[10], "reload|l: re/load current script");
-            UT_EQUAL(capture[11], $"->");
+            UT_EQUAL(capture[11], prompt);
 
-            app.Clear();
-            app.NextLine = "?";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "?";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 12);
             UT_EQUAL(capture[0], "help|?: tell me everything");
 
             ///// The rest of the commands.
-            app.Clear();
-            app.NextLine = "exit";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "exit";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"goodbye!");
 
-            app.Clear();
-            app.NextLine = "run";
-            stat = app.DoCli();
+            st.ExecState = ExecState.Idle; // reset
+            cliOut.Clear();
+            cliIn.NextLine = "run";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"running");
 
-            app.Clear();
-            app.NextLine = "reload";
-            stat = app.DoCli();
+            st.ExecState = ExecState.Idle; // reset
+            cliOut.Clear();
+            cliIn.NextLine = "reload";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], $"->");
+            UT_EQUAL(capture[0], prompt);
 
-            app.Clear();
-            app.NextLine = "tempo";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "tempo";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "100");
 
-            app.Clear();
-            app.NextLine = "tempo 182";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "tempo 182";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], $"->");
+            UT_EQUAL(capture[0], prompt);
 
-            app.Clear();
-            app.NextLine = "tempo 242";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "tempo 242";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid tempo: 242");
 
-            app.Clear();
-            app.NextLine = "tempo 39";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "tempo 39";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid tempo: 39");
 
-            app.Clear();
-            app.NextLine = "monitor in";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "monitor in";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], $"->");
+            UT_EQUAL(capture[0], prompt);
 
-            app.Clear();
-            app.NextLine = "monitor out";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "monitor out";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], $"->");
+            UT_EQUAL(capture[0], prompt);
 
-            app.Clear();
-            app.NextLine = "monitor off";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "monitor off";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], $"->");
+            UT_EQUAL(capture[0], prompt);
 
-            app.Clear();
-            app.NextLine = "monitor junk";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "monitor junk";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid option: junk");
-
-            app.Dispose();
 
             // Wait for logger to stop.
             Thread.Sleep(100);
@@ -165,62 +170,77 @@ namespace Nebulua.Test
             List<string> capture;
             UT_STOP_ON_FAIL(true);
 
-            var app = new App();
-            app.HookCli();
+            var st = State.Instance;
+            st.PropertyChangeEvent += (sender, e) => { };
+
+            MockCliIn cliIn = new();
+            MockCliOut cliOut = new();
+            var prompt = "%";
+            var cli = new Nebulua.Cli(cliIn, cliOut, prompt);
 
             //app.Run("script_happy.lua");
 
             ///// Position commands.
-            app.Clear();
-            app.NextLine = "position";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "position";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"0:0:0");
-            UT_EQUAL(capture[1], $"->");
+            UT_EQUAL(capture[1], prompt);
 
             //app.Clear();
-            //app.NextLine = "position 203:2:6";
-            //stat = app.DoCli();
+            //cliIn.NextLine = "position 203:2:6";
+            //stat = cli.Read();
             //UT_EQUAL(stat, Defs.NEB_OK);
-            //capture = app.CaptureLines;
+            //capture = cliOut.CaptureLines;
             //UT_EQUAL(capture.Count, 2);
             //UT_EQUAL(capture[0], $"203:2:6");
-            //UT_EQUAL(capture[1], $"->");
+            //UT_EQUAL(capture[1], prompt);
 
             //app.Clear();
-            //app.NextLine = "position";
-            //stat = app.DoCli();
+            //cliIn.NextLine = "position";
+            //stat = cli.Read();
             //UT_EQUAL(stat, Defs.NEB_OK);
-            //capture = app.CaptureLines;
+            //capture = cliOut.CaptureLines;
             //UT_EQUAL(capture.Count, 2);
             //UT_EQUAL(capture[0], $"203:2:6");
-            //UT_EQUAL(capture[1], $"->");
+            //UT_EQUAL(capture[1], prompt);
 
             //app.Clear();
-            //app.NextLine = "position 111:9:6";
-            //stat = app.DoCli();
+            //cliIn.NextLine = "position 111:9:6";
+            //stat = cli.Read();
             //UT_EQUAL(stat, Defs.NEB_OK);
-            //capture = app.CaptureLines;
+            //capture = cliOut.CaptureLines;
             //UT_EQUAL(capture.Count, 2);
             //UT_EQUAL(capture[0], $"invalid position: 111:9:6");
-            //UT_EQUAL(capture[1], $"->");
+            //UT_EQUAL(capture[1], prompt);
 
 
             ///// Misc commands.
-            app.Clear();
-            app.NextLine = "kill";
-            stat = app.DoCli();
+            cliOut.Clear();
+            cliIn.NextLine = "kill";
+            stat = cli.Read();
             UT_EQUAL(stat, Defs.NEB_OK);
-            capture = app.CaptureLines;
+            capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], $"->");
-
-            app.Dispose();
+            UT_EQUAL(capture[0], prompt);
 
             // Wait for logger to stop.
             Thread.Sleep(100);
         }
     }    
+
+    static class Program
+    {
+        [STAThread]
+        static void Main(string[] _)
+        {
+            TestRunner runner = new(OutputFormat.Readable);
+            var cases = new[] { "CLI" };
+            runner.RunSuites(cases);
+            File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
+        }
+    }
 }

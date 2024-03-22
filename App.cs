@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
+using NAudio;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
@@ -303,7 +304,7 @@ namespace Nebulua
         {
             int stat = Defs.NEB_OK;
             int index = _inputs.IndexOf((MidiInput)sender!);
-            int chan_hnd = Utils.MAKE_IN_HANDLE(index, e.Channel);
+            int chan_hnd = Utils.MakeInHandle(index, e.Channel);
 
             switch (e)
             {
@@ -373,7 +374,7 @@ namespace Nebulua
 
                     output.LogEnable = State.Instance.MonOutput;
                     output.Channels[e.ChanNum - 1] = true;
-                    e.Ret = Utils.MAKE_OUT_HANDLE(_outputs.Count - 1, e.ChanNum);
+                    e.Ret = Utils.MakeOutHandle(_outputs.Count - 1, e.ChanNum);
 
                     // Send the patch now.
                     PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
@@ -399,7 +400,7 @@ namespace Nebulua
 
                     input.LogEnable = State.Instance.MonInput;
                     input.Channels[e.ChanNum - 1] = true;
-                    e.Ret = Utils.MAKE_IN_HANDLE(_inputs.Count - 1, e.ChanNum);
+                    e.Ret = Utils.MakeInHandle(_inputs.Count - 1, e.ChanNum);
                 }
             }
             else
@@ -417,7 +418,7 @@ namespace Nebulua
         void Api_SendEvent(object? sender, Interop.SendEventArgs e)
         {
             // Dig out the device.
-            var (index, chan_num) = Utils.SPLIT_HANDLE(e.ChanHnd);
+            var (index, chan_num) = Utils.DeconstructHandle(e.ChanHnd);
 
             if (index < _outputs.Count)
             {

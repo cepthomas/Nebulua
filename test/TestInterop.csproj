@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StartupObject>Nebulua.Test.Program</StartupObject>
+    <StartupObject>Nebulua.Test.Interop.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -17,23 +17,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="CliEmu.cs" />
+    <Compile Remove="InteropEmu.cs" />
+    <Compile Remove="test_app.cs" />
+    <Compile Remove="test_cli.cs" />
+    <Compile Remove="test_misc.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="host_api.lua" />
     <None Remove="script_happy.lua" />
     <None Remove="test_bar_time.lua" />
     <None Remove="test_defs.lua" />
     <None Remove="test_nebulua.lua" />
     <None Remove="run_lua_test.cmd" />
-    <None Remove="test_nebcommon.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Common.cs" Link="Common.cs" />
-    <Compile Include="..\Midi.cs" Link="Midi.cs" />
     <Compile Include="..\State.cs" Link="State.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
   </ItemGroup>
 
   <ItemGroup>

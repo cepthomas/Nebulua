@@ -1,11 +1,8 @@
-﻿using Nebulua;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 
 namespace Nebulua
@@ -19,6 +16,7 @@ namespace Nebulua
             get { return _execState; }
             set { if (value != _execState) { _execState = value; NotifyStateChanged(); } }
         }
+        ExecState _execState;
 
         /// <summary>Current tempo in bpm.</summary>
         public int Tempo
@@ -26,6 +24,7 @@ namespace Nebulua
             get { return _tempo; }
             set { if (value != _tempo) { _tempo = value; NotifyStateChanged(); } }
         }
+        int _tempo = 100;
 
         /// <summary>Where are we in composition.</summary>
         public int CurrentTick
@@ -33,6 +32,7 @@ namespace Nebulua
             get { return _currentTick; }
             set { if (value != _currentTick) { _currentTick = value; NotifyStateChanged(); } }
         }
+        int _currentTick = 0;
 
         /// <summary>Length of composition in ticks.</summary>
         public int Length { get; set; }
@@ -54,9 +54,7 @@ namespace Nebulua
         #endregion
 
         #region Events
-        //public event string? PropertyChanged;
         public event EventHandler<string>? PropertyChangeEvent;
-
         public void NotifyStateChanged([CallerMemberName] string name = "")
         {
             PropertyChangeEvent?.Invoke(this, name);
@@ -79,12 +77,6 @@ namespace Nebulua
 
         /// <summary>The singleton instance.</summary>
         static State? _instance;
-        #endregion
-
-        #region Backing fields
-        ExecState _execState;
-        int _tempo = 100;
-        int _currentTick = 0;
         #endregion
     }
 }

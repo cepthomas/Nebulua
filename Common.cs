@@ -1,4 +1,3 @@
-
 using Ephemera.NBagOfTricks;
 
 namespace Nebulua
@@ -47,38 +46,40 @@ namespace Nebulua
 
     public class Utils
     {
-        // TODO2 Script lua_State access syncronization. 
-        // HANDLE ghMutex; 
+        #region TODO2 Script lua_State access syncronization.
+        // HANDLE ghMutex;
         // #define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE)
         // #define EXIT_CRITICAL_SECTION ReleaseMutex(ghMutex)
         public static void ENTER_CRITICAL_SECTION() { }
 
         public static void EXIT_CRITICAL_SECTION() { }
+        #endregion
 
+        #region Device handles
+        /// <summary>Make a standard output handle.</summary>
+        public static int MakeOutHandle(int index, int chan_num) { return (index << 8) | chan_num | 0x8000; }
 
-        ///// Channel handle management.
-        public static int MAKE_OUT_HANDLE(int index, int chan_num) { return (index << 8) | chan_num | 0x8000; }
+        /// <summary>Make a standard input handle.</summary>
+        public static int MakeInHandle(int index, int chan_num) { return (index << 8) | chan_num; }
 
-        public static int MAKE_IN_HANDLE(int index, int chan_num) { return (index << 8) | chan_num; }
+        /// <summary>Take apart a standard in/out handle.</summary>
+        public static (int index, int chan_num) DeconstructHandle(int chan_hnd) { return (((chan_hnd & ~0x8000) >> 8) & 0xFF, (chan_hnd & ~0x8000) & 0xFF); }
+        #endregion
 
-        public static (int index, int chan_num) SPLIT_HANDLE(int chan_hnd) { return (((chan_hnd & ~0x8000) >> 8) & 0xFF, (chan_hnd & ~0x8000) & 0xFF); }
-
-
-        ///// Musical timing
-
-        /// The bar number.
+        #region Musical timing
+        /// <summary>The bar number.</summary>
         public static int BAR(int tick) { return tick / Defs.SUBS_PER_BAR; }
 
-        /// The beat number in the bar.
+        /// <summary>The beat number in the bar.</summary>
         public static int BEAT(int tick) { return tick / Defs.SUBS_PER_BEAT % Defs.BEATS_PER_BAR; }
 
-        /// The sub in the beat.
+        /// <summary>The sub in the beat.</summary>
         public static int SUB(int tick) { return tick % Defs.SUBS_PER_BEAT; }
 
         /// <summary>
         /// Convert a string bar time to absolute position.
         /// </summary>
-        /// <param name="sbt">time string can be "1.2.3" or "1.2" or "1".</param>
+        /// <param name="sbt">time string can be "1:2:3" or "1:2" or "1".</param>
         /// <returns>Ticks or -1 if invalid input</returns>
         public static int ParseBarTime(string sbt)
         {
@@ -116,5 +117,6 @@ namespace Nebulua
             var s = $"{bar}:{beat}:{sub}";
             return s;
         }
+        #endregion
     }
 }

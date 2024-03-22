@@ -5,9 +5,9 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Nebulua.Test
+namespace Nebulua.Test.Misc
 {
-    public class NEBCOM_MAIN : TestSuite // TODO1 needs project
+    public class MISC_COMMON : TestSuite
     {
         public override void RunSuite()
         {
@@ -31,6 +31,18 @@ namespace Nebulua.Test
 
             //smidi = Utils.FormatMidiStatus(90909);
             //UT_STR_EQUAL(smidi, "MidiStatus:90909");
+        }
+    }
+
+    static class Program
+    {
+        [STAThread]
+        static void Main(string[] _)
+        {
+            TestRunner runner = new(OutputFormat.Readable);
+            var cases = new[] { "MISC" };
+            runner.RunSuites(cases);
+            File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
     }
 }
