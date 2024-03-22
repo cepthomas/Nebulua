@@ -224,7 +224,6 @@ namespace Nebulua
 
                 // Lock access to lua context.
                 Utils.ENTER_CRITICAL_SECTION();
-                // Read stopwatch.
                 int stat = _api.Step(State.Instance.CurrentTick);
                 Utils.EXIT_CRITICAL_SECTION();
 
