@@ -103,11 +103,9 @@ namespace Nebulua
                         {
                             // Execute the command. They handle any errors internally.
                             valid = true;
-                            // Lock access to lua context.
-                            Utils.ENTER_CRITICAL_SECTION();
+
                             stat = cmd.Handler(cmd, args);
                             // ok = _EvalStatus(stat, "handler failed: %s", cmd->desc.long_name);
-                            Utils.EXIT_CRITICAL_SECTION();
                             break;
                         }
                     }

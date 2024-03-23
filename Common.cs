@@ -28,7 +28,7 @@ namespace Nebulua
         public const int SUBS_PER_BEAT = 8;
 
         /// Convenience.
-        public const int SUBS_PER_BAR = (SUBS_PER_BEAT * BEATS_PER_BAR);
+        public const int SUBS_PER_BAR = SUBS_PER_BEAT * BEATS_PER_BAR;
 
         /// Arbitrary setting.
         public const int MAX_SECTIONS = 32;
@@ -46,15 +46,6 @@ namespace Nebulua
 
     public class Utils
     {
-        #region TODO2 Script lua_State access syncronization.
-        // HANDLE ghMutex;
-        // #define ENTER_CRITICAL_SECTION WaitForSingleObject(ghMutex, INFINITE)
-        // #define EXIT_CRITICAL_SECTION ReleaseMutex(ghMutex)
-        public static void ENTER_CRITICAL_SECTION() { }
-
-        public static void EXIT_CRITICAL_SECTION() { }
-        #endregion
-
         #region Device handles
         /// <summary>Make a standard output handle.</summary>
         public static int MakeOutHandle(int index, int chan_num) { return (index << 8) | chan_num | 0x8000; }

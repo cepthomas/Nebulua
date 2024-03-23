@@ -54,10 +54,6 @@ namespace Nebulua
             LogManager.Run("_log.txt", 100000);
             _logger.Info("Log says hihyhhhhhhhhhhhhhhhhhh");
 
-            //// TODO1 Create a mutex with no initial owner.
-            //ghMutex = CreateMutex(NULL, FALSE, NULL);
-            //if (ghMutex == NULL) { EXEC_FAIL(11, "CreateMutex() failed."); }
-
             _cli = new(Console.In, Console.Out, "->");
             _cli.Write("Greetings from Nebulua!");
 
@@ -169,9 +165,6 @@ namespace Nebulua
         {
             int stat;
 
-            // Lock access to lua context during init.
-            Utils.ENTER_CRITICAL_SECTION();
-
             // Load the script.
             stat = _api.OpenScript(fn);
             if (stat != Defs.NEB_OK)
@@ -185,10 +178,7 @@ namespace Nebulua
             SetTimer(State.Instance.Tempo);
             _mmTimer.Start();
 
-            ///// Good to go now. /////
-            Utils.EXIT_CRITICAL_SECTION();
-
-            ///// Loop forever doing cli requests. /////
+            ///// Good to go now. Loop forever doing cli requests. /////
             while (State.Instance.ExecState != ExecState.Exit)
             {
                 stat = _cli.Read();
@@ -222,10 +212,7 @@ namespace Nebulua
                 // Do script. TODO3 Handle solo/mute like nebulator.
                 _tan?.Arm();
 
-                // Lock access to lua context.
-                Utils.ENTER_CRITICAL_SECTION();
                 int stat = _api.Step(State.Instance.CurrentTick);
-                Utils.EXIT_CRITICAL_SECTION();
 
                 // Read stopwatch and diff/stats.
                 string? s = _tan?.Dump();
@@ -308,21 +295,15 @@ namespace Nebulua
             switch (e)
             {
                 case NoteOnEvent evt:
-                    Utils.ENTER_CRITICAL_SECTION();
                     stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                    Utils.EXIT_CRITICAL_SECTION();
                     break;
 
                 case NoteEvent evt:
-                    Utils.ENTER_CRITICAL_SECTION();
                     stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                    Utils.EXIT_CRITICAL_SECTION();
                     break;
 
                 case ControlChangeEvent evt:
-                    Utils.ENTER_CRITICAL_SECTION();
                     stat = _api.InputController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                    Utils.EXIT_CRITICAL_SECTION();
                     break;
 
                 default:

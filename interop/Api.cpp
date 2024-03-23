@@ -1,3 +1,6 @@
+
+#include <windows.h>
+
 #include "lua.hpp"
 #include "nebcommon.h"
 #include "luainterop.h"
@@ -11,12 +14,17 @@ using namespace System::Collections::Generic;
 struct lua_State {};
 static lua_State* _l;
 
+// Protect lua context calls against multiple threads.
+static CRITICAL_SECTION _critsect;
+
 
 #pragma region Lifecycle
 //--------------------------------------------------------//
 int Interop::Api::Init()
 {
     int stat = NEB_OK;
+
+    InitializeCriticalSection(&_critsect);
 
     // Init internal lib.
     _l = luaL_newstate();
@@ -40,6 +48,8 @@ Interop::Api::~Api()
 {
     int stat = NEB_OK;
 
+    DeleteCriticalSection(&_critsect);
+
     // Finished. Clean up resources and go home.
     lua_close(_l);
 }
@@ -52,6 +62,8 @@ int Interop::Api::OpenScript(String^ fn)
 {
     int stat = NEB_OK;
     int ret = 0;
+
+    EnterCriticalSection(&_critsect);
 
     char fnx[MAX_PATH];
     ToCString(fn, fnx, MAX_PATH);
@@ -113,7 +125,8 @@ int Interop::Api::OpenScript(String^ fn)
         // Tack on the overal length.
         SectionInfo->Add(length, ToCliString("LENGTH=========="));
     }
-
+    
+    LeaveCriticalSection(&_critsect);
     return stat;
 }
 
@@ -121,12 +134,16 @@ int Interop::Api::OpenScript(String^ fn)
 int Interop::Api::Step(int tick)
 {
     int ret = NEB_ERR_API;
+    EnterCriticalSection(&_critsect);
+
     luainterop_Step(_l, tick);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
         ret = NEB_OK;
     }
+
+    LeaveCriticalSection(&_critsect);
     return ret;
 }
 
@@ -134,12 +151,16 @@ int Interop::Api::Step(int tick)
 int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 {
     int ret = NEB_ERR_API;
+    EnterCriticalSection(&_critsect);
+
     luainterop_InputNote(_l, chan_hnd, note_num, volume);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
         ret = NEB_OK;
     }
+
+    LeaveCriticalSection(&_critsect);
     return ret;
 }
 
@@ -147,12 +168,16 @@ int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 int Interop::Api::InputController(int chan_hnd, int controller, int value)
 {
     int ret = NEB_ERR_API;
+    EnterCriticalSection(&_critsect);
+
     luainterop_InputController(_l, chan_hnd, controller, value);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
         ret = NEB_OK;
     }
+
+    LeaveCriticalSection(&_critsect);
     return ret;
 }
 #pragma endregion

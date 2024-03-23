@@ -3,6 +3,8 @@
 
 ///// Warning - this file is created by gen_interop.lua, do not edit. /////
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 #include "lua.hpp"
 extern "C" {
@@ -12,8 +14,6 @@ extern "C" {
 #include "lua.h"
 #include "luaex.h"
 #endif
-
-#define MAX_STRING 100
 
 //---------------- Call lua functions from host -------------//
 
@@ -63,26 +63,26 @@ int luainteropwork_CreateInputChannel(const char* dev_name, int chan_num);
 /// Script wants to log something.
 /// @param[in] level Log level
 /// @param[in] msg Log message
-/// @return NEB_XX status
+/// @return Status
 int luainteropwork_Log(int level, const char* msg);
 
 /// Script wants to change tempo.
 /// @param[in] bpm BPM 40 => 240
-/// @return NEB_XX status
+/// @return Status
 int luainteropwork_SetTempo(int bpm);
 
 /// If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).
 /// @param[in] chan_hnd Output channel handle
 /// @param[in] note_num Note number
 /// @param[in] volume Volume 0.0 => 1.0
-/// @return NEB_XX status
+/// @return Status
 int luainteropwork_SendNote(int chan_hnd, int note_num, double volume);
 
 /// Send a controller immediately.
 /// @param[in] chan_hnd Output channel handle
 /// @param[in] controller Specific controller 0 => 127
 /// @param[in] value Payload 0 => 127
-/// @return NEB_XX status
+/// @return Status
 int luainteropwork_SendController(int chan_hnd, int controller, int value);
 
 //---------------- Infrastructure ----------------------//
