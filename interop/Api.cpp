@@ -14,8 +14,11 @@ using namespace System::Collections::Generic;
 struct lua_State {};
 static lua_State* _l;
 
-// Protect lua context calls against multiple threads.
+// Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
+
+// Client gets NEB_XXX statuses.
+static int MapStatus(int lua_status);
 
 
 #pragma region Lifecycle
@@ -46,11 +49,8 @@ int Interop::Api::Init()
 //--------------------------------------------------------//
 Interop::Api::~Api()
 {
-    int stat = NEB_OK;
-
-    DeleteCriticalSection(&_critsect);
-
     // Finished. Clean up resources and go home.
+    DeleteCriticalSection(&_critsect);
     lua_close(_l);
 }
 #pragma endregion
@@ -77,6 +77,7 @@ int Interop::Api::OpenScript(String^ fn)
         if (stat != NEB_OK)
         {
             Error = gcnew String(nebcommon_EvalStatus(_l, stat, "Load script file failed."));
+            stat = MapStatus(stat);
         }
     }
 
@@ -87,6 +88,7 @@ int Interop::Api::OpenScript(String^ fn)
         if (stat != NEB_OK)
         {
             Error = gcnew String(nebcommon_EvalStatus(_l, stat, "Execute script failed."));
+            stat = MapStatus(stat);
         }
     }
 
@@ -112,10 +114,9 @@ int Interop::Api::OpenScript(String^ fn)
         lua_pop(_l, 1); // Clean up stack.
 
         // Get section info.
-        //memset(_section_descs, 0, sizeof(_section_descs));
         ltype = lua_getglobal(_l, "_section_names");
         lua_pushnil(_l);
-        while (lua_next(_l, -2) != 0 && stat == NEB_OK)
+        while (lua_next(_l, -2) != 0 && stat == LUA_OK)
         {
             SectionInfo->Add((int)lua_tointeger(_l, -1), ToCliString(lua_tostring(_l, -2)));
             lua_pop(_l, 1);
@@ -126,6 +127,8 @@ int Interop::Api::OpenScript(String^ fn)
         SectionInfo->Add(length, ToCliString("LENGTH=========="));
     }
     
+    stat = MapStatus(stat);
+
     LeaveCriticalSection(&_critsect);
     return stat;
 }
@@ -179,5 +182,35 @@ int Interop::Api::InputController(int chan_hnd, int controller, int value)
 
     LeaveCriticalSection(&_critsect);
     return ret;
+}
+#pragma endregion
+
+#pragma region Private functions
+//--------------------------------------------------------//
+
+int MapStatus(int lua_status)
+{
+    int xstat;
+
+    switch (lua_status)
+    {
+    case LUA_OK:
+        xstat = NEB_OK;
+        break;
+
+    case LUA_ERRSYNTAX:
+        xstat = NEB_ERR_SYNTAX;
+        break;
+
+    case LUA_ERRRUN:
+        xstat = NEB_ERR_RUN;
+        break;
+
+    default:
+        xstat = NEB_ERR_INTERNAL;
+        break;
+    }
+
+    return xstat;
 }
 #pragma endregion

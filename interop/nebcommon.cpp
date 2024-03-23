@@ -54,9 +54,7 @@ String^ nebcommon_EvalStatus(lua_State* l, int stat, String^ info)
             case NEB_ERR_MIDI_RX:           sstat = "NEB_ERR_MIDI_RX"; break;
             case NEB_ERR_MIDI_TX:           sstat = "NEB_ERR_MIDI_TX"; break;
             case NEB_ERR_API:               sstat = "NEB_ERR_API"; break;
-            // Interop 200-?
-            case INTEROP_BAD_FUNC_NAME:     sstat = "INTEROP_BAD_FUNC_NAME"; break;
-            case INTEROP_BAD_RET_TYPE:      sstat = "INTEROP_BAD_RET_TYPE"; break;
+            case NEB_ERR_RUN:               sstat = "NEB_ERR_RUN"; break;
             // default
             default:                        sstat = "UNKNOWN_ERROR"; break;
             //default:                        sstat = "UNKNOWN_ERROR"; LOG_DEBUG("Unknwon ret code:%d", stat); break;

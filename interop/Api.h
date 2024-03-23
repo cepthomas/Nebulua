@@ -54,7 +54,7 @@ namespace Interop
         Interop::Api() {}
 
         /// <summary>Initialize everything.</summary>
-        /// <returns>Status</returns>
+        /// <returns>Neb Status</returns>
         int Init();
 
         /// <summary>Clean up resources.</summary>
@@ -82,26 +82,26 @@ namespace Interop
     public:
         /// <summary>Load and process.</summary>
         /// <param name="fn">Full path</param>
-        /// <returns>Standard status</returns>
+        /// <returns>Neb Status</returns>
         int OpenScript(String^ fn);
 
         /// <summary>Called every fast timer increment aka tick.</summary>
         /// <param name="tick">Current tick 0 => N</param>
-        /// <returns>Standard status</returns>
+        /// <returns>Neb Status</returns>
         int Step(int tick);
 
         /// <summary>Called when input arrives.</summary>
         /// <param name="chan_hnd">Input channel handle</param>
         /// <param name="note_num">Note number 0 => 127</param>
         /// <param name="volume">Volume 0.0 => 1.0</param>
-        /// <returns>Standard status</returns>
+        /// <returns>Neb Status</returns>
         int InputNote(int chan_hnd, int note_num, double volume);
 
         /// <summary>Called when input arrives.</summary>
         /// <param name="chan_hnd">Input channel handle</param>
         /// <param name="controller">Specific controller id 0 => 127</param>
         /// <param name="value">Payload 0 => 127</param>
-        /// <returns>Standard status</returns>
+        /// <returns>Neb Status</returns>
         int InputController(int chan_hnd, int controller, int value);
 #pragma endregion
 

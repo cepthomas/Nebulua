@@ -20,6 +20,7 @@ namespace Nebulua
         public const int NEB_ERR_MIDI_TX       =  15;
         public const int NEB_ERR_MIDI_RX       =  16;
         public const int NEB_ERR_API           =  17;
+        public const int NEB_ERR_RUN           =  18;
 
         /// Only 4/4 time supported.
         public const int BEATS_PER_BAR = 4;
