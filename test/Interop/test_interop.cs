@@ -16,45 +16,24 @@ namespace Nebulua.Test
             int stat = _api.Init();
             UT_EQUAL(stat, Defs.NEB_OK);
 
-            InteropHelper hlp = new(_api);
+            TestHelper hlp = new(_api);
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
 
             // Load the script.
-            string fn = @"C:\Dev\repos\Lua\Nebulua\test\script_happy.lua";
-
-            stat = _api.OpenScript(fn);
+            stat = _api.OpenScript(TestHelper.fn);
             UT_EQUAL(stat, Defs.NEB_OK);
+
+            // Have a look inside.
             UT_EQUAL(hlp.CollectedEvents.Count, 4);
+            foreach (var kv in hlp.CollectedEvents)
+            {
 
-            var info = _api.SectionInfo;
-            UT_EQUAL(info.Count, 4);
-// const char* sect_name = scriptinfo_GetSectionName(0);
-// int sect_start = scriptinfo_GetSectionStart(0);
-// UT_NOT_NULL(sect_name);
-// UT_STR_EQUAL(sect_name, "beginning");
-// UT_EQUAL(sect_start, 0);
 
-// sect_name = scriptinfo_GetSectionName(1);
-// sect_start = scriptinfo_GetSectionStart(1);
-
-// UT_NOT_NULL(sect_name);
-// UT_STR_EQUAL(sect_name, "middle");
-// UT_EQUAL(sect_start, 646);
-
-// sect_name = scriptinfo_GetSectionName(2);
-// sect_start = scriptinfo_GetSectionStart(2);
-// UT_NOT_NULL(sect_name);
-// UT_STR_EQUAL(sect_name, "ending");
-// UT_EQUAL(sect_start, 2118);
-
-// sect_name = scriptinfo_GetSectionName(3);
-// sect_start = scriptinfo_GetSectionStart(3);
-// UT_NULL(sect_name);
-// UT_EQUAL(sect_start, -1);
+            }
 
             var err = _api.Error;
-            UT_NUL(err);
+            UT_NULL(err);
 
             hlp.CollectedEvents.Clear();
             for (int i = 0; i < 99; i++)
@@ -64,13 +43,13 @@ namespace Nebulua.Test
                 if (i % 20 == 0)
                 {
                     stat = _api.InputNote(0x0102, i, (double)i / 100);
-                    UT_EQUAL(stat, NEB_OK);
+                    UT_EQUAL(stat, Defs.NEB_OK);
                 }
 
                 if (i % 20 == 5)
                 {
                     stat = _api.InputController(0x0102, i, i);
-                    UT_EQUAL(stat, NEB_OK);
+                    UT_EQUAL(stat, Defs.NEB_OK);
                 }
             }
             stat = _api.Step(State.Instance.CurrentTick);
@@ -91,16 +70,18 @@ namespace Nebulua.Test
     }
 
 
-    public class InteropHelper
+    public class TestHelper
     {
-        List<string> CollectedEvents { get; set; } = new();
+        public const string fn = @"C:\Dev\repos\Lua\Nebulua\test\script_happy.lua";
 
-        Interop.Api _api = new();
+        public List<string> CollectedEvents { get; set; }
 
-        public void Init(Interop.Api api)
+        Interop.Api _api;
+
+        public TestHelper(Interop.Api api)
         {
             _api = api;
-            CollectedEvents.Clear();
+            CollectedEvents = new();
 
             // Hook script events.
             _api.CreateChannelEvent += Api_CreateChannelEvent;
@@ -131,182 +112,137 @@ namespace Nebulua.Test
     }
 
 
-    public class INTEROP_XXX1 : TestSuite //UT_SUITE(EXEC_ERR1, "Test basic failure modes.")
+    // Test basic failure modes.
+    public class INTEROP_FAIL_1 : TestSuite
     {
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-            string fn = @"temp_script.lua";
 
-            var _api = new Interop.Api();
-            int stat = _api.Init();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            // General syntax error during load.
+            {
+                var _api = new Interop.Api();
+                int stat = _api.Init();
+                UT_EQUAL(stat, Defs.NEB_OK);
 
+                File.WriteAllText(TestHelper.fn,
+                    @"local neb = require(""nebulua"")\n
+                    this is a bad statement");
+                stat = _api.OpenScript(TestHelper.fn);
+                UT_EQUAL(stat, Defs.NEB_ERR_SYNTAX);
+                var e = _api.Error;
+                UT_NOT_NULL(e);
+                UT_TRUE(e.Contains("syntax error near 'is'"));
+            }
 
+            // General syntax error - lua_pcall()
+            {
+                var _api = new Interop.Api();
+                int stat = _api.Init();
+                UT_EQUAL(stat, Defs.NEB_OK);
 
+                File.WriteAllText(TestHelper.fn,
+                    @"local neb = require(""nebulua"")\n
+                    res1 = 345 + nil_value");
+                stat = _api.OpenScript(TestHelper.fn);
+                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                string e = _api.Error;
+                UT_NOT_NULL(e);
+                UT_TRUE(e.Contains("attempt to perform arithmetic on a nil value"));
+            }
 
-            // Load the script.
+            // Missing required C2L api element - luainterop_Setup(_ltest, &iret);
+            {
+                var _api = new Interop.Api();
+                int stat = _api.Init();
+                UT_EQUAL(stat, Defs.NEB_OK);
 
-            stat = _api.OpenScript(fn);
-            UT_EQUAL(stat, Defs.NEB_OK);
-            UT_EQUAL(hlp.CollectedEvents.Count, 4);
+                File.WriteAllText(TestHelper.fn,
+                    @"local neb = require(""nebulua"")\n
+                    resx = 345 + 456");
+                stat = _api.OpenScript(TestHelper.fn);
+                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                string e = _api.Error;
+                UT_NOT_NULL(e);
+                UT_TRUE(e.Contains("INTEROP_BAD_FUNC_NAME"));
+            }
 
+            // Bad L2C api function
+            {
+                var _api = new Interop.Api();
+                int stat = _api.Init();
+                UT_EQUAL(stat, Defs.NEB_OK);
 
-
-            /// General syntax error during load.
-            File.WriteAllText(fn,
-                "local neb = require(\"nebulua\")\n"
-                "this is a bad statement\n");
-            stat = _api.OpenScript(fn);
-            UT_EQUAL(stat, LUA_ERRSYNTAX);
-            const char* e = nebcommon_EvalStatus(_ltest, stat, "ERR1");
-            UT_STR_CONTAINS(e, "syntax error near 'is'");
-
-
-
-            ///// General syntax error - lua_pcall(_ltest, 0, LUA_MULTRET, 0);
-            s1 =
-                "local neb = require(\"nebulua\")\n"
-                "res1 = 345 + nil_value\n";
-            stat = luaL_loadstring(_ltest, s1);
-            UT_EQUAL(stat, LUA_OK);
-            stat = lua_pcall(_ltest, 0, LUA_MULTRET, 0);
-            UT_EQUAL(stat, LUA_ERRRUN); // runtime error
-            e = nebcommon_EvalStatus(_ltest, stat, "ERR2");
-            UT_STR_CONTAINS(e, "attempt to perform arithmetic on a nil value");
-
-
-
-
-            ///// Missing required C2L api element - luainterop_Setup(_ltest, &iret);
-            s1 =
-                "local neb = require(\"nebulua\")\n"
-                "resx = 345 + 456\n";
-            stat = luaL_loadstring(_ltest, s1);
-            UT_EQUAL(stat, LUA_OK);
-            stat = lua_pcall(_ltest, 0, LUA_MULTRET, 0);
-            UT_EQUAL(stat, LUA_OK);
-            stat = luainterop_Setup(_ltest, &iret);
-            UT_EQUAL(stat, INTEROP_BAD_FUNC_NAME);
-            e = nebcommon_EvalStatus(_ltest, stat, "ERR3");
-            UT_STR_CONTAINS(e, "INTEROP_BAD_FUNC_NAME");
-
-
-            ///// Bad L2C api function
-            s1 =
-                "local neb = require(\"nebulua\")\n"
-                "function setup()\n"
-                "    neb.no_good(95)\n"
-                "    return 0\n"
-                "end\n";
-            stat = luaL_loadstring(_ltest, s1);
-            UT_EQUAL(stat, LUA_OK);
-            stat = lua_pcall(_ltest, 0, LUA_MULTRET, 0);
-            UT_EQUAL(stat, LUA_OK);
-            stat = luainterop_Setup(_ltest, &iret);
-            UT_EQUAL(stat, LUA_ERRRUN);
-            e = nebcommon_EvalStatus(_ltest, stat, "ERR4");
-            UT_STR_CONTAINS(e, "attempt to call a nil value (field 'no_good')");
-
+                File.WriteAllText(TestHelper.fn,
+                    @"local neb = require(""nebulua"")\n
+                    function setup()\n
+                        neb.no_good(95)\n
+                        return 0\n
+                    end");
+                stat = _api.OpenScript(TestHelper.fn);
+                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                string e = _api.Error;
+                UT_NOT_NULL(e);
+                UT_TRUE(e.Contains("attempt to call a nil value (field 'no_good')"));
+            }
         }
     }
-}
 
-
-    public class INTEROP_XXX2 : TestSuite //UT_SUITE(EXEC_ERR2, "Test error() failure modes.")
+    // Test fatal error() failure modes.
+    public class INTEROP_FAIL_2 : TestSuite
     {
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-            var _api = new Interop.Api();
-            int stat = _api.Init();
-            UT_EQUAL(stat, Defs.NEB_OK);
 
-            InteropHelper hlp = new(_api);
+            // General explicit error.
+            {
+                var _api = new Interop.Api();
+                int stat = _api.Init();
+                UT_EQUAL(stat, Defs.NEB_OK);
 
-            State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
-
-            // Load the script.
-            string fn = @"C:\Dev\repos\Lua\Nebulua\test\script_happy.lua";
-
-            stat = _api.OpenScript(fn);
-            UT_EQUAL(stat, Defs.NEB_OK);
-            UT_EQUAL(hlp.CollectedEvents.Count, 4);
-
+                File.WriteAllText(TestHelper.fn,
+                    @"local neb = require(""nebulua"")\n
+                    function setup()\n
+                        error(""setup() raises error()"")\n
+                        return 0\n
+                    end");
+                stat = _api.OpenScript(TestHelper.fn);
+                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                string e = _api.Error;
+                UT_NOT_NULL(e);
+                UT_TRUE(e.Contains("setup() raises error()"));
+            }
         }
     }
-    // // Load lua.
-    // lua_State* _ltest = luaL_newstate();
-    // luaL_openlibs(_ltest);
-    // luainterop_Load(_ltest);
-    // lua_pop(_ltest, 1);
 
-    // ///// General explicit error.
-    // const char* s1 =
-    //     "local neb = require(\"nebulua\")\n"
-    //     "function setup()\n"
-    //     "    error(\"setup() raises error()\")\n"
-    //     "    return 0\n"
-    //     "end\n";
-    // stat = luaL_loadstring(_ltest, s1);
-    // UT_EQUAL(stat, LUA_OK);
-    // stat = lua_pcall(_ltest, 0, LUA_MULTRET, 0);
-    // UT_EQUAL(stat, LUA_OK);
-    // stat = luainterop_Setup(_ltest, &iret);
-    // UT_EQUAL(stat, LUA_ERRRUN);
-    // const char* e = nebcommon_EvalStatus(_ltest, stat, "ERR5");
-    // UT_STR_CONTAINS(e, "setup() raises error()");
-
-    // lua_close(_ltest);
-
-
-
-    public class INTEROP_XXX3 : TestSuite //UT_SUITE(EXEC_ERR3, "Test fatal internal failure modes.")
+    // Test fatal internal failure modes.
+    public class INTEROP_FAIL_3 : TestSuite
     {
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-            var _api = new Interop.Api();
-            int stat = _api.Init();
-            UT_EQUAL(stat, Defs.NEB_OK);
 
-            InteropHelper hlp = new(_api);
+            // Runtime error.
+            {
+                var _api = new Interop.Api();
+                int stat = _api.Init();
+                UT_EQUAL(stat, Defs.NEB_OK);
 
-            State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
-
-            // Load the script.
-            string fn = @"C:\Dev\repos\Lua\Nebulua\test\script_happy.lua";
-
-            stat = _api.OpenScript(fn);
-            UT_EQUAL(stat, Defs.NEB_OK);
-            UT_EQUAL(hlp.CollectedEvents.Count, 4);
-
+                File.WriteAllText(TestHelper.fn,
+                    @"local neb = require(""nebulua"")\n
+                    function setup()\n
+                        local bad = 123 + ng\n
+                        return 0\n
+                    end");
+                stat = _api.OpenScript(TestHelper.fn);
+                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                string e = _api.Error;
+                UT_NOT_NULL(e);
+                UT_TRUE(e.Contains("attempt to perform arithmetic on a nil value (global 'ng')"));
+            }
         }
     }
-    // // Load lua.
-    // lua_State* _ltest = luaL_newstate();
-    // luaL_openlibs(_ltest);
-    // luainterop_Load(_ltest);
-    // lua_pop(_ltest, 1);
-
-    // ///// Runtime error.
-    // const char* s1 =
-    //     "local neb = require(\"nebulua\")\n"
-    //     "function setup()\n" 
-    //     "    local bad = 123 + ng\n"
-    //     "    return 0\n"
-    //     "end\n";
-    //  stat = luaL_loadstring(_ltest, s1);
-    // UT_EQUAL(stat, LUA_OK);
-    // stat = lua_pcall(_ltest, 0, LUA_MULTRET, 0);
-    // UT_EQUAL(stat, LUA_OK);
-    // stat = luainterop_Setup(_ltest, &iret);
-    // UT_EQUAL(stat, LUA_ERRRUN);
-    // const char* e = nebcommon_EvalStatus(_ltest, stat, "ERR6");
-    // UT_STR_CONTAINS(e, "attempt to perform arithmetic on a nil value (global 'ng')");
-
-    // lua_close(_ltest);
-
 
 
     static class Program
