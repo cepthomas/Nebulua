@@ -64,7 +64,7 @@ function M.suite_parse_chunk(pn)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Bad syntax.
-    dbg()
+--    dbg()
     seq_length, steps = neb.parse_chunk( { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 67 }, 93, 678 )
     -- print('+++', ut.dump_table_string(steps, true, 'steps5'))
     pn.UT_EQUAL(seq_length, 0)

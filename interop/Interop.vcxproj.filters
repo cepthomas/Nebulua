@@ -8,10 +8,10 @@
   <ItemGroup>
     <ClCompile Include="Api.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
+    <ClCompile Include="$(LBOT)\source_code\luaex.c" />
     <ClCompile Include="luainterop.c" />
     <ClCompile Include="luainteropwork.cpp" />
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
+    <ClCompile Include="$(LBOT)\source_code\luautils.c" />
     <ClCompile Include="nebcommon.cpp" />
   </ItemGroup>
 </Project>

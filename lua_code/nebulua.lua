@@ -10,9 +10,9 @@ local md = require("midi_defs")
 local mu = require("music_defs")
 local com = require('neb_common')
 
--- TODO2 bulletproof this.
+-- TODO3 bulletproof this.
 
--- TODO2 If you're only using it within a single block, you be even better off performance-wise by simply making it a local 
+-- TODO3 If you're only using it within a single block, you be even better off performance-wise by simply making it a local 
 -- function instead (saves the overhead of a global lookup for each call). I quite often import table.insert and table.remove into 
 -- the local namespace if I'm using them frequently, often as something like tinsert() and tremove()
 -- also? table.removekey() would my best choice, too)
@@ -63,7 +63,7 @@ function _mole() return _steps, _transients end
 ----- Script api
 -----------------------------------------------------------------------------
 
--- Log functions. Magic numbers from host C code. TODO2 could use a lua log?
+-- Log functions. Magic numbers from host C code. TODO3 could use a lua log?
 function M.log_error(msg) api.log(4, msg) end
 function M.log_info(msg)  api.log(3, msg) end
 function M.log_debug(msg) api.log(2, msg) end

@@ -83,7 +83,7 @@ namespace Nebulua
             {
                 if (disposing)
                 {
-                    // TODO3: dispose managed state (managed objects)
+                    // Template said: dispose managed state (managed objects)
                     _mmTimer.Stop();
                     _mmTimer.Dispose();
 
@@ -96,14 +96,14 @@ namespace Nebulua
                     _outputs.Clear();
                 }
 
-                // TODO3: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO3: set large fields to null
+                // Template said: free unmanaged resources (unmanaged objects) and override finalizer
+                // Template said: set large fields to null
                 _disposed = true;
             }
         }
 
         /// <summary>
-        /// TODO3: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        /// Template said: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         /// </summary>
         ~App()
         {

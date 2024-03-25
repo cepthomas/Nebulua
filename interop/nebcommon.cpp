@@ -14,7 +14,7 @@ void ToCString(String^ input, char* output, int len)
     for (; *ppchar != L'\0' && i < len - 1; ++ppchar, i++)
     {
         int c = wctob(*ppchar);
-        output[i] = c != -1 ? (char)c : '?'; //TODO2 handle error?
+        output[i] = c != -1 ? (char)c : '?'; //TODO2 handle error
     }
     output[i] = 0; // terminate
 }
