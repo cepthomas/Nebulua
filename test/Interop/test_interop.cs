@@ -21,14 +21,14 @@ namespace Nebulua.Test
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
 
             // Load the script.
-            stat = _api.OpenScript(TestHelper.fn);
+            stat = _api.OpenScript(TestHelper.SCRIPT_FN);
             UT_EQUAL(stat, Defs.NEB_OK);
+            UT_NULL(_api.Error);
 
             // Have a look inside.
             UT_EQUAL(hlp.CollectedEvents.Count, 4);
             foreach (var kv in hlp.CollectedEvents)
             {
-
 
             }
 
@@ -72,7 +72,8 @@ namespace Nebulua.Test
 
     public class TestHelper
     {
-        public const string fn = @"C:\Dev\repos\Lua\Nebulua\test\script_happy.lua";
+        public const string SCRIPT_FN = @"C:\Dev\repos\Lua\Nebulua\test\script_happy.lua";
+        public const string TEMP_FN = @"C:\Dev\repos\Lua\Nebulua\test\temp.lua";
 
         public List<string> CollectedEvents { get; set; }
 
@@ -125,10 +126,10 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.fn,
+                File.WriteAllText(TestHelper.TEMP_FN,
                     @"local neb = require(""nebulua"")\n
                     this is a bad statement");
-                stat = _api.OpenScript(TestHelper.fn);
+                stat = _api.OpenScript(TestHelper.TEMP_FN);
                 UT_EQUAL(stat, Defs.NEB_ERR_SYNTAX);
                 var e = _api.Error;
                 UT_NOT_NULL(e);
@@ -141,10 +142,10 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.fn,
+                File.WriteAllText(TestHelper.TEMP_FN,
                     @"local neb = require(""nebulua"")\n
                     res1 = 345 + nil_value");
-                stat = _api.OpenScript(TestHelper.fn);
+                stat = _api.OpenScript(TestHelper.TEMP_FN);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -157,10 +158,10 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.fn,
+                File.WriteAllText(TestHelper.TEMP_FN,
                     @"local neb = require(""nebulua"")\n
                     resx = 345 + 456");
-                stat = _api.OpenScript(TestHelper.fn);
+                stat = _api.OpenScript(TestHelper.TEMP_FN);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -173,13 +174,13 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.fn,
+                File.WriteAllText(TestHelper.TEMP_FN,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         neb.no_good(95)\n
                         return 0\n
                     end");
-                stat = _api.OpenScript(TestHelper.fn);
+                stat = _api.OpenScript(TestHelper.TEMP_FN);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -201,13 +202,13 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.fn,
+                File.WriteAllText(TestHelper.TEMP_FN,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         error(""setup() raises error()"")\n
                         return 0\n
                     end");
-                stat = _api.OpenScript(TestHelper.fn);
+                stat = _api.OpenScript(TestHelper.TEMP_FN);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -229,13 +230,13 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.fn,
+                File.WriteAllText(TestHelper.TEMP_FN,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         local bad = 123 + ng\n
                         return 0\n
                     end");
-                stat = _api.OpenScript(TestHelper.fn);
+                stat = _api.OpenScript(TestHelper.TEMP_FN);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);

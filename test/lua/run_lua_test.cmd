@@ -1,8 +1,10 @@
 
 echo off
 
-:: Run lua tests. test_defs.lua  test_nebulua.lua  test_bar_time.lua
+if "%LBOT%"=="" (echo Fail: requires env var LBOT set to LuaBagOfTricks & exit 1)
 
-set LUA_PATH=;;C:\Dev\repos\Lua\Nebulua\lua_code\?.lua;C:\Dev\repos\Lua\Nebulua\test\?.lua;C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;
+:: Run lua tests. test_defs.lua  test_nebulua.lua  test_bar_time.lua TODO1 test
 
-lua C:\Dev\repos\Lua\LuaBagOfTricks\pnut_runner.lua  test_defs.lua  test_nebulua.lua  test_bar_time.lua
+set LUA_PATH=;;%~dp0\..\..\lua_code\?.lua;%~dp0\..\?.lua;%LBOT%\?.lua;
+
+lua %LBOT%\pnut_runner.lua  test_defs.lua  test_nebulua.lua  test_bar_time.lua
