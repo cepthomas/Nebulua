@@ -66,10 +66,13 @@ int Interop::Api::OpenScript(String^ fn)
     EnterCriticalSection(&_critsect);
 
     char fnx[MAX_PATH];
-    ToCString(fn, fnx, MAX_PATH);
+    if (!ToCString(fn, fnx, MAX_PATH))
+    {
+        Error = gcnew String("Bad script file name.");
+        stat = NEB_ERR_API;
+    }
 
     ///// Load the script /////
-
     if (stat == NEB_OK)
     {
         // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.

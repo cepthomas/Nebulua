@@ -24,11 +24,16 @@ namespace Interop
         public int Ret;       // handler return value
     };
 
-    public class MiscInternalEventArgs : EventArgs
+    public class LogEventArgs : EventArgs
     {
         public int LogLevel;
-        public int Bpm;
         public string? Msg;
+        public int Ret;       // handler return value
+    };
+
+    public class ScriptEventArgs : EventArgs
+    {
+        public int Bpm;
         public int Ret;       // handler return value
     };
     #endregion
@@ -99,8 +104,11 @@ namespace Interop
         public event EventHandler<SendEventArgs>? SendEvent;
         public void NotifySend(SendEventArgs args) { SendEvent?.Invoke(this, args); }
 
-        public event EventHandler<MiscInternalEventArgs>? MiscInternalEvent;
-        public void NotifyMiscInternal(MiscInternalEventArgs args) { MiscInternalEvent?.Invoke(this, args); }
+        public event EventHandler<LogEventArgs>? LogEvent;
+        public void NotifyLogEvent(LogEventArgs args) { LogEvent?.Invoke(this, args); }
+
+        public event EventHandler<ScriptEventArgs>? ScriptEvent;
+        public void NotifyScriptEvent(ScriptEventArgs args) { ScriptEvent?.Invoke(this, args); }
         #endregion
     };
 }

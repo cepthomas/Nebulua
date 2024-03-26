@@ -37,13 +37,14 @@
 /// <param name="input"></param>
 /// <param name="output"></param>
 /// <param name="len"></param>
-void ToCString(System::String^ input, char* output, int len);
+/// <returns>True if successful.</returns>
+bool ToCString(System::String^ input, char* output, int len);
 
 /// <summary>
 /// 
 /// </summary>
 /// <param name="input"></param>
-/// <returns></returns>
+/// <returns>Converted string.</returns>
 System::String^ ToCliString(const char* input);
 
 /// Checks stat and returns an error message if it failed.

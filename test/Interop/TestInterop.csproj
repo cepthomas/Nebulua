@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="MockCli.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\State.cs" Link="State.cs" />
   </ItemGroup>

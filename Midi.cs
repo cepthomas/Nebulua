@@ -27,9 +27,6 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-        /// <summary>Are we ok?</summary>
-        public bool Valid { get { return _midiOut is not null; } }
-
         /// <summary>True if registered by script, 0-based.</summary>
         public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
 
@@ -56,6 +53,11 @@ namespace Nebulua
                     _midiOut = new MidiOut(i);
                     break;
                 }
+            }
+
+            if (_midiOut is null)
+            {
+                throw new ArgumentException($"Invalid output device name: {deviceName}");
             }
         }
 
@@ -104,9 +106,6 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-        /// <summary>Are we ok?</summary>
-        public bool Valid { get { return _midiIn is not null; } }
-
         /// <summary>True if registered by script, 0-based.</summary>
         public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
 
@@ -147,6 +146,11 @@ namespace Nebulua
                     break;
                 }
             }
+
+            if (_midiIn is null)
+            {
+                throw new ArgumentException($"Invalid input device name: {deviceName}");
+            }
         }
 
         /// <summary>
@@ -177,11 +181,10 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Process error midi event - Parameter 1 is invalid.
+        /// Process error midi event - Parameter 1 is invalid. Do I care? FUTURE
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
-            // TODO3
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
             // _logger.Trace(ErrorInfo);
         }

@@ -7,6 +7,7 @@ using Ephemera.NBagOfTricks.PNUT;
 
 namespace Nebulua.Test
 {
+    /// <summary>Odds and ends that have no other home.</summary>
     public class MISC_COMMON : TestSuite
     {
         public override void RunSuite()
@@ -34,6 +35,7 @@ namespace Nebulua.Test
         }
     }
 
+    /// <summary>Test entry.</summary>
     static class Program
     {
         [STAThread]

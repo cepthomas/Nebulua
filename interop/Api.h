@@ -28,11 +28,17 @@ namespace Interop
         property int Ret;       // handler return value
     };
 
-    public ref class MiscInternalEventArgs : public EventArgs // TODO2 klunky name. make into separate events?
+    public ref class ScriptEventArgs : public EventArgs
+    {
+    public:
+        property int Bpm;
+        property int Ret;       // handler return value
+    };
+
+    public ref class LogEventArgs : public EventArgs
     {
     public:
         property int LogLevel;
-        property int Bpm;
         property String^ Msg;
         property int Ret;       // handler return value
     };
@@ -108,13 +114,16 @@ namespace Interop
 #pragma region Events
     public:
         event EventHandler<CreateChannelEventArgs^>^ CreateChannelEvent;
-        void NotifyCreateChannel(CreateChannelEventArgs^ args) { CreateChannelEvent(this, args); }
+        void NotifyCreateChannelEvent(CreateChannelEventArgs^ args) { CreateChannelEvent(this, args); }
 
         event EventHandler<SendEventArgs^>^ SendEvent;
-        void NotifySend(SendEventArgs^ args) { SendEvent(this, args); }
+        void NotifySendEvent(SendEventArgs^ args) { SendEvent(this, args); }
 
-        event EventHandler<MiscInternalEventArgs^>^ MiscInternalEvent;
-        void NotifyMiscInternal(MiscInternalEventArgs^ args) { MiscInternalEvent(this, args); }
+        event EventHandler<LogEventArgs^>^ LogEvent;
+        void NotifyLogEvent(LogEventArgs^ args) { LogEvent(this, args); }
+
+        event EventHandler<ScriptEventArgs^>^ ScriptEvent;
+        void NotifyScriptEvent(ScriptEventArgs^ args) { ScriptEvent(this, args); }
 #pragma endregion
     };
 }

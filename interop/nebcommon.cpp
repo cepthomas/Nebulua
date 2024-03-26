@@ -5,18 +5,29 @@
 using namespace System;
 
 //--------------------------------------------------------//
-void ToCString(String^ input, char* output, int len)
+bool ToCString(String^ input, char* output, int len)
 {
+    bool ok = true;
     // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
     // not: const char* str4 = context->marshal_as<const char*>(input);
     interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
     int i = 0;
-    for (; *ppchar != L'\0' && i < len - 1; ++ppchar, i++)
+    for (; *ppchar != L'\0' && i < len - 1 && ok; ++ppchar, i++)
     {
         int c = wctob(*ppchar);
-        output[i] = c != -1 ? (char)c : '?'; //TODO2 handle error
+        if (c != -1)
+        {
+            output[i] = c;
+
+        }
+        else
+        {
+            ok = false;
+            output[i] = '?';
+        }
     }
     output[i] = 0; // terminate
+    return ok;
 }
 
 //--------------------------------------------------------//

@@ -68,7 +68,8 @@ namespace Nebulua
             // Hook script events.
             _api.CreateChannelEvent += Api_CreateChannelEvent;
             _api.SendEvent += Api_SendEvent;
-            _api.MiscInternalEvent += Api_MiscInternalEvent;
+            _api.LogEvent += Api_LogEvent;
+            _api.ScriptEvent += Api_ScriptEvent;
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
         }
@@ -122,40 +123,6 @@ namespace Nebulua
         }
         #endregion
 
-        /// <summary>
-        /// Handler for state changes. Some may originate in this component, others from elsewhere.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void State_PropertyChangeEvent(object? sender, string name)
-        {
-            switch (name)
-            {
-                case "CurrentTick":
-                    if (sender != this) {}
-                    break;
-
-                case "Tempo":
-                    SetTimer(State.Instance.Tempo);
-                    break;
-
-                case "ScriptState":
-                    switch (State.Instance.ExecState)
-                    {
-                        case ExecState.Idle:
-                        case ExecState.Run:
-                        case ExecState.Exit:
-                            break;
-
-                        case ExecState.Kill:
-                            KillAll();
-                            State.Instance.ExecState = ExecState.Idle;
-                            break;
-                    }
-                    break;
-            }
-        }
-
         #region Primary workers
         /// <summary>
         /// Load and execute script.
@@ -201,6 +168,40 @@ namespace Nebulua
         }
 
         /// <summary>
+        /// Handler for state changes. Some may originate in this component, others from elsewhere.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void State_PropertyChangeEvent(object? sender, string name)
+        {
+            switch (name)
+            {
+                case "CurrentTick":
+                    if (sender != this) {}
+                    break;
+
+                case "Tempo":
+                    SetTimer(State.Instance.Tempo);
+                    break;
+
+                case "ScriptState":
+                    switch (State.Instance.ExecState)
+                    {
+                        case ExecState.Idle:
+                        case ExecState.Run:
+                        case ExecState.Exit:
+                            break;
+
+                        case ExecState.Kill:
+                            KillAll();
+                            State.Instance.ExecState = ExecState.Idle;
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Process events -- this is in an interrupt handler!
         /// </summary>
         /// <param name="totalElapsed"></param>
@@ -209,7 +210,7 @@ namespace Nebulua
         {
             if (State.Instance.ExecState == ExecState.Run)
             {
-                // Do script. TODO3 Handle solo/mute like nebulator.
+                // Do script. TODO2 Handle solo/mute like nebulator.
                 _tan?.Arm();
 
                 int stat = _api.Step(State.Instance.CurrentTick);
@@ -333,23 +334,21 @@ namespace Nebulua
         {
             e.Ret = 0; // default means invalid chan_hnd
 
-            if (e.DevName is not null && e.DevName.Length != 0 && e.ChanNum >= 1 && e.ChanNum <= Defs.NUM_MIDI_CHANNELS)
+            try
             {
-                if (e.IsOutput) // TODO2 switch?
+                // Check args.
+                if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > Defs.NUM_MIDI_CHANNELS)
+                {
+                    throw new ArgumentException($"Script has invalid input midi device: {e.DevName}");
+                }
+
+                if (e.IsOutput)
                 {
                     var output = _outputs.FirstOrDefault(o => o.DeviceName == e.DevName);
                     if (output == null)
                     {
-                        output = new(e.DevName);
-                        if (output.Valid)
-                        {
-                            _outputs.Add(output);
-                        }
-                        else
-                        {
-                            _logger.Error($"Script has invalid output midi device: {e.DevName}");
-                            return; //*** early return
-                        }
+                        output = new(e.DevName); //throws
+                        _outputs.Add(output);
                     }
 
                     output.LogEnable = State.Instance.MonOutput;
@@ -365,17 +364,9 @@ namespace Nebulua
                     var input = _inputs.FirstOrDefault(o => o.DeviceName == e.DevName);
                     if (input == null)
                     {
-                        input = new(e.DevName);
+                        input = new(e.DevName); // throws
                         input.InputReceiveEvent += Midi_InputReceiveEvent;
-                        if (input.Valid)
-                        {
-                            _inputs.Add(input);
-                        }
-                        else
-                        {
-                            _logger.Error($"Script has invalid input midi device: {e.DevName}");
-                            return; //*** early return
-                        }
+                        _inputs.Add(input);
                     }
 
                     input.LogEnable = State.Instance.MonInput;
@@ -383,10 +374,10 @@ namespace Nebulua
                     e.Ret = Utils.MakeInHandle(_inputs.Count - 1, e.ChanNum);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.Error($"Script has invalid input midi device: {e.DevName}");
-                return; //*** early return
+                e.Ret = 0;
+                _logger.Error(ex.Message);
             }
         }
 
@@ -397,50 +388,56 @@ namespace Nebulua
         /// <param name="e"></param>
         void Api_SendEvent(object? sender, Interop.SendEventArgs e)
         {
-            // Dig out the device.
-            var (index, chan_num) = Utils.DeconstructHandle(e.ChanHnd);
+            e.Ret = 0; // default means fail
 
-            if (index < _outputs.Count)
+            try
             {
+                // Check args.
+                var (index, chan_num) = Utils.DeconstructHandle(e.ChanHnd);
+                if (index >= _outputs.Count || chan_num < 1 || chan_num > Defs.NUM_MIDI_CHANNELS ||
+                    !_outputs[index].Channels[chan_num - 1])
+                {
+                    throw new ArgumentException($"Script has invalid channel: {e.ChanHnd}");
+                }
+                if (e.What < 0 || e.What >= Defs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= Defs.MIDI_VAL_MAX)
+                {
+                    throw new ArgumentException($"Script has invalid payload: {e.What} {e.Value}");
+                }
+
                 var output = _outputs[index];
 
-                if (output.Channels[chan_num - 1])
+                if (e.IsNote)
                 {
-                    if (e.IsNote) // TODO2 switch?
-                    {
-                        if (e.Value == 0)
-                        {
-                            var noff = new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0);
-                            output.SendEvent(noff);
-                        }
-                        else
-                        {
-                            var non = new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value);
-                            output.SendEvent(non);
-                        }
-                    }
-                    else
-                    {
-                        var ctlr = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
-                        output.SendEvent(ctlr);
-                    }
+                    output.SendEvent(e.Value == 0 ?
+                        new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
+                        new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value));
                 }
                 else
                 {
-                    _logger.Error($"Script has invalid output midi device for channel: {e.ChanHnd}");
-                    return; //*** early return
+                    output.SendEvent(new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value));
+                }
+                
+                if (State.Instance.MonOutput)
+                {
+                    _logger.Trace($"MIDI_OUT {e}");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.Error($"Script has invalid channel: {e.ChanHnd}");
-                return; //*** early return
+                e.Ret = 0;
+                _logger.Error(ex.Message);
             }
 
-            if (State.Instance.MonOutput)
-            {
-                _logger.Trace($"MIDI_OUT {e}");
-            }
+        }
+
+        /// <summary>
+        /// Log something from script.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Api_LogEvent(object? sender, Interop.LogEventArgs e)
+        {
+            _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
         }
 
         /// <summary>
@@ -448,7 +445,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Api_MiscInternalEvent(object? sender, Interop.MiscInternalEventArgs e)
+        void Api_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
         {
             if (e.Bpm > 0)
             {
@@ -465,7 +462,7 @@ namespace Nebulua
             }
             else
             {
-                _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
+                SetTimer(0);
             }
         }
         #endregion

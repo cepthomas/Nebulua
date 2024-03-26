@@ -8,7 +8,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua.Test
 {
-    // Test the simpler cli functions.
+    /// <summary>Test the simpler cli functions.</summary>
     public class CLI_BASIC : TestSuite
     {
         public override void RunSuite()
@@ -161,7 +161,7 @@ namespace Nebulua.Test
     }
 
 
-    // Test cli functions that require a loaded script.
+    /// <summary>Test cli functions that require a loaded script.</summary>
     public class CLI_CONTEXT : TestSuite
     {
         public override void RunSuite()
@@ -180,7 +180,7 @@ namespace Nebulua.Test
 
             //app.Run("script_happy.lua");
 
-            ///// Position commands.
+            ///// Position commands. TODO1 fix these.
             cliOut.Clear();
             cliIn.NextLine = "position";
             stat = cli.Read();
@@ -232,6 +232,7 @@ namespace Nebulua.Test
         }
     }    
 
+    /// <summary>Test entry.</summary>
     static class Program
     {
         [STAThread]
