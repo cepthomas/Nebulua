@@ -39,7 +39,7 @@ namespace Interop
     #endregion
 
 
-    public class Api
+    public class Api // TODO1 rename all to Interop.
     {
         /// <summary>If a function failed this contains info.</summary>
         public string Error = "";

@@ -19,6 +19,7 @@
 #define NEB_ERR_MIDI_RX         16
 #define NEB_ERR_API             17
 #define NEB_ERR_RUN             18
+#define NEB_ERR_FILE            19
 
 
 //----------------------- Midi -----------------------------//

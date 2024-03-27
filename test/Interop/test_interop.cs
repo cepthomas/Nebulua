@@ -18,17 +18,24 @@ namespace Nebulua.Test
             int stat = _api.Init();
             UT_EQUAL(stat, Defs.NEB_OK);
 
-            TestHelper hlp = new(_api);
+            //TestHelper events = new(_api);
+            InteropEventCollector events = new(_api);
+
+            //Nebulua.Test.
+
+            string scrfn = Path.Join(TestUtils.GetFilesDir(), "script_happy.lua");
+            string tempfn = Path.Join(TestUtils.GetFilesDir(), "temp.lua");
+
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
 
             // Load the script.
-            stat = _api.OpenScript(TestHelper.ScriptFn);
-            UT_EQUAL(stat, Defs.NEB_OK); // is 10=NEB_ERR_INTERNAL
+            stat = _api.OpenScript(scrfn);
+            UT_EQUAL(stat, Defs.NEB_OK);
             UT_NULL(_api.Error);
 
             // Have a look inside.
-            UT_EQUAL(hlp.CollectedEvents.Count, 4);
+            UT_EQUAL(events.CollectedEvents.Count, 4);
             foreach (var kv in _api.SectionInfo)// get sorted
             {
             }
@@ -37,7 +44,7 @@ namespace Nebulua.Test
             UT_NULL(err);
 
             // Run fake steps.
-            hlp.CollectedEvents.Clear();
+            events.CollectedEvents.Clear();
             for (int i = 0; i < 99; i++)
             {
                 stat = _api.Step(State.Instance.CurrentTick++);
@@ -55,7 +62,7 @@ namespace Nebulua.Test
                 }
             }
 
-            UT_EQUAL(hlp.CollectedEvents.Count, 4);
+            UT_EQUAL(events.CollectedEvents.Count, 4);
         }
 
         void State_PropertyChangeEvent(object? sender, string name)
@@ -78,16 +85,18 @@ namespace Nebulua.Test
         {
             UT_STOP_ON_FAIL(true);
 
+            string tempfn = Path.Join(TestUtils.GetFilesDir(), "temp.lua");
+
             // General syntax error during load.
             {
                 var _api = new Interop.Api();
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.TempFn,
+                File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     this is a bad statement");
-                stat = _api.OpenScript(TestHelper.TempFn);
+                stat = _api.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_ERR_SYNTAX); // is 10=NEB_ERR_INTERNAL
                 var e = _api.Error;
                 UT_NOT_NULL(e);
@@ -100,10 +109,10 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.TempFn,
+                File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     res1 = 345 + nil_value");
-                stat = _api.OpenScript(TestHelper.TempFn);
+                stat = _api.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -116,10 +125,10 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.TempFn,
+                File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     resx = 345 + 456");
-                stat = _api.OpenScript(TestHelper.TempFn);
+                stat = _api.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -132,13 +141,13 @@ namespace Nebulua.Test
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.TempFn,
+                File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         neb.no_good(95)\n
                         return 0\n
                     end");
-                stat = _api.OpenScript(TestHelper.TempFn);
+                stat = _api.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -154,19 +163,21 @@ namespace Nebulua.Test
         {
             UT_STOP_ON_FAIL(true);
 
+            string tempfn = Path.Join(TestUtils.GetFilesDir(), "temp.lua");
+
             // General explicit error.
             {
                 var _api = new Interop.Api();
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.TempFn,
+                File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         error(""setup() raises error()"")\n
                         return 0\n
                     end");
-                stat = _api.OpenScript(TestHelper.TempFn);
+                stat = _api.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error  // is 10=NEB_ERR_INTERNAL
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -182,19 +193,21 @@ namespace Nebulua.Test
         {
             UT_STOP_ON_FAIL(true);
 
+            string tempfn = Path.Join(TestUtils.GetFilesDir(), "temp.lua");
+
             // Runtime error.
             {
                 var _api = new Interop.Api();
                 int stat = _api.Init();
                 UT_EQUAL(stat, Defs.NEB_OK);
 
-                File.WriteAllText(TestHelper.TempFn,
+                File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         local bad = 123 + ng\n
                         return 0\n
                     end");
-                stat = _api.OpenScript(TestHelper.TempFn);
+                stat = _api.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error // is 10=NEB_ERR_INTERNAL
                 string e = _api.Error;
                 UT_NOT_NULL(e);
@@ -202,58 +215,6 @@ namespace Nebulua.Test
             }
         }
     }
-
-
-    /// <summary>Used to capture events from test target.</summary>
-    public class TestHelper
-    {
-        public static string ScriptFn { get { return Path.Join(MiscUtils.GetSourcePath(), "script_happy.lua"); } }
-        public static string TempFn { get { return Path.Join(MiscUtils.GetSourcePath(), "temp.lua"); } }
-        public List<string> CollectedEvents { get; set; }
-
-        Interop.Api _api;
-
-        public TestHelper(Interop.Api api)
-        {
-            _api = api;
-            CollectedEvents = new();
-
-            // Hook script events.
-            _api.CreateChannelEvent += Api_CreateChannelEvent;
-            _api.SendEvent += Api_SendEvent;
-            _api.LogEvent += Api_LogEvent;
-            _api.ScriptEvent += Api_ScriptEvent;
-        }
-
-        void Api_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
-        {
-            string s = $"CreateChannelEvent DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
-            CollectedEvents.Add(s);
-            e.Ret = 0x0102;
-        }
-
-        void Api_SendEvent(object? sender, Interop.SendEventArgs e)
-        {
-            string s = $"SendEvent ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
-            CollectedEvents.Add(s);
-            e.Ret = Defs.NEB_OK;
-        }
-
-        void Api_LogEvent(object? sender, Interop.LogEventArgs e)
-        {
-            string s = $"LogEvent LogLevel:{e.LogLevel} Msg:{e.Msg}";
-            CollectedEvents.Add(s);
-            e.Ret = Defs.NEB_OK;
-        }
-
-        void Api_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
-        {
-            string s = $"ScriptEvent Bpm:{e.Bpm}";
-            CollectedEvents.Add(s);
-            e.Ret = Defs.NEB_OK;
-        }
-    }
-
 
     /// <summary>Test entry.</summary>
     static class Program

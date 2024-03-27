@@ -22,6 +22,7 @@ static int MapStatus(int lua_status);
 
 
 #pragma region Lifecycle
+
 //--------------------------------------------------------//
 int Interop::Api::Init()
 {
@@ -57,10 +58,12 @@ Interop::Api::~Api()
 
 
 #pragma region Host calls lua script
+
 //--------------------------------------------------------//
 int Interop::Api::OpenScript(String^ fn)
 {
-    int stat = NEB_OK;
+    int nstat = NEB_OK;
+    int lstat = LUA_OK;
     int ret = 0;
 
     EnterCriticalSection(&_critsect);
@@ -69,45 +72,45 @@ int Interop::Api::OpenScript(String^ fn)
     if (!ToCString(fn, fnx, MAX_PATH))
     {
         Error = gcnew String("Bad script file name.");
-        stat = NEB_ERR_API;
+        nstat = NEB_ERR_API;
     }
 
     ///// Load the script /////
-    if (stat == NEB_OK)
+    if (nstat == NEB_OK)
     {
         // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
-        stat = luaL_loadfile(_l, fnx);
-        if (stat != NEB_OK)
+        lstat = luaL_loadfile(_l, fnx);
+        if (lstat != LUA_OK)
         {
-            Error = gcnew String(nebcommon_EvalStatus(_l, stat, "Load script file failed."));
-            stat = MapStatus(stat);
+            Error = gcnew String(nebcommon_EvalStatus(_l, lstat, "Load script file failed."));
+            nstat = MapStatus(lstat);
         }
     }
 
-    if (stat == NEB_OK)
+    if (nstat == NEB_OK)
     {
         // Execute the script to initialize it. This catches runtime syntax errors.
-        stat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-        if (stat != NEB_OK)
+        lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+        if (lstat != LUA_OK)
         {
-            Error = gcnew String(nebcommon_EvalStatus(_l, stat, "Execute script failed."));
-            stat = MapStatus(stat);
+            Error = gcnew String(nebcommon_EvalStatus(_l, lstat, "Execute script failed."));
+            nstat = MapStatus(lstat);
         }
     }
 
     ///// Run the script /////
 
-    if (stat == NEB_OK)
+    if (nstat == NEB_OK)
     {
         luainterop_Setup(_l);
         if (luainterop_Error() != NULL)
         {
             Error = gcnew String(luainterop_Error());
-            stat = NEB_ERR_SYNTAX;
+            nstat = NEB_ERR_SYNTAX;
         }
     }
 
-    if (stat == NEB_OK)
+    if (nstat == NEB_OK)
     {
         // Get script info.
 
@@ -119,7 +122,7 @@ int Interop::Api::OpenScript(String^ fn)
         // Get section info.
         ltype = lua_getglobal(_l, "_section_names");
         lua_pushnil(_l);
-        while (lua_next(_l, -2) != 0 && stat == LUA_OK)
+        while (lua_next(_l, -2) != 0)// && lstat == LUA_OK)
         {
             SectionInfo->Add((int)lua_tointeger(_l, -1), ToCliString(lua_tostring(_l, -2)));
             lua_pop(_l, 1);
@@ -130,10 +133,8 @@ int Interop::Api::OpenScript(String^ fn)
         SectionInfo->Add(length, ToCliString("LENGTH=========="));
     }
     
-    stat = MapStatus(stat);
-
     LeaveCriticalSection(&_critsect);
-    return stat;
+    return nstat;
 }
 
 //--------------------------------------------------------//
@@ -189,29 +190,19 @@ int Interop::Api::InputController(int chan_hnd, int controller, int value)
 #pragma endregion
 
 #pragma region Private functions
-//--------------------------------------------------------//
 
+//--------------------------------------------------------//
 int MapStatus(int lua_status)
 {
     int xstat;
 
     switch (lua_status)
     {
-    case LUA_OK:
-        xstat = NEB_OK;
-        break;
-
-    case LUA_ERRSYNTAX:
-        xstat = NEB_ERR_SYNTAX;
-        break;
-
-    case LUA_ERRRUN:
-        xstat = NEB_ERR_RUN;
-        break;
-
-    default:
-        xstat = NEB_ERR_INTERNAL;
-        break;
+    case LUA_OK:        xstat = NEB_OK;             break;
+    case LUA_ERRSYNTAX: xstat = NEB_ERR_SYNTAX;     break;
+    case LUA_ERRFILE:   xstat = NEB_ERR_FILE;       break;
+    case LUA_ERRRUN:    xstat = NEB_ERR_RUN;        break;
+    default:            xstat = NEB_ERR_INTERNAL;   break;
     }
 
     return xstat;

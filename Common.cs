@@ -7,7 +7,7 @@ namespace Nebulua
     public enum ExecState { Idle, Run, Kill, Exit }
     #endregion
 
-    #region Definitions
+    #region Definitions TODO1 dupe from api - import? also stuff like nebcommon_EvalStatus, MapStatus
     public class Defs
     {
         ///// App errors start after internal lua errors so they can be handled harmoniously.
@@ -21,6 +21,7 @@ namespace Nebulua
         public const int NEB_ERR_MIDI_RX       =  16;
         public const int NEB_ERR_API           =  17;
         public const int NEB_ERR_RUN           =  18;
+        public const int NEB_ERR_FILE          =  19;
 
         /// Only 4/4 time supported.
         public const int BEATS_PER_BAR = 4;
