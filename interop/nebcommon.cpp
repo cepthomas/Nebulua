@@ -37,7 +37,7 @@ String^ ToCliString(const char* input)
 }
 
 //--------------------------------------------------------//
-String^ nebcommon_EvalStatus(lua_State* l, int stat, String^ info)
+String^ EvalStatus(lua_State* l, int stat, String^ info)
 {
     String^ sret = gcnew String("");
 

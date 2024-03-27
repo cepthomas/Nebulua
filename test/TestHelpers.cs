@@ -19,13 +19,8 @@ namespace Nebulua.Test
 
         public static string GetProjectSubdir(string which)
         {
-            string spath = MiscUtils.GetSourcePath();
-            spath = Path.Join(spath, which);
-            return spath;
+            return Path.Join(MiscUtils.GetSourcePath(), which);
         }
-
-        // public static string ScriptFn { get { return Path.Join(GetProjectSubdir("files"), "script_happy.lua"); } }
-        // public static string TempFn { get { return Path.Join(GetProectSubdir("files"), "temp.lua"); } }
     }
 
     /// <summary>Used to capture events from test target.</summary>
@@ -33,42 +28,42 @@ namespace Nebulua.Test
     {
         public List<string> CollectedEvents { get; set; }
 
-        Interop.Api _api;
+        Interop.Api _interop;
 
-        public InteropEventCollector(Interop.Api api)
+        public InteropEventCollector(Interop.Api interop)
         {
-            _api = api;
-            CollectedEvents = new();
+            _interop = interop;
+            CollectedEvents = [];
 
             // Hook script events.
-            _api.CreateChannelEvent += Api_CreateChannelEvent;
-            _api.SendEvent += Api_SendEvent;
-            _api.LogEvent += Api_LogEvent;
-            _api.ScriptEvent += Api_ScriptEvent;
+            _interop.CreateChannelEvent += Interop_CreateChannelEvent;
+            _interop.SendEvent += Interop_SendEvent;
+            _interop.LogEvent += Interop_LogEvent;
+            _interop.ScriptEvent += Interop_ScriptEvent;
         }
 
-        void Api_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
+        void Interop_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
         {
             string s = $"CreateChannelEvent DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
             CollectedEvents.Add(s);
             e.Ret = 0x0102;
         }
 
-        void Api_SendEvent(object? sender, Interop.SendEventArgs e)
+        void Interop_SendEvent(object? sender, Interop.SendEventArgs e)
         {
             string s = $"SendEvent ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
             CollectedEvents.Add(s);
             e.Ret = Defs.NEB_OK;
         }
 
-        void Api_LogEvent(object? sender, Interop.LogEventArgs e)
+        void Interop_LogEvent(object? sender, Interop.LogEventArgs e)
         {
             string s = $"LogEvent LogLevel:{e.LogLevel} Msg:{e.Msg}";
             CollectedEvents.Add(s);
             e.Ret = Defs.NEB_OK;
         }
 
-        void Api_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
+        void Interop_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
         {
             string s = $"ScriptEvent Bpm:{e.Bpm}";
             CollectedEvents.Add(s);

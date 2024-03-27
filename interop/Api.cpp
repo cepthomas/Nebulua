@@ -82,7 +82,7 @@ int Interop::Api::OpenScript(String^ fn)
         lstat = luaL_loadfile(_l, fnx);
         if (lstat != LUA_OK)
         {
-            Error = gcnew String(nebcommon_EvalStatus(_l, lstat, "Load script file failed."));
+            Error = gcnew String(EvalStatus(_l, lstat, "Load script file failed."));
             nstat = MapStatus(lstat);
         }
     }
@@ -93,7 +93,7 @@ int Interop::Api::OpenScript(String^ fn)
         lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
         if (lstat != LUA_OK)
         {
-            Error = gcnew String(nebcommon_EvalStatus(_l, lstat, "Execute script failed."));
+            Error = gcnew String(EvalStatus(_l, lstat, "Execute script failed."));
             nstat = MapStatus(lstat);
         }
     }

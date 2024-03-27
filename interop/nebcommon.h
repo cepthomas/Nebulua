@@ -30,6 +30,7 @@
 // Midi caps.
 #define MIDI_VAL_MAX 127
 
+
 //----------------------- Utilities -----------------------------//
 
 /// <summary>
@@ -53,7 +54,7 @@ System::String^ ToCliString(const char* input);
 /// @param[in] stat to be tested
 /// @param[in] format extra info to add if fail
 /// @return if fail the error string else NULL
-System::String^ nebcommon_EvalStatus(lua_State* l, int stat, System::String^ msg);
+System::String^ EvalStatus(lua_State* l, int stat, System::String^ msg);
 
 
 #endif // NEBCOMMON_H

@@ -20,7 +20,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("App");
 
         /// <summary>The singleton API.</summary>
-        readonly Interop.Api _api = Interop.Api.Instance;
+        readonly Interop.Api _interop = Interop.Api.Instance;
 
         /// <summary>Talk to the user.</summary>
         readonly Cli _cli;
@@ -58,18 +58,18 @@ namespace Nebulua
             _cli.Write("Greetings from Nebulua!");
 
             // Create script api.
-            int stat = _api.Init();
+            int stat = _interop.Init();
             if (stat != Defs.NEB_OK)
             {
-                _logger.Error(_api.Error);
+                _logger.Error(_interop.Error);
                 Environment.Exit(1);
             }
             
             // Hook script events.
-            _api.CreateChannelEvent += Api_CreateChannelEvent;
-            _api.SendEvent += Api_SendEvent;
-            _api.LogEvent += Api_LogEvent;
-            _api.ScriptEvent += Api_ScriptEvent;
+            _interop.CreateChannelEvent += Interop_CreateChannelEvent;
+            _interop.SendEvent += Interop_SendEvent;
+            _interop.LogEvent += Interop_LogEvent;
+            _interop.ScriptEvent += Interop_ScriptEvent;
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
         }
@@ -133,13 +133,13 @@ namespace Nebulua
             int stat;
 
             // Load the script.
-            stat = _api.OpenScript(fn);
+            stat = _interop.OpenScript(fn);
             if (stat != Defs.NEB_OK)
             {
-                _logger.Error(_api.Error);
+                _logger.Error(_interop.Error);
             }
 
-            State.Instance.Length = _api.SectionInfo.Last().Key;
+            State.Instance.Length = _interop.SectionInfo.Last().Key;
 
             // Start timer.
             SetTimer(State.Instance.Tempo);
@@ -151,7 +151,7 @@ namespace Nebulua
                 stat = _cli.Read();
                 if (stat != Defs.NEB_OK)
                 {
-                    _logger.Error(_api.Error);
+                    _logger.Error(_interop.Error);
                     State.Instance.ExecState = ExecState.Exit;
                 }
             }
@@ -213,7 +213,7 @@ namespace Nebulua
                 // Do script. TODO2 Handle solo/mute like nebulator.
                 _tan?.Arm();
 
-                int stat = _api.Step(State.Instance.CurrentTick);
+                int stat = _interop.Step(State.Instance.CurrentTick);
 
                 // Read stopwatch and diff/stats.
                 string? s = _tan?.Dump();
@@ -225,7 +225,7 @@ namespace Nebulua
                     // Stop everything.
                     SetTimer(0);
                     KillAll();
-                    _logger.Error(_api.Error);
+                    _logger.Error(_interop.Error);
                     State.Instance.ExecState = ExecState.Idle;
                     State.Instance.CurrentTick = 0;
                 }
@@ -296,15 +296,15 @@ namespace Nebulua
             switch (e)
             {
                 case NoteOnEvent evt:
-                    stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                    stat = _interop.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
                     break;
 
                 case NoteEvent evt:
-                    stat = _api.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                    stat = _interop.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
                     break;
 
                 case ControlChangeEvent evt:
-                    stat = _api.InputController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                    stat = _interop.InputController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
                     break;
 
                 default:
@@ -314,7 +314,7 @@ namespace Nebulua
 
             if (stat != Defs.NEB_OK)
             {
-                _logger.Error(_api.Error);
+                _logger.Error(_interop.Error);
             }
 
             if (State.Instance.MonInput)
@@ -330,7 +330,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Api_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
+        void Interop_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
         {
             e.Ret = 0; // default means invalid chan_hnd
 
@@ -386,7 +386,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Api_SendEvent(object? sender, Interop.SendEventArgs e)
+        void Interop_SendEvent(object? sender, Interop.SendEventArgs e)
         {
             e.Ret = 0; // default means fail
 
@@ -435,7 +435,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Api_LogEvent(object? sender, Interop.LogEventArgs e)
+        void Interop_LogEvent(object? sender, Interop.LogEventArgs e)
         {
             _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
         }
@@ -445,7 +445,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Api_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
+        void Interop_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
         {
             if (e.Bpm > 0)
             {

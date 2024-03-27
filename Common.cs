@@ -7,11 +7,11 @@ namespace Nebulua
     public enum ExecState { Idle, Run, Kill, Exit }
     #endregion
 
-    #region Definitions TODO1 dupe from api - import? also stuff like nebcommon_EvalStatus, MapStatus
+    #region Definitions TODO1 dupe from api - import? also stuff like EvalStatus, MapStatus
     public class Defs
     {
         ///// App errors start after internal lua errors so they can be handled harmoniously.
-        public const int NEB_OK                =   0;  // synonym for LUA_OK and CBOT_ERR_NO_ERR
+        public const int NEB_OK                =   0;  // synonym for LUA_OK
         public const int NEB_ERR_INTERNAL      =  10;
         public const int NEB_ERR_BAD_CLI_ARG   =  11;
         public const int NEB_ERR_BAD_LUA_ARG   =  12;
@@ -70,7 +70,7 @@ namespace Nebulua
         public static int SUB(int tick) { return tick % Defs.SUBS_PER_BEAT; }
 
         /// <summary>
-        /// Convert a string bar time to absolute position.
+        /// Convert a string bar time to absolute position/tick.
         /// </summary>
         /// <param name="sbt">time string can be "1:2:3" or "1:2" or "1".</param>
         /// <returns>Ticks or -1 if invalid input</returns>
@@ -98,7 +98,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Convert a position to string bar time.
+        /// Convert a position/tick to string bar time.
         /// </summary>
         /// <param name="tick"></param>
         /// <returns></returns>

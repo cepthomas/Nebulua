@@ -44,7 +44,6 @@ namespace Interop
     };
 #pragma endregion
 
-
     public ref class Api
     {
     public:
