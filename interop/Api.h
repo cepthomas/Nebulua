@@ -66,9 +66,7 @@ namespace Interop
 
         /// <summary>Clean up resources.</summary>
         ~Api();
-#pragma endregion
 
-#pragma region Singleton support
         /// <summary>The singleton instance.</summary>
         static property Interop::Api^ Instance
         {
