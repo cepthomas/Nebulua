@@ -54,13 +54,15 @@ namespace Interop
         property Dictionary<int, String^>^ SectionInfo;
 
 #pragma region Lifecycle
-    public:
+    private:
         /// <summary>Prevent client instantiation.</summary>
-        Interop::Api() {}
+        Interop::Api();
 
+    public:
         /// <summary>Initialize everything.</summary>
+        /// <param name="lpath">For LUA_PATH</param>
         /// <returns>Neb Status</returns>
-        int Init();
+        int Init(List<String^>^ lpath);
 
         /// <summary>Clean up resources.</summary>
         ~Api();
@@ -86,7 +88,7 @@ namespace Interop
 #pragma region Run script - Call lua functions from host
     public:
         /// <summary>Load and process.</summary>
-        /// <param name="fn">Full path</param>
+        /// <param name="fn">Full file path</param>
         /// <returns>Neb Status</returns>
         int OpenScript(String^ fn);
 

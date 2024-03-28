@@ -23,8 +23,12 @@ internal class Program
             Environment.Exit(101);
         }
 
-        var app = new Nebulua.App();
+        // Set up runtime lua environment.
+        var spath = Environment.CurrentDirectory; // where exe lives
+        var lpath = $@";;{spath}\lua_code\?.lua;"; // copied lua files
+        Environment.SetEnvironmentVariable("LUA_PATH", lpath);
 
+        var app = new Nebulua.App();
         app.Run(fn);
     }
 }

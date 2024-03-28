@@ -127,10 +127,10 @@
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c">
+    <ClCompile Include="$(LBOT)\source_code\luaex.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c">
+    <ClCompile Include="$(LBOT)\source_code\luautils.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp" />
@@ -140,6 +140,11 @@
     </ClCompile>
     <ClCompile Include="luainteropwork.cpp" />
     <ClCompile Include="nebcommon.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NAudio.Midi">
+      <Version>2.2.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

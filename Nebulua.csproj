@@ -18,27 +18,57 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="interop\obj\**" />
+    <Compile Remove="interop\x64\**" />
+    <Compile Remove="lbot\**" />
+    <Compile Remove="lib\**" />
     <Compile Remove="test\**" />
     <Compile Remove="x64\**" />
+    <EmbeddedResource Remove="interop\obj\**" />
+    <EmbeddedResource Remove="interop\x64\**" />
+    <EmbeddedResource Remove="lbot\**" />
+    <EmbeddedResource Remove="lib\**" />
     <EmbeddedResource Remove="test\**" />
     <EmbeddedResource Remove="x64\**" />
+    <None Remove="interop\obj\**" />
+    <None Remove="interop\x64\**" />
+    <None Remove="lbot\**" />
+    <None Remove="lib\**" />
     <None Remove="test\**" />
     <None Remove="x64\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove=".gitignore" />
-    <None Remove="gen_interop.cmd" />
-    <None Remove="interop_spec.lua" />
-    <None Remove="LICENSE" />
-    <None Remove="nebulua.sublime-project" />
-    <None Remove="nebulua.sublime-workspace" />
-    <None Remove="_files.txt" />
-    <None Remove="_nebnotes.ntr" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
+    <Content Include="lua_code\bar_time.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lua_code\midi_defs.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lua_code\music_defs.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lua_code\nebulua.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lua_code\neb_common.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lua_code\step_types.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\LuaBagOfTricks\stringex.lua" Link="lua_code\stringex.lua" />
+    <Content Include="..\LuaBagOfTricks\utils.lua" Link="lua_code\utils.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\LuaBagOfTricks\validators.lua" Link="lua_code\validators.lua" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +79,10 @@
     <Reference Include="Ephemera.NBagOfTricks">
       <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
   </ItemGroup>
 
 </Project>

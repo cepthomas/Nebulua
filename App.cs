@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
-using NAudio;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
@@ -58,7 +56,7 @@ namespace Nebulua
             _cli.Write("Greetings from Nebulua!");
 
             // Create script api.
-            int stat = _interop.Init();
+            int stat = _interop.Init(null);
             if (stat != Defs.NEB_OK)
             {
                 _logger.Error(_interop.Error);

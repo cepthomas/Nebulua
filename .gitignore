@@ -6,3 +6,5 @@ obj/
 *.vcxproj.user
 *.sublime-*
 /Properties
+/Nebulua.csproj.user
+/test/files/temp.lua

@@ -11,7 +11,7 @@
     <ClCompile Include="luainterop.c" />
     <ClCompile Include="luainteropwork.cpp" />
     <ClCompile Include="nebcommon.cpp" />
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c" />
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c" />
+    <ClCompile Include="$(LBOT)\source_code\luaex.c" />
+    <ClCompile Include="$(LBOT)\source_code\luautils.c" />
   </ItemGroup>
 </Project>

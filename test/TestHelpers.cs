@@ -6,29 +6,54 @@ using System.Threading.Tasks;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
+using NAudio.Wave;
+using System.Reflection.Metadata.Ecma335;
 
 
 namespace Nebulua.Test
 {
     public class TestUtils
     {
-        public static string GetFilesDir()
+        /// <summary>Get environment.</summary>
+        public static string GetTestFilesDir()
         {
-            return Path.Join(MiscUtils.GetSourcePath(), "files");
+            return Path.Join(GetProjectSourceDir(), "test", "files");
         }
 
+        /// <summary>Get environment.</summary>
+        public static string GetProjectSourceDir()
+        {
+            var spath = MiscUtils.GetSourcePath();
+            var dir = new DirectoryInfo(spath);
+            spath = dir!.Parent!.FullName;
+            return spath;
+        }
+
+        /// <summary>Get environment.</summary>
         public static string GetProjectSubdir(string which)
         {
-            return Path.Join(MiscUtils.GetSourcePath(), which);
+            return Path.Join(GetProjectSourceDir(), which);
+        }
+
+        /// <summary>Set up lua environment string.</summary>
+        /// <returns>For LUA_PATH if success or null if invalid.</returns>
+        public static (bool valid, string path) GetLuaPath()
+        {
+            // Set up lua environment.
+            var projDir = GetProjectSourceDir();
+            var lbotDir = Environment.GetEnvironmentVariable("LBOT");
+            return lbotDir != null ?
+                (true, $@";;{projDir}\lua_code\?.lua;{lbotDir}\?.lua;") :
+                (false, "Missing LBOT env var");
         }
     }
 
     /// <summary>Used to capture events from test target.</summary>
-    public class InteropEventCollector//TODO1
+    public class InteropEventCollector
     {
         public List<string> CollectedEvents { get; set; }
 
-        Interop.Api _interop;
+        readonly Interop.Api _interop;
 
         public InteropEventCollector(Interop.Api interop)
         {

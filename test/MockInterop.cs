@@ -39,7 +39,7 @@ namespace Interop
     #endregion
 
 
-    public class Api // TODO1 rename all to Interop.
+    public class Api
     {
         /// <summary>If a function failed this contains info.</summary>
         public string Error = "";
@@ -55,7 +55,7 @@ namespace Interop
         /// Initialize everything.
         /// </summary>
         /// <returns>Status</returns>
-        public int Init()
+        public int Init(string lpath)
         {
             return 0;
         }
@@ -71,6 +71,7 @@ namespace Interop
                 return _instance;
             }
         }
+
         /// <summary>The singleton instance.</summary>
         static Api? _instance;
         #endregion

@@ -9,7 +9,7 @@
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 
 
-> Add to env: LBOT = C:\Dev\repos\Lua\LuaBagOfTricks
+> For build/test Add to env: LBOT = C:\Dev\repos\Lua\LuaBagOfTricks
 
 
 ## timing

@@ -10,7 +10,7 @@ using namespace System;
 using namespace System::Collections::Generic;
 
 
-// The main Lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
+// The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
 static lua_State* _l;
 
@@ -24,27 +24,47 @@ static int MapStatus(int lua_status);
 #pragma region Lifecycle
 
 //--------------------------------------------------------//
-int Interop::Api::Init()
+int Interop::Api::Init(List<String^>^ lpath)
 {
     int stat = NEB_OK;
 
-    InitializeCriticalSection(&_critsect);
-
-    // Init internal lib.
-    _l = luaL_newstate();
-    Error = gcnew String("");
-    SectionInfo = gcnew Dictionary<int, String^>();
-
-    // Load std libraries.
+    //_load std libraries.
     luaL_openlibs(_l);
 
-    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
+    if (lpath->Count > 0)
+    {
+        // Specific path.
+
+
+
+
+    }
+
+
+
+    // You can set the_lUA_PATH and_lUA_CPATH within c++ very easily by executing a couple lual_dostring functions.
+// luaL_dostring(L, "package.path = package.path .. ';?.lua'");
+// luaL_dostring(L, "package.cpath = package.cpath .. ';?.dll'");
+
+
+
+    //_load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);
 
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
 
     return stat;
+}
+
+//--------------------------------------------------------//
+Interop::Api::Api()
+{
+    // Init internal lib.
+    _l = luaL_newstate();
+    Error = gcnew String("");
+    SectionInfo = gcnew Dictionary<int, String^>();
+    InitializeCriticalSection(&_critsect);
 }
 
 //--------------------------------------------------------//
@@ -75,10 +95,10 @@ int Interop::Api::OpenScript(String^ fn)
         nstat = NEB_ERR_API;
     }
 
-    ///// Load the script /////
+    /////_load the script /////
     if (nstat == NEB_OK)
     {
-        // Load/compile the script file. Pushes the compiled chunk as a Lua function on top of the stack or pushes an error message.
+        //_load/compile the script file. Pushes the compiled chunk as a_lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
         if (lstat != LUA_OK)
         {
@@ -122,7 +142,7 @@ int Interop::Api::OpenScript(String^ fn)
         // Get section info.
         ltype = lua_getglobal(_l, "_section_names");
         lua_pushnil(_l);
-        while (lua_next(_l, -2) != 0)// && lstat == LUA_OK)
+        while (lua_next(_l, -2) != 0)// && lstat ==_lUA_OK)
         {
             SectionInfo->Add((int)lua_tointeger(_l, -1), ToCliString(lua_tostring(_l, -2)));
             lua_pop(_l, 1);

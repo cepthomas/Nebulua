@@ -14,23 +14,19 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-            var _interop = new Interop.Api();
-            int stat = _interop.Init();
-            UT_EQUAL(stat, Defs.NEB_OK);
-
-            InteropEventCollector events = new(_interop);
-            string scrfn = Path.Join(TestUtils.GetFilesDir(), "script_happy.lua");
-
+            var interop = Program.MyInterop!;
+            InteropEventCollector events = new(interop);
+            string scrfn = Path.Join(TestUtils.GetTestFilesDir(), "script_happy.lua");
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
 
             // Load the script.
-            stat = _interop.OpenScript(scrfn);
+            int stat = interop.OpenScript(scrfn);
             UT_EQUAL(stat, Defs.NEB_OK);
-            UT_NULL(_interop.Error);
+            UT_NULL(interop.Error);
 
             // Have a look inside.
             UT_EQUAL(events.CollectedEvents.Count, 4);
-            foreach (var kv in _interop.SectionInfo) // get sorted
+            foreach (var kv in interop.SectionInfo) // get sorted
             {
             }
 
@@ -38,17 +34,17 @@ namespace Nebulua.Test
             events.CollectedEvents.Clear();
             for (int i = 0; i < 99; i++)
             {
-                stat = _interop.Step(State.Instance.CurrentTick++);
+                stat = interop.Step(State.Instance.CurrentTick++);
 
                 if (i % 20 == 0)
                 {
-                    stat = _interop.InputNote(0x0102, i, (double)i / 100);
+                    stat = interop.InputNote(0x0102, i, (double)i / 100);
                     UT_EQUAL(stat, Defs.NEB_OK);
                 }
 
                 if (i % 20 == 5)
                 {
-                    stat = _interop.InputController(0x0102, i, i);
+                    stat = interop.InputController(0x0102, i, i);
                     UT_EQUAL(stat, Defs.NEB_OK);
                 }
             }
@@ -75,72 +71,53 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-
-            string tempfn = Path.Join(TestUtils.GetFilesDir(), "temp.lua");
+            var interop = Program.MyInterop!;
+            string tempfn = Path.Join(TestUtils.GetTestFilesDir(), "temp.lua");
 
             // General syntax error during load.
             {
-                var _interop = new Interop.Api();
-                int stat = _interop.Init();
-                UT_EQUAL(stat, Defs.NEB_OK);
-
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     this is a bad statement");
-                stat = _interop.OpenScript(tempfn);
+                int stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_ERR_SYNTAX); // is 10=NEB_ERR_INTERNAL
-                var e = _interop.Error;
+                var e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("syntax error near 'is'"));
             }
 
             // General syntax error - lua_pcall()
             {
-                var _interop = new Interop.Api();
-                int stat = _interop.Init();
-                UT_EQUAL(stat, Defs.NEB_OK);
-
-                File.WriteAllText(tempfn,
-                    @"local neb = require(""nebulua"")\n
-                    res1 = 345 + nil_value");
-                stat = _interop.OpenScript(tempfn);
+                int stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
-                string e = _interop.Error;
+                string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("attempt to perform arithmetic on a nil value"));
             }
 
             // Missing required C2L api element - luainterop_Setup(_ltest, &iret);
             {
-                var _interop = new Interop.Api();
-                int stat = _interop.Init();
-                UT_EQUAL(stat, Defs.NEB_OK);
-
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     resx = 345 + 456");
-                stat = _interop.OpenScript(tempfn);
+                int stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
-                string e = _interop.Error;
+                string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("INTEROP_BAD_FUNC_NAME"));
             }
 
             // Bad L2C api function
             {
-                var _interop = new Interop.Api();
-                int stat = _interop.Init();
-                UT_EQUAL(stat, Defs.NEB_OK);
-
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         neb.no_good(95)\n
                         return 0\n
                     end");
-                stat = _interop.OpenScript(tempfn);
+                int stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error
-                string e = _interop.Error;
+                string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("attempt to call a nil value (field 'no_good')"));
             }
@@ -153,24 +130,20 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-
-            string tempfn = Path.Join(TestUtils.GetFilesDir(), "temp.lua");
+            var interop = Program.MyInterop!;
+            string tempfn = Path.Join(TestUtils.GetTestFilesDir(), "temp.lua");
 
             // General explicit error.
             {
-                var _interop = new Interop.Api();
-                int stat = _interop.Init();
-                UT_EQUAL(stat, Defs.NEB_OK);
-
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         error(""setup() raises error()"")\n
                         return 0\n
                     end");
-                stat = _interop.OpenScript(tempfn);
+                int stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error  // is 10=NEB_ERR_INTERNAL
-                string e = _interop.Error;
+                string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("setup() raises error()"));
             }
@@ -183,24 +156,21 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
+            var interop = Program.MyInterop!;
 
-            string tempfn = Path.Join(TestUtils.GetFilesDir(), "temp.lua");
+            string tempfn = Path.Join(TestUtils.GetTestFilesDir(), "temp.lua");
 
             // Runtime error.
             {
-                var _interop = new Interop.Api();
-                int stat = _interop.Init();
-                UT_EQUAL(stat, Defs.NEB_OK);
-
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     function setup()\n
                         local bad = 123 + ng\n
                         return 0\n
                     end");
-                stat = _interop.OpenScript(tempfn);
+                int stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, Defs.NEB_OK); // runtime error // is 10=NEB_ERR_INTERNAL
-                string e = _interop.Error;
+                string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("attempt to perform arithmetic on a nil value (global 'ng')"));
             }
@@ -213,10 +183,31 @@ namespace Nebulua.Test
         [STAThread]
         static void Main(string[] _)
         {
+            // Create interop.
+            MyInterop = Interop.Api.Instance;
+
+
+            var lpath = TestUtils.GetLuaPath();
+            if (lpath.valid)
+            {
+                if (MyInterop.Init(lpath.path) != Defs.NEB_OK)
+                {
+                    Console.WriteLine("Init interop failed");
+                    Environment.Exit(2);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Init interop failed");
+                Environment.Exit(1);
+            }
+
             TestRunner runner = new(OutputFormat.Readable);
-            var cases = new[] { "INTEROP" };
+            var cases = new[] { "INTEROP_HAPPY" };
             runner.RunSuites(cases);
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
+
+        public static Interop.Api? MyInterop;
     }
 }
