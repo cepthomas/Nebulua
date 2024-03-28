@@ -33,20 +33,14 @@ int Interop::Api::Init(List<String^>^ lpath)
 
     if (lpath->Count > 0)
     {
-        // Specific path.
+        // Specific path. TODO1 Should look like ;;path1\?.lua;path2\?.lua;
 
 
-
+        // You can set the_lUA_PATH and_lUA_CPATH within c++ very easily by executing a couple lual_dostring functions.
+        // luaL_dostring(L, "package.path = package.path .. ';?.lua'");
+        // luaL_dostring(L, "package.cpath = package.cpath .. ';?.dll'");
 
     }
-
-
-
-    // You can set the_lUA_PATH and_lUA_CPATH within c++ very easily by executing a couple lual_dostring functions.
-// luaL_dostring(L, "package.path = package.path .. ';?.lua'");
-// luaL_dostring(L, "package.cpath = package.cpath .. ';?.dll'");
-
-
 
     //_load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);

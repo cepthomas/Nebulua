@@ -60,7 +60,7 @@ namespace Interop
 
     public:
         /// <summary>Initialize everything.</summary>
-        /// <param name="lpath">For LUA_PATH</param>
+        /// <param name="lpath">LUA_PATH components</param>
         /// <returns>Neb Status</returns>
         int Init(List<String^>^ lpath);
 

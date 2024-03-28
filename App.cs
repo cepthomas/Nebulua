@@ -43,7 +43,8 @@ namespace Nebulua
         /// <summary>
         /// Constructor inits some stuff.
         /// </summary>
-        public App()
+        /// <param name="lpath">LUA_PATH components</param>
+        public App(List<string> lpath)
         {
             // Init logging.
             LogManager.MinLevelFile = LogLevel.Debug;
@@ -56,7 +57,7 @@ namespace Nebulua
             _cli.Write("Greetings from Nebulua!");
 
             // Create script api.
-            int stat = _interop.Init(null);
+            int stat = _interop.Init(lpath);
             if (stat != Defs.NEB_OK)
             {
                 _logger.Error(_interop.Error);
@@ -73,7 +74,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// 
+        /// Clean up.
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)

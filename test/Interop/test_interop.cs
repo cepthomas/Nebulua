@@ -186,13 +186,12 @@ namespace Nebulua.Test
             // Create interop.
             MyInterop = Interop.Api.Instance;
 
-
-            var lpath = TestUtils.GetLuaPath();
-            if (lpath.valid)
+            var p = TestUtils.GetLuaPath();
+            if (p.valid)
             {
-                if (MyInterop.Init(lpath.path) != Defs.NEB_OK)
+                if (MyInterop.Init(p.lpath) != Defs.NEB_OK)
                 {
-                    Console.WriteLine("Init interop failed");
+                    Console.WriteLine($"Init interop failed: {p.lpath}");
                     Environment.Exit(2);
                 }
             }

@@ -55,7 +55,7 @@ namespace Interop
         /// Initialize everything.
         /// </summary>
         /// <returns>Status</returns>
-        public int Init(string lpath)
+        public int Init(List<string> lpath)
         {
             return 0;
         }
