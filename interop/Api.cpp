@@ -17,7 +17,7 @@ static lua_State* _l;
 // Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
 
-// Client gets NEB_XXX statuses.
+// Translate between internal LUA_XXX status and client facing NEB_XXX status.
 static int MapStatus(int lua_status);
 
 
