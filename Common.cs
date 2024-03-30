@@ -7,7 +7,7 @@ namespace Nebulua
     public enum ExecState { Idle, Run, Kill, Exit }
     #endregion
 
-    #region Definitions TODO1 dupe from api - import? also stuff like EvalStatus, MapStatus
+    #region Definitions TODO1 dupe from api - import? also stuff like EvalStatus, MapStatus. Enum?
     public class Defs
     {
         ///// App errors start after internal lua errors so they can be handled harmoniously.

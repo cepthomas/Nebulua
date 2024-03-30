@@ -1,7 +1,7 @@
 
 -- Script for unit test - the happy path.
 
--- print('>>>', package.path)
+print('>>>>>>>>>>', package.path)
 
 local bt = require("bar_time")
 local neb = require("nebulua") -- api

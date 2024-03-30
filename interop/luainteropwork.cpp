@@ -57,7 +57,7 @@ int luainteropwork_SendNote(int chan_hnd, int note_num, double volume)
     args->ChanHnd = chan_hnd;
     args->What = note_num;
     //args->Value = volume;
-    args->Value = int(volume * MIDI_VAL_MAX); // convert TODO1 prefer in client
+    args->Value = int(volume * MIDI_VAL_MAX); // convert TODO2 prefer in client?
     Interop::Api::Instance->NotifySendEvent(args);
     return args->Ret; // stat;
 }

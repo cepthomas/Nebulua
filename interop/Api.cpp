@@ -1,6 +1,4 @@
-
 #include <windows.h>
-
 #include "lua.hpp"
 #include "nebcommon.h"
 #include "luainterop.h"
@@ -8,32 +6,81 @@
 
 using namespace System;
 using namespace System::Collections::Generic;
+using namespace System::Text;
 
 
 // The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
-static lua_State* _l;
+static lua_State* _l = nullptr;
 
 // Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
 
-// Translate between internal LUA_XXX status and client facing NEB_XXX status.
-static int MapStatus(int lua_status);
+ //Translate between internal LUA_XXX status and client facing NEB_XXX status.
+//static int MapStatus(int lua_status);
 
 
-#pragma region Lifecycle
+
+//--------------------------------------------------------//
+Interop::Api::Api()
+{
+    Error = gcnew String("");
+    SectionInfo = gcnew Dictionary<int, String^>();
+    InitializeCriticalSection(&_critsect);
+}
 
 //--------------------------------------------------------//
 int Interop::Api::Init(List<String^>^ lpath)
 {
     int stat = NEB_OK;
 
-    //_load std libraries.
+    // Init lua.
+    _l = luaL_newstate();
+
+    // Load std libraries.
     luaL_openlibs(_l);
 
     if (lpath->Count > 0)
     {
+       // String^ paths = gcnew String("");
+        StringBuilder^ paths = gcnew StringBuilder();
+
+        array<int>^ arry = { 1,2,3,4,5 };
+
+        for each(int x in arry)
+        {
+//>>>>>>>>>>>>>>>>>>>>>>>>>xxx
+            Console::WriteLine(x);
+
+        }   //     lpath->ForEach(p )
+
+     //   paths.
+
+
         // Specific path. TODO1 Should look like ;;path1\?.lua;path2\?.lua;
+
+
+        // public void SetLuaPath(List<string> paths)
+        // {
+        //     List<string> parts = new() { "?", "?.lua" };
+        //     paths.ForEach(p => parts.Add(Path.Join(p, "?.lua").Replace('\\', '/')));
+        //     string s = string.Join(';', parts);
+        //     s = $"package.path = \"{s}\"";
+        //     DoString(s);
+        // }
+
+
+// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\lua\?.lua;
+// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\lua\?\init.lua;
+// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\?.lua;
+// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\?\init.lua;
+// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\..\share\lua\5.4\?.lua;
+// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\..\share\lua\5.4\?\init.lua;
+// .\?.lua;
+// .\?\init.lua;
+// C:\Dev\repos\Lua\Nebulua\lua_code\?.lua;
+// C:\Dev\repos\Lua\Nebulua\test\?.lua;
+// C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;
 
 
         // You can set the_lUA_PATH and_lUA_CPATH within c++ very easily by executing a couple lual_dostring functions.
@@ -52,26 +99,12 @@ int Interop::Api::Init(List<String^>^ lpath)
 }
 
 //--------------------------------------------------------//
-Interop::Api::Api()
-{
-    // Init internal lib.
-    _l = luaL_newstate();
-    Error = gcnew String("");
-    SectionInfo = gcnew Dictionary<int, String^>();
-    InitializeCriticalSection(&_critsect);
-}
-
-//--------------------------------------------------------//
 Interop::Api::~Api()
 {
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
     lua_close(_l);
 }
-#pragma endregion
-
-
-#pragma region Host calls lua script
 
 //--------------------------------------------------------//
 int Interop::Api::OpenScript(String^ fn)
@@ -82,11 +115,16 @@ int Interop::Api::OpenScript(String^ fn)
 
     EnterCriticalSection(&_critsect);
 
+    nstat = DoCheck();
+
     char fnx[MAX_PATH];
-    if (!ToCString(fn, fnx, MAX_PATH))
+    if (nstat == NEB_OK)
     {
-        Error = gcnew String("Bad script file name.");
-        nstat = NEB_ERR_API;
+        if (!ToCString(fn, fnx, MAX_PATH))
+        {
+            Error = gcnew String("Bad script file name.");
+            nstat = NEB_ERR_API;
+        }
     }
 
     /////_load the script /////
@@ -113,7 +151,6 @@ int Interop::Api::OpenScript(String^ fn)
     }
 
     ///// Run the script /////
-
     if (nstat == NEB_OK)
     {
         luainterop_Setup(_l);
@@ -144,7 +181,7 @@ int Interop::Api::OpenScript(String^ fn)
         lua_pop(_l, 1); // Clean up stack.
 
         // Tack on the overal length.
-        SectionInfo->Add(length, ToCliString("LENGTH=========="));
+        SectionInfo->Add(length, ToCliString("LENGTH"));
     }
     
     LeaveCriticalSection(&_critsect);
@@ -154,14 +191,18 @@ int Interop::Api::OpenScript(String^ fn)
 //--------------------------------------------------------//
 int Interop::Api::Step(int tick)
 {
-    int ret = NEB_ERR_API;
+    int ret = DoCheck();
+
     EnterCriticalSection(&_critsect);
 
-    luainterop_Step(_l, tick);
-    if (luainterop_Error() != NULL)
+    if (ret == NEB_OK)
     {
-        Error = gcnew String(luainterop_Error());
-        ret = NEB_OK;
+        luainterop_Step(_l, tick);
+        if (luainterop_Error() != NULL)
+        {
+            Error = gcnew String(luainterop_Error());
+            ret = NEB_OK;
+        }
     }
 
     LeaveCriticalSection(&_critsect);
@@ -171,15 +212,19 @@ int Interop::Api::Step(int tick)
 //--------------------------------------------------------//
 int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 {
-    int ret = NEB_ERR_API;
+    int ret = DoCheck();
+
     EnterCriticalSection(&_critsect);
 
-    luainterop_InputNote(_l, chan_hnd, note_num, volume);
-    if (luainterop_Error() != NULL)
+    if (ret == NEB_OK)
     {
-        Error = gcnew String(luainterop_Error());
-        ret = NEB_OK;
+        if (luainterop_Error() != NULL)
+        {
+            Error = gcnew String(luainterop_Error());
+            ret = NEB_OK;
+        }
     }
+    luainterop_InputNote(_l, chan_hnd, note_num, volume);
 
     LeaveCriticalSection(&_critsect);
     return ret;
@@ -188,25 +233,26 @@ int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 //--------------------------------------------------------//
 int Interop::Api::InputController(int chan_hnd, int controller, int value)
 {
-    int ret = NEB_ERR_API;
+    int ret = DoCheck();
+
     EnterCriticalSection(&_critsect);
 
-    luainterop_InputController(_l, chan_hnd, controller, value);
-    if (luainterop_Error() != NULL)
+    if (ret == NEB_OK)
     {
-        Error = gcnew String(luainterop_Error());
-        ret = NEB_OK;
+        luainterop_InputController(_l, chan_hnd, controller, value);
+        if (luainterop_Error() != NULL)
+        {
+            Error = gcnew String(luainterop_Error());
+            ret = NEB_OK;
+        }
     }
 
     LeaveCriticalSection(&_critsect);
     return ret;
 }
-#pragma endregion
-
-#pragma region Private functions
 
 //--------------------------------------------------------//
-int MapStatus(int lua_status)
+int Interop::Api::MapStatus(int lua_status)
 {
     int xstat;
 
@@ -221,4 +267,17 @@ int MapStatus(int lua_status)
 
     return xstat;
 }
-#pragma endregion
+
+//--------------------------------------------------------//
+int Interop::Api::DoCheck()
+{
+    if (_l == nullptr)
+    {
+        Error = gcnew String("You forgot to call Init().");
+        return NEB_ERR_API;
+    }
+    else
+    {
+        return NEB_OK;
+    }
+}
