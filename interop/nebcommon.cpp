@@ -5,29 +5,32 @@
 using namespace System;
 
 //--------------------------------------------------------//
-bool ToCString(String^ input, char* output, int len)
+const char* ToCString(String^ input)
 {
+    static char buff[2000]; // TODO2 fixed/max length bad.
     bool ok = true;
+    int len = input->Length > 1999 ? 1999 : input->Length;
+
     // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
     // not: const char* str4 = context->marshal_as<const char*>(input);
     interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
     int i = 0;
-    for (; *ppchar != L'\0' && i < len - 1 && ok; ++ppchar, i++)
+    for (; *ppchar != L'\0' && i < len && ok; ++ppchar, i++)
     {
         int c = wctob(*ppchar);
         if (c != -1)
         {
-            output[i] = c;
-
+            buff[i] = c;
         }
         else
         {
             ok = false;
-            output[i] = '?';
+            buff[i] = '?';
         }
     }
-    output[i] = 0; // terminate
-    return ok;
+    buff[i] = 0; // terminate
+
+    return buff;
 }
 
 //--------------------------------------------------------//
@@ -78,7 +81,7 @@ String^ EvalStatus(lua_State* l, int stat, String^ info)
         {
             smsg = lua_tostring(l, -1);
             lua_pop(l, 1);
-            sret = String::Format(gcnew String("stat:{0} info:{1}\n{2}"), gcnew String(sstat), info, gcnew String(smsg));
+            sret = String::Format(gcnew String("stat:{0} info:{1}\n{2}"), gcnew String(sstat), info, gcnew String(smsg));//TODO1 improve these
         }
         else
         {

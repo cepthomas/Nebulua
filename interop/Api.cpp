@@ -30,7 +30,7 @@ Interop::Api::Api()
 }
 
 //--------------------------------------------------------//
-int Interop::Api::Init(List<String^>^ lpath)
+int Interop::Api::Init(List<String^>^ luaPaths)
 {
     int stat = NEB_OK;
 
@@ -41,30 +41,41 @@ int Interop::Api::Init(List<String^>^ lpath)
     luaL_openlibs(_l);
 
     // Fix lua path.
-    StringBuilder^ sb = gcnew StringBuilder();
-    sb->Append("package.path = package.path .. ");
-    for each (String^ lp in lpath)
+    if (luaPaths->Count > 0)
     {
-        sb->Append(String::Format("{0}\\?.lua;", lp));
+
+        //int setLuaPath(lua_State * L, const char* path)  TODO1
+        //{
+        //    lua_getglobal(L, "package");
+        //    lua_getfield(L, -1, "path"); // get field "path" from table at top of stack (-1)
+        //    std::string cur_path = lua_tostring(L, -1); // grab path string from top of stack
+        //    cur_path.append(";"); // do your path magic here
+        //    cur_path.append(path);
+        //    lua_pop(L, 1); // get rid of the string on the stack we just pushed on line 5
+        //    lua_pushstring(L, cur_path.c_str()); // push the new one
+        //    lua_setfield(L, -2, "path"); // set the field "path" in table at -2 with value at top of stack
+        //    lua_pop(L, 1); // get rid of package table from top of stack
+        //    return 0; // all done!
+        //}
+
+
+
+        StringBuilder^ sb = gcnew StringBuilder();
+        sb->Append("package.path = package.path .. ");
+        for each (String ^ lp in luaPaths)
+        {
+            sb->Append(String::Format("{0}\\?.lua;", lp));
+        }
+        const char* fnx = ToCString(sb->ToString());
+        luaL_dostring(_l, fnx);
     }
-    char fnx[MAX_PATH];
-    ToCString(sb->ToString(), fnx, MAX_PATH);
-
-    luaL_dostring(_l, fnx);
-    luaL_dostring(_l, "print(package.path");
-
-    //luaL_loadstring(_l, "x = 111111111111111; print(x)");
-    //luaL_loadstring(_l, "print(x)");
-    //luaL_loadstring(_l, "print(package.path)");
-    //lua_pcall(_l, 0, LUA_MULTRET, 0);
-    //luaL_dostring(_l, fnx);
-    //luaL_dostring(_l, "print(package.path");
 
     //_load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);
 
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
+    //luaL_dostring(_l, "print(package.path");
 
     return stat;
 }
@@ -92,20 +103,11 @@ int Interop::Api::OpenScript(String^ fn)
         nstat = NEB_ERR_API;
     }
 
-    char fnx[MAX_PATH];
+    ///// Load the script /////
     if (nstat == NEB_OK)
     {
-        if (!ToCString(fn, fnx, MAX_PATH))
-        {
-            Error = gcnew String("Bad script file name.");
-            nstat = NEB_ERR_API;
-        }
-    }
-
-    /////_load the script /////
-    if (nstat == NEB_OK)
-    {
-        //_load/compile the script file. Pushes the compiled chunk as a_lua function on top of the stack or pushes an error message.
+        const char* fnx = ToCString(fn);
+        // Pushes the compiled chunk as a_lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
         if (lstat != LUA_OK)
         {

@@ -34,16 +34,14 @@
 //----------------------- Utilities -----------------------------//
 
 /// <summary>
-/// CLI translate.
+/// Convert managed string to unmanaged.
 /// </summary>
 /// <param name="input"></param>
-/// <param name="output"></param>
-/// <param name="len"></param>
-/// <returns>True if successful.</returns>
-bool ToCString(System::String^ input, char* output, int len); //TODO1 improve this klunk.
+/// <returns>C string.</returns>
+const char* ToCString(System::String^ input);
 
 /// <summary>
-/// 
+/// Convert unmanaged string to managed.
 /// </summary>
 /// <param name="input"></param>
 /// <returns>Converted string.</returns>
