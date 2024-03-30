@@ -6,14 +6,16 @@ using namespace System::Collections::Generic;
 
 namespace Interop
 {
+    #pragma region Forward references.
     ref class CreateChannelEventArgs;
     ref class SendEventArgs;
     ref class ScriptEventArgs;
     ref class LogEventArgs;
+    #pragma endregion
 
     public ref class Api
     {
-#pragma region Properties
+    #pragma region Properties
     public:
         /// <summary>If an API or lua function failed this contains info.</summary>
         property String^ Error;
@@ -29,12 +31,10 @@ namespace Interop
                 if (_instance == nullptr) { _instance = gcnew Interop::Api(); }
                 return _instance;
             }
-            //private:
-            //        void set(Interop::Api^ e) { }
         }
-#pragma endregion
+    #pragma endregion
 
-#pragma region Lifecycle
+    #pragma region Lifecycle
     public:
         /// <summary>Initialize everything.</summary>
         /// <param name="lpath">LUA_PATH components</param>
@@ -50,17 +50,11 @@ namespace Interop
         /// <summary>Clean up resources.</summary>
         ~Api();
 
-        /// <summary>Initialize everything.</summary>
-        /// <param name="lpath">LUA_PATH components</param>
-        /// <returns>Neb Status</returns>
-        //Interop::Api(List<String^>^ lpath);
-
-    private:
         /// <summary>The singleton instance.</summary>
         static Interop::Api^ _instance;
-#pragma endregion
+    #pragma endregion
 
-#pragma region Run script - Call lua functions from host
+    #pragma region Run script - Call lua functions from host
     public:
         /// <summary>Load and process.</summary>
         /// <param name="fn">Full file path</param>
@@ -85,9 +79,9 @@ namespace Interop
         /// <param name="value">Payload 0 => 127</param>
         /// <returns>Neb Status</returns>
         int InputController(int chan_hnd, int controller, int value);
-#pragma endregion
+    #pragma endregion
 
-#pragma region Events
+    #pragma region Events
     public:
         event EventHandler<CreateChannelEventArgs^>^ CreateChannelEvent;
         void NotifyCreateChannelEvent(CreateChannelEventArgs^ args) { CreateChannelEvent(this, args); }
@@ -100,22 +94,12 @@ namespace Interop
 
         event EventHandler<ScriptEventArgs^>^ ScriptEvent;
         void NotifyScriptEvent(ScriptEventArgs^ args) { ScriptEvent(this, args); }
-#pragma endregion
-
-    private:
-        // The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
-       // struct lua_State {};
-       // lua_State* _l;
-
-        // Translate between internal LUA_XXX status and client facing NEB_XXX status.
-        int MapStatus(int lua_status);
-
-        // Arg check.
-        int DoCheck();
+    #pragma endregion
     };
 
-#pragma region Event args
-    public ref class CreateChannelEventArgs : public EventArgs//TODO1 put these below or somewhere else...
+    #pragma region Event args
+    /// <summary>Script creates a channel.</summary>
+    public ref class CreateChannelEventArgs : public EventArgs
     {
     public:
         property String^ DevName;
@@ -125,6 +109,7 @@ namespace Interop
         property int Ret;       // handler return value
     };
 
+    /// <summary>Script wants to send a midi event.</summary>
     public ref class SendEventArgs : public EventArgs
     {
     public:
@@ -135,13 +120,15 @@ namespace Interop
         property int Ret;       // handler return value
     };
 
+    /// <summary>Script has something to say to host.</summary>
     public ref class ScriptEventArgs : public EventArgs
     {
     public:
-        property int Bpm;
+        property int Bpm;       // Tempo - optional
         property int Ret;       // handler return value
     };
 
+    /// <summary>Script wants to log something.</summary>
     public ref class LogEventArgs : public EventArgs
     {
     public:
@@ -149,5 +136,5 @@ namespace Interop
         property String^ Msg;
         property int Ret;       // handler return value
     };
-#pragma endregion
+    #pragma endregion
 }

@@ -16,9 +16,9 @@ static lua_State* _l = nullptr;
 // Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
 
- //Translate between internal LUA_XXX status and client facing NEB_XXX status.
-//static int MapStatus(int lua_status);
 
+// Translate between internal LUA_XXX status and client facing NEB_XXX status.
+static int MapStatus(int lua_status);
 
 
 //--------------------------------------------------------//
@@ -40,54 +40,25 @@ int Interop::Api::Init(List<String^>^ lpath)
     // Load std libraries.
     luaL_openlibs(_l);
 
-    if (lpath->Count > 0)
+    // Fix lua path.
+    StringBuilder^ sb = gcnew StringBuilder();
+    sb->Append("package.path = package.path .. ");
+    for each (String^ lp in lpath)
     {
-       // String^ paths = gcnew String("");
-        StringBuilder^ paths = gcnew StringBuilder();
-
-        array<int>^ arry = { 1,2,3,4,5 };
-
-        for each(int x in arry)
-        {
-//>>>>>>>>>>>>>>>>>>>>>>>>>xxx
-            Console::WriteLine(x);
-
-        }   //     lpath->ForEach(p )
-
-     //   paths.
-
-
-        // Specific path. TODO1 Should look like ;;path1\?.lua;path2\?.lua;
-
-
-        // public void SetLuaPath(List<string> paths)
-        // {
-        //     List<string> parts = new() { "?", "?.lua" };
-        //     paths.ForEach(p => parts.Add(Path.Join(p, "?.lua").Replace('\\', '/')));
-        //     string s = string.Join(';', parts);
-        //     s = $"package.path = \"{s}\"";
-        //     DoString(s);
-        // }
-
-
-// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\lua\?.lua;
-// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\lua\?\init.lua;
-// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\?.lua;
-// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\?\init.lua;
-// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\..\share\lua\5.4\?.lua;
-// C:\Dev\repos\Lua\Nebulua\bin\Debug\net8.0-windows7.0\..\share\lua\5.4\?\init.lua;
-// .\?.lua;
-// .\?\init.lua;
-// C:\Dev\repos\Lua\Nebulua\lua_code\?.lua;
-// C:\Dev\repos\Lua\Nebulua\test\?.lua;
-// C:\Dev\repos\Lua\LuaBagOfTricks\?.lua;
-
-
-        // You can set the_lUA_PATH and_lUA_CPATH within c++ very easily by executing a couple lual_dostring functions.
-        // luaL_dostring(L, "package.path = package.path .. ';?.lua'");
-        // luaL_dostring(L, "package.cpath = package.cpath .. ';?.dll'");
-
+        sb->Append(String::Format("{0}\\?.lua;", lp));
     }
+    char fnx[MAX_PATH];
+    ToCString(sb->ToString(), fnx, MAX_PATH);
+
+    luaL_dostring(_l, fnx);
+    luaL_dostring(_l, "print(package.path");
+
+    //luaL_loadstring(_l, "x = 111111111111111; print(x)");
+    //luaL_loadstring(_l, "print(x)");
+    //luaL_loadstring(_l, "print(package.path)");
+    //lua_pcall(_l, 0, LUA_MULTRET, 0);
+    //luaL_dostring(_l, fnx);
+    //luaL_dostring(_l, "print(package.path");
 
     //_load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);
@@ -115,7 +86,11 @@ int Interop::Api::OpenScript(String^ fn)
 
     EnterCriticalSection(&_critsect);
 
-    nstat = DoCheck();
+    if (_l == nullptr)
+    {
+        Error = gcnew String("You forgot to call Init().");
+        nstat = NEB_ERR_API;
+    }
 
     char fnx[MAX_PATH];
     if (nstat == NEB_OK)
@@ -191,18 +166,14 @@ int Interop::Api::OpenScript(String^ fn)
 //--------------------------------------------------------//
 int Interop::Api::Step(int tick)
 {
-    int ret = DoCheck();
-
+    int ret = NEB_OK;
     EnterCriticalSection(&_critsect);
 
-    if (ret == NEB_OK)
+    luainterop_Step(_l, tick);
+    if (luainterop_Error() != NULL)
     {
-        luainterop_Step(_l, tick);
-        if (luainterop_Error() != NULL)
-        {
-            Error = gcnew String(luainterop_Error());
-            ret = NEB_OK;
-        }
+        Error = gcnew String(luainterop_Error());
+        ret = NEB_ERR_API;
     }
 
     LeaveCriticalSection(&_critsect);
@@ -212,18 +183,15 @@ int Interop::Api::Step(int tick)
 //--------------------------------------------------------//
 int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 {
-    int ret = DoCheck();
-
+    int ret = NEB_OK;
     EnterCriticalSection(&_critsect);
 
-    if (ret == NEB_OK)
+    if (luainterop_Error() != NULL)
     {
-        if (luainterop_Error() != NULL)
-        {
-            Error = gcnew String(luainterop_Error());
-            ret = NEB_OK;
-        }
+        Error = gcnew String(luainterop_Error());
+        ret = NEB_ERR_API;
     }
+
     luainterop_InputNote(_l, chan_hnd, note_num, volume);
 
     LeaveCriticalSection(&_critsect);
@@ -233,18 +201,14 @@ int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 //--------------------------------------------------------//
 int Interop::Api::InputController(int chan_hnd, int controller, int value)
 {
-    int ret = DoCheck();
-
+    int ret = NEB_OK;
     EnterCriticalSection(&_critsect);
 
-    if (ret == NEB_OK)
+    luainterop_InputController(_l, chan_hnd, controller, value);
+    if (luainterop_Error() != NULL)
     {
-        luainterop_InputController(_l, chan_hnd, controller, value);
-        if (luainterop_Error() != NULL)
-        {
-            Error = gcnew String(luainterop_Error());
-            ret = NEB_OK;
-        }
+        Error = gcnew String(luainterop_Error());
+        ret = NEB_ERR_API;
     }
 
     LeaveCriticalSection(&_critsect);
@@ -252,7 +216,7 @@ int Interop::Api::InputController(int chan_hnd, int controller, int value)
 }
 
 //--------------------------------------------------------//
-int Interop::Api::MapStatus(int lua_status)
+int MapStatus(int lua_status)
 {
     int xstat;
 
@@ -266,18 +230,4 @@ int Interop::Api::MapStatus(int lua_status)
     }
 
     return xstat;
-}
-
-//--------------------------------------------------------//
-int Interop::Api::DoCheck()
-{
-    if (_l == nullptr)
-    {
-        Error = gcnew String("You forgot to call Init().");
-        return NEB_ERR_API;
-    }
-    else
-    {
-        return NEB_OK;
-    }
 }

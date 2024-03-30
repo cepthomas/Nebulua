@@ -25,10 +25,10 @@ internal class Program
 
         // Set up runtime lua environment.
         var exePath = Environment.CurrentDirectory; // where exe lives
-        var codePath = $@";;{exePath}\lua_code\?.lua;"; // copied lua files
+        var codePath = $@"{exePath}\lua_code"; // copied lua files
         // Environment.SetEnvironmentVariable("LUA_PATH", codePath);
 
-        var app = new Nebulua.App(new() { exePath, codePath } );
+        var app = new Nebulua.App([exePath, codePath] );
         app.Run(fn);
     }
 }

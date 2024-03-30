@@ -40,7 +40,7 @@
 /// <param name="output"></param>
 /// <param name="len"></param>
 /// <returns>True if successful.</returns>
-bool ToCString(System::String^ input, char* output, int len);
+bool ToCString(System::String^ input, char* output, int len); //TODO1 improve this klunk.
 
 /// <summary>
 /// 
