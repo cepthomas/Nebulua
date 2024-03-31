@@ -28,7 +28,7 @@ namespace Nebulua
         readonly MmTimerEx _mmTimer = new();
 
         /// <summary>Diagnostics for timing measurement.</summary>
-        readonly TimingAnalyzer? _tan = null; //new() { SampleSize = 100 };
+        readonly TimingAnalyzer? _tan = null;
 
         /// <summary>All devices to use for send.</summary>
         readonly List<MidiOutput> _outputs = [];
@@ -44,7 +44,7 @@ namespace Nebulua
         /// <summary>
         /// Constructor inits some stuff.
         /// </summary>
-        /// <param name="lpath">LUA_PATH components</param>
+        /// <param name="lpath">LUA_PATH components.</param>
         public App(List<string> lpath)
         {
             // Init logging.
@@ -55,6 +55,8 @@ namespace Nebulua
 
             _cli = new(Console.In, Console.Out, "->");
             _cli.Write("Greetings from Nebulua!");
+
+            Console.WriteLine("Construct");
 
             // Create script api.
             NebStatus stat = _interop.Init(lpath);
@@ -134,7 +136,7 @@ namespace Nebulua
             stat = _interop.OpenScript(fn);
             if (stat != NebStatus.Ok)
             {
-                LogInteropError(stat, _interop.Error);
+                LogInteropError(stat, _interop.Error); // TODO1 need to shut down immediately
             }
 
             State.Instance.Length = _interop.SectionInfo.Last().Key;
