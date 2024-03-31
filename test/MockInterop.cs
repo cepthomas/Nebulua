@@ -1,5 +1,5 @@
 
-using Nebulua;
+//using Nebulua;
 
 namespace Interop
 {
@@ -38,7 +38,6 @@ namespace Interop
     };
     #endregion
 
-
     public class Api
     {
         /// <summary>If a function failed this contains info.</summary>
@@ -55,9 +54,9 @@ namespace Interop
         /// Initialize everything.
         /// </summary>
         /// <returns>Status</returns>
-        public int Init(List<string> lpath)
+        public NebStatus Init(List<string> lpath)
         {
-            return 0;
+            return NebStatus.Ok;
         }
         #endregion
 
@@ -77,24 +76,24 @@ namespace Interop
         #endregion
 
         #region Run script - Call lua functions from host
-        public int OpenScript(string fn)
+        public NebStatus OpenScript(string fn)
         {
-            return 0;
+            return NebStatus.Ok;
         }
 
-        public int Step(int tick)
+        public NebStatus Step(int tick)
         {
-            return Defs.NEB_OK;
+            return NebStatus.Ok;
         }
 
-        public int InputNote(int chan_hnd, int note_num, double volume)
+        public NebStatus InputNote(int chan_hnd, int note_num, double volume)
         {
-            return Defs.NEB_OK;
+            return NebStatus.Ok;
         }
 
-        public int InputController(int chan_hnd, int controller, int value)
+        public NebStatus InputController(int chan_hnd, int controller, int value)
         {
-            return Defs.NEB_OK;
+            return NebStatus.Ok;
         }
         #endregion
 

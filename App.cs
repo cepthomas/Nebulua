@@ -7,6 +7,7 @@ using System.Threading;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
+using Interop;
 
 
 namespace Nebulua
@@ -18,7 +19,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("App");
 
         /// <summary>The singleton API.</summary>
-        readonly Interop.Api _interop = Interop.Api.Instance;
+        readonly Api _interop = Api.Instance;
 
         /// <summary>Talk to the user.</summary>
         readonly Cli _cli;
@@ -51,17 +52,15 @@ namespace Nebulua
             LogManager.MinLevelNotif = LogLevel.Warn;
             LogManager.LogMessage += LogManager_LogMessage;
             LogManager.Run("_log.txt", 100000);
-            _logger.Info("Log says hihyhhhhhhhhhhhhhhhhhh");
 
             _cli = new(Console.In, Console.Out, "->");
             _cli.Write("Greetings from Nebulua!");
 
             // Create script api.
-            int stat = _interop.Init(lpath);
-            if (stat != Defs.NEB_OK)
+            NebStatus stat = _interop.Init(lpath);
+            if (stat != NebStatus.Ok)
             {
-                _logger.Error(_interop.Error);
-                Environment.Exit(1);
+                LogInteropError(stat, _interop.Error);
             }
             
             // Hook script events.
@@ -127,15 +126,15 @@ namespace Nebulua
         /// Load and execute script.
         /// </summary>
         /// <param name="fn"></param>
-        public int Run(string fn)
+        public NebStatus Run(string fn)
         {
-            int stat;
+            NebStatus stat;
 
             // Load the script.
             stat = _interop.OpenScript(fn);
-            if (stat != Defs.NEB_OK)
+            if (stat != NebStatus.Ok)
             {
-                _logger.Error(_interop.Error);
+                LogInteropError(stat, _interop.Error);
             }
 
             State.Instance.Length = _interop.SectionInfo.Last().Key;
@@ -148,10 +147,9 @@ namespace Nebulua
             while (State.Instance.ExecState != ExecState.Exit)
             {
                 stat = _cli.Read();
-                if (stat != Defs.NEB_OK)
+                if (stat != NebStatus.Ok)
                 {
-                    _logger.Error(_interop.Error);
-                    State.Instance.ExecState = ExecState.Exit;
+                    LogInteropError(stat, _interop.Error);
                 }
             }
 
@@ -212,21 +210,20 @@ namespace Nebulua
                 // Do script. TODO2 Handle solo/mute like nebulator.
                 _tan?.Arm();
 
-                int stat = _interop.Step(State.Instance.CurrentTick);
+                NebStatus stat = _interop.Step(State.Instance.CurrentTick);
 
                 // Read stopwatch and diff/stats.
                 string? s = _tan?.Dump();
 
                 // Update state.
 
-                if (stat != Defs.NEB_OK)
+                if (stat != NebStatus.Ok)
                 {
                     // Stop everything.
                     SetTimer(0);
-                    KillAll();
-                    _logger.Error(_interop.Error);
-                    State.Instance.ExecState = ExecState.Idle;
                     State.Instance.CurrentTick = 0;
+                    KillAll();
+                    LogInteropError(stat, _interop.Error);
                 }
                 else
                 {
@@ -282,13 +279,13 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// 
+        /// Midi input arrived.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void Midi_InputReceiveEvent(object? sender, MidiEvent e)
         {
-            int stat = Defs.NEB_OK;
+            NebStatus stat = NebStatus.Ok;
             int index = _inputs.IndexOf((MidiInput)sender!);
             int chan_hnd = Utils.MakeInHandle(index, e.Channel);
 
@@ -311,9 +308,9 @@ namespace Nebulua
                     break;
             }
 
-            if (stat != Defs.NEB_OK)
+            if (stat != NebStatus.Ok)
             {
-                _logger.Error(_interop.Error);
+                LogInteropError(stat, _interop.Error);
             }
 
             if (State.Instance.MonInput)
@@ -387,7 +384,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_SendEvent(object? sender, Interop.SendEventArgs e)
         {
-            e.Ret = 0; // default means fail
+            e.Ret = 0; // not used
 
             try
             {
@@ -437,6 +434,7 @@ namespace Nebulua
         void Interop_LogEvent(object? sender, Interop.LogEventArgs e)
         {
             _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
+            e.Ret = 0;
         }
 
         /// <summary>
@@ -455,14 +453,14 @@ namespace Nebulua
                 }
                 else
                 {
-                    _logger.Error($"Invalid tempo: {e.Bpm}");
-                    return; //*** early return
+                    _logger.Error($"Invalid tempo in script: {e.Bpm}");
                 }
             }
             else
             {
                 SetTimer(0);
             }
+            e.Ret = 0;
         }
         #endregion
 
@@ -502,6 +500,16 @@ namespace Nebulua
 
             // Hard reset.
             State.Instance.ExecState = ExecState.Idle;
+        }
+
+        /// <summary>
+        /// General purpose logger for fatal errors. Causes app exit.
+        /// </summary>
+        /// <param name="stat"></param>
+        /// <param name="error"></param>
+        void LogInteropError(NebStatus stat, string error)
+        {
+            _logger.Error($"Interop error {stat}: {error}");
         }
         #endregion
     }

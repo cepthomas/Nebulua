@@ -7,6 +7,7 @@ using System.IO;
 //using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
+using Interop;
 
 
 namespace Nebulua
@@ -30,7 +31,7 @@ namespace Nebulua
             //_ = CaptureLines.Append(s);
         }
 
-        public int Read()
+        public NebStatus Read()
         {
             //// return the next char or -1 if done.
             //if (NextLine.Length > 0)
@@ -43,8 +44,8 @@ namespace Nebulua
             //{
             //    return -1;
             //}
-            return -1;
 
+            return NebStatus.Ok;
         }
     }
 }

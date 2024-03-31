@@ -126,7 +126,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Api.h" />
-    <ClInclude Include="nebcommon.h" />
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
@@ -136,13 +135,11 @@
     <ClCompile Include="$(LBOT)\source_code\luautils.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
-    <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Api.cpp" />
     <ClCompile Include="luainterop.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="luainteropwork.cpp" />
-    <ClCompile Include="nebcommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NAudio.Midi">

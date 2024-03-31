@@ -2,27 +2,9 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
-    #region Enums
-    /// <summary>Internal status.</summary>
-    public enum ExecState { Idle, Run, Kill, Exit }
-    #endregion
-
-    #region Definitions TODO1 dupe from api - import? also stuff like EvalStatus, MapStatus. Enum?
+    #region Definitions
     public class Defs
     {
-        ///// App errors start after internal lua errors so they can be handled harmoniously.
-        public const int NEB_OK                =   0;  // synonym for LUA_OK
-        public const int NEB_ERR_INTERNAL      =  10;
-        public const int NEB_ERR_BAD_CLI_ARG   =  11;
-        public const int NEB_ERR_BAD_LUA_ARG   =  12;
-        public const int NEB_ERR_BAD_MIDI_CFG  =  13;
-        public const int NEB_ERR_SYNTAX        =  14;
-        public const int NEB_ERR_MIDI_TX       =  15;
-        public const int NEB_ERR_MIDI_RX       =  16;
-        public const int NEB_ERR_API           =  17;
-        public const int NEB_ERR_RUN           =  18;
-        public const int NEB_ERR_FILE          =  19;
-
         /// Only 4/4 time supported.
         public const int BEATS_PER_BAR = 4;
 

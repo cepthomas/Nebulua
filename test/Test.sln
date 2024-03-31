@@ -10,6 +10,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestInterop", "Interop\TestInterop.csproj", "{EDB9DCD7-9FA6-4CFA-A3BB-7DEAEF41DF09}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMisc", "Misc\TestMisc.csproj", "{D26827A8-9694-4F74-9114-0AA9B0F087DC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{953F3806-EB5D-444E-A500-09B455E35E53} = {953F3806-EB5D-444E-A500-09B455E35E53}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Interop", "..\interop\Interop.vcxproj", "{953F3806-EB5D-444E-A500-09B455E35E53}"
 EndProject

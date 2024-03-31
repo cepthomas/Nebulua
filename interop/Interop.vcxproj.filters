@@ -3,14 +3,11 @@
   <ItemGroup>
     <ClInclude Include="Api.h" />
     <ClInclude Include="luainterop.h" />
-    <ClInclude Include="nebcommon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Api.cpp" />
-    <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="luainterop.c" />
     <ClCompile Include="luainteropwork.cpp" />
-    <ClCompile Include="nebcommon.cpp" />
     <ClCompile Include="$(LBOT)\source_code\luaex.c" />
     <ClCompile Include="$(LBOT)\source_code\luautils.c" />
   </ItemGroup>

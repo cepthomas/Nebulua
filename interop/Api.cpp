@@ -1,6 +1,7 @@
 #include <windows.h>
+#include <wchar.h>
+#include <vcclr.h>
 #include "lua.hpp"
-#include "nebcommon.h"
 #include "luainterop.h"
 #include "Api.h"
 
@@ -17,10 +18,6 @@ static lua_State* _l = nullptr;
 static CRITICAL_SECTION _critsect;
 
 
-// Translate between internal LUA_XXX status and client facing NEB_XXX status.
-static int MapStatus(int lua_status);
-
-
 //--------------------------------------------------------//
 Interop::Api::Api()
 {
@@ -30,9 +27,9 @@ Interop::Api::Api()
 }
 
 //--------------------------------------------------------//
-int Interop::Api::Init(List<String^>^ luaPaths)
+Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
 {
-    int stat = NEB_OK;
+    NebStatus stat = NebStatus::Ok;
 
     // Init lua.
     _l = luaL_newstate();
@@ -43,7 +40,6 @@ int Interop::Api::Init(List<String^>^ luaPaths)
     // Fix lua path.
     if (luaPaths->Count > 0)
     {
-
         //int setLuaPath(lua_State * L, const char* path)  TODO1
         //{
         //    lua_getglobal(L, "package");
@@ -89,9 +85,9 @@ Interop::Api::~Api()
 }
 
 //--------------------------------------------------------//
-int Interop::Api::OpenScript(String^ fn)
+Interop::NebStatus Interop::Api::OpenScript(String^ fn)
 {
-    int nstat = NEB_OK;
+    NebStatus nstat = NebStatus::Ok;
     int lstat = LUA_OK;
     int ret = 0;
 
@@ -100,45 +96,37 @@ int Interop::Api::OpenScript(String^ fn)
     if (_l == nullptr)
     {
         Error = gcnew String("You forgot to call Init().");
-        nstat = NEB_ERR_API;
+        nstat = NebStatus::Api;
     }
 
     ///// Load the script /////
-    if (nstat == NEB_OK)
+    if (nstat == NebStatus::Ok)
     {
         const char* fnx = ToCString(fn);
         // Pushes the compiled chunk as a_lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
-        if (lstat != LUA_OK)
-        {
-            Error = gcnew String(EvalStatus(_l, lstat, "Load script file failed."));
-            nstat = MapStatus(lstat);
-        }
+        nstat = EvalLuaStatus(lstat, "Load script file failed.");
     }
 
-    if (nstat == NEB_OK)
+    if (nstat == NebStatus::Ok)
     {
         // Execute the script to initialize it. This catches runtime syntax errors.
         lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
-        if (lstat != LUA_OK)
-        {
-            Error = gcnew String(EvalStatus(_l, lstat, "Execute script failed."));
-            nstat = MapStatus(lstat);
-        }
+        nstat = EvalLuaStatus(lstat, "Execute script failed.");
     }
 
     ///// Run the script /////
-    if (nstat == NEB_OK)
+    if (nstat == NebStatus::Ok)
     {
         luainterop_Setup(_l);
         if (luainterop_Error() != NULL)
         {
             Error = gcnew String(luainterop_Error());
-            nstat = NEB_ERR_SYNTAX;
+            nstat = NebStatus::Syntax;
         }
     }
 
-    if (nstat == NEB_OK)
+    if (nstat == NebStatus::Ok)
     {
         // Get script info.
 
@@ -166,16 +154,16 @@ int Interop::Api::OpenScript(String^ fn)
 }
 
 //--------------------------------------------------------//
-int Interop::Api::Step(int tick)
+Interop::NebStatus Interop::Api::Step(int tick)
 {
-    int ret = NEB_OK;
+    NebStatus ret = NebStatus::Ok;
     EnterCriticalSection(&_critsect);
 
     luainterop_Step(_l, tick);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NEB_ERR_API;
+        ret = NebStatus::Api;
     }
 
     LeaveCriticalSection(&_critsect);
@@ -183,15 +171,15 @@ int Interop::Api::Step(int tick)
 }
 
 //--------------------------------------------------------//
-int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
+Interop::NebStatus Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 {
-    int ret = NEB_OK;
+    NebStatus ret = NebStatus::Ok;
     EnterCriticalSection(&_critsect);
 
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NEB_ERR_API;
+        ret = NebStatus::Api;
     }
 
     luainterop_InputNote(_l, chan_hnd, note_num, volume);
@@ -201,35 +189,94 @@ int Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 }
 
 //--------------------------------------------------------//
-int Interop::Api::InputController(int chan_hnd, int controller, int value)
+Interop::NebStatus Interop::Api::InputController(int chan_hnd, int controller, int value)
 {
-    int ret = NEB_OK;
+    NebStatus ret = NebStatus::Ok;
     EnterCriticalSection(&_critsect);
 
     luainterop_InputController(_l, chan_hnd, controller, value);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NEB_ERR_API;
+        ret = NebStatus::Api;
     }
 
     LeaveCriticalSection(&_critsect);
     return ret;
 }
 
-//--------------------------------------------------------//
-int MapStatus(int lua_status)
-{
-    int xstat;
 
-    switch (lua_status)
+//------------------- Privates ---------------------------//
+
+//--------------------------------------------------------//
+Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
+{
+    NebStatus nstat;
+
+    // Translate between internal LUA_XXX status and client facing NEB_XXX status.
+    switch (lstat)
     {
-    case LUA_OK:        xstat = NEB_OK;             break;
-    case LUA_ERRSYNTAX: xstat = NEB_ERR_SYNTAX;     break;
-    case LUA_ERRFILE:   xstat = NEB_ERR_FILE;       break;
-    case LUA_ERRRUN:    xstat = NEB_ERR_RUN;        break;
-    default:            xstat = NEB_ERR_INTERNAL;   break;
+        case LUA_OK:        nstat = NebStatus::Ok;          break;
+        case LUA_ERRSYNTAX: nstat = NebStatus::Syntax;      break;
+        case LUA_ERRFILE:   nstat = NebStatus::File;        break;
+        case LUA_ERRRUN:    nstat = NebStatus::Run;         break;
+        default:            nstat = NebStatus::Internal;    break;
     }
 
-    return xstat;
+    if (nstat != NebStatus::Ok)
+    {
+        // Maybe lua error message.
+        const char* smsg = "";
+        if (lstat <= LUA_ERRFILE && _l != NULL && lua_gettop(_l) > 0)
+        {
+            smsg = lua_tostring(_l, -1);
+            lua_pop(_l, 1);
+            Error = String::Format(gcnew String("{0}: {1}\n{2}:{3}"), nstat.ToString(), info, lstat, gcnew String(smsg));
+        }
+        else
+        {
+            Error = String::Format(gcnew String("{0}: {1}"), nstat.ToString(), info);
+        }
+    }
+    else
+    {
+        Error = "";
+    }
+
+    return nstat;
+}
+
+//--------------------------------------------------------//
+const char* Interop::Api::ToCString(String^ input)
+{
+    static char buff[2000]; // TODO2 fixed/max length bad.
+    bool ok = true;
+    int len = input->Length > 1999 ? 1999 : input->Length;
+
+    // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
+    // not! const char* str4 = context->marshal_as<const char*>(input);
+    interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
+    int i = 0;
+    for (; *ppchar != L'\0' && i < len && ok; ++ppchar, i++)
+    {
+        int c = wctob(*ppchar);
+        if (c != -1)
+        {
+            buff[i] = c;
+        }
+        else
+        {
+            ok = false;
+            buff[i] = '?';
+        }
+    }
+    buff[i] = 0; // terminate
+
+    return buff;
+}
+
+//--------------------------------------------------------//
+String^ Interop::Api::ToCliString(const char* input)
+{
+    return gcnew String(input);
 }

@@ -13,6 +13,14 @@ namespace Interop
     ref class LogEventArgs;
     #pragma endregion
 
+    /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
+    public enum class NebStatus
+    {
+        Ok = 0, Internal = 10,
+        BadCliArg = 11, BadLuaArg = 12, Syntax = 13, Api = 16, Run = 17, File = 18,
+        BadMidiCfg = 20, MidiTx = 21, MidiRx = 22
+    };
+
     public ref class Api
     {
     #pragma region Properties
@@ -39,12 +47,11 @@ namespace Interop
         /// <summary>Initialize everything.</summary>
         /// <param name="lpath">LUA_PATH components</param>
         /// <returns>Neb Status</returns>
-        int Init(List<String^>^ lpath);
+        NebStatus Init(List<String^>^ lpath);
 
     private:
         /// <summary>Prevent instantiation.</summary>
         /// <param name="lpath">LUA_PATH components</param>
-        /// <returns>Neb Status</returns>
         Interop::Api();
 
         /// <summary>Clean up resources.</summary>
@@ -59,26 +66,26 @@ namespace Interop
         /// <summary>Load and process.</summary>
         /// <param name="fn">Full file path</param>
         /// <returns>Neb Status</returns>
-        int OpenScript(String^ fn);
+        NebStatus OpenScript(String^ fn);
 
         /// <summary>Called every fast timer increment aka tick.</summary>
         /// <param name="tick">Current tick 0 => N</param>
         /// <returns>Neb Status</returns>
-        int Step(int tick);
+        NebStatus Step(int tick);
 
         /// <summary>Called when input arrives.</summary>
         /// <param name="chan_hnd">Input channel handle</param>
         /// <param name="note_num">Note number 0 => 127</param>
         /// <param name="volume">Volume 0.0 => 1.0</param>
         /// <returns>Neb Status</returns>
-        int InputNote(int chan_hnd, int note_num, double volume);
+        NebStatus InputNote(int chan_hnd, int note_num, double volume);
 
         /// <summary>Called when input arrives.</summary>
         /// <param name="chan_hnd">Input channel handle</param>
         /// <param name="controller">Specific controller id 0 => 127</param>
         /// <param name="value">Payload 0 => 127</param>
         /// <returns>Neb Status</returns>
-        int InputController(int chan_hnd, int controller, int value);
+        NebStatus InputController(int chan_hnd, int controller, int value);
     #pragma endregion
 
     #pragma region Events
@@ -94,6 +101,18 @@ namespace Interop
 
         event EventHandler<ScriptEventArgs^>^ ScriptEvent;
         void NotifyScriptEvent(ScriptEventArgs^ args) { ScriptEvent(this, args); }
+    #pragma endregion
+
+    #pragma region Private functions
+    private:
+        /// <summary>Checks lua status and converts to neb status. Stores an error message if it failed.</summary>
+        NebStatus EvalLuaStatus(int stat, String^ msg);
+
+        /// <summary>Convert managed string to unmanaged.</summary>
+        const char* ToCString(String^ input);
+
+        /// <summary>Convert unmanaged string to managed.</summary>
+        String^ ToCliString(const char* input);
     #pragma endregion
     };
 

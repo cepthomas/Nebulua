@@ -7,6 +7,11 @@ using System.Text;
 
 namespace Nebulua
 {
+    #region Enums
+    /// <summary>Internal status.</summary>
+    public enum ExecState { Idle, Run, Kill, Exit }
+    #endregion
+
     /// <summary>System globals. Some notify clients.</summary>
     public class State
     {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfTricks.Slog;
+using Interop;
 
 
 namespace Nebulua.Test
@@ -13,7 +14,7 @@ namespace Nebulua.Test
     {
         public override void RunSuite()
         {
-            int stat;
+            NebStatus stat;
             List<string> capture;
             UT_STOP_ON_FAIL(true);
 
@@ -29,7 +30,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "bbbbb";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"Invalid command");
@@ -38,7 +39,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "z";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"Invalid command");
@@ -48,7 +49,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "help";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 12);
             UT_EQUAL(capture[0], "help|?: tell me everything");
@@ -59,7 +60,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "?";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 12);
             UT_EQUAL(capture[0], "help|?: tell me everything");
@@ -68,7 +69,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "exit";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"goodbye!");
@@ -77,7 +78,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "run";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"running");
@@ -86,7 +87,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "reload";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
             UT_EQUAL(capture[0], prompt);
@@ -94,7 +95,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "tempo";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "100");
@@ -102,7 +103,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "tempo 182";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            UT_EQUAL(stat, NebStatus.BadCliArg);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
             UT_EQUAL(capture[0], prompt);
@@ -110,7 +111,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "tempo 242";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            UT_EQUAL(stat, NebStatus.BadCliArg);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid tempo: 242");
@@ -118,7 +119,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "tempo 39";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            UT_EQUAL(stat, NebStatus.BadCliArg);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid tempo: 39");
@@ -126,7 +127,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "monitor in";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
             UT_EQUAL(capture[0], prompt);
@@ -134,7 +135,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "monitor out";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
             UT_EQUAL(capture[0], prompt);
@@ -142,7 +143,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "monitor off";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
             UT_EQUAL(capture[0], prompt);
@@ -150,7 +151,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "monitor junk";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_ERR_BAD_CLI_ARG);
+            UT_EQUAL(stat, NebStatus.BadCliArg);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid option: junk");
@@ -166,7 +167,7 @@ namespace Nebulua.Test
     {
         public override void RunSuite()
         {
-            int stat;
+            NebStatus stat;
             List<string> capture;
             UT_STOP_ON_FAIL(true);
 
@@ -184,7 +185,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "position";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"0:0:0");
@@ -193,7 +194,7 @@ namespace Nebulua.Test
             //app.Clear();
             //cliIn.NextLine = "position 203:2:6";
             //stat = cli.Read();
-            //UT_EQUAL(stat, Defs.NEB_OK);
+            //UT_EQUAL(stat, NebStatus.Ok);
             //capture = cliOut.CaptureLines;
             //UT_EQUAL(capture.Count, 2);
             //UT_EQUAL(capture[0], $"203:2:6");
@@ -202,7 +203,7 @@ namespace Nebulua.Test
             //app.Clear();
             //cliIn.NextLine = "position";
             //stat = cli.Read();
-            //UT_EQUAL(stat, Defs.NEB_OK);
+            //UT_EQUAL(stat, NebStatus.Ok);
             //capture = cliOut.CaptureLines;
             //UT_EQUAL(capture.Count, 2);
             //UT_EQUAL(capture[0], $"203:2:6");
@@ -211,7 +212,7 @@ namespace Nebulua.Test
             //app.Clear();
             //cliIn.NextLine = "position 111:9:6";
             //stat = cli.Read();
-            //UT_EQUAL(stat, Defs.NEB_OK);
+            //UT_EQUAL(stat, NebStatus.Ok);
             //capture = cliOut.CaptureLines;
             //UT_EQUAL(capture.Count, 2);
             //UT_EQUAL(capture[0], $"invalid position: 111:9:6");
@@ -222,7 +223,7 @@ namespace Nebulua.Test
             cliOut.Clear();
             cliIn.NextLine = "kill";
             stat = cli.Read();
-            UT_EQUAL(stat, Defs.NEB_OK);
+            UT_EQUAL(stat, NebStatus.Ok);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
             UT_EQUAL(capture[0], prompt);

@@ -76,7 +76,7 @@ A "typical" song would have about 4000 on/off events.
 
 
 Doc:
-// fatal errors - log + cli
+// fatal errors - log + cli + exit
 // non-fatal (script) - 
 
 

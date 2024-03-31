@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
+using Interop;
 
 
 namespace Nebulua.Test
@@ -20,8 +21,8 @@ namespace Nebulua.Test
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
 
             // Load the script.
-            int stat = interop.OpenScript(scrfn);
-            UT_EQUAL(stat, Defs.NEB_OK);
+            NebStatus stat = interop.OpenScript(scrfn);
+            UT_EQUAL(stat, NebStatus.Ok);
             UT_NULL(interop.Error);
 
             // Have a look inside.
@@ -39,13 +40,13 @@ namespace Nebulua.Test
                 if (i % 20 == 0)
                 {
                     stat = interop.InputNote(0x0102, i, (double)i / 100);
-                    UT_EQUAL(stat, Defs.NEB_OK);
+                    UT_EQUAL(stat, NebStatus.Ok);
                 }
 
                 if (i % 20 == 5)
                 {
                     stat = interop.InputController(0x0102, i, i);
-                    UT_EQUAL(stat, Defs.NEB_OK);
+                    UT_EQUAL(stat, NebStatus.Ok);
                 }
             }
 
@@ -79,8 +80,8 @@ namespace Nebulua.Test
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     this is a bad statement");
-                int stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, Defs.NEB_ERR_SYNTAX); // is 10=NEB_ERR_INTERNAL
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_EQUAL(stat, NebStatus.Syntax);
                 var e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("syntax error near 'is'"));
@@ -88,8 +89,8 @@ namespace Nebulua.Test
 
             // General syntax error - lua_pcall()
             {
-                int stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_EQUAL(stat, NebStatus.Ok); // runtime error
                 string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("attempt to perform arithmetic on a nil value"));
@@ -100,8 +101,8 @@ namespace Nebulua.Test
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")\n
                     resx = 345 + 456");
-                int stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_EQUAL(stat, NebStatus.Ok); // runtime error
                 string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("INTEROP_BAD_FUNC_NAME"));
@@ -115,8 +116,8 @@ namespace Nebulua.Test
                         neb.no_good(95)\n
                         return 0\n
                     end");
-                int stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, Defs.NEB_OK); // runtime error
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_EQUAL(stat, NebStatus.Ok); // runtime error
                 string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("attempt to call a nil value (field 'no_good')"));
@@ -141,8 +142,8 @@ namespace Nebulua.Test
                         error(""setup() raises error()"")\n
                         return 0\n
                     end");
-                int stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, Defs.NEB_OK); // runtime error  // is 10=NEB_ERR_INTERNAL
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_EQUAL(stat, NebStatus.Ok); // runtime error
                 string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("setup() raises error()"));
@@ -168,8 +169,8 @@ namespace Nebulua.Test
                         local bad = 123 + ng\n
                         return 0\n
                     end");
-                int stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, Defs.NEB_OK); // runtime error // is 10=NEB_ERR_INTERNAL
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_EQUAL(stat, NebStatus.Ok); // runtime error
                 string e = interop.Error;
                 UT_NOT_NULL(e);
                 UT_TRUE(e.Contains("attempt to perform arithmetic on a nil value (global 'ng')"));
@@ -189,7 +190,7 @@ namespace Nebulua.Test
             var p = TestUtils.GetLuaPath();
             if (p.valid)
             {
-                if (MyInterop.Init(p.lpath) != Defs.NEB_OK)
+                if (MyInterop.Init(p.lpath) != NebStatus.Ok)
                 {
                     Console.WriteLine($"Init interop failed: {p.lpath}");
                     Environment.Exit(2);

@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using NAudio.Wave;
-using System.Reflection.Metadata.Ecma335;
+using Interop;
 
 
 namespace Nebulua.Test
@@ -78,21 +77,21 @@ namespace Nebulua.Test
         {
             string s = $"SendEvent ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
             CollectedEvents.Add(s);
-            e.Ret = Defs.NEB_OK;
+            e.Ret = (int)NebStatus.Ok;
         }
 
         void Interop_LogEvent(object? sender, Interop.LogEventArgs e)
         {
             string s = $"LogEvent LogLevel:{e.LogLevel} Msg:{e.Msg}";
             CollectedEvents.Add(s);
-            e.Ret = Defs.NEB_OK;
+            e.Ret = (int)NebStatus.Ok;
         }
 
         void Interop_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
         {
             string s = $"ScriptEvent Bpm:{e.Bpm}";
             CollectedEvents.Add(s);
-            e.Ret = Defs.NEB_OK;
+            e.Ret = (int)NebStatus.Ok;
         }
     }
 }
