@@ -8,8 +8,8 @@ namespace Interop
     /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
     public enum NebStatus
     {
-        Ok = 0, Internal = 10,
-        BadCliArg = 11, BadLuaArg = 12, Syntax = 13, Api = 16, Run = 17, File = 18,
+        Ok = 0, InternalError = 10,
+        BadCliArg = 11, BadLuaArg = 12, SyntaxError = 13, ApiError = 16, RunError = 17, FileError = 18,
         BadMidiCfg = 20, MidiTx = 21, MidiRx = 22
     };
 

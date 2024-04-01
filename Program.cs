@@ -29,7 +29,7 @@ internal class Program
         var lbotPath = Environment.GetEnvironmentVariable("LBOT");
         // Environment.SetEnvironmentVariable("LUA_PATH", codePath);
 
-        var app = new Nebulua.App([lbotPath, codePath] );
+        var app = new Nebulua.App([lbotPath, codePath]);
         app.Run(fn);
     }
 }

@@ -46,6 +46,7 @@ Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
         String^ currentPath = ToCliString(lua_tostring(_l, -1)); // grab path string from top of stack
 
         StringBuilder^ sb = gcnew StringBuilder(currentPath);
+        sb->Append(";"); // default lua doesn't have this.
         for each (String ^ lp in luaPaths)
         {
             sb->Append(String::Format("{0}\\?.lua;", lp));
@@ -82,13 +83,15 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
     NebStatus nstat = NebStatus::Ok;
     int lstat = LUA_OK;
     int ret = 0;
+    Error = gcnew String("");
+    SectionInfo->Clear();
 
     EnterCriticalSection(&_critsect);
 
     if (_l == nullptr)
     {
         Error = gcnew String("You forgot to call Init().");
-        nstat = NebStatus::Api;
+        nstat = NebStatus::ApiError;
     }
 
     ///// Load the script /////
@@ -114,7 +117,7 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         if (luainterop_Error() != NULL)
         {
             Error = gcnew String(luainterop_Error());
-            nstat = NebStatus::Syntax;
+            nstat = NebStatus::SyntaxError;
         }
     }
 
@@ -149,13 +152,14 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
 Interop::NebStatus Interop::Api::Step(int tick)
 {
     NebStatus ret = NebStatus::Ok;
+    Error = gcnew String("");
     EnterCriticalSection(&_critsect);
 
     luainterop_Step(_l, tick);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NebStatus::Api;
+        ret = NebStatus::ApiError;
     }
 
     LeaveCriticalSection(&_critsect);
@@ -166,12 +170,13 @@ Interop::NebStatus Interop::Api::Step(int tick)
 Interop::NebStatus Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
 {
     NebStatus ret = NebStatus::Ok;
+    Error = gcnew String("");
     EnterCriticalSection(&_critsect);
 
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NebStatus::Api;
+        ret = NebStatus::ApiError;
     }
 
     luainterop_InputNote(_l, chan_hnd, note_num, volume);
@@ -184,13 +189,14 @@ Interop::NebStatus Interop::Api::InputNote(int chan_hnd, int note_num, double vo
 Interop::NebStatus Interop::Api::InputController(int chan_hnd, int controller, int value)
 {
     NebStatus ret = NebStatus::Ok;
+    Error = gcnew String("");
     EnterCriticalSection(&_critsect);
 
     luainterop_InputController(_l, chan_hnd, controller, value);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NebStatus::Api;
+        ret = NebStatus::ApiError;
     }
 
     LeaveCriticalSection(&_critsect);
@@ -208,11 +214,11 @@ Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
     // Translate between internal LUA_XXX status and client facing NEB_XXX status.
     switch (lstat)
     {
-        case LUA_OK:        nstat = NebStatus::Ok;          break;
-        case LUA_ERRSYNTAX: nstat = NebStatus::Syntax;      break;
-        case LUA_ERRFILE:   nstat = NebStatus::File;        break;
-        case LUA_ERRRUN:    nstat = NebStatus::Run;         break;
-        default:            nstat = NebStatus::Internal;    break;
+        case LUA_OK:        nstat = NebStatus::Ok;              break;
+        case LUA_ERRSYNTAX: nstat = NebStatus::SyntaxError;     break;
+        case LUA_ERRFILE:   nstat = NebStatus::FileError;       break;
+        case LUA_ERRRUN:    nstat = NebStatus::RunError;        break;
+        default:            nstat = NebStatus::InternalError;   break;
     }
 
     if (nstat != NebStatus::Ok)

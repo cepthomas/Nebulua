@@ -42,7 +42,7 @@ namespace Nebulua.Test
             var projDir = GetProjectSourceDir();
             var lbotDir = Environment.GetEnvironmentVariable("LBOT");
             return lbotDir != null ?
-                (true, new() { $@"{projDir}\lua_code\?.lua", $@"{lbotDir}\?.lua "} ) :
+                (true, new() { $@"{projDir}\lua_code", $@"{lbotDir}"} ) :
                 (false, new() { "Missing LBOT env var" } );
         }
     }

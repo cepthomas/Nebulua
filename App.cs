@@ -369,7 +369,7 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                FatalError(NebStatus.Syntax, "Script CreateChannel() failed", ex.Message);
+                FatalError(NebStatus.SyntaxError, "Script CreateChannel() failed", ex.Message);
             }
         }
 
@@ -417,7 +417,7 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                FatalError(NebStatus.Syntax, "Script SendEvent() failed", ex.Message);
+                FatalError(NebStatus.SyntaxError, "Script SendEvent() failed", ex.Message);
             }
         }
 
@@ -448,7 +448,7 @@ namespace Nebulua
                 }
                 else
                 {
-                    FatalError(NebStatus.Syntax, $"Script Invalid tempo: {e.Bpm}");
+                    FatalError(NebStatus.SyntaxError, $"Script Invalid tempo: {e.Bpm}");
                 }
             }
             else
