@@ -31,15 +31,11 @@ Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
 {
     NebStatus stat = NebStatus::Ok;
 
-return stat;
-
     // Init lua.
     _l = luaL_newstate();
 
     // Load std libraries.
     luaL_openlibs(_l);
-
-    printf("Api::Init:");
 
     // Fix lua path.
     if (luaPaths->Count > 0)
@@ -60,39 +56,19 @@ return stat;
 
         lua_getglobal(_l, "package");
         lua_getfield(_l, -1, "path"); // get field "path" from table at top of stack (-1)
-        String^ cur_path = ToCliString(lua_tostring(_l, -1)); // grab path string from top of stack
+        String^ currentPath = ToCliString(lua_tostring(_l, -1)); // grab path string from top of stack
 
-
-        //cur_path.append(";"); // do your path magic here
-        //cur_path.append(path);
-
-        StringBuilder^ sb = gcnew StringBuilder(cur_path);
-        //String^ ss = sb->ToString();
+        StringBuilder^ sb = gcnew StringBuilder(currentPath);
         for each (String ^ lp in luaPaths)
         {
             sb->Append(String::Format("{0}\\?.lua;", lp));
         }
-
-        const char* sccc = ToCString(sb->ToString());
-        printf("sccc:");
-        printf(sccc);
+        const char* newPath = ToCString(sb->ToString());
 
         lua_pop(_l, 1); // get rid of the string on the stack we just pushed on line 5
-        lua_pushstring(_l, sccc); // push the new one
+        lua_pushstring(_l, newPath); // push the new one
         lua_setfield(_l, -2, "path"); // set the field "path" in table at -2 with value at top of stack
         lua_pop(_l, 1); // get rid of package table from top of stack
-
-
-
-
-        //StringBuilder^ sb = gcnew StringBuilder();
-        //sb->Append("package.path = package.path .. ");
-        //for each (String ^ lp in luaPaths)
-        //{
-        //    sb->Append(String::Format("{0}\\?.lua;", lp));
-        //}
-        //const char* fnx = ToCString(sb->ToString());
-        //luaL_dostring(_l, fnx);
     }
 
     //_load host funcs into lua space. This table gets pushed on the stack and into globals.

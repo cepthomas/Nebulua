@@ -161,7 +161,6 @@ namespace Nebulua.Test
         }
     }
 
-
     /// <summary>Test cli functions that require a loaded script.</summary>
     public class CLI_CONTEXT : TestSuite
     {
@@ -181,7 +180,7 @@ namespace Nebulua.Test
 
             //app.Run("script_happy.lua");
 
-            ///// Position commands. TODO1 fix these.
+            ///// Position commands. TODO1 fix/test these.
             cliOut.Clear();
             cliIn.NextLine = "position";
             stat = cli.Read();

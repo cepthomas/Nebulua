@@ -51,18 +51,17 @@ namespace Nebulua
             LogManager.MinLevelFile = LogLevel.Debug;
             LogManager.MinLevelNotif = LogLevel.Warn;
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.Run("_log.txt", 100000);
+            var sme = MiscUtils.GetSourcePath();
+            LogManager.Run(Path.Combine(sme, "_log.txt"), 100000);
 
             _cli = new(Console.In, Console.Out, "->");
             _cli.Write("Greetings from Nebulua!");
-
-            Console.WriteLine("Construct");
 
             // Create script api.
             NebStatus stat = _interop.Init(lpath);
             if (stat != NebStatus.Ok)
             {
-                LogInteropError(stat, _interop.Error);
+                FatalError(stat, "Interop Init() failed", _interop.Error);
             }
             
             // Hook script events.
@@ -136,7 +135,7 @@ namespace Nebulua
             stat = _interop.OpenScript(fn);
             if (stat != NebStatus.Ok)
             {
-                LogInteropError(stat, _interop.Error); // TODO1 need to shut down immediately
+                FatalError(stat, "Interop OpenScript() failed", _interop.Error);
             }
 
             State.Instance.Length = _interop.SectionInfo.Last().Key;
@@ -151,7 +150,7 @@ namespace Nebulua
                 stat = _cli.Read();
                 if (stat != NebStatus.Ok)
                 {
-                    LogInteropError(stat, _interop.Error);
+                    FatalError(stat, "Cli Read() failed", _interop.Error);
                 }
             }
 
@@ -176,7 +175,7 @@ namespace Nebulua
             switch (name)
             {
                 case "CurrentTick":
-                    if (sender != this) {}
+                    if (sender != this) { }
                     break;
 
                 case "Tempo":
@@ -218,14 +217,9 @@ namespace Nebulua
                 string? s = _tan?.Dump();
 
                 // Update state.
-
                 if (stat != NebStatus.Ok)
                 {
-                    // Stop everything.
-                    SetTimer(0);
-                    State.Instance.CurrentTick = 0;
-                    KillAll();
-                    LogInteropError(stat, _interop.Error);
+                    FatalError(stat, "Interop Step() failed", _interop.Error);
                 }
                 else
                 {
@@ -312,7 +306,7 @@ namespace Nebulua
 
             if (stat != NebStatus.Ok)
             {
-                LogInteropError(stat, _interop.Error);
+                FatalError(stat, "Interop Midi Receive() failed", _interop.Error);
             }
 
             if (State.Instance.MonInput)
@@ -375,7 +369,7 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                _logger.Error(ex.Message);
+                FatalError(NebStatus.Syntax, "Script CreateChannel() failed", ex.Message);
             }
         }
 
@@ -423,9 +417,8 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                _logger.Error(ex.Message);
+                FatalError(NebStatus.Syntax, "Script SendEvent() failed", ex.Message);
             }
-
         }
 
         /// <summary>
@@ -455,7 +448,7 @@ namespace Nebulua
                 }
                 else
                 {
-                    _logger.Error($"Invalid tempo in script: {e.Bpm}");
+                    FatalError(NebStatus.Syntax, $"Script Invalid tempo: {e.Bpm}");
                 }
             }
             else
@@ -505,13 +498,26 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// General purpose logger for fatal errors. Causes app exit.
+        /// General purpose handler for fatal errors. Causes app exit.
         /// </summary>
         /// <param name="stat"></param>
-        /// <param name="error"></param>
-        void LogInteropError(NebStatus stat, string error)
+        /// <param name="error1"></param>
+        /// <param name="error2"></param>
+        void FatalError(NebStatus stat, string error1, string? error2 = null)
         {
-            _logger.Error($"Interop error {stat}: {error}");
+            string s2 = string.IsNullOrEmpty(error2) ? "" : $"{Environment.NewLine}    {error2}";
+            string s = $"Fatal error {stat}: {error1}{s2}";
+            _logger.Error(s);
+
+            // Stop everything.
+            SetTimer(0);
+            State.Instance.CurrentTick = 0;
+            KillAll();
+
+            // Flush log.
+            Thread.Sleep(200);
+
+            Environment.Exit((int)stat);
         }
         #endregion
     }
