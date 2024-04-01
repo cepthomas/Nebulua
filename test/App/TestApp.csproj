@@ -31,10 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\interop\Interop.vcxproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
       <HintPath>..\..\lib\Ephemera.NBagOfTricks.dll</HintPath>
     </Reference>

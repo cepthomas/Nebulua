@@ -5,38 +5,13 @@ namespace Interop
 {
 #pragma warning disable CA1822 // Mark members as static
 
-    #region Event args
-    public class CreateChannelEventArgs : EventArgs
+    /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
+    public enum NebStatus
     {
-        public string? DevName;
-        public int ChanNum;
-        public bool IsOutput; // else input
-        public int Patch;     // output only
-        public int Ret;       // handler return value
+        Ok = 0, Internal = 10,
+        BadCliArg = 11, BadLuaArg = 12, Syntax = 13, Api = 16, Run = 17, File = 18,
+        BadMidiCfg = 20, MidiTx = 21, MidiRx = 22
     };
-
-    public class SendEventArgs : EventArgs
-    {
-        public int ChanHnd;
-        public bool IsNote;   // else controller
-        public int What;      // note number or controller id
-        public int Value;     // note velocity or controller payload
-        public int Ret;       // handler return value
-    };
-
-    public class LogEventArgs : EventArgs
-    {
-        public int LogLevel;
-        public string? Msg;
-        public int Ret;       // handler return value
-    };
-
-    public class ScriptEventArgs : EventArgs
-    {
-        public int Bpm;
-        public int Ret;       // handler return value
-    };
-    #endregion
 
     public class Api
     {
@@ -111,4 +86,38 @@ namespace Interop
         public void NotifyScriptEvent(ScriptEventArgs args) { ScriptEvent?.Invoke(this, args); }
         #endregion
     };
+
+    #region Event args
+    public class CreateChannelEventArgs : EventArgs
+    {
+        public string? DevName;
+        public int ChanNum;
+        public bool IsOutput; // else input
+        public int Patch;     // output only
+        public int Ret;       // handler return value
+    };
+
+    public class SendEventArgs : EventArgs
+    {
+        public int ChanHnd;
+        public bool IsNote;   // else controller
+        public int What;      // note number or controller id
+        public int Value;     // note velocity or controller payload
+        public int Ret;       // handler return value
+    };
+
+    public class LogEventArgs : EventArgs
+    {
+        public int LogLevel;
+        public string? Msg;
+        public int Ret;       // handler return value
+    };
+
+    public class ScriptEventArgs : EventArgs
+    {
+        public int Bpm;
+        public int Ret;       // handler return value
+    };
+    #endregion
+    
 }
