@@ -31,15 +31,15 @@ namespace Interop
         /// <summary>What's in the script.</summary>
         property Dictionary<int, String^>^ SectionInfo;
 
-        /// <summary>The singleton instance. TODO2 prefer non-singleton.</summary>
-        static property Interop::Api^ Instance
-        {
-            Interop::Api^ get()
-            {
-                if (_instance == nullptr) { _instance = gcnew Interop::Api(); }
-                return _instance;
-            }
-        }
+        ///// <summary>The singleton instance. TODO2 prefer non-singleton.</summary>
+        //static property Interop::Api^ Instance
+        //{
+        //    Interop::Api^ get()
+        //    {
+        //        if (_instance == nullptr) { _instance = gcnew Interop::Api(); }
+        //        return _instance;
+        //    }
+        //}
     #pragma endregion
 
     #pragma region Lifecycle
@@ -49,7 +49,7 @@ namespace Interop
         /// <returns>Neb Status</returns>
         NebStatus Init(List<String^>^ lpath);
 
-    private:
+//    private:
         /// <summary>Prevent instantiation.</summary>
         /// <param name="lpath">LUA_PATH components</param>
         Interop::Api();
