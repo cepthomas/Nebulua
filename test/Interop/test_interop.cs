@@ -73,14 +73,16 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
+
             var interop = Program.MyInterop!;
-            string tempfn = Path.Join(TestUtils.GetTestFilesDir(), "temp.lua");
+            var tempfn = "_test_temp.lua";
 
             // General syntax error during load.
             {
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
-                    this is a bad statement");
+                    this is a bad statement
+                    end");
                 NebStatus stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, NebStatus.SyntaxError);
                 UT_STRING_CONTAINS(interop.Error, "syntax error near 'is'");
@@ -90,10 +92,11 @@ namespace Nebulua.Test
             {
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
-                    resx = 345 + 456");
+                    resx = 345 + 456
+                    end");
                 NebStatus stat = interop.OpenScript(tempfn);
-                //UT_EQUAL(stat, NebStatus.SyntaxError); // TODO1 fails, says ok
-                //UT_STRING_CONTAINS(interop.Error, "INTEROP_BAD_FUNC_NAME");
+                UT_EQUAL(stat, NebStatus.SyntaxError); // TODO1 fails, says ok
+                UT_STRING_CONTAINS(interop.Error, "INTEROP_BAD_FUNC_NAME");
             }
 
             // Bad L2C api function
@@ -112,13 +115,13 @@ namespace Nebulua.Test
     }
 
     /// <summary>Test fatal error() failure modes.</summary>
-    public class INTEROP_FAIL_2 : TestSuite
+    public class INTEROP_FAIL_2 : TestSuite //TODO1 combine all these?
     {
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
             var interop = Program.MyInterop!;
-            string tempfn = Path.Join(TestUtils.GetTestFilesDir(), "temp.lua");
+            var tempfn = "_test_temp.lua";
 
             // General explicit error.
             {
@@ -142,8 +145,7 @@ namespace Nebulua.Test
         {
             UT_STOP_ON_FAIL(true);
             var interop = Program.MyInterop!;
-
-            string tempfn = Path.Join(TestUtils.GetTestFilesDir(), "temp.lua");
+            var tempfn = "_test_temp.lua";
 
             // Runtime error.
             {

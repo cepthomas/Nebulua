@@ -53,7 +53,7 @@ namespace Nebulua
 
         #region Main work
         /// <summary>
-        /// Set up command table.
+        /// Set up command handler. TODO2 optional/custom stream I/O.
         /// </summary>
         public Cli(TextReader cliIn, TextWriter cliOut, string prompt)
         {

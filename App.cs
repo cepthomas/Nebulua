@@ -51,8 +51,9 @@ namespace Nebulua
             LogManager.MinLevelFile = LogLevel.Debug;
             LogManager.MinLevelNotif = LogLevel.Warn;
             LogManager.LogMessage += LogManager_LogMessage;
-            var sme = MiscUtils.GetSourcePath();
-            LogManager.Run(Path.Combine(sme, "_log.txt"), 100000);
+            //var sme = MiscUtils.GetSourcePath();
+            //LogManager.Run(Path.Combine(sme, "temp", "_log.txt"), 100000);
+            LogManager.Run("_log.txt", 100000);
 
             _cli = new(Console.In, Console.Out, "->");
             _cli.Write("Greetings from Nebulua!");

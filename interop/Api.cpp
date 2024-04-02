@@ -98,7 +98,7 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
     if (nstat == NebStatus::Ok)
     {
         const char* fnx = ToCString(fn);
-        // Pushes the compiled chunk as a_lua function on top of the stack or pushes an error message.
+        // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
         nstat = EvalLuaStatus(lstat, "Load script file failed.");
     }

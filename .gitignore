@@ -3,8 +3,8 @@
 x64/
 bin/
 obj/
+temp/
 *.vcxproj.user
 *.sublime-*
 /Properties
 /Nebulua.csproj.user
-/test/files/temp.lua

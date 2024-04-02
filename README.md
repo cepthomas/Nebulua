@@ -11,27 +11,22 @@
 
 > For build/test Add to env: LBOT = C:\Dev\repos\Lua\LuaBagOfTricks
 
+- No installer yet, it's a build-it-yerself for now. Eventually a nuget package might be created.
 
-## timing
-Midi DeltaTicksPerQuarterNote aka sub parts per beat/qtr_note = 8 = 32nd note resolution
-Gives 32nd note resolution.
-Fast timer resolution set to 1 msec.
-int bpm = 40 -> 188 msec period.
-int bpm = 240 -> 31 msec period.
+- Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
+  - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
+  - If you are using a DAW for sound generation, you can use a virtual midi loopback like [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to send to it.
 
 
-## field types:
-S = string
-N = number
-I = integer
-F = function
-M = map index(0-9)
-T = TableEx
-V = void
-B = boolean
-X = bar time(Number?)
-E = expression?
 
+- Most music software uses piano roll midi editors. This is an alternative - writing scripts to generate sounds.
+- C# makes a reasonable scripting language, given that we have the compiler available to us at run time.
+- Supports midi and midi-over-OSC.
+- While the primary intent is to generate music-by-code, runtime interaction is also supported using midi or OSC inputs.
+- It's called Nebulator after a MarkS C++ noisemaker called Nebula which allowed manipulation of synth parameters using code.
+- Requires VS2022 and .NET6.
+
+![logo](marks.jpg)
 
 ## Glossary
 L2C - Lua to C aka script calls host functions.
@@ -59,9 +54,19 @@ Script defs:
    BAR_TIME is a string of "BAR.BEAT.SUB" e.g. "1.2.3" or "1.2" or "1".
    VOLUME 0->9
 
-# composition
 
---[[
+## Timing
+Midi DeltaTicksPerQuarterNote aka sub parts per beat/qtr_note = 8 = 32nd note resolution
+Gives 32nd note resolution. aka tick
+Fast timer resolution set to 1 msec.
+int bpm = 40 -> 188 msec period.
+int bpm = 240 -> 31 msec period.
+
+Uses the `BarTime` class. A shorthand is provided to specify a time using `mytime = BarTime(1:2:3)` => bar:beat:sub.
+Also R/W as ticks.
+
+Nebulua doesn't care about measures, that's up to you.
+
 Each section is 8 beats.
 Each sequence is 4 sections => 32 beats.
 A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences.
@@ -69,103 +74,212 @@ A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences.
 If each sequence has average 8 notes => total of 320 notes per instrument.
 A 4 minute song at 80bpm is 320 beats => 10 sequences => 40 sequences => 320 notes.
 A "typical" song would have about 4000 on/off events.
-]]
+
+## Error handling
+
+- lua-C host does not call luaL_error(). Only call luaL_error() in code that is called from the lua side. C side needs to handle function returns manually via status codes, error msgs, etc.
+
+- Discuss the status return codes. C-Lua side uses the standard LUA_XXX codes. The API layer translates them to application-specific enum NebStatus.
+
+- Fatal errors are things the user needs to fix before continuing e.g. script syntax errors, ... They are logged, written to the CLI, and then exits.
 
 
-## error/status/streams  --- Some should be in lbot maybe.
+# Writing Scripts - syntax
+
+- Use your favorite external text editor. The application will watch for changes you make and indicate that recompile
+  is needed. I use Sublime - you can associate .neb files with C# for pretty-close syntax coloring.
+
+## Musical Notes/Chords/Scales
+
+Scales and chords are specified by strings like `"1 4 6 b13"`.
+There are many builtin defined in music_defs.lua.
+Users can add their own by using `CreateNotes("FOO", "1 4 6 b13")`.
+
+Notes (single) and note groups (chords, scales) are referenced in several ways:
+- "F4" - Named note with octave.
+- "F4.m7" - Named chord in the key of middle F.
+- "F4.Aeolian" - Named scale in the key of middle F.
+- "F4.FOO" - Custom chord or scale created with `CreateNotes()`.
+- SideStick - Drum name from the definitions.
+- 57 - Simple midi note number.
 
 
-Doc:
-// fatal errors - log + cli + exit
-// non-fatal (script) - 
+## Composition
+A composition is comprised of one or more Sections each of which has one or more Sequences of notes.
+You first create your Sequences like this:
+```lua
+Sequence CreateSequence(beats, elements[]);
+```
 
 
-New flavor:
--- If one still insists on a dogma though, here is what I would say:
--- - Use errors for things which can be fixed at the time of writing the code (i.e. invalid pattern in string.match)
--- - return nil in case of errors which can always occur at runtime (i.e. couldn't open file in io.open)
--- and use pcall to overrule a decision to make something error (i.e. pcall(require, "luarocks.loader"))...
-
--- https://www.lua.org/gems/lpg113.pdf
--- if a failure situation is most often handled by the immediate caller of your function, signal it by return value.
--- Otherwise, consider the failure to be a first-class error and throw an exception.
-
-
-
-Maybe:
-
-custom stream for error output? use stderr? https://www.gnu.org/software/libc/manual/html_node/Custom-Streams.html
-
-===== log
-- traditional to FILE* (fp or stdout or)
-
-lua-C:
-int logger_Init(FILE* fp); // File stream to write to. Can be stdout.
-int logger_Log(log_level_t level, int line, const char* format, ...);
-
-lua-L:
-host_api.log(level, msg) => calls the lua-C functions. there is no standalone lua-L logger.
-> The I/O library provides two different styles for file manipulation. The first one uses implicit file handles; that is, there are operations to set a default input file and a default output file, and all input/output operations are done over these default files. The second style uses explicit file handles.
-> When using implicit file handles, all operations are supplied by table io. When using explicit file handles, the operation io.open returns a file handle and then all operations are supplied as methods of the file handle.
-> The table io also provides three predefined file handles with their usual meanings from C: io.stdin, io.stdout, and io.stderr. The I/O library never closes these files.
-> Unless otherwise stated, all I/O functions return fail on failure, plus an error message as a second result and a system-dependent error code as a third result, and some non-false value on success.
-
-
-===== print/printf
-- also dump/Dump - like print/printf but larger size
-- ok in standalone scripts like gen_interop.lua  pnut_runner.lua  etc
-- ok in C main functions
-- ok in test code
-- quicky debug - don't leave them in
-> use fp or stdout only
-> lua-L print => io.write() -- default is stdout, change with io.output()
-> lua-C printf => fprintf(FILE*) -- default is stdout, change with lautils_SetOutput(FILE* fout); user supplies FILE* fout
-
-
-===== error
-- means fatal here.
--   => originate in lua-L code (like user/script syntax errors) or in lua-C code for similar situations.
-- lua-L:
-    - Only the app (top level - user visible) calls error(message [, level]) to notify the user of e.g. app syntax errors.
-    - internal libs should never call error(), let the client deal.
-> use stdout or kustom only + maybe log_error()
-
--- lua-L print => io.write() -- default is stdout, change with io.output(). probably print() is fine for debugging, no need for special stream.
-
-! lua-L error(message [, level])  Raises an error (see §2.3) with message as the error object. This function never returns.
-... these trickle up to the caller via luaex_docall/lua_pcall return
-
-! lua-C host does not call luaL_error(lua_State *L, const char *fmt, ...);
-only call luaL_error() in code that is called from the lua side. C side needs to handle host-call-lua() manually via status codes, error msgs, etc.
-
-
-- => collected/handled by:
-- lua-C lua_pcall (lua_State *L, int nargs, int nresults, int msgh);
-Calls a function (or a callable object) in protected mode.
-    => only exec.c - probably? use luaex_docall()
-! lua-C app luaex_docall(lua_State* l, int narg, int nres)
-    => calls lua_pcall()
-    => has _handler which calls luaL_traceback(l, l, msg, 1);
-
-? lua-L pcall (f [, arg1, ···]) Calls the function f with the given arguments in protected mode.
-    => only used for test, debugger, standalone scripts
-    => not currently used: xpcall (f, msgh [, arg1, ···])  sets a new message handler msgh.
-
-
-## sequences
--- Graphical format:
--- "|7-------|" is one beat with 8 subs
--- note velocity is 1-9 (map) or - which means sustained
--- note/chord, velocity/volume
--- List format:
--- times are beat.sub where beat is 0-N sub is 0-7
--- note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
-
-## API
+Graphical format:
+"|7-------|" is one beat with 8 subs
+note velocity is 1-9 (map) or - which means sustained
+note/chord, velocity/volume
+List format:
+times are beat.sub where beat is 0-N sub is 0-7
+note/chord, velocity/volume is 0.0 to 1.0, duration is 0.1 to N.7
 
 
 
-## Files
+There are several ways to do this. (see `example.neb`.)
+A list of notes:
+```lua
+Sequence seq1 = CreateSequence(8, new()
+{
+    { 0.0, "F4",  0.7, 0.2 },
+    { 0.4, "D#4", 1.1, 0.2 },
+    { 1.0, "C4",  0.7, 0.2 },
+});
+```
+- 8 is the number of beats in the sequence.
+- Notes are `{ when to play in the sequence, note or chord or drum, volume, duration }`. If duration is omitted, it defaults to 0.1, useful for drum hits.
+
+```lua
+Sequence seq2 = CreateSequence(8, new()
+{
+    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7", 0.9  },
+    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6", 0.75 },
+});
+```
+- Notes are `{ pattern, note or chord or drum, volume, duration }`.
+- Pattern: describes a sequence of notes, kind of like a piano roll. `1 to 9` (volume) starts a note which is held 
+  for subsequent `-`. The note is ended with any other character than `-`. `|`, `.` and ` ` are ignored, 
+  used for visual assist only. These are particularly useful for drum patterns.
+
+```lua
+Sequence seqAlgo = CreateSequence(4, new()
+{
+    { 1.2, AlgoFunc, 0.8 },
+});
+
+void AlgoFunc()
+{
+    int notenum = Random(0, scaleNotes.Count());
+    SendNote("synth", scaleNotes[notenum], 0.7, 0.5);
+}
+```
+- Notes are `{ when, function, volume }`.
+
+Then you group Sequences into Sections, typically things like verse, chorus, bridge, etc.
+```lua
+Section sectMiddle = CreateSection(32, "Middle", new()
+{
+    { "keys",  seqKeysChorus  },
+    { "drums", seqDrumsChorus },
+    { "bass",  seqBassChorus  },
+    { "synth", seqAlgo, seqEmpty, seqAlgo, seqDynamic, seqEmpty }
+});
+```
+- beats: Overall length in beats.
+- name: Displayed in time control while playing.
+- sequences: 1 to N descriptors of which sequences to play sequentially. They are played in order and repeat to fill the section.
+
+
+
+### User Script Functions
+These can/must be overridden in the user script.
+
+```lua
+public override void Setup();
+```
+Called once to initialize your script stuff.
+
+```lua
+public override void Step();
+```
+Called every Subbeat/tick.
+
+```lua
+public override void InputNote(dev, chnum, note, vel);
+```
+Called when input note arrives.
+
+- dev: DeviceType.
+- chnum: Channel number.
+- note: Note number.
+- vel: velocity
+
+```lua
+public override void InputControl(dev, chnum, ctlid, value);
+```
+Called when input controller arrives.
+- dev: DeviceType.
+- chnum: Channel number.
+- ctlid: ControllerDef.
+- value: Controller value.
+
+
+### Send Functions
+Call these from inside your script.
+
+```lua
+void SendNote("chname", note, vol, dur)
+```
+Send a note immediately. _Respects solo/mute._ Adds a note off to play after dur time.
+
+- chname: Channel name to send it on.
+- note: One of the note definitions.
+- vol: Note volume. Normalized to 0.0 - 1.0. 0.0 means note off.
+- dur: How long it lasts in beats or BarTime object representation.
+
+```lua
+void SendNote("chname", note, vol)
+```
+Send a note on immediately. _Respects solo/mute._ If note on adds/follows note off.
+
+- chname: Channel name to send it on.
+- note: One of the note definitions.
+- vol: Note volume. Normalized to 0.0 - 1.0.
+
+```lua
+void SendController("chname", ctl, val)
+```
+Send a controller immediately. Useful for things like panning and bank select.
+
+- chname: Channel name to send it on.
+- ctl: Controller name from the definitions or const() or simple integer.
+- val: Controller value.
+
+### Utilities
+
+```lua
+void CreateNotes("name", "parts")
+```
+Define a group of notes for use as a note, or in a chord or scale.
+
+- name: Reference name.
+- note: List of note definitions.
+
+```lua
+List<double> GetNotes("scale_or_chord", "key")
+```
+Get an array of scale or chord notes.
+
+- scale: One of the named scales from ScriptDefinitions.md or defined in `notes`.
+- key: Note name and octave.
+- returns: Array of notes or empty if invalid.
+
+
+
+### Channel
+```lua
+Channel("chname", "devid", chnum, "patch")
+```
+
+Defines an output channel.
+
+- chname: For display in the UI.
+- devid: A user-specified device id as entered in the user settings.
+- chnum: Channel number to play on.
+- patch: Name of the patch.
+
+
+
+
+
+## Files => _files.txt_
+
 - `source_code` folder:
     - exec.c/h - Does all the top-level work.
     - etc...
@@ -180,3 +294,45 @@ Calls a function (or a callable object) in protected mode.
 - `mingw` folder:
 - `app` and `app\test` folder:
 
+# Example Script Files
+See the Examples directory for material while perusing the docs.
+
+File        | Description
+----------- | -----------
+example.neb | Source file showing example of static sequence and loop definitions, and creating notes by script functions.
+airport.neb | A take on Eno's Music for Airports - adapted from [this](https://github.com/teropa/musicforairports.js).
+utils.neb   | Example of a library file for simple functions.
+scale.neb   | Example of a library file for playing with a scale.
+*.nebp      | Storage for dynamic stuff. This is created and managed by the application and not generally manually edited.
+temp\\\*.cs | Generated C# files which are compiled and executed.
+example.mp3 | A bit of some generated sound (not music!) using Reaper with good instruments and lots of reverb. I like lots of reverb.
+airport.mp3 | Snippet generated by airport.neb and Reaper.
+
+
+# Design
+
+- Describe arch, files, how to build this.
+
+## Files => _files.txt_
+
+- `source_code` folder:
+    - exec.c/h - Does all the top-level work.
+    - etc...
+- `lib\lua` folder:
+- `lua_code` folder:
+    - nebulua.lua - Lua script for a simplistic multithreaded coroutine application. Uses luatoc.
+    - utils.lua - Used by demoapp.lua.
+- `test_code` folder:
+    - lua source code for this application...
+- `examples` folder:
+    - lua...
+- `mingw` folder:
+- `app` and `app\test` folder:
+
+
+
+# External Components
+
+This application uses these FOSS components:
+- [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
+- Application icon: [Charlotte Schmidt](http://pattedemouche.free.fr/) (Copyright © 2009 of Charlotte Schmidt).
