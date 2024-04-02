@@ -3,7 +3,12 @@
 #include <vcclr.h>
 #include "lua.hpp"
 #include "luainterop.h"
+extern "C" {
+#include "luautils.h"
+}
 #include "Api.h"
+
+
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -12,7 +17,7 @@ using namespace System::Text;
 
 // The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
-static lua_State* _l = nullptr;
+//static lua_State* _l = nullptr;
 
 // Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
@@ -24,6 +29,17 @@ Interop::Api::Api()
     Error = gcnew String("");
     SectionInfo = gcnew Dictionary<int, String^>();
     InitializeCriticalSection(&_critsect);
+}
+
+//--------------------------------------------------------//
+Interop::Api::~Api()
+{
+    // Finished. Clean up resources and go home.
+    DeleteCriticalSection(&_critsect);
+    if (_l != nullptr)
+    {
+        lua_close(_l);
+    }
 }
 
 //--------------------------------------------------------//
@@ -70,14 +86,6 @@ Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
 }
 
 //--------------------------------------------------------//
-Interop::Api::~Api()
-{
-    // Finished. Clean up resources and go home.
-    DeleteCriticalSection(&_critsect);
-    lua_close(_l);
-}
-
-//--------------------------------------------------------//
 Interop::NebStatus Interop::Api::OpenScript(String^ fn)
 {
     NebStatus nstat = NebStatus::Ok;
@@ -94,7 +102,16 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         nstat = NebStatus::ApiError;
     }
 
-    ///// Load the script /////
+    //// Hard reset in case we are reusing this. Call before loading.
+    //luaL_dostring(_l, "global = nil");
+
+    //{
+    //    FILE* fout = fopen("dump1.txt", "w");
+    //    luautils_DumpGlobals(_l, fout);
+    //    fclose(fout);
+    //}
+
+    // Load the script.
     if (nstat == NebStatus::Ok)
     {
         const char* fnx = ToCString(fn);
@@ -103,14 +120,20 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         nstat = EvalLuaStatus(lstat, "Load script file failed.");
     }
 
+    // Execute the script to initialize it. This catches runtime syntax errors.
     if (nstat == NebStatus::Ok)
     {
-        // Execute the script to initialize it. This catches runtime syntax errors.
         lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
         nstat = EvalLuaStatus(lstat, "Execute script failed.");
     }
 
-    ///// Run the script /////
+    //{
+    //    FILE* fout = fopen("dump2.txt", "w");
+    //    luautils_DumpGlobals(_l, fout);
+    //    fclose(fout);
+    //}
+
+    // Execute setup().
     if (nstat == NebStatus::Ok)
     {
         luainterop_Setup(_l);
@@ -121,11 +144,9 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         }
     }
 
+    // Get length and script info.
     if (nstat == NebStatus::Ok)
     {
-        // Get script info.
-
-        // Get length.
         int ltype = lua_getglobal(_l, "_length");
         int length = (int)lua_tointeger(_l, -1);
         lua_pop(_l, 1); // Clean up stack.

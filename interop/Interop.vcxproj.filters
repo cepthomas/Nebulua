@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClInclude Include="Api.h" />
     <ClInclude Include="luainterop.h" />
+    <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Api.cpp" />

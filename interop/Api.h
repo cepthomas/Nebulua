@@ -114,6 +114,10 @@ namespace Interop
         /// <summary>Convert unmanaged string to managed.</summary>
         String^ ToCliString(const char* input);
     #pragma endregion
+
+        // The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
+        lua_State* _l = nullptr;
+
     };
 
     #pragma region Event args

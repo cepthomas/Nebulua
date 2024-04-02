@@ -75,6 +75,7 @@ namespace Nebulua.Test
             UT_STOP_ON_FAIL(true);
 
             var interop = Program.MyInterop!;
+
             var tempfn = "_test_temp.lua";
 
             // General syntax error during load.
@@ -92,11 +93,12 @@ namespace Nebulua.Test
             {
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
-                    resx = 345 + 456
-                    end");
+                    resx = 345 + 456");
                 NebStatus stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, NebStatus.SyntaxError); // TODO1 fails, says ok
                 UT_STRING_CONTAINS(interop.Error, "INTEROP_BAD_FUNC_NAME");
+
+                // <eof> expected near 'end'] does not contain [INTEROP_BAD_FUNC_NAME]
             }
 
             // Bad L2C api function
