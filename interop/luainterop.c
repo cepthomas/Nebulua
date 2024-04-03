@@ -178,7 +178,7 @@ static int luainterop_CreateOutputChannel(lua_State* l)
     else { luaL_error(l, "Bad arg type for: patch"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_CreateOutputChannel(dev_name, chan_num, patch);
+    int ret = luainteropwork_CreateOutputChannel(l, dev_name, chan_num, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -201,7 +201,7 @@ static int luainterop_CreateInputChannel(lua_State* l)
     else { luaL_error(l, "Bad arg type for: chan_num"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_CreateInputChannel(dev_name, chan_num);
+    int ret = luainteropwork_CreateInputChannel(l, dev_name, chan_num);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -212,7 +212,7 @@ static int luainterop_CreateInputChannel(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: level Log level
 // Lua arg: msg Log message
-// Lua return: int Status
+// Lua return: int Unused
 static int luainterop_Log(lua_State* l)
 {
     // Get arguments
@@ -224,7 +224,7 @@ static int luainterop_Log(lua_State* l)
     else { luaL_error(l, "Bad arg type for: msg"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_Log(level, msg);
+    int ret = luainteropwork_Log(l, level, msg);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -234,7 +234,7 @@ static int luainterop_Log(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: bpm BPM 40 => 240
-// Lua return: int Status
+// Lua return: int Unused
 static int luainterop_SetTempo(lua_State* l)
 {
     // Get arguments
@@ -243,7 +243,7 @@ static int luainterop_SetTempo(lua_State* l)
     else { luaL_error(l, "Bad arg type for: bpm"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SetTempo(bpm);
+    int ret = luainteropwork_SetTempo(l, bpm);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -255,7 +255,7 @@ static int luainterop_SetTempo(lua_State* l)
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: note_num Note number
 // Lua arg: volume Volume 0.0 => 1.0
-// Lua return: int Status
+// Lua return: int Unused
 static int luainterop_SendNote(lua_State* l)
 {
     // Get arguments
@@ -270,7 +270,7 @@ static int luainterop_SendNote(lua_State* l)
     else { luaL_error(l, "Bad arg type for: volume"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SendNote(chan_hnd, note_num, volume);
+    int ret = luainteropwork_SendNote(l, chan_hnd, note_num, volume);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -282,7 +282,7 @@ static int luainterop_SendNote(lua_State* l)
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: controller Specific controller 0 => 127
 // Lua arg: value Payload 0 => 127
-// Lua return: int Status
+// Lua return: int Unused
 static int luainterop_SendController(lua_State* l)
 {
     // Get arguments
@@ -297,7 +297,7 @@ static int luainterop_SendController(lua_State* l)
     else { luaL_error(l, "Bad arg type for: value"); }
 
     // Do the work. One result.
-    int ret = luainteropwork_SendController(chan_hnd, controller, value);
+    int ret = luainteropwork_SendController(l, chan_hnd, controller, value);
     lua_pushinteger(l, ret);
     return 1;
 }

@@ -98,7 +98,7 @@ M.host_funcs =
             { name = "level", type = "I", description = "Log level" },
             { name = "msg", type = "S", description = "Log message" },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "Unused" }
     },
 
     {
@@ -109,7 +109,7 @@ M.host_funcs =
         {
             { name = "bpm", type = "I", description = "BPM 40 => 240" },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "Unused" }
     },
 
     {
@@ -122,7 +122,7 @@ M.host_funcs =
             { name = "note_num", type = "I", description = "Note number" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "Unused" }
     },
 
     {
@@ -135,7 +135,7 @@ M.host_funcs =
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
-        ret = { type = "I", description = "Status" }
+        ret = { type = "I", description = "Unused" }
     },
 }
 

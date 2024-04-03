@@ -9,6 +9,33 @@ using Interop;
 
 namespace Nebulua.Test
 {
+    //public class TestContext
+    //{
+    //    public static Api MyInterop;
+
+    //    public TestContext()
+    //    {
+    //        // Create interop.
+    //        MyInterop = Api.Instance;
+
+    //        var p = TestUtils.GetLuaPath();
+    //        if (p.valid)
+    //        {
+    //            if (MyInterop.Init(p.lpath) != NebStatus.Ok)
+    //            {
+    //                Console.WriteLine($"Init interop failed: {p.lpath}");
+    //                Environment.Exit(2);
+    //            }
+    //        }
+    //        else
+    //        {
+    //            Console.WriteLine("Init interop failed");
+    //            Environment.Exit(1);
+    //        }
+    //    }
+    //}
+
+
     /// <summary>All success operations.</summary>
     public class INTEROP_HAPPY : TestSuite
     {
@@ -73,6 +100,8 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
+
+            Program.MyInterop!.Dispose();
 
             var interop = Program.MyInterop!;
 

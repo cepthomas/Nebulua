@@ -9,7 +9,6 @@ extern "C" {
 #include "Api.h"
 
 
-
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Text;
@@ -17,7 +16,6 @@ using namespace System::Text;
 
 // The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
-//static lua_State* _l = nullptr;
 
 // Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
@@ -39,7 +37,9 @@ Interop::Api::~Api()
     if (_l != nullptr)
     {
         lua_close(_l);
+        _l = nullptr;
     }
+    _instance = nullptr;
 }
 
 //--------------------------------------------------------//

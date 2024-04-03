@@ -6,13 +6,6 @@ using namespace System::Collections::Generic;
 
 namespace Interop
 {
-    #pragma region Forward references.
-    ref class CreateChannelEventArgs;
-    ref class SendEventArgs;
-    ref class ScriptEventArgs;
-    ref class LogEventArgs;
-    #pragma endregion
-
     /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
     public enum class NebStatus
     {
@@ -20,6 +13,13 @@ namespace Interop
         BadCliArg = 11, BadLuaArg = 12, SyntaxError = 13, ApiError = 16, RunError = 17, FileError = 18,
         BadMidiCfg = 20, MidiTx = 21, MidiRx = 22
     };
+
+    #pragma region Forward references.
+    ref class CreateChannelEventArgs;
+    ref class SendEventArgs;
+    ref class ScriptEventArgs;
+    ref class LogEventArgs;
+    #pragma endregion
 
     public ref class Api
     {
@@ -31,15 +31,15 @@ namespace Interop
         /// <summary>What's in the script.</summary>
         property Dictionary<int, String^>^ SectionInfo;
 
-        ///// <summary>The singleton instance. TODO2 prefer non-singleton.</summary>
-        //static property Interop::Api^ Instance
-        //{
-        //    Interop::Api^ get()
-        //    {
-        //        if (_instance == nullptr) { _instance = gcnew Interop::Api(); }
-        //        return _instance;
-        //    }
-        //}
+        /// <summary>The singleton instance. TODO2 prefer non-singleton.</summary>
+        static property Interop::Api^ Instance
+        {
+            Interop::Api^ get()
+            {
+                if (_instance == nullptr) { _instance = gcnew Interop::Api(); }
+                return _instance;
+            }
+        }
     #pragma endregion
 
     #pragma region Lifecycle
@@ -49,7 +49,7 @@ namespace Interop
         /// <returns>Neb Status</returns>
         NebStatus Init(List<String^>^ lpath);
 
-//    private:
+    private:
         /// <summary>Prevent instantiation.</summary>
         /// <param name="lpath">LUA_PATH components</param>
         Interop::Api();
@@ -59,6 +59,9 @@ namespace Interop
 
         /// <summary>The singleton instance.</summary>
         static Interop::Api^ _instance;
+
+        // The main_lua thread.
+        lua_State* _l = nullptr;
     #pragma endregion
 
     #pragma region Run script - Call lua functions from host
@@ -114,10 +117,6 @@ namespace Interop
         /// <summary>Convert unmanaged string to managed.</summary>
         String^ ToCliString(const char* input);
     #pragma endregion
-
-        // The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
-        lua_State* _l = nullptr;
-
     };
 
     #pragma region Event args

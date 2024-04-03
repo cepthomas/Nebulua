@@ -48,42 +48,48 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
 //---------------- Work functions for lua call host -------------//
 
 /// Create an output midi channel.
+/// @param[in] l Internal lua state.
 /// @param[in] dev_name Midi device name
 /// @param[in] chan_num Midi channel number 1 => 16
 /// @param[in] patch Midi patch number 0 => 127
 /// @return Channel handle or 0 if invalid
-int luainteropwork_CreateOutputChannel(const char* dev_name, int chan_num, int patch);
+int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int chan_num, int patch);
 
 /// Create an input midi channel.
+/// @param[in] l Internal lua state.
 /// @param[in] dev_name Midi device name
 /// @param[in] chan_num Midi channel number 1 => 16
 /// @return Channel handle or 0 if invalid
-int luainteropwork_CreateInputChannel(const char* dev_name, int chan_num);
+int luainteropwork_CreateInputChannel(lua_State* l, const char* dev_name, int chan_num);
 
 /// Script wants to log something.
+/// @param[in] l Internal lua state.
 /// @param[in] level Log level
 /// @param[in] msg Log message
-/// @return Status
-int luainteropwork_Log(int level, const char* msg);
+/// @return Unused
+int luainteropwork_Log(lua_State* l, int level, const char* msg);
 
 /// Script wants to change tempo.
+/// @param[in] l Internal lua state.
 /// @param[in] bpm BPM 40 => 240
-/// @return Status
-int luainteropwork_SetTempo(int bpm);
+/// @return Unused
+int luainteropwork_SetTempo(lua_State* l, int bpm);
 
 /// If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).
+/// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Output channel handle
 /// @param[in] note_num Note number
 /// @param[in] volume Volume 0.0 => 1.0
-/// @return Status
-int luainteropwork_SendNote(int chan_hnd, int note_num, double volume);
+/// @return Unused
+int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
 /// Send a controller immediately.
+/// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Output channel handle
 /// @param[in] controller Specific controller 0 => 127
 /// @param[in] value Payload 0 => 127
-/// @return Status
-int luainteropwork_SendController(int chan_hnd, int controller, int value);
+/// @return Unused
+int luainteropwork_SendController(lua_State* l, int chan_hnd, int controller, int value);
 
 //---------------- Infrastructure ----------------------//
 
