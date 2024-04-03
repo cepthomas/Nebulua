@@ -52,42 +52,42 @@ namespace Nebulua.Test
     {
         public List<string> CollectedEvents { get; set; }
 
-        readonly Interop.Api _interop;
+        readonly Api _interop;
 
-        public InteropEventCollector(Interop.Api interop)
+        public InteropEventCollector(Api interop)
         {
             _interop = interop;
             CollectedEvents = [];
 
             // Hook script events.
-            _interop.CreateChannelEvent += Interop_CreateChannelEvent;
-            _interop.SendEvent += Interop_SendEvent;
-            _interop.LogEvent += Interop_LogEvent;
-            _interop.ScriptEvent += Interop_ScriptEvent;
+            EventProc.Instance.CreateChannelEvent += Interop_CreateChannelEvent;
+            EventProc.Instance.SendEvent += Interop_SendEvent;
+            EventProc.Instance.LogEvent += Interop_LogEvent;
+            EventProc.Instance.ScriptEvent += Interop_ScriptEvent;
         }
 
-        void Interop_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
+        void Interop_CreateChannelEvent(object? sender, CreateChannelEventArgs e)
         {
             string s = $"CreateChannelEvent DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
             CollectedEvents.Add(s);
             e.Ret = 0x0102;
         }
 
-        void Interop_SendEvent(object? sender, Interop.SendEventArgs e)
+        void Interop_SendEvent(object? sender, SendEventArgs e)
         {
             string s = $"SendEvent ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
             CollectedEvents.Add(s);
             e.Ret = (int)NebStatus.Ok;
         }
 
-        void Interop_LogEvent(object? sender, Interop.LogEventArgs e)
+        void Interop_LogEvent(object? sender, LogEventArgs e)
         {
             string s = $"LogEvent LogLevel:{e.LogLevel} Msg:{e.Msg}";
             CollectedEvents.Add(s);
             e.Ret = (int)NebStatus.Ok;
         }
 
-        void Interop_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
+        void Interop_ScriptEvent(object? sender, ScriptEventArgs e)
         {
             string s = $"ScriptEvent Bpm:{e.Bpm}";
             CollectedEvents.Add(s);

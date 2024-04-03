@@ -23,32 +23,32 @@ namespace Interop
 
         #region Lifecycle
         /// <summary>Prevent client instantiation.</summary>
-        Api() { }
+        public Api(List<string> lpath) { }
 
-        /// <summary>
-        /// Initialize everything.
-        /// </summary>
-        /// <returns>Status</returns>
-        public NebStatus Init(List<string> lpath)
-        {
-            return NebStatus.Ok;
-        }
+        ///// <summary>
+        ///// Initialize everything.
+        ///// </summary>
+        ///// <returns>Status</returns>
+        //public NebStatus Init(List<string> lpath)
+        //{
+        //    return NebStatus.Ok;
+        //}
         #endregion
 
-        #region Singleton support
-        /// <summary>The singleton instance.</summary>
-        public static Api Instance
-        {
-            get
-            {
-                _instance ??= new Api();
-                return _instance;
-            }
-        }
+        //#region Singleton support
+        ///// <summary>The singleton instance.</summary>
+        //public static Api Instance
+        //{
+        //    get
+        //    {
+        //        _instance ??= new Api();
+        //        return _instance;
+        //    }
+        //}
 
-        /// <summary>The singleton instance.</summary>
-        static Api? _instance;
-        #endregion
+        ///// <summary>The singleton instance.</summary>
+        //static Api? _instance;
+        //#endregion
 
         #region Run script - Call lua functions from host
         public NebStatus OpenScript(string fn)
@@ -72,19 +72,19 @@ namespace Interop
         }
         #endregion
 
-        #region Events
-        public event EventHandler<CreateChannelEventArgs>? CreateChannelEvent;
-        public void NotifyCreateChannel(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
+        //#region Events
+        //public event EventHandler<CreateChannelEventArgs>? CreateChannelEvent;
+        //public void NotifyCreateChannel(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
 
-        public event EventHandler<SendEventArgs>? SendEvent;
-        public void NotifySend(SendEventArgs args) { SendEvent?.Invoke(this, args); }
+        //public event EventHandler<SendEventArgs>? SendEvent;
+        //public void NotifySend(SendEventArgs args) { SendEvent?.Invoke(this, args); }
 
-        public event EventHandler<LogEventArgs>? LogEvent;
-        public void NotifyLogEvent(LogEventArgs args) { LogEvent?.Invoke(this, args); }
+        //public event EventHandler<LogEventArgs>? LogEvent;
+        //public void NotifyLogEvent(LogEventArgs args) { LogEvent?.Invoke(this, args); }
 
-        public event EventHandler<ScriptEventArgs>? ScriptEvent;
-        public void NotifyScriptEvent(ScriptEventArgs args) { ScriptEvent?.Invoke(this, args); }
-        #endregion
+        //public event EventHandler<ScriptEventArgs>? ScriptEvent;
+        //public void NotifyScriptEvent(ScriptEventArgs args) { ScriptEvent?.Invoke(this, args); }
+        //#endregion
     };
 
     #region Event args
@@ -119,5 +119,47 @@ namespace Interop
         public int Ret;       // handler return value
     };
     #endregion
-    
+
+
+    public class EventProc
+    {
+        /// <summary>The singleton instance.</summary>
+        public static EventProc? Instance
+        {
+            get;
+            //get
+            //{
+            //    if (_instance == null) { _instance = new(); }
+            //    return _instance;
+            //}
+        }
+
+        public EventProc()
+        {
+
+        }
+
+        /// <summary>Clean up resources.</summary>
+        //~EventProc();
+
+        /// <summary>The singleton instance.</summary>
+        static EventProc? _instance;
+
+        public event EventHandler<CreateChannelEventArgs>? CreateChannelEvent;
+        public void NotifyCreateChannelEvent(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
+
+        public event EventHandler<SendEventArgs>? SendEvent;
+        public void NotifySendEvent(SendEventArgs args) { SendEvent?.Invoke(this, args); }
+
+        public event EventHandler<LogEventArgs>? LogEvent;
+        public void NotifyLogEvent(LogEventArgs args) { LogEvent?.Invoke(this, args); }
+
+        public event EventHandler<ScriptEventArgs>? ScriptEvent;
+        public void NotifyScriptEvent(ScriptEventArgs args) { ScriptEvent?.Invoke(this, args); }
+    };
+
+
+
+
+
 }

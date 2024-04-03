@@ -14,7 +14,7 @@ using namespace System::Collections::Generic;
 using namespace System::Text;
 
 
-// The main_lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
+// The main lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
 
 // Protect lua context calls by multiple threads.
@@ -22,29 +22,13 @@ static CRITICAL_SECTION _critsect;
 
 
 //--------------------------------------------------------//
-Interop::Api::Api()
+Interop::Api::Api(List<String^>^ lpath)
 {
+    _lpath = lpath;
     Error = gcnew String("");
     SectionInfo = gcnew Dictionary<int, String^>();
     InitializeCriticalSection(&_critsect);
-}
 
-//--------------------------------------------------------//
-Interop::Api::~Api()
-{
-    // Finished. Clean up resources and go home.
-    DeleteCriticalSection(&_critsect);
-    if (_l != nullptr)
-    {
-        lua_close(_l);
-        _l = nullptr;
-    }
-    _instance = nullptr;
-}
-
-//--------------------------------------------------------//
-Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
-{
     NebStatus stat = NebStatus::Ok;
 
     // Init lua.
@@ -54,7 +38,7 @@ Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
     luaL_openlibs(_l);
 
     // Fix lua path.
-    if (luaPaths->Count > 0)
+    if (_lpath->Count > 0)
     {
         // https://stackoverflow.com/a/4156038
         lua_getglobal(_l, "package");
@@ -63,7 +47,7 @@ Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
 
         StringBuilder^ sb = gcnew StringBuilder(currentPath);
         sb->Append(";"); // default lua doesn't have this.
-        for each (String ^ lp in luaPaths)
+        for each (String^ lp in _lpath)
         {
             sb->Append(String::Format("{0}\\?.lua;", lp));
         }
@@ -82,7 +66,20 @@ Interop::NebStatus Interop::Api::Init(List<String^>^ luaPaths)
     lua_pop(_l, 1);
     //luaL_dostring(_l, "print(package.path");
 
-    return stat;
+    //return stat;
+}
+
+//--------------------------------------------------------//
+Interop::Api::~Api()
+{
+    // Finished. Clean up resources and go home.
+    DeleteCriticalSection(&_critsect);
+    if (_l != nullptr)
+    {
+        lua_close(_l);
+        _l = nullptr;
+    }
+    //    _instance = nullptr;
 }
 
 //--------------------------------------------------------//

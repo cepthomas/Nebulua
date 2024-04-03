@@ -18,8 +18,11 @@ namespace Nebulua
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("App");
 
-        /// <summary>The singleton API.</summary>
-        readonly Api _interop = Api.Instance;
+        ///// <summary>The singleton API.</summary>
+        //readonly Api _interop = Api.Instance;
+
+        /// <summary>The API.</summary>
+        readonly Api _interop;
 
         /// <summary>Talk to the user.</summary>
         readonly Cli _cli;
@@ -37,8 +40,20 @@ namespace Nebulua
         readonly List<MidiInput> _inputs = [];
 
         /// <summary>Resource management.</summary>
-        private bool _disposed;
+        bool _disposed;
+
         #endregion
+
+
+        //public static Icon CreateIcon(string fn)
+        //{
+        //    using FileStream stream = new(fn, FileMode.Open);
+        //    var ico = new Icon(stream);
+        //    return ico;
+        //}
+
+
+        readonly List<string> _lpath;
 
         #region Lifecycle
         /// <summary>
@@ -47,6 +62,8 @@ namespace Nebulua
         /// <param name="lpath">LUA_PATH components.</param>
         public App(List<string> lpath)
         {
+            _lpath = lpath;
+
             // Init logging.
             LogManager.MinLevelFile = LogLevel.Debug;
             LogManager.MinLevelNotif = LogLevel.Warn;
@@ -59,17 +76,22 @@ namespace Nebulua
             _cli.Write("Greetings from Nebulua!");
 
             // Create script api.
-            NebStatus stat = _interop.Init(lpath);
-            if (stat != NebStatus.Ok)
-            {
-                FatalError(stat, "Interop Init() failed", _interop.Error);
-            }
-            
+            _interop = new(lpath);
+            //NebStatus stat = _interop.Init(lpath);
+            //if (stat != NebStatus.Ok)
+            //{
+            //    FatalError(stat, "Interop Init() failed", _interop.Error);
+            //}
+
             // Hook script events.
-            _interop.CreateChannelEvent += Interop_CreateChannelEvent;
-            _interop.SendEvent += Interop_SendEvent;
-            _interop.LogEvent += Interop_LogEvent;
-            _interop.ScriptEvent += Interop_ScriptEvent;
+            //_interop.CreateChannelEvent += Interop_CreateChannelEvent;
+            //_interop.SendEvent += Interop_SendEvent;
+            //_interop.LogEvent += Interop_LogEvent;
+            //_interop.ScriptEvent += Interop_ScriptEvent;
+            EventProc.Instance.CreateChannelEvent += Interop_CreateChannelEvent;
+            EventProc.Instance.SendEvent += Interop_SendEvent;
+            EventProc.Instance.LogEvent += Interop_LogEvent;
+            EventProc.Instance.ScriptEvent += Interop_ScriptEvent;
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
         }
@@ -133,6 +155,8 @@ namespace Nebulua
             NebStatus stat;
 
             // Load the script.
+            Api api = new(_lpath);
+
             stat = _interop.OpenScript(fn);
             if (stat != NebStatus.Ok)
             {
@@ -323,7 +347,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_CreateChannelEvent(object? sender, Interop.CreateChannelEventArgs e)
+        void Interop_CreateChannelEvent(object? sender, CreateChannelEventArgs e)
         {
             e.Ret = 0; // default means invalid chan_hnd
 
@@ -379,7 +403,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_SendEvent(object? sender, Interop.SendEventArgs e)
+        void Interop_SendEvent(object? sender, SendEventArgs e)
         {
             e.Ret = 0; // not used
 
@@ -427,7 +451,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_LogEvent(object? sender, Interop.LogEventArgs e)
+        void Interop_LogEvent(object? sender, LogEventArgs e)
         {
             _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
             e.Ret = 0;
@@ -438,7 +462,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_ScriptEvent(object? sender, Interop.ScriptEventArgs e)
+        void Interop_ScriptEvent(object? sender, ScriptEventArgs e)
         {
             if (e.Bpm > 0)
             {

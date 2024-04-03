@@ -42,7 +42,11 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-            var interop = Program.MyInterop!;
+
+            // Create interop.
+            var (valid, lpath) = TestUtils.GetLuaPath();
+            var interop = new(lpath);
+
             InteropEventCollector events = new(interop);
             string scrfn = Path.Join(TestUtils.GetTestFilesDir(), "script_happy.lua");
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
@@ -199,23 +203,24 @@ namespace Nebulua.Test
         [STAThread]
         static void Main(string[] _)
         {
-            // Create interop.
-            MyInterop = Api.Instance;
+           // // Create interop.
+           //// MyInterop = Api.Instance;
 
-            var p = TestUtils.GetLuaPath();
-            if (p.valid)
-            {
-                if (MyInterop.Init(p.lpath) != NebStatus.Ok)
-                {
-                    Console.WriteLine($"Init interop failed: {p.lpath}");
-                    Environment.Exit(2);
-                }
-            }
-            else
-            {
-                Console.WriteLine("Init interop failed");
-                Environment.Exit(1);
-            }
+           // var p = TestUtils.GetLuaPath();
+           // if (p.valid)
+           // {
+           //     MyInterop = new(p.lpath);
+           //     //if (MyInterop = new(p.lpath));
+           //     //{
+           //     //    Console.WriteLine($"Init interop failed: {p.lpath}");
+           //     //    Environment.Exit(2);
+           //     //}
+           // }
+           // else
+           // {
+           //     Console.WriteLine("Init interop failed");
+           //     Environment.Exit(1);
+           // }
 
             TestRunner runner = new(OutputFormat.Readable);
             var cases = new[] { "INTEROP" };
@@ -223,6 +228,6 @@ namespace Nebulua.Test
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
 
-        public static Api? MyInterop;
+        //public static Api? MyInterop;
     }
 }
