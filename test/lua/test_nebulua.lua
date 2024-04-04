@@ -130,8 +130,8 @@ function M.suite_process_script(pn)
     -- s = ut.dump_table_string(api.activity, true, "activity")
     -- print(s)
 
-    -- ok, ret = pcall(input_note, 10, 11, 0.3)
-    -- pn.UT_TRUE(ok, string.format("Script function input_note() failed:\n%s ", ret))
+    -- ok, ret = pcall(rcv_note, 10, 11, 0.3)
+    -- pn.UT_TRUE(ok, string.format("Script function rcv_note() failed:\n%s ", ret))
 end
 
 

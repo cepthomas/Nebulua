@@ -78,7 +78,7 @@ int luainterop_Step(lua_State* l, int tick)
 }
 
 //--------------------------------------------------------//
-int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     _error = NULL;
     int stat = LUA_OK;
@@ -87,10 +87,10 @@ int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume
     int ret = 0;
 
     // Get function.
-    int ltype = lua_getglobal(l, "input_note");
+    int ltype = lua_getglobal(l, "rcv_note");
     if (ltype != LUA_TFUNCTION)
     {
-        if (false) { _error = "Bad function name: input_note()"; }
+        if (false) { _error = "Bad function name: rcv_note()"; }
         return ret;
     }
 
@@ -108,7 +108,7 @@ int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Bad return type for input_note(): should be integer"; }
+        else { _error = "Bad return type for rcv_note(): should be integer"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -116,7 +116,7 @@ int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume
 }
 
 //--------------------------------------------------------//
-int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int value)
+int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int value)
 {
     _error = NULL;
     int stat = LUA_OK;
@@ -125,10 +125,10 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
     int ret = 0;
 
     // Get function.
-    int ltype = lua_getglobal(l, "input_controller");
+    int ltype = lua_getglobal(l, "rcv_controller");
     if (ltype != LUA_TFUNCTION)
     {
-        if (false) { _error = "Bad function name: input_controller()"; }
+        if (false) { _error = "Bad function name: rcv_controller()"; }
         return ret;
     }
 
@@ -146,7 +146,7 @@ int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int v
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Bad return type for input_controller(): should be integer"; }
+        else { _error = "Bad return type for rcv_controller(): should be integer"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.

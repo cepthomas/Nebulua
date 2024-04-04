@@ -191,7 +191,7 @@ public override void Step();
 Called every Subbeat/tick.
 
 ```lua
-public override void InputNote(dev, chnum, note, vel);
+public override void RcvNote(dev, chnum, note, vel);
 ```
 Called when input note arrives.
 
@@ -201,7 +201,7 @@ Called when input note arrives.
 - vel: velocity
 
 ```lua
-public override void InputControl(dev, chnum, ctlid, value);
+public override void RcvControl(dev, chnum, ctlid, value);
 ```
 Called when input controller arrives.
 - dev: DeviceType.

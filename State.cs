@@ -52,10 +52,10 @@ namespace Nebulua
         public int LoopEnd { get; set; }
 
         /// <summary>Monitor midi input.</summary>
-        public bool MonInput { get; set; }
+        public bool MonRcv { get; set; }
 
         /// <summary>Monitor midi output.</summary>
-        public bool MonOutput { get; set; }
+        public bool MonSend { get; set; }
         #endregion
 
         #region Events

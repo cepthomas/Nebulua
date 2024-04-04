@@ -42,8 +42,8 @@ Interop::Api::Api(List<String^>^ lpath)
     {
         // https://stackoverflow.com/a/4156038
         lua_getglobal(_l, "package");
-        lua_getfield(_l, -1, "path"); // get field "path" from table at top of stack (-1)
-        String^ currentPath = ToCliString(lua_tostring(_l, -1)); // grab path string from top of stack
+        lua_getfield(_l, -1, "path");
+        String^ currentPath = ToCliString(lua_tostring(_l, -1));
 
         StringBuilder^ sb = gcnew StringBuilder(currentPath);
         sb->Append(";"); // default lua doesn't have this.
@@ -53,20 +53,18 @@ Interop::Api::Api(List<String^>^ lpath)
         }
         const char* newPath = ToCString(sb->ToString());
 
-        lua_pop(_l, 1); // get rid of the string on the stack we just pushed on line 5
-        lua_pushstring(_l, newPath); // push the new one
-        lua_setfield(_l, -2, "path"); // set the field "path" in table at -2 with value at top of stack
-        lua_pop(_l, 1); // get rid of package table from top of stack
+        lua_pop(_l, 1);
+        lua_pushstring(_l, newPath);
+        lua_setfield(_l, -2, "path");
+        lua_pop(_l, 1);
     }
 
-    //_load host funcs into lua space. This table gets pushed on the stack and into globals.
+    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);
 
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
     //luaL_dostring(_l, "print(package.path");
-
-    //return stat;
 }
 
 //--------------------------------------------------------//
@@ -79,7 +77,6 @@ Interop::Api::~Api()
         lua_close(_l);
         _l = nullptr;
     }
-    //    _instance = nullptr;
 }
 
 //--------------------------------------------------------//
@@ -99,15 +96,6 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         nstat = NebStatus::ApiError;
     }
 
-    //// Hard reset in case we are reusing this. Call before loading.
-    //luaL_dostring(_l, "global = nil");
-
-    //{
-    //    FILE* fout = fopen("dump1.txt", "w");
-    //    luautils_DumpGlobals(_l, fout);
-    //    fclose(fout);
-    //}
-
     // Load the script.
     if (nstat == NebStatus::Ok)
     {
@@ -123,12 +111,6 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
         nstat = EvalLuaStatus(lstat, "Execute script failed.");
     }
-
-    //{
-    //    FILE* fout = fopen("dump2.txt", "w");
-    //    luautils_DumpGlobals(_l, fout);
-    //    fclose(fout);
-    //}
 
     // Execute setup().
     if (nstat == NebStatus::Ok)
@@ -185,7 +167,7 @@ Interop::NebStatus Interop::Api::Step(int tick)
 }
 
 //--------------------------------------------------------//
-Interop::NebStatus Interop::Api::InputNote(int chan_hnd, int note_num, double volume)
+Interop::NebStatus Interop::Api::RcvNote(int chan_hnd, int note_num, double volume)
 {
     NebStatus ret = NebStatus::Ok;
     Error = gcnew String("");
@@ -197,20 +179,20 @@ Interop::NebStatus Interop::Api::InputNote(int chan_hnd, int note_num, double vo
         ret = NebStatus::ApiError;
     }
 
-    luainterop_InputNote(_l, chan_hnd, note_num, volume);
+    luainterop_RcvNote(_l, chan_hnd, note_num, volume);
 
     LeaveCriticalSection(&_critsect);
     return ret;
 }
 
 //--------------------------------------------------------//
-Interop::NebStatus Interop::Api::InputController(int chan_hnd, int controller, int value)
+Interop::NebStatus Interop::Api::RcvController(int chan_hnd, int controller, int value)
 {
     NebStatus ret = NebStatus::Ok;
     Error = gcnew String("");
     EnterCriticalSection(&_critsect);
 
-    luainterop_InputController(_l, chan_hnd, controller, value);
+    luainterop_RcvController(_l, chan_hnd, controller, value);
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());

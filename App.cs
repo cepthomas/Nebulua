@@ -18,11 +18,11 @@ namespace Nebulua
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("App");
 
-        ///// <summary>The singleton API.</summary>
-        //readonly Api _interop = Api.Instance;
+        /// <summary>The API(s). Key is opaque lua context pointer.</summary>
+        readonly Dictionary<int, Api> _api = [];
 
-        /// <summary>The API.</summary>
-        readonly Api _interop;
+        /// <summary>Client supplied context for LUA_PATH.</summary>
+        readonly List<string> _lpath;
 
         /// <summary>Talk to the user.</summary>
         readonly Cli _cli;
@@ -41,19 +41,7 @@ namespace Nebulua
 
         /// <summary>Resource management.</summary>
         bool _disposed;
-
         #endregion
-
-
-        //public static Icon CreateIcon(string fn)
-        //{
-        //    using FileStream stream = new(fn, FileMode.Open);
-        //    var ico = new Icon(stream);
-        //    return ico;
-        //}
-
-
-        readonly List<string> _lpath;
 
         #region Lifecycle
         /// <summary>
@@ -68,30 +56,16 @@ namespace Nebulua
             LogManager.MinLevelFile = LogLevel.Debug;
             LogManager.MinLevelNotif = LogLevel.Warn;
             LogManager.LogMessage += LogManager_LogMessage;
-            //var sme = MiscUtils.GetSourcePath();
-            //LogManager.Run(Path.Combine(sme, "temp", "_log.txt"), 100000);
             LogManager.Run("_log.txt", 100000);
 
             _cli = new(Console.In, Console.Out, "->");
             _cli.Write("Greetings from Nebulua!");
 
-            // Create script api.
-            _interop = new(lpath);
-            //NebStatus stat = _interop.Init(lpath);
-            //if (stat != NebStatus.Ok)
-            //{
-            //    FatalError(stat, "Interop Init() failed", _interop.Error);
-            //}
-
             // Hook script events.
-            //_interop.CreateChannelEvent += Interop_CreateChannelEvent;
-            //_interop.SendEvent += Interop_SendEvent;
-            //_interop.LogEvent += Interop_LogEvent;
-            //_interop.ScriptEvent += Interop_ScriptEvent;
-            EventProc.Instance.CreateChannelEvent += Interop_CreateChannelEvent;
-            EventProc.Instance.SendEvent += Interop_SendEvent;
-            EventProc.Instance.LogEvent += Interop_LogEvent;
-            EventProc.Instance.ScriptEvent += Interop_ScriptEvent;
+            NotifIer.Instance.CreateChannel += Interop_CreateChannel;
+            NotifIer.Instance.Send += Interop_Send;
+            NotifIer.Instance.Log += Interop_Log;
+            NotifIer.Instance.PropertyChange += Interop_PropertyChange;
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
         }
@@ -154,16 +128,18 @@ namespace Nebulua
         {
             NebStatus stat;
 
-            // Load the script.
+            // Create script api.
             Api api = new(_lpath);
+            _api.Add(api.Id, api);
 
-            stat = _interop.OpenScript(fn);
+            // Load the script.
+            stat = api.OpenScript(fn);
             if (stat != NebStatus.Ok)
             {
-                FatalError(stat, "Interop OpenScript() failed", _interop.Error);
+                FatalError(stat, "Interop OpenScript() failed", api.Error);
             }
 
-            State.Instance.Length = _interop.SectionInfo.Last().Key;
+            State.Instance.Length = api.SectionInfo.Last().Key;
 
             // Start timer.
             SetTimer(State.Instance.Tempo);
@@ -175,7 +151,7 @@ namespace Nebulua
                 stat = _cli.Read();
                 if (stat != NebStatus.Ok)
                 {
-                    FatalError(stat, "Cli Read() failed", _interop.Error);
+                    FatalError(stat, "Cli Read() failed", api.Error);
                 }
             }
 
@@ -236,39 +212,39 @@ namespace Nebulua
                 // Do script. TODO2 Handle solo/mute like nebulator.
                 _tan?.Arm();
 
-                NebStatus stat = _interop.Step(State.Instance.CurrentTick);
+                foreach (var api in _api.Values)
+                {
+                    NebStatus stat = api.Step(State.Instance.CurrentTick);
+                    if (stat != NebStatus.Ok)
+                    {
+                        FatalError(stat, "Api Step() failed", api.Error);
+                    }
+                }
 
                 // Read stopwatch and diff/stats.
                 string? s = _tan?.Dump();
 
                 // Update state.
-                if (stat != NebStatus.Ok)
-                {
-                    FatalError(stat, "Interop Step() failed", _interop.Error);
-                }
-                else
-                {
-                    // Bump time and check state.
-                    int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-                    int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+                // Bump time and check state.
+                int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+                int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
 
-                    if (++State.Instance.CurrentTick >= end) // done
+                if (++State.Instance.CurrentTick >= end) // done
+                {
+                    // Keep going? else stop/rewind.
+                    if (State.Instance.DoLoop)
                     {
-                        // Keep going? else stop/rewind.
-                        if (State.Instance.DoLoop)
-                        {
-                            // Keep going.
-                            State.Instance.CurrentTick = start;
-                        }
-                        else
-                        {
-                            // Stop and rewind.
-                            State.Instance.ExecState = ExecState.Idle;
-                            State.Instance.CurrentTick = start;
- 
-                            // just in case
-                            KillAll();
-                        }
+                        // Keep going.
+                        State.Instance.CurrentTick = start;
+                    }
+                    else
+                    {
+                        // Stop and rewind.
+                        State.Instance.ExecState = ExecState.Idle;
+                        State.Instance.CurrentTick = start;
+
+                        // just in case
+                        KillAll();
                     }
                 }
             }
@@ -304,39 +280,38 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Midi_InputReceiveEvent(object? sender, MidiEvent e)
+        void Midi_ReceiveEvent(object? sender, MidiEvent e)
         {
             NebStatus stat = NebStatus.Ok;
             int index = _inputs.IndexOf((MidiInput)sender!);
             int chan_hnd = Utils.MakeInHandle(index, e.Channel);
 
-            switch (e)
+            foreach (var api in _api.Values)
             {
-                case NoteOnEvent evt:
-                    stat = _interop.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                    break;
+                switch (e)
+                {
+                    case NoteOnEvent evt:
+                        stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                        break;
+                    case NoteEvent evt:
+                        stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
+                        break;
+                    case ControlChangeEvent evt:
+                        stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                        break;
+                    default: // Ignore.
+                        break;
+                }
 
-                case NoteEvent evt:
-                    stat = _interop.InputNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                    break;
+                if (stat != NebStatus.Ok)
+                {
+                    FatalError(stat, "Api Midi Receive() failed", api.Error);
+                }
 
-                case ControlChangeEvent evt:
-                    stat = _interop.InputController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                    break;
-
-                default:
-                    // Ignore.
-                    break;
-            }
-
-            if (stat != NebStatus.Ok)
-            {
-                FatalError(stat, "Interop Midi Receive() failed", _interop.Error);
-            }
-
-            if (State.Instance.MonInput)
-            {
-                _logger.Trace($"MIDI_IN {e}");
+                if (State.Instance.MonRcv)
+                {
+                    _logger.Trace($"MIDI_RCV {e}");
+                }
             }
         }
         #endregion
@@ -347,9 +322,12 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_CreateChannelEvent(object? sender, CreateChannelEventArgs e)
+        void Interop_CreateChannel(object? sender, CreateChannelArgs e)
         {
             e.Ret = 0; // default means invalid chan_hnd
+
+            // TODO1 get correct Api for e.L.
+            Api api = _api[e.Id];
 
             try
             {
@@ -368,13 +346,13 @@ namespace Nebulua
                         _outputs.Add(output);
                     }
 
-                    output.LogEnable = State.Instance.MonOutput;
+                    output.LogEnable = State.Instance.MonSend;
                     output.Channels[e.ChanNum - 1] = true;
                     e.Ret = Utils.MakeOutHandle(_outputs.Count - 1, e.ChanNum);
 
                     // Send the patch now.
                     PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
-                    output.SendEvent(pevt);
+                    output.Send(pevt);
                 }
                 else
                 {
@@ -382,11 +360,11 @@ namespace Nebulua
                     if (input == null)
                     {
                         input = new(e.DevName); // throws
-                        input.InputReceiveEvent += Midi_InputReceiveEvent;
+                        input.ReceiveEvent += Midi_ReceiveEvent;
                         _inputs.Add(input);
                     }
 
-                    input.LogEnable = State.Instance.MonInput;
+                    input.LogEnable = State.Instance.MonRcv;
                     input.Channels[e.ChanNum - 1] = true;
                     e.Ret = Utils.MakeInHandle(_inputs.Count - 1, e.ChanNum);
                 }
@@ -403,7 +381,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_SendEvent(object? sender, SendEventArgs e)
+        void Interop_Send(object? sender, SendArgs e)
         {
             e.Ret = 0; // not used
 
@@ -425,24 +403,24 @@ namespace Nebulua
 
                 if (e.IsNote)
                 {
-                    output.SendEvent(e.Value == 0 ?
+                    output.Send(e.Value == 0 ?
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value));
                 }
                 else
                 {
-                    output.SendEvent(new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value));
+                    output.Send(new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value));
                 }
                 
-                if (State.Instance.MonOutput)
+                if (State.Instance.MonSend)
                 {
-                    _logger.Trace($"MIDI_OUT {e}");
+                    _logger.Trace($"MIDI_SND {e}");
                 }
             }
             catch (Exception ex)
             {
                 e.Ret = 0;
-                FatalError(NebStatus.SyntaxError, "Script SendEvent() failed", ex.Message);
+                FatalError(NebStatus.SyntaxError, "Script Send() failed", ex.Message);
             }
         }
 
@@ -451,7 +429,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_LogEvent(object? sender, LogEventArgs e)
+        void Interop_Log(object? sender, LogArgs e)
         {
             _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
             e.Ret = 0;
@@ -462,7 +440,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_ScriptEvent(object? sender, ScriptEventArgs e)
+        void Interop_PropertyChange(object? sender, PropertyArgs e)
         {
             if (e.Bpm > 0)
             {
@@ -514,7 +492,7 @@ namespace Nebulua
                 for (int i = 0; i < Defs.NUM_MIDI_CHANNELS; i++)
                 {
                     ControlChangeEvent cevt = new(0, i + 1, MidiController.AllNotesOff, 0);
-                    o.SendEvent(cevt);
+                    o.Send(cevt);
                 }
             }
 

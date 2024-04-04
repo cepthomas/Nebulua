@@ -227,21 +227,21 @@ namespace Nebulua
                 case 2: // set
                     switch (args[1])
                     {
-                        case "in":
-                            State.Instance.MonInput = !State.Instance.MonInput;
+                        case "rx":
+                            State.Instance.MonRcv = !State.Instance.MonRcv;
                             stat = NebStatus.Ok;
                             Write("");
                             break;
 
-                        case "out":
-                            State.Instance.MonOutput = !State.Instance.MonOutput;
+                        case "tx":
+                            State.Instance.MonSend = !State.Instance.MonSend;
                             stat = NebStatus.Ok;
                             Write("");
                             break;
 
                         case "off":
-                            State.Instance.MonInput = false;
-                            State.Instance.MonOutput = false;
+                            State.Instance.MonRcv = false;
+                            State.Instance.MonSend = false;
                             stat = NebStatus.Ok;
                             Write("");
                             break;
@@ -277,7 +277,6 @@ namespace Nebulua
         //--------------------------------------------------------//
         NebStatus PositionCmd(CommandDescriptor cmd, List<string> args)
         {
-
             NebStatus stat;
 
             switch (args.Count)

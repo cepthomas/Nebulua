@@ -62,8 +62,8 @@ end
 
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
-function input_note(chan_hnd, note_num, volume)
-    local s = string.format("input_note: %d %d %f", chan_hnd, note_num, volume)
+function rcv_note(chan_hnd, note_num, volume)
+    local s = string.format("rcv_note: %d %d %f", chan_hnd, note_num, volume)
     neb.log_info(s)
 
     if chan_hnd == hnd_in1 then
@@ -74,8 +74,8 @@ end
 
 -----------------------------------------------------------------------------
 -- Handler for input controller events. Optional.
-function input_controller(chan_hnd, controller, value)
-    local s = string.format("input_controller: %d %d %d", chan_hnd, controller, value)
+function rcv_controller(chan_hnd, controller, value)
+    local s = string.format("rcv_controller: %d %d %d", chan_hnd, controller, value)
     neb.log_info(s)
     return 0
 end

@@ -28,21 +28,21 @@ int luainterop_Setup(lua_State* l);
 /// @return int Unused
 int luainterop_Step(lua_State* l, int tick);
 
-/// Host call lua: Called when input arrives.
+/// Host call lua: Called when midi input arrives.
 /// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Input channel handle
 /// @param[in] note_num Note number 0 => 127
 /// @param[in] volume Volume 0.0 => 1.0
 /// @return int Unused
-int luainterop_InputNote(lua_State* l, int chan_hnd, int note_num, double volume);
+int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
-/// Host call lua: Called when input arrives.
+/// Host call lua: Called when midi input arrives.
 /// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Input channel handle
 /// @param[in] controller Specific controller id 0 => 127
 /// @param[in] value Payload 0 => 127
 /// @return int Unused
-int luainterop_InputController(lua_State* l, int chan_hnd, int controller, int value);
+int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int value);
 
 
 //---------------- Work functions for lua call host -------------//

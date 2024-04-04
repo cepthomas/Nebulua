@@ -11,7 +11,7 @@ using Ephemera.NBagOfTricks.Slog;
 namespace Nebulua
 {
     /// <summary>
-    /// A midi output layer - associated with a single device.
+    /// A midi output device.
     /// </summary>
     public class MidiOutput
     {
@@ -72,7 +72,7 @@ namespace Nebulua
         #endregion
 
         /// <summary>Send midi event.</summary>
-        public void SendEvent(MidiEvent evt)
+        public void Send(MidiEvent evt)
         {
             if(_midiOut is not null)
             {
@@ -85,9 +85,8 @@ namespace Nebulua
         }
     }
 
-
     /// <summary>
-    /// A midi input layer - associated with a single device.
+    /// A midi input device.
     /// </summary>
     public class MidiInput
     {
@@ -122,7 +121,7 @@ namespace Nebulua
 
         #region Events
         /// <summary>Client needs to deal with this.</summary>
-        public event EventHandler<MidiEvent>? InputReceiveEvent;
+        public event EventHandler<MidiEvent>? ReceiveEvent;
         #endregion
 
         #region Lifecycle
@@ -175,7 +174,7 @@ namespace Nebulua
             int chan_num = me.Channel;
             if (Channels[chan_num - 1])
             {
-                InputReceiveEvent?.Invoke(this, me);
+                ReceiveEvent?.Invoke(this, me);
             }
             // else ignore.
         }

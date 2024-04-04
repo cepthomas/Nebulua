@@ -84,8 +84,8 @@ end
 
 -----------------------------------------------------------------------------
 -- Handlers for input note events.
-function input_note(chan_hnd, note_num, velocity)
-    neb.log_info("input_note %d %d %d", chan_hnd, note_num, velocity)
+function rcv_note(chan_hnd, note_num, velocity)
+    neb.log_info("rcv_note %d %d %d", chan_hnd, note_num, velocity)
 
     if chan_hnd == hbing_bong then
         -- whiz = ...
@@ -98,8 +98,8 @@ end
 
 -----------------------------------------------------------------------------
 -- Handlers for input controller events.
-function input_controller(chan_hnd, controller, value)
-    neb.log_info("input_controller") --, chan_hnd, ctlid, value)
+function rcv_controller(chan_hnd, controller, value)
+    neb.log_info("rcv_controller") --, chan_hnd, ctlid, value)
     return 0
 end
 

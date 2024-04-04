@@ -21,9 +21,15 @@ namespace Interop
         /// <summary>What's in the script.</summary>
         public Dictionary<int, string> SectionInfo = [];
 
+        /// <summary>Unique opaque id.</summary>
+        public long Id { get { return _l; } }
+        static long _l = 0;
+
         #region Lifecycle
-        /// <summary>Prevent client instantiation.</summary>
-        public Api(List<string> lpath) { }
+        public Api(List<string> lpath)
+        {
+            _l++;
+        }
 
         ///// <summary>
         ///// Initialize everything.
@@ -61,70 +67,73 @@ namespace Interop
             return NebStatus.Ok;
         }
 
-        public NebStatus InputNote(int chan_hnd, int note_num, double volume)
+        public NebStatus RcvNote(int chan_hnd, int note_num, double volume)
         {
             return NebStatus.Ok;
         }
 
-        public NebStatus InputController(int chan_hnd, int controller, int value)
+        public NebStatus RcvController(int chan_hnd, int controller, int value)
         {
             return NebStatus.Ok;
         }
         #endregion
 
         //#region Events
-        //public event EventHandler<CreateChannelEventArgs>? CreateChannelEvent;
-        //public void NotifyCreateChannel(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
+        //public event EventHandler<CreateChannelArgs>? CreateChannel;
+        //public void NotifyCreateChannel(CreateChannelArgs args) { CreateChannel?.Invoke(this, args); }
 
-        //public event EventHandler<SendEventArgs>? SendEvent;
-        //public void NotifySend(SendEventArgs args) { SendEvent?.Invoke(this, args); }
+        //public event EventHandler<SendArgs>? Send;
+        //public void NotifySend(SendArgs args) { Send?.Invoke(this, args); }
 
-        //public event EventHandler<LogEventArgs>? LogEvent;
-        //public void NotifyLogEvent(LogEventArgs args) { LogEvent?.Invoke(this, args); }
+        //public event EventHandler<LogArgs>? Log;
+        //public void NotifyLog(LogArgs args) { Log?.Invoke(this, args); }
 
-        //public event EventHandler<ScriptEventArgs>? ScriptEvent;
-        //public void NotifyScriptEvent(ScriptEventArgs args) { ScriptEvent?.Invoke(this, args); }
+        //public event EventHandler<ScriptArgs>? PropertyChange;
+        //public void NotifyPropertyChange(ScriptArgs args) { PropertyChange?.Invoke(this, args); }
         //#endregion
     };
 
     #region Event args
-    public class CreateChannelEventArgs : EventArgs
+
+    public class BaseArgs : EventArgs
+    {
+        public long Id;       // unique/opaque
+        public int Ret;       // handler return value
+    };
+
+    public class CreateChannelArgs : BaseArgs
     {
         public string? DevName;
         public int ChanNum;
         public bool IsOutput; // else input
         public int Patch;     // output only
-        public int Ret;       // handler return value
     };
 
-    public class SendEventArgs : EventArgs
+    public class SendArgs : BaseArgs
     {
         public int ChanHnd;
         public bool IsNote;   // else controller
         public int What;      // note number or controller id
         public int Value;     // note velocity or controller payload
-        public int Ret;       // handler return value
     };
 
-    public class LogEventArgs : EventArgs
+    public class LogArgs : BaseArgs
     {
         public int LogLevel;
         public string? Msg;
-        public int Ret;       // handler return value
     };
 
-    public class ScriptEventArgs : EventArgs
+    public class ScriptArgs : BaseArgs
     {
         public int Bpm;
-        public int Ret;       // handler return value
     };
     #endregion
 
 
-    public class EventProc
+    public class NotifIer
     {
         /// <summary>The singleton instance.</summary>
-        public static EventProc? Instance
+        public static NotifIer? Instance
         {
             get;
             //get
@@ -134,28 +143,28 @@ namespace Interop
             //}
         }
 
-        public EventProc()
+        public NotifIer()
         {
 
         }
 
         /// <summary>Clean up resources.</summary>
-        //~EventProc();
+        //~NotifIer();
 
         /// <summary>The singleton instance.</summary>
-        static EventProc? _instance;
+        static NotifIer? _instance;
 
-        public event EventHandler<CreateChannelEventArgs>? CreateChannelEvent;
-        public void NotifyCreateChannelEvent(CreateChannelEventArgs args) { CreateChannelEvent?.Invoke(this, args); }
+        public event EventHandler<CreateChannelArgs>? CreateChannel;
+        public void NotifyCreateChannel(CreateChannelArgs args) { CreateChannel?.Invoke(this, args); }
 
-        public event EventHandler<SendEventArgs>? SendEvent;
-        public void NotifySendEvent(SendEventArgs args) { SendEvent?.Invoke(this, args); }
+        public event EventHandler<SendArgs>? Send;
+        public void NotifySend(SendArgs args) { Send?.Invoke(this, args); }
 
-        public event EventHandler<LogEventArgs>? LogEvent;
-        public void NotifyLogEvent(LogEventArgs args) { LogEvent?.Invoke(this, args); }
+        public event EventHandler<LogArgs>? Log;
+        public void NotifyLog(LogArgs args) { Log?.Invoke(this, args); }
 
-        public event EventHandler<ScriptEventArgs>? ScriptEvent;
-        public void NotifyScriptEvent(ScriptEventArgs args) { ScriptEvent?.Invoke(this, args); }
+        public event EventHandler<ScriptArgs>? PropertyChange;
+        public void NotifyPropertyChange(ScriptArgs args) { PropertyChange?.Invoke(this, args); }
     };
 
 

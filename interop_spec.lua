@@ -31,10 +31,10 @@ M.script_funcs =
     },
 
     {
-        lua_func_name = "input_note",
-        host_func_name = "InputNote",
+        lua_func_name = "rcv_note",
+        host_func_name = "RcvNote",
         required = "false",
-        description = "Called when input arrives.",
+        description = "Called when midi input arrives.",
         args =
         {
             { name = "chan_hnd", type = "I", description = "Input channel handle" },
@@ -45,10 +45,10 @@ M.script_funcs =
     },
 
     {
-        lua_func_name = "input_controller",
-        host_func_name = "InputController",
+        lua_func_name = "rcv_controller",
+        host_func_name = "RcvController",
         required = "false",
-        description = "Called when input arrives.",
+        description = "Called when midi input arrives.",
         args =
         {
             { name = "chan_hnd", type = "I", description = "Input channel handle" },

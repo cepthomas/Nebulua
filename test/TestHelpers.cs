@@ -60,36 +60,36 @@ namespace Nebulua.Test
             CollectedEvents = [];
 
             // Hook script events.
-            EventProc.Instance.CreateChannelEvent += Interop_CreateChannelEvent;
-            EventProc.Instance.SendEvent += Interop_SendEvent;
-            EventProc.Instance.LogEvent += Interop_LogEvent;
-            EventProc.Instance.ScriptEvent += Interop_ScriptEvent;
+            NotifIer.Instance.CreateChannel += Interop_CreateChannel;
+            NotifIer.Instance.Send += Interop_Send;
+            NotifIer.Instance.Log += Interop_Log;
+            NotifIer.Instance.PropertyChange += Interop_PropertyChange;
         }
 
-        void Interop_CreateChannelEvent(object? sender, CreateChannelEventArgs e)
+        void Interop_CreateChannel(object? sender, CreateChannelArgs e)
         {
-            string s = $"CreateChannelEvent DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
+            string s = $"CreateChannel DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
             CollectedEvents.Add(s);
             e.Ret = 0x0102;
         }
 
-        void Interop_SendEvent(object? sender, SendEventArgs e)
+        void Interop_Send(object? sender, SendArgs e)
         {
-            string s = $"SendEvent ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
+            string s = $"Send ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
             CollectedEvents.Add(s);
             e.Ret = (int)NebStatus.Ok;
         }
 
-        void Interop_LogEvent(object? sender, LogEventArgs e)
+        void Interop_Log(object? sender, LogArgs e)
         {
-            string s = $"LogEvent LogLevel:{e.LogLevel} Msg:{e.Msg}";
+            string s = $"Log LogLevel:{e.LogLevel} Msg:{e.Msg}";
             CollectedEvents.Add(s);
             e.Ret = (int)NebStatus.Ok;
         }
 
-        void Interop_ScriptEvent(object? sender, ScriptEventArgs e)
+        void Interop_PropertyChange(object? sender, PropertyArgs e)
         {
-            string s = $"ScriptEvent Bpm:{e.Bpm}";
+            string s = $"PropertyChange Bpm:{e.Bpm}";
             CollectedEvents.Add(s);
             e.Ret = (int)NebStatus.Ok;
         }

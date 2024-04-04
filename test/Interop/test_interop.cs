@@ -9,33 +9,6 @@ using Interop;
 
 namespace Nebulua.Test
 {
-    //public class TestContext
-    //{
-    //    public static Api MyInterop;
-
-    //    public TestContext()
-    //    {
-    //        // Create interop.
-    //        MyInterop = Api.Instance;
-
-    //        var p = TestUtils.GetLuaPath();
-    //        if (p.valid)
-    //        {
-    //            if (MyInterop.Init(p.lpath) != NebStatus.Ok)
-    //            {
-    //                Console.WriteLine($"Init interop failed: {p.lpath}");
-    //                Environment.Exit(2);
-    //            }
-    //        }
-    //        else
-    //        {
-    //            Console.WriteLine("Init interop failed");
-    //            Environment.Exit(1);
-    //        }
-    //    }
-    //}
-
-
     /// <summary>All success operations.</summary>
     public class INTEROP_HAPPY : TestSuite
     {
@@ -45,7 +18,7 @@ namespace Nebulua.Test
 
             // Create interop.
             var (valid, lpath) = TestUtils.GetLuaPath();
-            var interop = new(lpath);
+            Api interop = new(lpath);
 
             InteropEventCollector events = new(interop);
             string scrfn = Path.Join(TestUtils.GetTestFilesDir(), "script_happy.lua");
@@ -71,13 +44,13 @@ namespace Nebulua.Test
 
                 if (i % 20 == 0)
                 {
-                    stat = interop.InputNote(0x0102, i, (double)i / 100);
+                    stat = interop.RcvNote(0x0102, i, (double)i / 100);
                     UT_EQUAL(stat, NebStatus.Ok);
                 }
 
                 if (i % 20 == 5)
                 {
-                    stat = interop.InputController(0x0102, i, i);
+                    stat = interop.RcvController(0x0102, i, i);
                     UT_EQUAL(stat, NebStatus.Ok);
                 }
             }
@@ -105,14 +78,16 @@ namespace Nebulua.Test
         {
             UT_STOP_ON_FAIL(true);
 
-            Program.MyInterop!.Dispose();
-
-            var interop = Program.MyInterop!;
+            // Program.MyInterop!.Dispose();
+            //var interop = Program.MyInterop!;
 
             var tempfn = "_test_temp.lua";
 
             // General syntax error during load.
             {
+                var (valid, lpath) = TestUtils.GetLuaPath();
+                Api interop = new(lpath);
+
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
                     this is a bad statement
@@ -124,18 +99,22 @@ namespace Nebulua.Test
 
             // Missing required C2L api element - luainterop_Setup(_ltest, &iret);
             {
+                var (valid, lpath) = TestUtils.GetLuaPath();
+                Api interop = new(lpath);
+
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
                     resx = 345 + 456");
                 NebStatus stat = interop.OpenScript(tempfn);
                 UT_EQUAL(stat, NebStatus.SyntaxError); // TODO1 fails, says ok
-                UT_STRING_CONTAINS(interop.Error, "INTEROP_BAD_FUNC_NAME");
-
-                // <eof> expected near 'end'] does not contain [INTEROP_BAD_FUNC_NAME]
+                UT_STRING_CONTAINS(interop.Error, "Bad function name: setup()");
             }
 
             // Bad L2C api function
             {
+                var (valid, lpath) = TestUtils.GetLuaPath();
+                Api interop = new(lpath);
+
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
                     function setup()
@@ -155,11 +134,13 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-            var interop = Program.MyInterop!;
             var tempfn = "_test_temp.lua";
 
             // General explicit error.
             {
+                var (valid, lpath) = TestUtils.GetLuaPath();
+                Api interop = new(lpath);
+
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
                     function setup()
@@ -179,11 +160,13 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
-            var interop = Program.MyInterop!;
             var tempfn = "_test_temp.lua";
 
             // Runtime error.
             {
+                var (valid, lpath) = TestUtils.GetLuaPath();
+                Api interop = new(lpath);
+
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
                     function setup()
@@ -203,31 +186,10 @@ namespace Nebulua.Test
         [STAThread]
         static void Main(string[] _)
         {
-           // // Create interop.
-           //// MyInterop = Api.Instance;
-
-           // var p = TestUtils.GetLuaPath();
-           // if (p.valid)
-           // {
-           //     MyInterop = new(p.lpath);
-           //     //if (MyInterop = new(p.lpath));
-           //     //{
-           //     //    Console.WriteLine($"Init interop failed: {p.lpath}");
-           //     //    Environment.Exit(2);
-           //     //}
-           // }
-           // else
-           // {
-           //     Console.WriteLine("Init interop failed");
-           //     Environment.Exit(1);
-           // }
-
             TestRunner runner = new(OutputFormat.Readable);
             var cases = new[] { "INTEROP" };
             runner.RunSuites(cases);
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
-
-        //public static Api? MyInterop;
     }
 }

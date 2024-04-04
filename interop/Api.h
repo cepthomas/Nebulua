@@ -16,6 +16,16 @@ namespace Interop
 
     public ref class Api
     {
+
+    #pragma region Fields
+    private:
+        // The lua thread.
+        lua_State* _l = nullptr;
+
+        // The LUA_PATH.
+        List<String^>^ _lpath;
+    #pragma endregion
+
     #pragma region Properties
     public:
         /// <summary>If an API or lua function failed this contains info.</summary>
@@ -24,41 +34,18 @@ namespace Interop
         /// <summary>What's in the script.</summary>
         property Dictionary<int, String^>^ SectionInfo;
 
-        // /// <summary>The singleton instance. TODO2 prefer non-singleton.</summary>
-        // static property Interop::Api^ Instance
-        // {
-        //     Interop::Api^ get()
-        //     {
-        //         if (_instance == nullptr) { _instance = gcnew Interop::Api(); }
-        //         return _instance;
-        //     }
-        // }
+        /// <summary>Unique opaque id.</summary>
+        property long Id { long get() { return (long)_l; }}
     #pragma endregion
 
     #pragma region Lifecycle
     public:
         /// <summary>Initialize everything.</summary>
         /// <param name="lpath">LUA_PATH components</param>
-        /// <returns>Neb Status</returns>
-    //    NebStatus Init(List<String^>^ lpath);
-
- //   private:
-        /// <summary>Prevent instantiation.</summary>
-        /// <param name="lpath">LUA_PATH components</param>
         Api(List<String^>^ lpath);
 
         /// <summary>Clean up resources.</summary>
         ~Api();
-
-        /// <summary>The singleton instance.</summary>
-     //   static Interop::Api^ _instance;
-
-        // The lua thread.
-        lua_State* _l = nullptr;
-
-        // The LUA_PATH.
-        List<String^>^ _lpath;
-
     #pragma endregion
 
     #pragma region Run script - Call lua functions from host
@@ -78,30 +65,15 @@ namespace Interop
         /// <param name="note_num">Note number 0 => 127</param>
         /// <param name="volume">Volume 0.0 => 1.0</param>
         /// <returns>Neb Status</returns>
-        NebStatus InputNote(int chan_hnd, int note_num, double volume);
+        NebStatus RcvNote(int chan_hnd, int note_num, double volume);
 
         /// <summary>Called when input arrives.</summary>
         /// <param name="chan_hnd">Input channel handle</param>
         /// <param name="controller">Specific controller id 0 => 127</param>
         /// <param name="value">Payload 0 => 127</param>
         /// <returns>Neb Status</returns>
-        NebStatus InputController(int chan_hnd, int controller, int value);
+        NebStatus RcvController(int chan_hnd, int controller, int value);
     #pragma endregion
-
-    // #pragma region Events
-    // public:
-    //     event EventHandler<CreateChannelEventArgs^>^ CreateChannelEvent;
-    //     void NotifyCreateChannelEvent(CreateChannelEventArgs^ args) { CreateChannelEvent(this, args); }
-
-    //     event EventHandler<SendEventArgs^>^ SendEvent;
-    //     void NotifySendEvent(SendEventArgs^ args) { SendEvent(this, args); }
-
-    //     event EventHandler<LogEventArgs^>^ LogEvent;
-    //     void NotifyLogEvent(LogEventArgs^ args) { LogEvent(this, args); }
-
-    //     event EventHandler<ScriptEventArgs^>^ ScriptEvent;
-    //     void NotifyScriptEvent(ScriptEventArgs^ args) { ScriptEvent(this, args); }
-    // #pragma endregion
 
     #pragma region Private functions
     private:
@@ -116,18 +88,17 @@ namespace Interop
     #pragma endregion
     };
 
-    #pragma region Events
-
-    /// <summary>Base event.</summary>
-    public ref class BaseEventArgs : public EventArgs
+    #pragma region Script callbacks (events)
+    /// <summary>Common elements.</summary>
+    public ref class BaseArgs : public EventArgs
     {
     public:
-        property lua_State* l;
+        property long Id;       // unique/opaque
         property int Ret;       // handler return value
     };
 
     /// <summary>Script creates a channel.</summary>
-    public ref class CreateChannelEventArgs : public BaseEventArgs
+    public ref class CreateChannelArgs : public BaseArgs
     {
     public:
         property String^ DevName;
@@ -137,7 +108,7 @@ namespace Interop
     };
 
     /// <summary>Script wants to send a midi event.</summary>
-    public ref class SendEventArgs : public BaseEventArgs
+    public ref class SendArgs : public BaseArgs
     {
     public:
         property int ChanHnd;
@@ -147,91 +118,59 @@ namespace Interop
     };
 
     /// <summary>Script has something to say to host.</summary>
-    public ref class ScriptEventArgs : public BaseEventArgs
+    public ref class PropertyArgs : public BaseArgs
     {
     public:
         property int Bpm;       // Tempo - optional
     };
 
     /// <summary>Script wants to log something.</summary>
-    public ref class LogEventArgs : public BaseEventArgs
+    public ref class LogArgs : public BaseArgs
     {
     public:
         property int LogLevel;
         property String^ Msg;
     };
 
-    public ref class EventProc
+    public ref class NotifIer
     {
     #pragma region Properties
     public:
-        // /// <summary>If an API or lua function failed this contains info.</summary>
-        // property String^ Error;
-
-        // /// <summary>What's in the script.</summary>
-        // property Dictionary<int, String^>^ SectionInfo;
-
-        /// <summary>The singleton instance. TODO2 prefer non-singleton.</summary>
-        static property Interop::EventProc^ Instance
+        /// <summary>The singleton instance. TODO1 prefer non-singleton.</summary>
+        static property Interop::NotifIer^ Instance
         {
-            Interop::EventProc^ get()
+            Interop::NotifIer^ get()
             {
-                if (_instance == nullptr) { _instance = gcnew Interop::EventProc(); }
+                if (_instance == nullptr) { _instance = gcnew Interop::NotifIer(); }
                 return _instance;
             }
         }
     #pragma endregion
 
     #pragma region Lifecycle
-    public:
-        /// <summary>Initialize everything.</summary>
-        /// <param name="lpath">LUA_PATH components</param>
-        /// <returns>Neb Status</returns>
-        // NebStatus Init(List<String^>^ lpath);
-
     private:
-        /// <summary>Prevent instantiation.</summary>
+        /// <summary>Prevent direct instantiation.</summary>
         /// <param name="lpath">LUA_PATH components</param>
- //       Interop::EventProc();
-
-        /// <summary>Clean up resources.</summary>
- //       ~EventProc();
+        Interop::NotifIer() { }
 
         /// <summary>The singleton instance.</summary>
-        static Interop::EventProc^ _instance;
-
-        // The main lua thread.
-     //   lua_State* _l = nullptr;
+        static Interop::NotifIer^ _instance;
     #pragma endregion
-
 
     #pragma region Event hooks
     public:
-        event EventHandler<CreateChannelEventArgs^>^ CreateChannelEvent;
-        void NotifyCreateChannelEvent(CreateChannelEventArgs^ args) { CreateChannelEvent(this, args); }
+        event EventHandler<CreateChannelArgs^>^ CreateChannel;
+        void NotifyCreateChannel(CreateChannelArgs^ args) { CreateChannel(this, args); }
 
-        event EventHandler<SendEventArgs^>^ SendEvent;
-        void NotifySendEvent(SendEventArgs^ args) { SendEvent(this, args); }
+        event EventHandler<SendArgs^>^ Send;
+        void NotifySend(SendArgs^ args) { Send(this, args); }
 
-        event EventHandler<LogEventArgs^>^ LogEvent;
-        void NotifyLogEvent(LogEventArgs^ args) { LogEvent(this, args); }
+        event EventHandler<LogArgs^>^ Log;
+        void NotifyLog(LogArgs^ args) { Log(this, args); }
 
-        event EventHandler<ScriptEventArgs^>^ ScriptEvent;
-        void NotifyScriptEvent(ScriptEventArgs^ args) { ScriptEvent(this, args); }
+        event EventHandler<PropertyArgs^>^ PropertyChange;
+        void NotifyPropertyChange(PropertyArgs^ args) { PropertyChange(this, args); }
     #pragma endregion
-
-    // #pragma region Private functions
-    // private:
-    //     /// <summary>Checks lua status and converts to neb status. Stores an error message if it failed.</summary>
-    //     NebStatus EvalLuaStatus(int stat, String^ msg);
-
-    //     /// <summary>Convert managed string to unmanaged.</summary>
-    //     const char* ToCString(String^ input);
-
-    //     /// <summary>Convert unmanaged string to managed.</summary>
-    //     String^ ToCliString(const char* input);
-    // #pragma endregion
     };
-
     #pragma endregion
 }
