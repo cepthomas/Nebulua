@@ -18,7 +18,7 @@ int luainteropwork_Log(lua_State* l, int level, const char* msg)
     args->LogLevel = level;
     args->Msg = gcnew String(msg);
 
-    Interop::NotifIer::Instance->NotifyLog(args); // do work
+    Interop::NotifIer::NotifyLog(args); // do work
     return args->Ret; // status
 }
 
@@ -28,7 +28,7 @@ int luainteropwork_SetTempo(lua_State* l, int bpm)
     Interop::PropertyArgs^ args = gcnew Interop::PropertyArgs();
     args->Id = (long)l;
     args->Bpm = bpm;
-    Interop::NotifIer::Instance->NotifyPropertyChange(args); // do work
+    Interop::NotifIer::NotifyPropertyChange(args); // do work
     return args->Ret; // status
 }
 
@@ -41,7 +41,7 @@ int luainteropwork_CreateInputChannel(lua_State* l, const char* dev_name, int ch
     args->ChanNum = chan_num;
     args->IsOutput = false;
     args->Patch = 0;
-    Interop::NotifIer::Instance->NotifyCreateChannel(args); // do work
+    Interop::NotifIer::NotifyCreateChannel(args); // do work
     return args->Ret; // chan_hnd
 }
 
@@ -54,7 +54,7 @@ int luainteropwork_CreateOutputChannel(lua_State* l, const char* dev_name, int c
     args->ChanNum = chan_num;
     args->IsOutput = true;
     args->Patch = patch;
-    Interop::NotifIer::Instance->NotifyCreateChannel(args); // do work
+    Interop::NotifIer::NotifyCreateChannel(args); // do work
     return args->Ret; // chan_hnd
 }
 
@@ -67,7 +67,7 @@ int luainteropwork_SendNote(lua_State* l, int chan_hnd, int note_num, double vol
     args->ChanHnd = chan_hnd;
     args->What = note_num;
     args->Value = int(volume * MIDI_VAL_MAX); // convert TODO2 prefer in client?
-    Interop::NotifIer::Instance->NotifySend(args); // do work
+    Interop::NotifIer::NotifySend(args); // do work
     return args->Ret; // status
 }
 
@@ -80,6 +80,6 @@ int luainteropwork_SendController(lua_State* l, int chan_hnd, int controller, in
     args->ChanHnd = chan_hnd;
     args->What = controller;
     args->Value = value;
-    Interop::NotifIer::Instance->NotifySend(args); // do work
+    Interop::NotifIer::NotifySend(args); // do work
     return args->Ret; // status
 }

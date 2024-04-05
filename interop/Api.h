@@ -140,40 +140,39 @@ namespace Interop
     {
     #pragma region Properties
     public:
-        /// <summary>The singleton instance. TODO1 prefer non-singleton.</summary>
-        static property Interop::NotifIer^ Instance
-        {
-            Interop::NotifIer^ get()
-            {
-                if (_instance == nullptr) { _instance = gcnew Interop::NotifIer(); }
-                return _instance;
-            }
-        }
+        ///// <summary>The singleton instance. TODO1 prefer non-singleton.</summary>
+        //static property Interop::NotifIer^ Instance
+        //{
+        //    Interop::NotifIer^ get()
+        //    {
+        //        if (_instance == nullptr) { _instance = gcnew Interop::NotifIer(); }
+        //        return _instance;
+        //    }
+        //}
     #pragma endregion
 
     #pragma region Lifecycle
     private:
         /// <summary>Prevent direct instantiation.</summary>
-        /// <param name="lpath">LUA_PATH components</param>
         Interop::NotifIer() { }
 
         /// <summary>The singleton instance.</summary>
-        static Interop::NotifIer^ _instance;
+     //   static Interop::NotifIer^ _instance;
     #pragma endregion
 
     #pragma region Event hooks
     public:
-        event EventHandler<CreateChannelArgs^>^ CreateChannel;
-        void NotifyCreateChannel(CreateChannelArgs^ args) { CreateChannel(this, args); }
+        static event EventHandler<CreateChannelArgs^>^ CreateChannel;
+        static void NotifyCreateChannel(CreateChannelArgs^ args) { CreateChannel(nullptr, args); }
 
-        event EventHandler<SendArgs^>^ Send;
-        void NotifySend(SendArgs^ args) { Send(this, args); }
+        static event EventHandler<SendArgs^>^ Send;
+        static void NotifySend(SendArgs^ args) { Send(nullptr, args); }
 
-        event EventHandler<LogArgs^>^ Log;
-        void NotifyLog(LogArgs^ args) { Log(this, args); }
+        static event EventHandler<LogArgs^>^ Log;
+        static void NotifyLog(LogArgs^ args) { Log(nullptr, args); }
 
-        event EventHandler<PropertyArgs^>^ PropertyChange;
-        void NotifyPropertyChange(PropertyArgs^ args) { PropertyChange(this, args); }
+        static event EventHandler<PropertyArgs^>^ PropertyChange;
+        static void NotifyPropertyChange(PropertyArgs^ args) { PropertyChange(nullptr, args); }
     #pragma endregion
     };
     #pragma endregion
