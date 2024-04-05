@@ -183,7 +183,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Process error midi event - Parameter 1 is invalid. Do I care? FUTURE
+        /// Process error midi event - Parameter 1 is invalid. Do I care? TODOF
         /// </summary>
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {

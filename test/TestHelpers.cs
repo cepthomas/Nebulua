@@ -60,10 +60,10 @@ namespace Nebulua.Test
             CollectedEvents = [];
 
             // Hook script events.
-            NotifIer.Instance.CreateChannel += Interop_CreateChannel;
-            NotifIer.Instance.Send += Interop_Send;
-            NotifIer.Instance.Log += Interop_Log;
-            NotifIer.Instance.PropertyChange += Interop_PropertyChange;
+            Api.CreateChannel += Interop_CreateChannel;
+            Api.Send += Interop_Send;
+            Api.Log += Interop_Log;
+            Api.PropertyChange += Interop_PropertyChange;
         }
 
         void Interop_CreateChannel(object? sender, CreateChannelArgs e)

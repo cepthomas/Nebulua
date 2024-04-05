@@ -49,6 +49,18 @@ namespace Interop
         {
             return NebStatus.Ok;
         }
+
+        public static event EventHandler<CreateChannelArgs>? CreateChannel;
+        public static void NotifyCreateChannel(CreateChannelArgs args) { CreateChannel?.Invoke(null, args); }
+
+        public static event EventHandler<SendArgs>? Send;
+        public static void NotifySend(SendArgs args) { Send?.Invoke(null, args); }
+
+        public static event EventHandler<LogArgs>? Log;
+        public static void NotifyLog(LogArgs args) { Log?.Invoke(null, args); }
+
+        public static event EventHandler<PropertyArgs>? PropertyChange;
+        public static void NotifyPropertyChange(PropertyArgs args) { PropertyChange?.Invoke(null, args); }
     };
 
     public class BaseArgs : EventArgs
@@ -82,27 +94,5 @@ namespace Interop
     public class PropertyArgs : BaseArgs
     {
         public int Bpm;
-    };
-
-    public class NotifIer
-    {
-        /// <summary>The singleton instance.</summary>
-        public static NotifIer? Instance { get; }
-
-        NotifIer()
-        {
-        }
-
-        public event EventHandler<CreateChannelArgs>? CreateChannel;
-        public void NotifyCreateChannel(CreateChannelArgs args) { CreateChannel?.Invoke(this, args); }
-
-        public event EventHandler<SendArgs>? Send;
-        public void NotifySend(SendArgs args) { Send?.Invoke(this, args); }
-
-        public event EventHandler<LogArgs>? Log;
-        public void NotifyLog(LogArgs args) { Log?.Invoke(this, args); }
-
-        public event EventHandler<PropertyArgs>? PropertyChange;
-        public void NotifyPropertyChange(PropertyArgs args) { PropertyChange?.Invoke(this, args); }
     };
 }

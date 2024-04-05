@@ -20,7 +20,7 @@ namespace Nebulua
             /// <summary>If you don't.</summary>
             char ShortName,
 
-            /// <summary>TODO2 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.</summary>
+            /// <summary>TODO1 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.</summary>
             char ImmediateKey,
 
             /// <summary>Free text for command description.</summary>
@@ -53,7 +53,7 @@ namespace Nebulua
 
         #region Main work
         /// <summary>
-        /// Set up command handler. TODO2 optional/custom stream I/O.
+        /// Set up command handler. TODOF other stream I/O e.g. socket.
         /// </summary>
         public Cli(TextReader cliIn, TextWriter cliOut, string prompt)
         {

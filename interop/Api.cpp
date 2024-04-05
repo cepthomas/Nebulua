@@ -247,7 +247,7 @@ Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
 //--------------------------------------------------------//
 const char* Interop::Api::ToCString(String^ input)
 {
-    static char buff[2000]; // TODO2 fixed/max length bad.
+    static char buff[2000]; // TODO1 fixed/max length bad.
     bool ok = true;
     int len = input->Length > 1999 ? 1999 : input->Length;
 

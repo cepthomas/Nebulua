@@ -14,6 +14,13 @@ namespace Interop
         BadMidiCfg = 20, MidiTx = 21, MidiRx = 22
     };
 
+    #pragma region Forward refs
+    ref class CreateChannelArgs;
+    ref class SendArgs;
+    ref class PropertyArgs;
+    ref class LogArgs;
+    #pragma endregion
+
     public ref class Api
     {
 
@@ -39,7 +46,6 @@ namespace Interop
         /// <summary>Unique opaque id.</summary>
         property long Id { long get() { return (long)_l; }}
         #pragma warning(pop) 
-
     #pragma endregion
 
     #pragma region Lifecycle
@@ -52,7 +58,7 @@ namespace Interop
         ~Api();
     #pragma endregion
 
-    #pragma region Run script - Call lua functions from host
+    #pragma region Call lua functions from host
     public:
         /// <summary>Load and process.</summary>
         /// <param name="fn">Full file path</param>
@@ -79,6 +85,21 @@ namespace Interop
         NebStatus RcvController(int chan_hnd, int controller, int value);
     #pragma endregion
 
+    #pragma region Event hooks
+    public:
+        static event EventHandler<CreateChannelArgs^>^ CreateChannel;
+        static void NotifyCreateChannel(CreateChannelArgs^ args) { CreateChannel(nullptr, args); }
+
+        static event EventHandler<SendArgs^>^ Send;
+        static void NotifySend(SendArgs^ args) { Send(nullptr, args); }
+
+        static event EventHandler<LogArgs^>^ Log;
+        static void NotifyLog(LogArgs^ args) { Log(nullptr, args); }
+
+        static event EventHandler<PropertyArgs^>^ PropertyChange;
+        static void NotifyPropertyChange(PropertyArgs^ args) { PropertyChange(nullptr, args); }
+    #pragma endregion
+
     #pragma region Private functions
     private:
         /// <summary>Checks lua status and converts to neb status. Stores an error message if it failed.</summary>
@@ -92,7 +113,7 @@ namespace Interop
     #pragma endregion
     };
 
-    #pragma region Script callbacks (events)
+    #pragma region Script callback data (events)
     /// <summary>Common elements.</summary>
     public ref class BaseArgs : public EventArgs
     {
@@ -134,46 +155,6 @@ namespace Interop
     public:
         property int LogLevel;
         property String^ Msg;
-    };
-
-    public ref class NotifIer
-    {
-    #pragma region Properties
-    public:
-        ///// <summary>The singleton instance. TODO1 prefer non-singleton.</summary>
-        //static property Interop::NotifIer^ Instance
-        //{
-        //    Interop::NotifIer^ get()
-        //    {
-        //        if (_instance == nullptr) { _instance = gcnew Interop::NotifIer(); }
-        //        return _instance;
-        //    }
-        //}
-    #pragma endregion
-
-    #pragma region Lifecycle
-    private:
-        /// <summary>Prevent direct instantiation.</summary>
-        Interop::NotifIer() { }
-
-        /// <summary>The singleton instance.</summary>
-     //   static Interop::NotifIer^ _instance;
-    #pragma endregion
-
-    #pragma region Event hooks
-    public:
-        static event EventHandler<CreateChannelArgs^>^ CreateChannel;
-        static void NotifyCreateChannel(CreateChannelArgs^ args) { CreateChannel(nullptr, args); }
-
-        static event EventHandler<SendArgs^>^ Send;
-        static void NotifySend(SendArgs^ args) { Send(nullptr, args); }
-
-        static event EventHandler<LogArgs^>^ Log;
-        static void NotifyLog(LogArgs^ args) { Log(nullptr, args); }
-
-        static event EventHandler<PropertyArgs^>^ PropertyChange;
-        static void NotifyPropertyChange(PropertyArgs^ args) { PropertyChange(nullptr, args); }
-    #pragma endregion
     };
     #pragma endregion
 }

@@ -62,11 +62,10 @@ namespace Nebulua
             _cli.Write("Greetings from Nebulua!");
 
             // Hook script events.
-            var notif = NotifIer.Instance!;
-            notif.CreateChannel += Interop_CreateChannel;
-            notif.Send += Interop_Send;
-            notif.Log += Interop_Log;
-            notif.PropertyChange += Interop_PropertyChange;
+            Api.CreateChannel += Interop_CreateChannel;
+            Api.Send += Interop_Send;
+            Api.Log += Interop_Log;
+            Api.PropertyChange += Interop_PropertyChange;
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
         }
@@ -210,7 +209,7 @@ namespace Nebulua
         {
             if (State.Instance.ExecState == ExecState.Run)
             {
-                // Do script. TODO2 Handle solo/mute like nebulator.
+                // Do script. TODOF Handle solo/mute like nebulator.
                 _tan?.Arm();
 
                 foreach (var api in _api.Values)

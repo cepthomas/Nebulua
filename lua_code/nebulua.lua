@@ -46,7 +46,7 @@ local _transients = {}
 local _current_tick = 0
 
 -----------------------------------------------------------------------------
------ Debug stuff TODO2 remove
+----- Debug stuff TODO1 remove - or pass a debug flag: I do things like `local X = require 'foo' (...)`, which achieves the desired effect
 -----------------------------------------------------------------------------
 
 function _mole() return _steps, _transients end
