@@ -14,12 +14,11 @@
 int luainteropwork_Log(lua_State* l, int level, const char* msg)
 {
     Interop::LogArgs^ args = gcnew Interop::LogArgs();
-    args->Id = (long)l; //TODO1 cast warning.
+    args->Id = (long)l;
     args->LogLevel = level;
     args->Msg = gcnew String(msg);
 
     Interop::NotifIer::Instance->NotifyLog(args); // do work
-    //Interop::Api::Instance->NotifyLog(args); // do work
     return args->Ret; // status
 }
 
