@@ -72,7 +72,7 @@ namespace Nebulua.Test
     }
 
     /// <summary>Test basic failure modes.</summary>
-    public class INTEROP_FAIL_1 : TestSuite
+    public class INTEROP_FAIL : TestSuite
     {
         public override void RunSuite()
         {
@@ -106,7 +106,7 @@ namespace Nebulua.Test
                     @"local neb = require(""nebulua"")
                     resx = 345 + 456");
                 NebStatus stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, NebStatus.SyntaxError); // TODO1 fails, says ok
+                UT_EQUAL(stat, NebStatus.SyntaxError);
                 UT_STRING_CONTAINS(interop.Error, "Bad function name: setup()");
             }
 
@@ -125,16 +125,6 @@ namespace Nebulua.Test
                 UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
                 UT_STRING_CONTAINS(interop.Error, "attempt to call a nil value (field 'no_good')");
             }
-        }
-    }
-
-    /// <summary>Test fatal error() failure modes.</summary>
-    public class INTEROP_FAIL_2 : TestSuite //TODO1 combine all these?
-    {
-        public override void RunSuite()
-        {
-            UT_STOP_ON_FAIL(true);
-            var tempfn = "_test_temp.lua";
 
             // General explicit error.
             {
@@ -151,16 +141,6 @@ namespace Nebulua.Test
                 UT_EQUAL(stat, NebStatus.SyntaxError);
                 UT_STRING_CONTAINS(interop.Error, "setup() raises error()");
             }
-        }
-    }
-
-    /// <summary>Test fatal internal failure modes.</summary>
-    public class INTEROP_FAIL_3 : TestSuite
-    {
-        public override void RunSuite()
-        {
-            UT_STOP_ON_FAIL(true);
-            var tempfn = "_test_temp.lua";
 
             // Runtime error.
             {

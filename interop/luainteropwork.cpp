@@ -7,6 +7,8 @@
 
 #define MIDI_VAL_MAX 127
 
+#pragma warning(disable : 4302 4311) // lua_State* casting
+
 
 //--------------------------------------------------------//
 int luainteropwork_Log(lua_State* l, int level, const char* msg)

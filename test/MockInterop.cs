@@ -25,38 +25,11 @@ namespace Interop
         public long Id { get { return _l; } }
         static long _l = 0;
 
-        #region Lifecycle
         public Api(List<string> lpath)
         {
             _l++;
         }
 
-        ///// <summary>
-        ///// Initialize everything.
-        ///// </summary>
-        ///// <returns>Status</returns>
-        //public NebStatus Init(List<string> lpath)
-        //{
-        //    return NebStatus.Ok;
-        //}
-        #endregion
-
-        //#region Singleton support
-        ///// <summary>The singleton instance.</summary>
-        //public static Api Instance
-        //{
-        //    get
-        //    {
-        //        _instance ??= new Api();
-        //        return _instance;
-        //    }
-        //}
-
-        ///// <summary>The singleton instance.</summary>
-        //static Api? _instance;
-        //#endregion
-
-        #region Run script - Call lua functions from host
         public NebStatus OpenScript(string fn)
         {
             return NebStatus.Ok;
@@ -76,24 +49,7 @@ namespace Interop
         {
             return NebStatus.Ok;
         }
-        #endregion
-
-        //#region Events
-        //public event EventHandler<CreateChannelArgs>? CreateChannel;
-        //public void NotifyCreateChannel(CreateChannelArgs args) { CreateChannel?.Invoke(this, args); }
-
-        //public event EventHandler<SendArgs>? Send;
-        //public void NotifySend(SendArgs args) { Send?.Invoke(this, args); }
-
-        //public event EventHandler<LogArgs>? Log;
-        //public void NotifyLog(LogArgs args) { Log?.Invoke(this, args); }
-
-        //public event EventHandler<ScriptArgs>? PropertyChange;
-        //public void NotifyPropertyChange(ScriptArgs args) { PropertyChange?.Invoke(this, args); }
-        //#endregion
     };
-
-    #region Event args
 
     public class BaseArgs : EventArgs
     {
@@ -123,36 +79,19 @@ namespace Interop
         public string? Msg;
     };
 
-    public class ScriptArgs : BaseArgs
+    public class PropertyArgs : BaseArgs
     {
         public int Bpm;
     };
-    #endregion
-
 
     public class NotifIer
     {
         /// <summary>The singleton instance.</summary>
-        public static NotifIer? Instance
+        public static NotifIer? Instance { get; }
+
+        NotifIer()
         {
-            get;
-            //get
-            //{
-            //    if (_instance == null) { _instance = new(); }
-            //    return _instance;
-            //}
         }
-
-        public NotifIer()
-        {
-
-        }
-
-        /// <summary>Clean up resources.</summary>
-        //~NotifIer();
-
-        /// <summary>The singleton instance.</summary>
-        static NotifIer? _instance;
 
         public event EventHandler<CreateChannelArgs>? CreateChannel;
         public void NotifyCreateChannel(CreateChannelArgs args) { CreateChannel?.Invoke(this, args); }
@@ -163,12 +102,7 @@ namespace Interop
         public event EventHandler<LogArgs>? Log;
         public void NotifyLog(LogArgs args) { Log?.Invoke(this, args); }
 
-        public event EventHandler<ScriptArgs>? PropertyChange;
-        public void NotifyPropertyChange(ScriptArgs args) { PropertyChange?.Invoke(this, args); }
+        public event EventHandler<PropertyArgs>? PropertyChange;
+        public void NotifyPropertyChange(PropertyArgs args) { PropertyChange?.Invoke(this, args); }
     };
-
-
-
-
-
 }

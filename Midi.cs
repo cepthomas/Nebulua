@@ -71,6 +71,7 @@ namespace Nebulua
         }
         #endregion
 
+        #region Traffic
         /// <summary>Send midi event.</summary>
         public void Send(MidiEvent evt)
         {
@@ -83,6 +84,7 @@ namespace Nebulua
                 }
             }
         }
+        #endregion
     }
 
     /// <summary>
@@ -162,6 +164,7 @@ namespace Nebulua
         }
         #endregion
 
+        #region Traffic
         /// <summary>
         /// Process input midi event.
         /// </summary>
@@ -187,5 +190,6 @@ namespace Nebulua
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
             // _logger.Trace(ErrorInfo);
         }
+        #endregion
     }
 }

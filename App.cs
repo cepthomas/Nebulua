@@ -19,7 +19,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("App");
 
         /// <summary>The API(s). Key is opaque lua context pointer.</summary>
-        readonly Dictionary<int, Api> _api = [];
+        readonly Dictionary<long, Api> _api = [];
 
         /// <summary>Client supplied context for LUA_PATH.</summary>
         readonly List<string> _lpath;
@@ -62,10 +62,11 @@ namespace Nebulua
             _cli.Write("Greetings from Nebulua!");
 
             // Hook script events.
-            NotifIer.Instance.CreateChannel += Interop_CreateChannel;
-            NotifIer.Instance.Send += Interop_Send;
-            NotifIer.Instance.Log += Interop_Log;
-            NotifIer.Instance.PropertyChange += Interop_PropertyChange;
+            var notif = NotifIer.Instance!;
+            notif.CreateChannel += Interop_CreateChannel;
+            notif.Send += Interop_Send;
+            notif.Log += Interop_Log;
+            notif.PropertyChange += Interop_PropertyChange;
 
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
         }
@@ -326,8 +327,8 @@ namespace Nebulua
         {
             e.Ret = 0; // default means invalid chan_hnd
 
-            // TODO1 get correct Api for e.L.
-            Api api = _api[e.Id];
+            // Get Api.
+            //Api api = _api[e.Id];
 
             try
             {
@@ -384,6 +385,9 @@ namespace Nebulua
         void Interop_Send(object? sender, SendArgs e)
         {
             e.Ret = 0; // not used
+
+            // Get Api.
+            //Api api = _api[e.Id];
 
             try
             {
@@ -442,6 +446,9 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_PropertyChange(object? sender, PropertyArgs e)
         {
+            // Get Api.
+            //Api api = _api[e.Id];
+
             if (e.Bpm > 0)
             {
                 if (e.Bpm >= 30 && e.Bpm <= 240)
