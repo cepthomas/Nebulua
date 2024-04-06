@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua.Test
 {
-    /// <summary>Mock for testing cli. Captures output lines.</summary>
+    /// <summary>Mock IO for testing cli. Captures output lines.</summary>
     public class MockCliOut: TextWriter
     {
         public List<string> CaptureLines

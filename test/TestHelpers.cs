@@ -52,11 +52,11 @@ namespace Nebulua.Test
     {
         public List<string> CollectedEvents { get; set; }
 
-        readonly Api _interop;
+        readonly Api _api;
 
-        public InteropEventCollector(Api interop)
+        public InteropEventCollector(Api api)
         {
-            _interop = interop;
+            _api = api;
             CollectedEvents = [];
 
             // Hook script events.

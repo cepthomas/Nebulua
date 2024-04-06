@@ -15,7 +15,9 @@ using Ephemera.NBagOfTricks.PNUT;
 
 namespace Nebulua.Test
 {
-    /// <summary>Test exec functions. TODO1 Doesn't do anything yet. Use mole?</summary>
+    /// <summary>Test application functions. TODO1 Doesn't do anything yet.
+    /// Needs MockInterop, MockCli, MockMidi. AppXXX?
+    </summary>
     public class APP_ONE : TestSuite
     {
         public override void RunSuite()
@@ -41,6 +43,49 @@ namespace Nebulua.Test
             // lua_close(_l);
 
             // return 0;
+        }
+    }
+
+    // Insert some hooks to support testing.
+    public partial class AppXXX
+    {
+        // Fake cli output.
+        CliTextWriter _myCliOut = new();
+
+        // Fake cli input.
+        CliTextReader _myCliIn = new();
+
+        public List<string> CaptureLines
+        {
+            get { return StringUtils.SplitByTokens(_myCliOut.Capture.ToString(), "\r\n"); }
+        }
+
+        public string NextLine
+        {
+            get { return _myCliIn.NextLine; }
+            set { _myCliIn.NextLine = value; }
+        }
+
+        public string Prompt
+        {
+            get { return _prompt; }
+        }
+
+        public void Clear()
+        {
+            _myCliOut.Capture.Clear();
+            _myCliIn.NextLine = "";
+        }
+
+        public string GetPrompt()
+        {
+            return _prompt;
+        }
+
+        public void HookCli()
+        {
+            _cliOut = _myCliOut;
+            _cliIn = _myCliIn;
         }
     }
 

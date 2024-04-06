@@ -81,18 +81,12 @@ function M.suite_process_script(pn)
     local ok, scr = pcall(require, scrfn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
-    -- Look at script raw data -- now in global space.
---    pn.UT_NOT_NIL(_sections)
---    pn.UT_EQUAL(#_sections, 3)
-
-    -- s = ut.dump_table_string(_sections, true, "_sections")
-    -- print(s)
-
     -- Process the data.
     neb.init()--sections)
     -- local length = neb.init(sections)
     -- pn.UT_EQUAL(length, 201)
 
+    -- Look inside.
     local steps, transients = _mole()
 
     -- s = ut.dump_table_string(steps, true, "steps")

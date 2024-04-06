@@ -104,12 +104,6 @@ namespace Interop
     private:
         /// <summary>Checks lua status and converts to neb status. Stores an error message if it failed.</summary>
         NebStatus EvalLuaStatus(int stat, String^ msg);
-
-        /// <summary>Convert managed string to unmanaged.</summary>
-        const char* ToCString(String^ input);
-
-        /// <summary>Convert unmanaged string to managed.</summary>
-        String^ ToCliString(const char* input);
     #pragma endregion
     };
 

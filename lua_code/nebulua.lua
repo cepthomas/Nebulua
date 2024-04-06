@@ -45,12 +45,9 @@ local _transients = {}
 -- Where we be.
 local _current_tick = 0
 
------------------------------------------------------------------------------
------ Debug stuff TODO1 remove - or pass a debug flag: I do things like `local X = require 'foo' (...)`, which achieves the desired effect
------------------------------------------------------------------------------
 
+-- Debug stuff TODO2 remove - or pass a debug/test flag?
 function _mole() return _steps, _transients end
-
 
 
 -----------------------------------------------------------------------------
@@ -233,7 +230,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     function make_event(offset)
         -- offset is 0-based.
         -- returns nil if ok else error string.
-        local vol = current_vol / 10
+        local vol = current_vol / 10 -- TODO2 allow custom mappings of the step size.
         local dur = offset - start_offset
         local when = start_offset + start_tick
         local evt_err = nil

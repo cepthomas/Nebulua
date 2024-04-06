@@ -14,11 +14,19 @@ using namespace System::Collections::Generic;
 using namespace System::Text;
 
 
-// The main lua thread. This pointless struct decl makes a warning go away per https://github.com/openssl/openssl/issues/6166.
+// The main lua thread. This unnecessary struct decl makes a warning go away
+// per https://github.com/openssl/openssl/issues/6166.
 struct lua_State {};
 
 // Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
+
+// Convert managed string to unmanaged.
+static const char* _ToCString(String^ input);
+
+// Convert unmanaged string to managed.
+#define MAX_STRING_LEN 2000
+static String^ _ToCliString(const char* input);
 
 
 //--------------------------------------------------------//
@@ -43,15 +51,15 @@ Interop::Api::Api(List<String^>^ lpath)
         // https://stackoverflow.com/a/4156038
         lua_getglobal(_l, "package");
         lua_getfield(_l, -1, "path");
-        String^ currentPath = ToCliString(lua_tostring(_l, -1));
+        String^ currentPath = _ToCliString(lua_tostring(_l, -1));
 
         StringBuilder^ sb = gcnew StringBuilder(currentPath);
-        sb->Append(";"); // default lua doesn't have this.
+        sb->Append(";"); // default lua path doesn't have this.
         for each (String^ lp in _lpath)
         {
             sb->Append(String::Format("{0}\\?.lua;", lp));
         }
-        const char* newPath = ToCString(sb->ToString());
+        const char* newPath = _ToCString(sb->ToString());
 
         lua_pop(_l, 1);
         lua_pushstring(_l, newPath);
@@ -99,7 +107,7 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
     // Load the script.
     if (nstat == NebStatus::Ok)
     {
-        const char* fnx = ToCString(fn);
+        const char* fnx = _ToCString(fn);
         // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
         nstat = EvalLuaStatus(lstat, "Load script file failed.");
@@ -135,13 +143,13 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         lua_pushnil(_l);
         while (lua_next(_l, -2) != 0)// && lstat ==_lUA_OK)
         {
-            SectionInfo->Add((int)lua_tointeger(_l, -1), ToCliString(lua_tostring(_l, -2)));
+            SectionInfo->Add((int)lua_tointeger(_l, -1), _ToCliString(lua_tostring(_l, -2)));
             lua_pop(_l, 1);
         }
         lua_pop(_l, 1); // Clean up stack.
 
         // Tack on the overal length.
-        SectionInfo->Add(length, ToCliString("LENGTH"));
+        SectionInfo->Add(length, _ToCliString("LENGTH"));
     }
     
     LeaveCriticalSection(&_critsect);
@@ -203,9 +211,6 @@ Interop::NebStatus Interop::Api::RcvController(int chan_hnd, int controller, int
     return ret;
 }
 
-
-//------------------- Privates ---------------------------//
-
 //--------------------------------------------------------//
 Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
 {
@@ -244,12 +249,15 @@ Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
     return nstat;
 }
 
+
+//------------------- Privates ---------------------------//
+
 //--------------------------------------------------------//
-const char* Interop::Api::ToCString(String^ input)
+const char* _ToCString(String^ input)
 {
-    static char buff[2000]; // TODO1 fixed/max length bad.
+    static char buff[MAX_STRING_LEN]; // TODO2 I am bad - probably use a std string
     bool ok = true;
-    int len = input->Length > 1999 ? 1999 : input->Length;
+    int len = input->Length > MAX_STRING_LEN-1 ? MAX_STRING_LEN-1 : input->Length;
 
     // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
     // not! const char* str4 = context->marshal_as<const char*>(input);
@@ -274,7 +282,7 @@ const char* Interop::Api::ToCString(String^ input)
 }
 
 //--------------------------------------------------------//
-String^ Interop::Api::ToCliString(const char* input)
+String^ _ToCliString(const char* input)
 {
     return gcnew String(input);
 }
