@@ -36,14 +36,11 @@ namespace Nebulua.Test
 
         /// <summary>Get LUA_PATH components.</summary>
         /// <returns>List of paths if success or null if invalid.</returns>
-        public static (bool valid, List<string> lpath) GetLuaPath()
+        public static List<string> GetLuaPath()
         {
             // Set up lua environment.
             var projDir = GetProjectSourceDir();
-            var lbotDir = Environment.GetEnvironmentVariable("LBOT");
-            return lbotDir != null ?
-                (true, new() { $@"{projDir}\lua_code", $@"{lbotDir}"} ) :
-                (false, new() { "Missing LBOT env var" } );
+            return new() { $@"{projDir}\lua_code", $@"{projDir}\lbot" };
         }
     }
 

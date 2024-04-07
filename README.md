@@ -276,8 +276,6 @@ function create_definition(name, intervals)
 - Windows 64 bit. Build with VS2022 and .NET8.
 - Uses 64 bit Lua 5.4.2 from [here](https://luabinaries.sourceforge.net/download.html).
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
-- To build/test pull https://github.com/cepthomas/LuaBagOfTricks.git and add an env var 'LBOT' that
-  points to it.
 
 ## Files
 

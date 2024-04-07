@@ -17,7 +17,7 @@ namespace Nebulua.Test
             UT_STOP_ON_FAIL(true);
 
             // Create interop.
-            var (valid, lpath) = TestUtils.GetLuaPath();
+            var lpath = TestUtils.GetLuaPath();
             Api interop = new(lpath);
 
             InteropEventCollector events = new(interop);
@@ -26,8 +26,8 @@ namespace Nebulua.Test
 
             // Load the script.
             NebStatus stat = interop.OpenScript(scrfn);
+            UT_EQUAL(interop.Error, "");
             UT_EQUAL(stat, NebStatus.Ok);
-            UT_EQUAL(interop.Error.Length, 0);
 
             // Have a look inside. TODO2
             UT_EQUAL(interop.SectionInfo.Count, 4);
@@ -85,7 +85,7 @@ namespace Nebulua.Test
 
             // General syntax error during load.
             {
-                var (valid, lpath) = TestUtils.GetLuaPath();
+                var lpath = TestUtils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -93,26 +93,26 @@ namespace Nebulua.Test
                     this is a bad statement
                     end");
                 NebStatus stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, NebStatus.SyntaxError);
                 UT_STRING_CONTAINS(interop.Error, "syntax error near 'is'");
+                UT_EQUAL(stat, NebStatus.SyntaxError);
             }
 
             // Missing required C2L api element - luainterop_Setup(_ltest, &iret);
             {
-                var (valid, lpath) = TestUtils.GetLuaPath();
+                var lpath = TestUtils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
                     @"local neb = require(""nebulua"")
                     resx = 345 + 456");
                 NebStatus stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, NebStatus.SyntaxError);
                 UT_STRING_CONTAINS(interop.Error, "Bad function name: setup()");
+                UT_EQUAL(stat, NebStatus.SyntaxError);
             }
 
             // Bad L2C api function
             {
-                var (valid, lpath) = TestUtils.GetLuaPath();
+                var lpath = TestUtils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -122,13 +122,13 @@ namespace Nebulua.Test
                         return 0
                     end");
                 NebStatus stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
                 UT_STRING_CONTAINS(interop.Error, "attempt to call a nil value (field 'no_good')");
+                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
             }
 
             // General explicit error.
             {
-                var (valid, lpath) = TestUtils.GetLuaPath();
+                var lpath = TestUtils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -138,13 +138,13 @@ namespace Nebulua.Test
                         return 0
                     end");
                 NebStatus stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, NebStatus.SyntaxError);
                 UT_STRING_CONTAINS(interop.Error, "setup() raises error()");
+                UT_EQUAL(stat, NebStatus.SyntaxError);
             }
 
             // Runtime error.
             {
-                var (valid, lpath) = TestUtils.GetLuaPath();
+                var lpath = TestUtils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -154,8 +154,8 @@ namespace Nebulua.Test
                         return 0
                     end");
                 NebStatus stat = interop.OpenScript(tempfn);
-                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
                 UT_STRING_CONTAINS(interop.Error, "attempt to perform arithmetic on a nil value (global 'ng')");
+                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
             }
         }
     }

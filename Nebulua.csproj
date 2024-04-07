@@ -76,11 +76,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\LuaBagOfTricks\stringex.lua" Link="lua_code\stringex.lua" />
-    <Content Include="..\LuaBagOfTricks\utils.lua" Link="lua_code\utils.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\LuaBagOfTricks\validators.lua" Link="lua_code\validators.lua" />
     <Content Include="marks.ico" />
   </ItemGroup>
 
@@ -96,6 +91,21 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="lbot\debugger.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lbot\stringex.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lbot\utils.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lbot\validators.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
