@@ -52,7 +52,7 @@ namespace Nebulua
         {
             _lpath = lpath;
 
-            // Init logging.
+            // Init logging. TODO1 need to set from config.
             LogManager.MinLevelFile = LogLevel.Debug;
             LogManager.MinLevelNotif = LogLevel.Warn;
             LogManager.LogMessage += LogManager_LogMessage;

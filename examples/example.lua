@@ -1,49 +1,55 @@
 
--- Example Nebulua composition file. This is not actual music.
+-- An example Nebulua composition file. Warning: this is not actual music.
 
-local neb = require("nebulua") -- lua api
+
+-- Import modules we need.
+local neb = require("nebulua")
 local md  = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("utils")
 
+-- Aliases for imports - easier typing.
 local inst = md.instruments
 local drum = md.drums
-local kit = md.drum_kits
+local kit  = md.drum_kits
 local ctrl = md.controllers
 
-
+-- Log something to the application log.
 neb.log_info("=============== go go go =======================")
 
 
-------------------------- Config ----------------------------------------
+------------------------- Configuration -------------------------------
 
--- Devices
+-- Specify midi devices.
 local midi_in = "loopMIDI Port"
 local midi_out = "Microsoft GS Wavetable Synth"
 
--- Channels
+-- Specify midi output channels.
 local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
 local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
 local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
 local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
+
+-- Specify midi input channels.
 local hnd_inp1  = neb.create_input_channel(midi_in, 2)
--- etc
 
-------------------------- Vars ----------------------------------------
 
--- local vars - Volumes.
+------------------------- Variables -----------------------------------
+
+-- Misc vars - volumes.
 local synth_vol = 0.8
 local drum_vol = 0.8
 
 -- Get some stock chords and scales.
-local alg_scale = md.get_notes("G3.Algerian")
-local chord_notes = md.get_notes("C4.o7")
+local alg_scale = md.get_notes_from_string("G3.Algerian")
+local chord_notes = md.get_notes_from_string("C4.o7")
 
--- Create custom scale.
+-- Create custom note collection.
 md.create_definition("MY_SCALE", "1 +3 4 -b7")
-local my_scale_notes = md.get_notes("B4.MY_SCALE")
+-- Now it can be used like stock:
+local my_scale_notes = md.get_notes_from_string("B4.MY_SCALE")
 
--- Aliases.
+-- Aliases for instruments - easier typing.
 local snare = drum.AcousticSnare
 local bdrum = drum.AcousticBassDrum
 local hhcl = drum.ClosedHiHat
@@ -52,73 +58,71 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
-
---------------------- Called from app -----------------------------------
+--------------------- Called from main applicatio ---------------------------
 
 -----------------------------------------------------------------------------
--- Init stuff. Required function.
+-- Called once to initialize your script stuff. This is a required function!
 function setup()
     neb.log_info("example initialization")
     math.randomseed(os.time())
+    -- How fast?
     neb.set_tempo(88)
+
+    -- This uses static composition so you must call this!
     neb.init(sections)
+    
     return 0
 
 -----------------------------------------------------------------------------
--- Main loop - called every mmtimer increment. Required function.
+-- Main work loop called every subbeat/tick. This is a required function!
 function step(tick)
-    -- Main work.
-    neb.process_step(tick) -- required if using composition
+    -- This uses static composition so you must call this!
+    neb.process_step(tick)
 
-    -- Other work.
-    boing(60)
+    -- Other work you may want to do.
+    boing(60) -- a local function that makes a noise.
+    -- Do something every new bar.
     t = BarTime(tick)
     if t.get_beat() == 0 and t.get_sub() == 0 then
         neb.send_controller(hnd_synth, ctrl.Pan, 90)
-        -- or...
-        neb.send_controller(hnd_keys,  ctrl.Pan, 30)
     end
 
     return 0
 end
 
 -----------------------------------------------------------------------------
--- Handlers for input note events.
+-- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, velocity)
     neb.log_info("rcv_note %d %d %d", chan_hnd, note_num, velocity)
 
-    if chan_hnd == hbing_bong then
-        -- whiz = ...
+    if chan_hnd == hnd_inp1 then
+        boing(note_num + 10)
+    else
+        -- Echo the note.
+        neb.send_note(hnd_synth, note_num - 10, velocity, 8)
     end
-
-    neb.send_note(hnd_synth, note_num, velocity, 8)
-
     return 0
 end
 
 -----------------------------------------------------------------------------
--- Handlers for input controller events.
+-- Handlers for input controller events. Optional.
 function rcv_controller(chan_hnd, controller, value)
-    neb.log_info("rcv_controller") --, chan_hnd, ctlid, value)
+    if chan_hnd == hnd_inp1 then
+        -- Do something.
+        neb.log_debug("rcv_controller") --, chan_hnd, ctlid, value)
+    end
     return 0
 end
 
 
------------------------ User lua functions -------------------------
+----------------------- User lua functions ----------------------------------
 
------------------------------------------------------------------------------
--- Called from sequence.
+-- Function called from sequence.
 local function seq_func(tick)
     local note_num = math.random(0, #alg_scale)
     neb.send_note(hnd_synth, alg_scale[note_num], drum_vol, 8) --0.5)
 end
 
--- Called from section.
-function section_func(bar, beat, sub)
-    -- do something
-end
-
------------------------------------------------------------------------------
 -- Make a noise.
 local function boing(note_num)
     local boinged = false;
@@ -216,7 +220,6 @@ sections =
         { hnd_keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
         { hnd_drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
         { hnd_bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-        { hnd_synth,   synth_chorus, nil,          synth_chorus, section_func }
     },
 
     ending =

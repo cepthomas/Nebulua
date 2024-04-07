@@ -26,7 +26,7 @@ internal class Program
         // Set up runtime lua environment.
         var exePath = Environment.CurrentDirectory; // where exe lives
         var codePath = $@"{exePath}\lua_code"; // copied lua files
-        var lbotPath = Environment.GetEnvironmentVariable("LBOT"); // TODO1 copy/submodule? fix dependency for runtime? needs utils.lua, stringex.lua, validators.lua. 
+        var lbotPath = Environment.GetEnvironmentVariable("LBOT"); // TODO1 make submodule. 
         // Environment.SetEnvironmentVariable("LUA_PATH", codePath);
 
         var app = new Nebulua.App([lbotPath, codePath]);
