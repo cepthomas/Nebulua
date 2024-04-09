@@ -14,16 +14,16 @@ neb.log_info("=============== Is this thing on? ===============")
 ------------------------- Config ----------------------------------------
 
 -- Device names
-local dev_in1 = "in1"
-local dev_in2 = "in2"
-local dev_out1 = "out1"
-local dev_out2 = "out2"
+local dev_out1 = "Microsoft GS Wavetable Synth"
+local dev_out2 = "loopMIDI Port"
+local dev_in1 = "loopMIDI Port"
+-- local dev_in2 = "in2"
 
 -- Channels
 local hnd_instrument1 = neb.create_output_channel(dev_out1, 1, 33)
 local hnd_instrument2 = neb.create_output_channel(dev_out2, 4, 44)
 local hnd_in1  = neb.create_input_channel(dev_in1, 3)
-local hnd_in2  = neb.create_input_channel(dev_in2, 11)
+-- local hnd_in2  = neb.create_input_channel(dev_in2, 11)
 
 
 ------------------------- Vars ----------------------------------------

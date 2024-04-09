@@ -57,7 +57,12 @@ namespace Nebulua
 
             if (_midiOut is null)
             {
-                throw new ArgumentException($"Invalid output device name: {deviceName}");
+                List<string> devs = ["Valid midi outputs:"];
+                for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+                {
+                    devs.Add($"\"{MidiOut.DeviceInfo(i).ProductName}\"");
+                }
+                throw new ArgumentException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
             }
         }
 
@@ -150,7 +155,12 @@ namespace Nebulua
 
             if (_midiIn is null)
             {
-                throw new ArgumentException($"Invalid input device name: {deviceName}");
+                List<string> devs = ["Valid midi inputs:"];
+                for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+                {
+                    devs.Add($"\"{MidiIn.DeviceInfo(i).ProductName}\"");
+                }
+                throw new ArgumentException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
             }
         }
 

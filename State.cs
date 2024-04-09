@@ -40,22 +40,22 @@ namespace Nebulua
         int _currentTick = 0;
 
         /// <summary>Length of composition in ticks.</summary>
-        public int Length { get; set; }
+        public int Length { get; set; } = 0;
 
-        /// <summary>Keep going at end of loop.</summary>
-        public bool DoLoop { get; set; }
+        /// <summary>Keep going at end of loop.</summary> 
+        public bool DoLoop { get; set; } = false;
 
         /// <summary>Loop start tick. -1 means start of composition.</summary>
-        public int LoopStart { get; set; }
+        public int LoopStart { get; set; } = -1;
 
         /// <summary>Loop end tick. -1 means end of composition.</summary>
-        public int LoopEnd { get; set; }
+        public int LoopEnd { get; set; } = -1;
 
         /// <summary>Monitor midi input.</summary>
-        public bool MonRcv { get; set; }
+        public bool MonRcv { get; set; } = false;
 
         /// <summary>Monitor midi output.</summary>
-        public bool MonSend { get; set; }
+        public bool MonSend { get; set; } = false;
         #endregion
 
         #region Events

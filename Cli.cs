@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Ephemera.NBagOfTricks;
 using Interop;
+using NAudio.Midi;
 
 
 namespace Nebulua
@@ -13,6 +14,12 @@ namespace Nebulua
         #region Fields
         /// <summary>All the commands.</summary>
         readonly CommandDescriptor[]? _commands;
+
+        /// <summary>CLI.</summary>
+        readonly TextWriter _cliOut;
+
+        /// <summary>CLI.</summary>
+        readonly TextReader _cliIn;
         #endregion
 
         #region Properties
@@ -47,14 +54,6 @@ namespace Nebulua
         delegate NebStatus CommandHandler(CommandDescriptor cmd, List<string> args);
         #endregion
 
-        #region IO
-        /// <summary>CLI.</summary>
-        readonly TextWriter _cliOut;
-
-        /// <summary>CLI.</summary>
-        readonly TextReader _cliIn;
-        #endregion
-
         #region Main work
         /// <summary>
         /// Set up command handler. TODOF other stream I/O e.g. socket.
@@ -66,7 +65,8 @@ namespace Nebulua
 
             _commands =
             [
-                new("help",     '?',    '\0',   "tell me everything",                       "",                         UsageCmd),
+                new("help",     '?',    '\0',   "available commands",                       "",                         UsageCmd),
+                new("info",     'i',    '\0',   "system information",                       "",                         InfoCmd),
                 new("exit",     'x',    '\0',   "exit the application",                     "",                         ExitCmd),
                 new("run",      'r',    ' ',    "toggle running the script",                "",                         RunCmd),
                 new("tempo",    't',    '\0',   "get or set the tempo",                     "(bpm): 40-240",            TempoCmd),
@@ -341,6 +341,27 @@ namespace Nebulua
         }
 
         //--------------------------------------------------------//
+        NebStatus InfoCmd(CommandDescriptor _, List<string> __)
+        {
+            NebStatus stat = NebStatus.Ok;
+
+            _cliOut.WriteLine($"Midi output devices");
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                _cliOut.WriteLine(MidiOut.DeviceInfo(i).ProductName);
+            }
+
+            _cliOut.WriteLine($"Midi input devices");
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                _cliOut.WriteLine(MidiIn.DeviceInfo(i).ProductName);
+            }
+            Write("");
+
+            return stat;
+        }
+
+        //--------------------------------------------------------//
         NebStatus UsageCmd(CommandDescriptor _, List<string> __)
         {
             NebStatus stat = NebStatus.Ok;
@@ -352,7 +373,7 @@ namespace Nebulua
                 {
                     // Maybe multiline args.
                     var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
-                    foreach(var arg in parts)
+                    foreach (var arg in parts)
                     {
                         _cliOut.WriteLine($"    {arg}");
                     }

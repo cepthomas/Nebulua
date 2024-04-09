@@ -116,16 +116,14 @@ namespace Nebulua
                 LogManager.MinLevelFile = LogLevel.Debug;
                 LogManager.MinLevelNotif = LogLevel.Warn;
                 LogManager.LogMessage += LogManager_LogMessage;
-                if (!File.Exists(logFn))
-                {
-                    File.OpenWrite(logFn);
-                }
+                var f = File.OpenWrite(logFn); // ensure file exists
+                f?.Close();
                 LogManager.Run(logFn, 100000);
 
                 // Set up runtime lua environment.
                 var exePath = Environment.CurrentDirectory; // where exe lives
-                var codePath = $@"{exePath}\lua_code"; // core lua files
-                _lpath.Add(codePath);
+                _lpath.Add($@"{exePath}\lua_code"); // app lua files
+                _lpath.Add($@"{exePath}\lbot"); // lbot files
 
                 // Hook script events.
                 Api.CreateChannel += Interop_CreateChannel;
@@ -233,6 +231,8 @@ namespace Nebulua
 
                 ///// Normal done. /////
 
+                _cli.Write("shutting down");
+
                 // Wait a bit in case there are some lingering events.
                 Thread.Sleep(100);
 
@@ -322,6 +322,7 @@ namespace Nebulua
                     else
                     {
                         // Stop and rewind.
+                        _cli.Write("done");
                         State.Instance.ExecState = ExecState.Idle;
                         State.Instance.CurrentTick = start;
 
@@ -596,7 +597,7 @@ namespace Nebulua
         /// <param name="error2"></param>
         void FatalError(NebStatus stat, string error1, string? error2 = null)
         {
-            string s2 = string.IsNullOrEmpty(error2) ? "" : $"{Environment.NewLine}    {error2}";
+            string s2 = string.IsNullOrEmpty(error2) ? "" : $"{Environment.NewLine}{error2}";
             string s = $"Fatal error {stat}: {error1}{s2}";
             _logger.Error(s);
 
