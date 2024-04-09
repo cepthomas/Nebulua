@@ -20,7 +20,7 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 	
-	TODOF from original:
+	TODO from original:
 	* Print short function arguments as part of stack location.
 	* Properly handle being reentrant due to coroutines.
 ]]
@@ -28,11 +28,11 @@
 local dbg
 
 -- My changes are marked CET.
--- TODOF l cmd gets noisy with large tables.
--- TODOF hot reload.
+-- TODO l cmd gets noisy with large tables.
+-- TODO hot reload.
 
 
--- Use ANSI color codes in the prompt by default. TODOF play with these.
+-- Use ANSI color codes in the prompt by default. TODO play with these.
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
@@ -619,7 +619,7 @@ end
 
 if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
 	pcall(function()
-		local linenoise = require 'linenoise' --TODOF don't have - something else for windows? Native console?
+		local linenoise = require 'linenoise' --TODO don't have - something else for windows? Native console?
 		
 		-- Load command history from ~/.lua_history
 		local hist_path = os.getenv('HOME') .. '/.lua_history'

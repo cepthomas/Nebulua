@@ -291,7 +291,7 @@ namespace Nebulua
         {
             if (State.Instance.ExecState == ExecState.Run)
             {
-                // Do script. TODOF Handle solo/mute like nebulator.
+                // Do script. TODO Handle solo/mute like nebulator.
                 _tan?.Arm();
 
                 foreach (var api in _api.Values)

@@ -29,7 +29,7 @@ namespace Nebulua.Test
             UT_EQUAL(interop.Error, "");
             UT_EQUAL(stat, NebStatus.Ok);
 
-            // Have a look inside. TODO2
+            // Have a look inside. TODO1
             UT_EQUAL(interop.SectionInfo.Count, 4);
             foreach (var kv in interop.SectionInfo)
             {

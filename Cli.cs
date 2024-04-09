@@ -56,7 +56,7 @@ namespace Nebulua
 
         #region Main work
         /// <summary>
-        /// Set up command handler. TODOF other stream I/O e.g. socket.
+        /// Set up command handler. TODO other stream I/O e.g. socket.
         /// </summary>
         public Cli(TextReader cliIn, TextWriter cliOut)
         {
