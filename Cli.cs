@@ -10,7 +10,17 @@ namespace Nebulua
 {
     public class Cli
     {
-        #region Commands
+        #region Fields
+        /// <summary>All the commands.</summary>
+        readonly CommandDescriptor[]? _commands;
+        #endregion
+
+        #region Properties
+        /// <summary>CLI prompt.</summary>
+        public string Prompt { get; set; } = ">";
+        #endregion
+
+        #region Infrastructure
         /// <summary>Cli command descriptor.</summary>
         readonly record struct CommandDescriptor
         (
@@ -35,12 +45,6 @@ namespace Nebulua
 
         /// <summary>Cli command handler.</summary>
         delegate NebStatus CommandHandler(CommandDescriptor cmd, List<string> args);
-
-        /// <summary>All the commands.</summary>
-        readonly CommandDescriptor[]? _commands;
-
-        /// <summary>CLI prompt.</summary>
-        readonly string _prompt = "?";
         #endregion
 
         #region IO
@@ -55,11 +59,10 @@ namespace Nebulua
         /// <summary>
         /// Set up command handler. TODOF other stream I/O e.g. socket.
         /// </summary>
-        public Cli(TextReader cliIn, TextWriter cliOut, string prompt)
+        public Cli(TextReader cliIn, TextWriter cliOut)
         {
             _cliIn = cliIn;
             _cliOut = cliOut;
-            _prompt = prompt;
 
             _commands =
             [
@@ -81,7 +84,7 @@ namespace Nebulua
         public void Write(string s)
         {
             _cliOut.WriteLine(s);
-            _cliOut.Write(_prompt);
+            _cliOut.Write(Prompt);
         }
 
         /// <summary>
@@ -155,13 +158,13 @@ namespace Nebulua
                     }
                     else
                     {
-                        stat = NebStatus.BadCliArg;
+                        stat = NebStatus.InvalidCliArg;
                         Write($"invalid tempo: {args[1]}");
                     }
                     break;
 
                 default:
-                    stat = NebStatus.BadCliArg;
+                    stat = NebStatus.InvalidCliArg;
                     break;
             }
 
@@ -192,14 +195,14 @@ namespace Nebulua
 
                         default:
                             Write("invalid state");
-                            stat = NebStatus.BadCliArg;
+                            stat = NebStatus.InvalidCliArg;
                             break;
                     }
                     break;
 
                 default:
                     Write($"invalid command");
-                    stat = NebStatus.BadCliArg;
+                    stat = NebStatus.InvalidCliArg;
                     break;
             }
 
@@ -247,14 +250,14 @@ namespace Nebulua
                             break;
 
                         default:
-                            stat = NebStatus.BadCliArg;
+                            stat = NebStatus.InvalidCliArg;
                             Write($"invalid option: {args[1]}");
                             break;
                     }
                     break;
 
                 default:
-                    stat = NebStatus.BadCliArg;
+                    stat = NebStatus.InvalidCliArg;
                     Write("");
                     break;
             }
@@ -265,7 +268,7 @@ namespace Nebulua
         //--------------------------------------------------------//
         NebStatus KillCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat = NebStatus.BadCliArg;
+            NebStatus stat = NebStatus.InvalidCliArg;
 
             State.Instance.ExecState = ExecState.Kill;
             stat = NebStatus.Ok;
@@ -291,7 +294,7 @@ namespace Nebulua
                     if (position < 0)
                     {
                         Write($"invalid position: {args[1]}");
-                        stat = NebStatus.BadCliArg;
+                        stat = NebStatus.InvalidCliArg;
                     }
                     else
                     {
@@ -307,7 +310,7 @@ namespace Nebulua
 
                 default:
                     Write("");
-                    stat = NebStatus.BadCliArg;
+                    stat = NebStatus.InvalidCliArg;
                     break;
             }
 
@@ -322,14 +325,14 @@ namespace Nebulua
             switch (args.Count)
             {
                 case 1: // no args
-                    // TODO2 do something to reload script =>
+                    // TODO1 do something to reload script => ?? The application will watch for changes you make and indicate that reload is needed.
                     // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
                     // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
                     stat = NebStatus.Ok;
                     break;
 
                 default:
-                    stat = NebStatus.BadCliArg;
+                    stat = NebStatus.InvalidCliArg;
                     break;
             }
             Write("");

@@ -9,9 +9,10 @@ namespace Interop
     /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
     public enum class NebStatus
     {
-        Ok = 0, InternalError = 10,
-        BadCliArg = 11, BadLuaArg = 12, SyntaxError = 13, ApiError = 16, RunError = 17, FileError = 18,
-        BadMidiCfg = 20, MidiTx = 21, MidiRx = 22
+        Ok = 0,
+        InternalError = 10, InvalidCliArg = 11, InvalidLuaArg = 12, SyntaxError = 13, InvalidProgramArg = 14,
+        ApiError = 16, RunError = 17, FileError = 18,
+        InvalidMidiCfg = 20, MidiTx = 21, MidiRx = 22
     };
 
     #pragma region Forward refs
@@ -23,7 +24,6 @@ namespace Interop
 
     public ref class Api
     {
-
     #pragma region Fields
     private:
         // The lua thread.

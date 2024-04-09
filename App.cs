@@ -22,7 +22,7 @@ namespace Nebulua
         readonly Dictionary<long, Api> _api = [];
 
         /// <summary>Client supplied context for LUA_PATH.</summary>
-        readonly List<string> _lpath;
+        readonly List<string> _lpath = [];
 
         /// <summary>Talk to the user.</summary>
         readonly Cli _cli;
@@ -39,35 +39,110 @@ namespace Nebulua
         /// <summary>All devices to use for receive.</summary>
         readonly List<MidiInput> _inputs = [];
 
+        /// <summary>Current script.</summary>
+        string _scriptFn = "";
+
         /// <summary>Resource management.</summary>
-        bool _disposed;
+        bool _disposed = false;
         #endregion
 
         #region Lifecycle
         /// <summary>
-        /// Constructor inits some stuff.
+        /// Constructor inits stuff.
         /// </summary>
-        /// <param name="lpath">LUA_PATH components.</param>
-        public App(List<string> lpath)
+        public App()
         {
-            _lpath = lpath;
-
-            // Init logging. TODO1 need to set from config or cmd line.
-            LogManager.MinLevelFile = LogLevel.Debug;
-            LogManager.MinLevelNotif = LogLevel.Warn;
-            LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.Run("_log.txt", 100000);
-
-            _cli = new(Console.In, Console.Out, "->");
+            _cli = new(Console.In, Console.Out);
             _cli.Write("Greetings from Nebulua!");
 
-            // Hook script events.
-            Api.CreateChannel += Interop_CreateChannel;
-            Api.Send += Interop_Send;
-            Api.Log += Interop_Log;
-            Api.PropertyChange += Interop_PropertyChange;
+            // Default config.
+            string logFn = "_log.txt";
+            LogLevel fileLevel = LogLevel.Debug;
+            LogLevel notifLevel = LogLevel.Warn;
 
-            State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
+            try
+            {
+                // Process cmd line args.
+                string? configFn = null;
+                var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
+                args.RemoveAt(0); // remove the binary
+
+                foreach (var arg in args)
+                {
+                    if (arg.EndsWith(".ini")) { configFn = arg; }
+                    else if (arg.EndsWith(".lua")) { _scriptFn = arg; }
+                    else { throw new ArgumentException($"Invalid command line: {arg}"); }
+                }
+                if (_scriptFn is null) { throw new ArgumentException($"Missing nebulua script file"); }
+
+                // Get config, maybe.
+                if (configFn is not null)
+                {
+                    Dictionary<string, LogLevel> levels = new() { { "trace", LogLevel.Trace }, { "debug", LogLevel.Debug },
+                        { "info", LogLevel.Info }, { "warn", LogLevel.Warn }, { "error", LogLevel.Error } };
+
+                    foreach (var item in File.ReadLines(configFn))
+                    {
+                        var sitem = item.Trim();
+                        if (!sitem.StartsWith("#") && sitem.Length > 0) // ignore comments and empty lines
+                        {
+                            var parts = StringUtils.SplitByTokens(sitem, "=");
+                            if (parts.Count == 2)
+                            {
+                                switch (parts[0].ToLower())
+                                {
+                                    case "log_filename":
+                                        logFn = parts[1];
+                                        break;
+                                    case "log_to_file":
+                                        if (!levels.TryGetValue(parts[1].ToLower(), out fileLevel))
+                                        { throw new ArgumentException($"Invalid log_to_file value: {parts[1]}"); }
+                                        break;
+                                    case "log_to_notif":
+                                        if (!levels.TryGetValue(parts[1].ToLower(), out notifLevel))
+                                        { throw new ArgumentException($"Invalid log_to_notif value: {parts[1]}"); }
+                                        break;
+                                    case "cli_prompt":
+                                        _cli.Prompt = parts[1];
+                                        break;
+                                }
+                            }
+                            else { throw new ArgumentException($"Invalid config line: {sitem}"); }
+                        }
+                    }
+                }
+
+                // Init logging.
+                LogManager.MinLevelFile = LogLevel.Debug;
+                LogManager.MinLevelNotif = LogLevel.Warn;
+                LogManager.LogMessage += LogManager_LogMessage;
+                if (!File.Exists(logFn))
+                {
+                    File.OpenWrite(logFn);
+                }
+                LogManager.Run(logFn, 100000);
+
+                // Set up runtime lua environment.
+                var exePath = Environment.CurrentDirectory; // where exe lives
+                var codePath = $@"{exePath}\lua_code"; // core lua files
+                _lpath.Add(codePath);
+
+                // Hook script events.
+                Api.CreateChannel += Interop_CreateChannel;
+                Api.Send += Interop_Send;
+                Api.Log += Interop_Log;
+                Api.PropertyChange += Interop_PropertyChange;
+
+                State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
+            }
+            catch (ArgumentException ex)
+            {
+                FatalError(NebStatus.InvalidProgramArg, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                FatalError(NebStatus.InternalError, $"App constructor failed. {ex.Message}", ex.StackTrace);
+            }
         }
 
         /// <summary>
@@ -80,7 +155,7 @@ namespace Nebulua
             {
                 if (disposing)
                 {
-                    // Template said: dispose managed state (managed objects)
+                    // Template said: dispose managed state (managed objects).
                     _mmTimer.Stop();
                     _mmTimer.Dispose();
 
@@ -93,8 +168,8 @@ namespace Nebulua
                     _outputs.Clear();
                 }
 
-                // Template said: free unmanaged resources (unmanaged objects) and override finalizer
-                // Template said: set large fields to null
+                // Template said: free unmanaged resources (unmanaged objects) and override finalizer.
+                // Template said: set large fields to null.
                 _disposed = true;
             }
         }
@@ -123,45 +198,52 @@ namespace Nebulua
         /// <summary>
         /// Load and execute script.
         /// </summary>
-        /// <param name="fn"></param>
-        public NebStatus Run(string fn)
+        public NebStatus Run()
         {
             NebStatus stat;
 
-            // Create script api.
-            Api api = new(_lpath);
-            _api.Add(api.Id, api);
-
-            // Load the script.
-            stat = api.OpenScript(fn);
-            if (stat != NebStatus.Ok)
+            try
             {
-                FatalError(stat, "Interop OpenScript() failed", api.Error);
-            }
+                // Create script api.
+                Api api = new(_lpath);
+                _api.Add(api.Id, api);
 
-            State.Instance.Length = api.SectionInfo.Last().Key;
-
-            // Start timer.
-            SetTimer(State.Instance.Tempo);
-            _mmTimer.Start();
-
-            ///// Good to go now. Loop forever doing cli requests. /////
-            while (State.Instance.ExecState != ExecState.Exit)
-            {
-                stat = _cli.Read();
+                // Load the script.
+                stat = api.OpenScript(_scriptFn);
                 if (stat != NebStatus.Ok)
                 {
-                    FatalError(stat, "Cli Read() failed", api.Error);
+                    FatalError(stat, "Api OpenScript() failed", api.Error);
                 }
+
+                State.Instance.Length = api.SectionInfo.Last().Key;
+
+                // Start timer.
+                SetTimer(State.Instance.Tempo);
+                _mmTimer.Start();
+
+                ///// Good to go now. Loop forever doing cli requests. /////
+                while (State.Instance.ExecState != ExecState.Exit)
+                {
+                    stat = _cli.Read();
+                    if (stat != NebStatus.Ok)
+                    {
+                        FatalError(stat, "Cli Read() failed", api.Error);
+                    }
+                }
+
+                ///// Normal done. /////
+
+                // Wait a bit in case there are some lingering events.
+                Thread.Sleep(100);
+
+                // Just in case.
+                KillAll();
             }
-
-            ///// Done. /////
-
-            // Wait a bit in case there are some lingering events.
-            Thread.Sleep(100);
-
-            // Just in case.
-            KillAll();
+            catch (Exception ex)
+            {
+                stat = NebStatus.InternalError;
+                FatalError(stat, "App Run() failed", ex.Message);
+            }
 
             return stat;
         }
@@ -305,7 +387,7 @@ namespace Nebulua
 
                 if (stat != NebStatus.Ok)
                 {
-                    FatalError(stat, "Api Midi Receive() failed", api.Error);
+                    FatalError(stat, "Midi Receive() failed", api.Error);
                 }
 
                 if (State.Instance.MonRcv)
@@ -372,7 +454,7 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                FatalError(NebStatus.SyntaxError, "Script CreateChannel() failed", ex.Message);
+                FatalError(NebStatus.SyntaxError, "CreateChannel() failed", ex.Message);
             }
         }
 
@@ -414,7 +496,7 @@ namespace Nebulua
                 {
                     output.Send(new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value));
                 }
-                
+
                 if (State.Instance.MonSend)
                 {
                     _logger.Trace($"MIDI_SND {e}");
@@ -423,7 +505,7 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                FatalError(NebStatus.SyntaxError, "Script Send() failed", ex.Message);
+                FatalError(NebStatus.SyntaxError, "Send() failed", ex.Message);
             }
         }
 
@@ -457,7 +539,7 @@ namespace Nebulua
                 }
                 else
                 {
-                    FatalError(NebStatus.SyntaxError, $"Script Invalid tempo: {e.Bpm}");
+                    FatalError(NebStatus.SyntaxError, $"Invalid tempo: {e.Bpm}");
                 }
             }
             else

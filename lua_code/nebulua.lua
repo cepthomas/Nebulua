@@ -230,7 +230,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     function make_event(offset)
         -- offset is 0-based.
         -- returns nil if ok else error string.
-        local vol = current_vol / 10 -- TODO2 allow custom mappings of the step size.
+        local vol = current_vol / 10 -- TODO1 allow custom mappings of the step size.
         local dur = offset - start_offset
         local when = start_offset + start_tick
         local evt_err = nil

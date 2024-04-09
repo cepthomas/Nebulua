@@ -255,7 +255,7 @@ Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
 //--------------------------------------------------------//
 const char* _ToCString(String^ input)
 {
-    static char buff[MAX_STRING_LEN]; // TODO2 I am bad - probably use a std string
+    static char buff[MAX_STRING_LEN]; // TODO1 I am bad - probably use a std string
     bool ok = true;
     int len = input->Length > MAX_STRING_LEN-1 ? MAX_STRING_LEN-1 : input->Length;
 

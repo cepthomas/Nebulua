@@ -7,6 +7,7 @@
     [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to send to it.
 
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
+
 ![logo](marks.png)
 
 ## Glossary
@@ -40,7 +41,7 @@ tick       | int    | absolute time, see ##Timing, same length as sub |
 - Each sequence is typically 8 beats. Each section is typically 4 sequences -> 32 beats. A 4 minute song at
   80bpm is 320 beats -> 10 sections -> 40 sequences. If each sequence has an average of 8 notes for a total
   of 320 notes per instrument. A "typical" song with 6 instruments would then have about 4000 on/off events.
-- To make the script translation between bar-beat-sub and ticks, see the [BarTime](#bar-time) class below.
+- To make the script translation between bar-beat-sub and ticks, see the [BarTime](#bartime) class below.
 
 ## Standard Note Syntax
 
@@ -117,9 +118,9 @@ BarTime(bar, beat, sub)
 BarTime(str)
 ```
 Construction with several overloads:
-- tick: construct from tick
+- tick: construct from absolute tick
 - bar, beat, sub: construct from explicit parts
-- str: construct from string likw "1:2:3" or "1:2" or "1"
+- str: construct from string like "1:2:3" or "1:2" or "1"
 - return: BarTime object
 
 Properties:
