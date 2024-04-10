@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
-using NAudio.Wave;
 using Interop;
 
 
@@ -40,7 +38,7 @@ namespace Nebulua.Test
         {
             // Set up lua environment.
             var projDir = GetProjectSourceDir();
-            return new() { $@"{projDir}\lua_code", $@"{projDir}\lbot" };
+            return [$@"{projDir}\lua_code", $@"{projDir}\lbot"];
         }
     }
 

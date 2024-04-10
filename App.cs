@@ -67,73 +67,25 @@ namespace Nebulua
 
                 foreach (var arg in args)
                 {
-                    if (arg.EndsWith(".ini")) { configFn = arg; }
-                    else if (arg.EndsWith(".lua")) { _scriptFn = arg; }
-                    else { throw new ApplicationArgumentException($"Invalid command line: {arg}"); }
+                    if (arg.EndsWith(".ini"))
+                    {
+                        configFn = arg;
+                    }
+                    else if (arg.EndsWith(".lua"))
+                    {
+                        _scriptFn = arg;
+                    }
+                    else
+                    {
+                        throw new ApplicationArgumentException($"Invalid command line: {arg}");
+                    }
                 }
-                if (_scriptFn is null) { throw new ApplicationArgumentException($"Missing nebulua script file"); }
-
+                if (_scriptFn is null)
+                {
+                    throw new ApplicationArgumentException($"Missing nebulua script file");
+                }
 
                 _config = new(configFn);
-
-                // Get config, maybe.
-                //if (configFn is not null)
-                //{
-
-
-                    // try
-                    // {
-
-
-                    // }
-                    // catch (ConfigException ex)
-                    // {
-                    //     throw;
-                    //     // Fatal Error(NebStatus.InvalidProgramArg, ex.Message);
-                    // }
-                    // catch (Exception ex)
-                    // {
-                    //     Fatal Error(NebStatus.InternalError, $"Other flavor... {ex.Message}", ex.StackTrace);
-                    // }
-
-
-
-                    
-
-
-                    // Dictionary<string, LogLevel> levels = new() { { "trace", LogLevel.Trace }, { "debug", LogLevel.Debug },
-                    //     { "info", LogLevel.Info }, { "warn", LogLevel.Warn }, { "error", LogLevel.Error } };
-
-                    // foreach (var item in File.ReadLines(configFn))
-                    // {
-                    //     var sitem = item.Trim();
-                    //     if (!sitem.StartsWith("#") && sitem.Length > 0) // ignore comments and empty lines
-                    //     {
-                    //         var parts = StringUtils.SplitByTokens(sitem, "=");
-                    //         if (parts.Count == 2)
-                    //         {
-                    //             switch (parts[0].ToLower())
-                    //             {
-                    //                 case "log_filename":
-                    //                     logFn = parts[1];
-                    //                     break;
-                    //                 case "log_to_file":
-                    //                     if (!levels.TryGetValue(parts[1].ToLower(), out fileLevel))
-                    //                     { throw new ArgumentException($"Invalid log_to_file value: {parts[1]}"); }
-                    //                     break;
-                    //                 case "log_to_notif":
-                    //                     if (!levels.TryGetValue(parts[1].ToLower(), out notifLevel))
-                    //                     { throw new ArgumentException($"Invalid log_to_notif value: {parts[1]}"); }
-                    //                     break;
-                    //                 case "cli_prompt":
-                    //                     _cli.Prompt = parts[1];
-                    //                     break;
-                    //             }
-                    //         }
-                    //         else { throw new ArgumentException($"Invalid config line: {sitem}"); }
-                    //     }
-                    // }
-                //}
 
                 // Init logging.
                 LogManager.MinLevelFile = LogLevel.Debug;
@@ -156,11 +108,7 @@ namespace Nebulua
 
                 State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
             }
-            // // Anything that throws is fatal.
-            // catch (ArgumentException ex)
-            // {
-            //     Fatal Error(NebStatus.InvalidProgramArg, ex.Message);
-            // }
+            // Anything that throws is fatal.
             catch (Exception ex)
             {
                 FatalError(NebStatus.AppInternalError, $"Constructor failed. {ex.Message}", ex.StackTrace);
@@ -234,7 +182,6 @@ namespace Nebulua
                 stat = api.OpenScript(_scriptFn);
                 if (stat != NebStatus.Ok)
                 {
-                    //Fatal Error(stat, "Api OpenScript() failed", api.Error);
                     throw new ApiException("Api OpenScript() failed", api.Error);
                 }
 

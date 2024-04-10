@@ -17,13 +17,12 @@ namespace Nebulua
         //    readonly TextWriter _cliOut;
         //    readonly TextReader _cliIn;
 
-        string _prompt;
+        public string Prompt { get; set; } = ">";
 
-        public Cli(TextReader cliIn, TextWriter cliOut, string prompt)
+        public Cli(TextReader cliIn, TextWriter cliOut)
         {
             //_cliIn = new CliTextReader();
             //_cliOut = new CliTextWriter();
-            _prompt = prompt;
         }
 
         public void Write(string s)
@@ -31,7 +30,7 @@ namespace Nebulua
             //_ = CaptureLines.Append(s);
         }
 
-        public NebStatus Read()
+        public bool Read()
         {
             //// return the next char or -1 if done.
             //if (NextLine.Length > 0)
@@ -45,7 +44,7 @@ namespace Nebulua
             //    return -1;
             //}
 
-            return NebStatus.Ok;
+            return true;
         }
     }
 }

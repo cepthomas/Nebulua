@@ -3,8 +3,6 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
-using Ephemera.NBagOfTricks.Slog;
-using Interop;
 
 
 namespace Nebulua.Test
@@ -14,7 +12,7 @@ namespace Nebulua.Test
     {
         public override void RunSuite()
         {
-            NebStatus stat;
+            bool bret;
             List<string> capture;
             UT_STOP_ON_FAIL(true);
 
@@ -23,44 +21,43 @@ namespace Nebulua.Test
 
             MockCliIn cliIn = new();
             MockCliOut cliOut = new();
-            var prompt = "%";
-            var cli = new Nebulua.Cli(cliIn, cliOut, prompt);
+            var cli = new Cli(cliIn, cliOut) { Prompt = "%" };
 
             ///// Fat fingers.
             cliOut.Clear();
             cliIn.NextLine = "bbbbb";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"Invalid command");
-            UT_EQUAL(capture[1], prompt);
+            UT_EQUAL(capture[1], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "z";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"Invalid command");
-            UT_EQUAL(capture[1], prompt);
+            UT_EQUAL(capture[1], cli.Prompt);
 
             ///// These next two confirm proper full/short name handling.
             cliOut.Clear();
             cliIn.NextLine = "help";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 12);
             UT_EQUAL(capture[0], "help|?: tell me everything");
             UT_EQUAL(capture[1], "exit|x: exit the application");
             UT_EQUAL(capture[10], "reload|l: re/load current script");
-            UT_EQUAL(capture[11], prompt);
+            UT_EQUAL(capture[11], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "?";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 12);
             UT_EQUAL(capture[0], "help|?: tell me everything");
@@ -68,8 +65,8 @@ namespace Nebulua.Test
             ///// The rest of the commands.
             cliOut.Clear();
             cliIn.NextLine = "exit";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"goodbye!");
@@ -77,8 +74,8 @@ namespace Nebulua.Test
             st.ExecState = ExecState.Idle; // reset
             cliOut.Clear();
             cliIn.NextLine = "run";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"running");
@@ -86,72 +83,72 @@ namespace Nebulua.Test
             st.ExecState = ExecState.Idle; // reset
             cliOut.Clear();
             cliIn.NextLine = "reload";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], prompt);
+            UT_EQUAL(capture[0], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "tempo";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "100");
 
             cliOut.Clear();
             cliIn.NextLine = "tempo 182";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.BadCliArg);
+            bret = cli.Read();
+            UT_FALSE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], prompt);
+            UT_EQUAL(capture[0], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "tempo 242";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.BadCliArg);
+            bret = cli.Read();
+            UT_FALSE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid tempo: 242");
 
             cliOut.Clear();
             cliIn.NextLine = "tempo 39";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.BadCliArg);
+            bret = cli.Read();
+            UT_FALSE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid tempo: 39");
 
             cliOut.Clear();
             cliIn.NextLine = "monitor in";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], prompt);
+            UT_EQUAL(capture[0], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "monitor out";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], prompt);
+            UT_EQUAL(capture[0], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "monitor off";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], prompt);
+            UT_EQUAL(capture[0], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "monitor junk";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.BadCliArg);
+            bret = cli.Read();
+            UT_FALSE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], "invalid option: junk");
@@ -166,7 +163,7 @@ namespace Nebulua.Test
     {
         public override void RunSuite()
         {
-            NebStatus stat;
+            bool bret;
             List<string> capture;
             UT_STOP_ON_FAIL(true);
 
@@ -175,20 +172,19 @@ namespace Nebulua.Test
 
             MockCliIn cliIn = new();
             MockCliOut cliOut = new();
-            var prompt = "%";
-            var cli = new Nebulua.Cli(cliIn, cliOut, prompt);
+            var cli = new Cli(cliIn, cliOut) { Prompt = "%" };
 
             //app.Run("script_happy.lua");
 
             ///// Position commands. TODO1 fix/test these.
             cliOut.Clear();
             cliIn.NextLine = "position";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 2);
             UT_EQUAL(capture[0], $"0:0:0");
-            UT_EQUAL(capture[1], prompt);
+            UT_EQUAL(capture[1], cli.Prompt);
 
             //app.Clear();
             //cliIn.NextLine = "position 203:2:6";
@@ -221,11 +217,11 @@ namespace Nebulua.Test
             ///// Misc commands.
             cliOut.Clear();
             cliIn.NextLine = "kill";
-            stat = cli.Read();
-            UT_EQUAL(stat, NebStatus.Ok);
+            bret = cli.Read();
+            UT_TRUE(bret);
             capture = cliOut.CaptureLines;
             UT_EQUAL(capture.Count, 1);
-            UT_EQUAL(capture[0], prompt);
+            UT_EQUAL(capture[0], cli.Prompt);
 
             // Wait for logger to stop.
             Thread.Sleep(100);

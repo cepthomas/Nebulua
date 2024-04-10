@@ -18,9 +18,6 @@ namespace Nebulua
         #region Fields
         /// <summary>Low level midi input device.</summary>
         readonly MidiIn? _midiIn = null;
-
-        // /// <summary>My logger.</summary>
-        // readonly Logger _logger = LogManager.CreateLogger("MidiIn");
         #endregion
 
         #region Properties
@@ -29,9 +26,6 @@ namespace Nebulua
 
         /// <summary>True if registered by script, 0-based.</summary>
         public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
-
-        // /// <summary>Log traffic at Trace level.</summary>
-        // public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
 
         /// <summary>Device capture on/off.</summary>
         public bool CaptureEnable
@@ -55,7 +49,6 @@ namespace Nebulua
         public MidiInput(string deviceName)
         {
             DeviceName = deviceName;
-            // LogEnable = false;
             Channels.ForEach(b => b = false);
 
             // Figure out which midi input device.
@@ -109,7 +102,6 @@ namespace Nebulua
             if (Channels[chan_num - 1])
             {
                 ReceiveEvent?.Invoke(this, evt);
-                // _logger.Trace(evt.ToString());
             }
             // else ignore.
         }
@@ -120,7 +112,6 @@ namespace Nebulua
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
-            // _logger.Trace(ErrorInfo);
         }
         #endregion
     }
@@ -134,9 +125,6 @@ namespace Nebulua
         #region Fields
         /// <summary>Low level midi output device.</summary>
         readonly MidiOut? _midiOut = null;
-
-        // /// <summary>My logger.</summary>
-        // readonly Logger _logger = LogManager.CreateLogger("MidiOut");
         #endregion
 
         #region Properties
@@ -145,9 +133,6 @@ namespace Nebulua
 
         /// <summary>True if registered by script, 0-based.</summary>
         public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
-
-        // /// <summary>Log traffic at Trace level.</summary>
-        // public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
         #endregion
 
         #region Lifecycle
@@ -201,7 +186,6 @@ namespace Nebulua
             if (Channels[chan_num - 1])
             {
                 _midiOut?.Send(evt.GetAsShortMessage());
-                // _logger.Trace(evt.ToString());
             }
         }
         #endregion

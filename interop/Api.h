@@ -10,13 +10,10 @@ namespace Interop
     public enum class NebStatus
     {
         Ok = 0,
-        // Api can return these:
-        SyntaxError = 10, FileError = 11, RunError = 12, ApiError = 23,
+        // Api returns these:
+        SyntaxError = 10, FileError = 11, RunError = 12, ApiError = 13,
         // App level errors:
-        AppInternalError = 13,
-        //InvalidCliArg = 20, InvalidLuaArg = 21, InvalidProgramArg = 22, ApiError = 23,
-        //// Midi errors:
-        //InvalidMidiCfg = 30, MidiTx = 31, MidiRx = 32
+        AppInternalError = 16,
     };
 
     #pragma region Forward refs

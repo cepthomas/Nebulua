@@ -12,19 +12,19 @@ namespace Nebulua.Test
     {
         public override void RunSuite()
         {
-            int bt = Utils.ParseBarTime("23:2:6");
+            int bt = MusicTime.Parse("23:2:6");
             UT_EQUAL(bt, 23 * Defs.SUBS_PER_BAR + 2 * Defs.SUBS_PER_BEAT + 6);
-            bt = Utils.ParseBarTime("146:1");
+            MusicTime.Parse("146:1");
             UT_EQUAL(bt, 146 * Defs.SUBS_PER_BAR + 1 * Defs.SUBS_PER_BEAT);
-            bt = Utils.ParseBarTime("71");
+            MusicTime.Parse("71");
             UT_EQUAL(bt, 71 * Defs.SUBS_PER_BAR);
-            bt = Utils.ParseBarTime("49:55:8");
+            MusicTime.Parse("49:55:8");
             UT_EQUAL(bt, -1);
-            bt = Utils.ParseBarTime("111:3:88");
+            MusicTime.Parse("111:3:88");
             UT_EQUAL(bt, -1);
-            bt = Utils.ParseBarTime("invalid");
+            MusicTime.Parse("invalid");
             UT_EQUAL(bt, -1);
-            string sbt = Utils.FormatBarTime(12345);
+            string sbt = MusicTime.Format(12345);
             UT_EQUAL(sbt, "385:3:1");
 
             //string smidi = Utils.FormatMidiStatus(MMSYSERR_INVALFLAG);
