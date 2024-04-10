@@ -27,6 +27,9 @@ namespace Nebulua
         /// <summary>Talk to the user.</summary>
         readonly Cli _cli;
 
+        /// <summary>The config contents.</summary>
+        readonly Config? _config;
+
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
 
@@ -40,7 +43,7 @@ namespace Nebulua
         readonly List<MidiInput> _inputs = [];
 
         /// <summary>Current script.</summary>
-        string _scriptFn = "";
+        readonly string _scriptFn = "";
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -55,11 +58,6 @@ namespace Nebulua
             _cli = new(Console.In, Console.Out);
             _cli.Write("Greetings from Nebulua!");
 
-            // Default config.
-            string logFn = "_log.txt";
-            LogLevel fileLevel = LogLevel.Debug;
-            LogLevel notifLevel = LogLevel.Warn;
-
             try
             {
                 // Process cmd line args.
@@ -71,61 +69,86 @@ namespace Nebulua
                 {
                     if (arg.EndsWith(".ini")) { configFn = arg; }
                     else if (arg.EndsWith(".lua")) { _scriptFn = arg; }
-                    else { throw new ArgumentException($"Invalid command line: {arg}"); }
+                    else { throw new ApplicationArgumentException($"Invalid command line: {arg}"); }
                 }
-                if (_scriptFn is null) { throw new ArgumentException($"Missing nebulua script file"); }
+                if (_scriptFn is null) { throw new ApplicationArgumentException($"Missing nebulua script file"); }
+
+
+                _config = new(configFn);
 
                 // Get config, maybe.
-                if (configFn is not null)
-                {
-                    Dictionary<string, LogLevel> levels = new() { { "trace", LogLevel.Trace }, { "debug", LogLevel.Debug },
-                        { "info", LogLevel.Info }, { "warn", LogLevel.Warn }, { "error", LogLevel.Error } };
+                //if (configFn is not null)
+                //{
 
-                    foreach (var item in File.ReadLines(configFn))
-                    {
-                        var sitem = item.Trim();
-                        if (!sitem.StartsWith("#") && sitem.Length > 0) // ignore comments and empty lines
-                        {
-                            var parts = StringUtils.SplitByTokens(sitem, "=");
-                            if (parts.Count == 2)
-                            {
-                                switch (parts[0].ToLower())
-                                {
-                                    case "log_filename":
-                                        logFn = parts[1];
-                                        break;
-                                    case "log_to_file":
-                                        if (!levels.TryGetValue(parts[1].ToLower(), out fileLevel))
-                                        { throw new ArgumentException($"Invalid log_to_file value: {parts[1]}"); }
-                                        break;
-                                    case "log_to_notif":
-                                        if (!levels.TryGetValue(parts[1].ToLower(), out notifLevel))
-                                        { throw new ArgumentException($"Invalid log_to_notif value: {parts[1]}"); }
-                                        break;
-                                    case "cli_prompt":
-                                        _cli.Prompt = parts[1];
-                                        break;
-                                }
-                            }
-                            else { throw new ArgumentException($"Invalid config line: {sitem}"); }
-                        }
-                    }
-                }
+
+                    // try
+                    // {
+
+
+                    // }
+                    // catch (ConfigException ex)
+                    // {
+                    //     throw;
+                    //     // Fatal Error(NebStatus.InvalidProgramArg, ex.Message);
+                    // }
+                    // catch (Exception ex)
+                    // {
+                    //     Fatal Error(NebStatus.InternalError, $"Other flavor... {ex.Message}", ex.StackTrace);
+                    // }
+
+
+
+                    
+
+
+                    // Dictionary<string, LogLevel> levels = new() { { "trace", LogLevel.Trace }, { "debug", LogLevel.Debug },
+                    //     { "info", LogLevel.Info }, { "warn", LogLevel.Warn }, { "error", LogLevel.Error } };
+
+                    // foreach (var item in File.ReadLines(configFn))
+                    // {
+                    //     var sitem = item.Trim();
+                    //     if (!sitem.StartsWith("#") && sitem.Length > 0) // ignore comments and empty lines
+                    //     {
+                    //         var parts = StringUtils.SplitByTokens(sitem, "=");
+                    //         if (parts.Count == 2)
+                    //         {
+                    //             switch (parts[0].ToLower())
+                    //             {
+                    //                 case "log_filename":
+                    //                     logFn = parts[1];
+                    //                     break;
+                    //                 case "log_to_file":
+                    //                     if (!levels.TryGetValue(parts[1].ToLower(), out fileLevel))
+                    //                     { throw new ArgumentException($"Invalid log_to_file value: {parts[1]}"); }
+                    //                     break;
+                    //                 case "log_to_notif":
+                    //                     if (!levels.TryGetValue(parts[1].ToLower(), out notifLevel))
+                    //                     { throw new ArgumentException($"Invalid log_to_notif value: {parts[1]}"); }
+                    //                     break;
+                    //                 case "cli_prompt":
+                    //                     _cli.Prompt = parts[1];
+                    //                     break;
+                    //             }
+                    //         }
+                    //         else { throw new ArgumentException($"Invalid config line: {sitem}"); }
+                    //     }
+                    // }
+                //}
 
                 // Init logging.
                 LogManager.MinLevelFile = LogLevel.Debug;
                 LogManager.MinLevelNotif = LogLevel.Warn;
                 LogManager.LogMessage += LogManager_LogMessage;
-                var f = File.OpenWrite(logFn); // ensure file exists
+                var f = File.OpenWrite(_config.LogFilename); // ensure file exists
                 f?.Close();
-                LogManager.Run(logFn, 100000);
+                LogManager.Run(_config.LogFilename, 100000);
 
                 // Set up runtime lua environment.
                 var exePath = Environment.CurrentDirectory; // where exe lives
                 _lpath.Add($@"{exePath}\lua_code"); // app lua files
                 _lpath.Add($@"{exePath}\lbot"); // lbot files
 
-                // Hook script events.
+                // Hook script callbacks.
                 Api.CreateChannel += Interop_CreateChannel;
                 Api.Send += Interop_Send;
                 Api.Log += Interop_Log;
@@ -133,13 +156,14 @@ namespace Nebulua
 
                 State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
             }
-            catch (ArgumentException ex)
-            {
-                FatalError(NebStatus.InvalidProgramArg, ex.Message);
-            }
+            // // Anything that throws is fatal.
+            // catch (ArgumentException ex)
+            // {
+            //     Fatal Error(NebStatus.InvalidProgramArg, ex.Message);
+            // }
             catch (Exception ex)
             {
-                FatalError(NebStatus.InternalError, $"App constructor failed. {ex.Message}", ex.StackTrace);
+                FatalError(NebStatus.AppInternalError, $"Constructor failed. {ex.Message}", ex.StackTrace);
             }
         }
 
@@ -198,7 +222,7 @@ namespace Nebulua
         /// </summary>
         public NebStatus Run()
         {
-            NebStatus stat;
+            NebStatus stat = NebStatus.Ok;
 
             try
             {
@@ -210,7 +234,8 @@ namespace Nebulua
                 stat = api.OpenScript(_scriptFn);
                 if (stat != NebStatus.Ok)
                 {
-                    FatalError(stat, "Api OpenScript() failed", api.Error);
+                    //Fatal Error(stat, "Api OpenScript() failed", api.Error);
+                    throw new ApiException("Api OpenScript() failed", api.Error);
                 }
 
                 State.Instance.Length = api.SectionInfo.Last().Key;
@@ -220,12 +245,15 @@ namespace Nebulua
                 _mmTimer.Start();
 
                 ///// Good to go now. Loop forever doing cli requests. /////
+
                 while (State.Instance.ExecState != ExecState.Exit)
                 {
-                    stat = _cli.Read();
-                    if (stat != NebStatus.Ok)
+                    bool cliok = _cli.Read();
+                    // Should not throw. Cli will take care of its own errors.
+                    if (!cliok)
                     {
-                        FatalError(stat, "Cli Read() failed", api.Error);
+                        ////Fatal Error(stat, "Cli Read() failed", api.Error);
+                        //throw new("Cli Read() failed", api.Error);
                     }
                 }
 
@@ -241,8 +269,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                stat = NebStatus.InternalError;
-                FatalError(stat, "App Run() failed", ex.Message);
+                FatalError(NebStatus.AppInternalError, "App Run() failed", ex.Message);
             }
 
             return stat;
@@ -283,53 +310,61 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Process events -- this is in an interrupt handler!
+        /// Process events. This is in an interrupt handler so can't throw exceptions.
         /// </summary>
         /// <param name="totalElapsed"></param>
         /// <param name="periodElapsed"></param>
-        void MmTimerCallback(double totalElapsed, double periodElapsed)
+        void MmTimer_Callback(double totalElapsed, double periodElapsed)
         {
-            if (State.Instance.ExecState == ExecState.Run)
+            try
             {
-                // Do script. TODO Handle solo/mute like nebulator.
-                _tan?.Arm();
-
-                foreach (var api in _api.Values)
+                if (State.Instance.ExecState == ExecState.Run)
                 {
-                    NebStatus stat = api.Step(State.Instance.CurrentTick);
-                    if (stat != NebStatus.Ok)
+                    // Do script. TODO Handle solo/mute like nebulator.
+                    _tan?.Arm();
+
+                    foreach (var api in _api.Values)
                     {
-                        FatalError(stat, "Api Step() failed", api.Error);
+                        NebStatus stat = api.Step(State.Instance.CurrentTick);
+                        if (stat != NebStatus.Ok)
+                        {
+                            //Fatal Error(stat, "Api Step() failed", api.Error);
+                            throw new ApiException("Api Step() failed", api.Error);
+                        }
+                    }
+
+                    // Read stopwatch and diff/stats.
+                    string? s = _tan?.Dump();
+
+                    // Update state.
+                    // Bump time and check state.
+                    int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+                    int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+
+                    if (++State.Instance.CurrentTick >= end) // done
+                    {
+                        // Keep going? else stop/rewind.
+                        if (State.Instance.DoLoop)
+                        {
+                            // Keep going.
+                            State.Instance.CurrentTick = start;
+                        }
+                        else
+                        {
+                            // Stop and rewind.
+                            _cli.Write("done");
+                            State.Instance.ExecState = ExecState.Idle;
+                            State.Instance.CurrentTick = start;
+
+                            // just in case
+                            KillAll();
+                        }
                     }
                 }
-
-                // Read stopwatch and diff/stats.
-                string? s = _tan?.Dump();
-
-                // Update state.
-                // Bump time and check state.
-                int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-                int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
-
-                if (++State.Instance.CurrentTick >= end) // done
-                {
-                    // Keep going? else stop/rewind.
-                    if (State.Instance.DoLoop)
-                    {
-                        // Keep going.
-                        State.Instance.CurrentTick = start;
-                    }
-                    else
-                    {
-                        // Stop and rewind.
-                        _cli.Write("done");
-                        State.Instance.ExecState = ExecState.Idle;
-                        State.Instance.CurrentTick = start;
-
-                        // just in case
-                        KillAll();
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
+                FatalError(NebStatus.AppInternalError, "Api Step() failed", ex.Message);
             }
         }
 
@@ -359,42 +394,53 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Midi input arrived.
+        /// Midi input arrived. This is in an interrupt handler so can't throw exceptions.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void Midi_ReceiveEvent(object? sender, MidiEvent e)
         {
             NebStatus stat = NebStatus.Ok;
-            int index = _inputs.IndexOf((MidiInput)sender!);
-            int chan_hnd = Utils.MakeInHandle(index, e.Channel);
 
-            foreach (var api in _api.Values)
+            try
             {
-                switch (e)
-                {
-                    case NoteOnEvent evt:
-                        stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                        break;
-                    case NoteEvent evt:
-                        stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
-                        break;
-                    case ControlChangeEvent evt:
-                        stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                        break;
-                    default: // Ignore.
-                        break;
-                }
+                int index = _inputs.IndexOf((MidiInput)sender!);
+                int chan_hnd = ChannelHandle.MakeInHandle(index, e.Channel);
 
-                if (stat != NebStatus.Ok)
+                foreach (var api in _api.Values)
                 {
-                    FatalError(stat, "Midi Receive() failed", api.Error);
-                }
+                    switch (e)
+                    {
+                        case NoteOnEvent evt:
+                            stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                            break;
 
-                if (State.Instance.MonRcv)
-                {
-                    _logger.Trace($"MIDI_RCV {e}");
+                        case NoteEvent evt:
+                            stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
+                            break;
+
+                        case ControlChangeEvent evt:
+                            stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                            break;
+
+                        default: // Ignore.
+                            break;
+                    }
+
+                    if (stat != NebStatus.Ok)
+                    {
+                        throw new ApiException("Midi Receive() failed", api.Error);
+                    }
+
+                    if (State.Instance.MonRcv)
+                    {
+                        _logger.Trace($"MIDIRX {e}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                FatalError(stat, "Midi Receive() failed", ex.Message);
             }
         }
         #endregion
@@ -407,7 +453,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_CreateChannel(object? sender, CreateChannelArgs e)
         {
-            e.Ret = 0; // default means invalid chan_hnd
+            e.Ret = 0; // chan_hnd default means invalid
 
             // Get Api.
             //Api api = _api[e.Id];
@@ -417,7 +463,7 @@ namespace Nebulua
                 // Check args.
                 if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > Defs.NUM_MIDI_CHANNELS)
                 {
-                    throw new ArgumentException($"Script has invalid input midi device: {e.DevName}");
+                    throw new SyntaxException($"Script has invalid input midi device: {e.DevName}");
                 }
 
                 if (e.IsOutput)
@@ -429,9 +475,9 @@ namespace Nebulua
                         _outputs.Add(output);
                     }
 
-                    output.LogEnable = State.Instance.MonSend;
+                    //output.LogEnable = State.Instance.MonSend;
                     output.Channels[e.ChanNum - 1] = true;
-                    e.Ret = Utils.MakeOutHandle(_outputs.Count - 1, e.ChanNum);
+                    e.Ret = ChannelHandle.MakeOutHandle(_outputs.Count - 1, e.ChanNum);
 
                     // Send the patch now.
                     PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
@@ -447,12 +493,12 @@ namespace Nebulua
                         _inputs.Add(input);
                     }
 
-                    input.LogEnable = State.Instance.MonRcv;
+                    //input.LogEnable = State.Instance.MonRcv;
                     input.Channels[e.ChanNum - 1] = true;
-                    e.Ret = Utils.MakeInHandle(_inputs.Count - 1, e.ChanNum);
+                    e.Ret = ChannelHandle.MakeInHandle(_inputs.Count - 1, e.ChanNum);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex)  // Any exception is considered fatal.
             {
                 e.Ret = 0;
                 FatalError(NebStatus.SyntaxError, "CreateChannel() failed", ex.Message);
@@ -474,15 +520,15 @@ namespace Nebulua
             try
             {
                 // Check args.
-                var (index, chan_num) = Utils.DeconstructHandle(e.ChanHnd);
+                var (index, chan_num) = ChannelHandle.DeconstructHandle(e.ChanHnd);
                 if (index >= _outputs.Count || chan_num < 1 || chan_num > Defs.NUM_MIDI_CHANNELS ||
                     !_outputs[index].Channels[chan_num - 1])
                 {
-                    throw new ArgumentException($"Script has invalid channel: {e.ChanHnd}");
+                    throw new SyntaxException($"Script has invalid channel: {e.ChanHnd}");
                 }
                 if (e.What < 0 || e.What >= Defs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= Defs.MIDI_VAL_MAX)
                 {
-                    throw new ArgumentException($"Script has invalid payload: {e.What} {e.Value}");
+                    throw new SyntaxException($"Script has invalid payload: {e.What} {e.Value}");
                 }
 
                 var output = _outputs[index];
@@ -500,7 +546,7 @@ namespace Nebulua
 
                 if (State.Instance.MonSend)
                 {
-                    _logger.Trace($"MIDI_SND {e}");
+                    _logger.Trace($"MIDITX {e}");
                 }
             }
             catch (Exception ex)
@@ -563,11 +609,11 @@ namespace Nebulua
                 double sec_per_beat = 60.0 / tempo;
                 double msec_per_sub = 1000 * sec_per_beat / Defs.SUBS_PER_BEAT;
                 double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
-                _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimerCallback);
+                _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimer_Callback);
             }
             else // stop
             {
-                _mmTimer.SetTimer(0, MmTimerCallback);
+                _mmTimer.SetTimer(0, MmTimer_Callback);
             }
         }
 

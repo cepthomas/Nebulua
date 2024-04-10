@@ -51,7 +51,7 @@ namespace Nebulua
         );
 
         /// <summary>Cli command handler.</summary>
-        delegate NebStatus CommandHandler(CommandDescriptor cmd, List<string> args);
+        delegate bool CommandHandler(CommandDescriptor cmd, List<string> args);
         #endregion
 
         #region Main work
@@ -75,6 +75,8 @@ namespace Nebulua
                 new("position", 'p',    '\0',   "set position to where or tell current",    "(where): bar:beat:sub",    PositionCmd),
                 new("reload",   'l',    '\0',   "re/load current script",                   "",                         ReloadCmd)
             ];
+
+            InfoCmd(new(), []);
         }
 
         /// <summary>
@@ -90,10 +92,10 @@ namespace Nebulua
         /// <summary>
         /// Process user input. Blocks until new line.
         /// </summary>
-        /// <returns>Status</returns>
-        public NebStatus Read()
+        /// <returns>Success</returns>
+        public bool Read()
         {
-            NebStatus stat = NebStatus.Ok;
+            bool ret = true;
 
             // Listen.
             string? res = _cliIn.ReadLine();
@@ -114,7 +116,7 @@ namespace Nebulua
                             // Execute the command. They handle any errors internally.
                             valid = true;
 
-                            stat = cmd.Handler(cmd, args);
+                            ret = cmd.Handler(cmd, args);
                             // ok = _EvalStatus(stat, "handler failed: %s", cmd->desc.long_name);
                             break;
                         }
@@ -132,49 +134,47 @@ namespace Nebulua
                 State.Instance.ExecState = ExecState.Exit;
             }
 
-            return stat;
+            return ret;
         }
         #endregion
 
         #region Command handlers
         //--------------------------------------------------------//
-        NebStatus TempoCmd(CommandDescriptor cmd, List<string> args)
+        bool TempoCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat;
+            bool ret = true;
 
             switch (args.Count)
             {
                 case 1: // get
                     Write($"{State.Instance.Tempo}");
-                    stat = NebStatus.Ok;
                     break;
 
                 case 2: // set
                     if (int.TryParse(args[1], out int t) && t >= 40 && t <= 240)
                     {
                         State.Instance.Tempo = t;
-                        stat = NebStatus.Ok;
                         Write("");
                     }
                     else
                     {
-                        stat = NebStatus.InvalidCliArg;
+                        ret = false;
                         Write($"invalid tempo: {args[1]}");
                     }
                     break;
 
                 default:
-                    stat = NebStatus.InvalidCliArg;
+                    ret = false;
                     break;
             }
 
-            return stat;
+            return ret;
         }
 
         //--------------------------------------------------------//
-        NebStatus RunCmd(CommandDescriptor cmd, List<string> args)
+        bool RunCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat;
+            bool ret = true;
 
             switch (args.Count)
             {
@@ -184,46 +184,42 @@ namespace Nebulua
                         case ExecState.Idle:
                             State.Instance.ExecState = ExecState.Run;
                             Write("running");
-                            stat = NebStatus.Ok;
                             break;
 
                         case ExecState.Run:
                             State.Instance.ExecState = ExecState.Idle;
                             Write("stopped");
-                            stat = NebStatus.Ok;
                             break;
 
                         default:
                             Write("invalid state");
-                            stat = NebStatus.InvalidCliArg;
+                            ret = false;
                             break;
                     }
                     break;
 
                 default:
                     Write($"invalid command");
-                    stat = NebStatus.InvalidCliArg;
+                    ret = false;
                     break;
             }
 
-            return stat;
+            return ret;
         }
 
         //--------------------------------------------------------//
-        NebStatus ExitCmd(CommandDescriptor cmd, List<string> args)
+        bool ExitCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat = NebStatus.Ok;
-
             State.Instance.ExecState = ExecState.Exit;
             Write($"goodbye!");
 
-            return stat;
+            return true;
         }
 
         //--------------------------------------------------------//
-        NebStatus MonCmd(CommandDescriptor cmd, List<string> args)
+        bool MonCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat;
+            bool ret = true;
 
             switch (args.Count)
             {
@@ -232,69 +228,62 @@ namespace Nebulua
                     {
                         case "rx":
                             State.Instance.MonRcv = !State.Instance.MonRcv;
-                            stat = NebStatus.Ok;
                             Write("");
                             break;
 
                         case "tx":
                             State.Instance.MonSend = !State.Instance.MonSend;
-                            stat = NebStatus.Ok;
                             Write("");
                             break;
 
                         case "off":
                             State.Instance.MonRcv = false;
                             State.Instance.MonSend = false;
-                            stat = NebStatus.Ok;
                             Write("");
                             break;
 
                         default:
-                            stat = NebStatus.InvalidCliArg;
+                            ret = false;
                             Write($"invalid option: {args[1]}");
                             break;
                     }
                     break;
 
                 default:
-                    stat = NebStatus.InvalidCliArg;
+                    ret = false;
                     Write("");
                     break;
             }
 
-            return stat;
+            return ret;
         }
 
         //--------------------------------------------------------//
-        NebStatus KillCmd(CommandDescriptor cmd, List<string> args)
+        bool KillCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat = NebStatus.InvalidCliArg;
-
             State.Instance.ExecState = ExecState.Kill;
-            stat = NebStatus.Ok;
             Write("");
 
-            return stat;
+            return true;
         }
 
         //--------------------------------------------------------//
-        NebStatus PositionCmd(CommandDescriptor cmd, List<string> args)
+        bool PositionCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat;
+            bool ret = true;
 
             switch (args.Count)
             {
                 case 1: // get
-                    Write(Utils.FormatBarTime(State.Instance.CurrentTick));
-                    stat = NebStatus.Ok;
+                    Write(MusicTime.Format(State.Instance.CurrentTick));
                     break;
 
                 case 2: // set
-                    int position = Utils.ParseBarTime(args[1]);
+                    int position = MusicTime.Parse(args[1]);
                     if (position < 0)
                     {
                         Write($"invalid position: {args[1]}");
-                        stat = NebStatus.InvalidCliArg;
+                        ret = false;
                     }
                     else
                     {
@@ -303,24 +292,23 @@ namespace Nebulua
                         int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
                         State.Instance.CurrentTick = MathUtils.Constrain(position, start, end);
 
-                        Write(Utils.FormatBarTime(State.Instance.CurrentTick)); // echo
-                        stat = NebStatus.Ok;
+                        Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
                     }
                     break;
 
                 default:
                     Write("");
-                    stat = NebStatus.InvalidCliArg;
+                    ret = false;
                     break;
             }
 
-            return stat;
+            return ret;
         }
 
         //--------------------------------------------------------//
-        NebStatus ReloadCmd(CommandDescriptor cmd, List<string> args)
+        bool ReloadCmd(CommandDescriptor cmd, List<string> args)
         {
-            NebStatus stat;
+            bool ret = true;
 
             switch (args.Count)
             {
@@ -328,44 +316,39 @@ namespace Nebulua
                     // TODO1 do something to reload script => ?? The application will watch for changes you make and indicate that reload is needed.
                     // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
                     // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
-                    stat = NebStatus.Ok;
                     break;
 
                 default:
-                    stat = NebStatus.InvalidCliArg;
+                    ret = false;
                     break;
             }
             Write("");
 
-            return stat;
+            return ret;
         }
 
         //--------------------------------------------------------//
-        NebStatus InfoCmd(CommandDescriptor _, List<string> __)
+        bool InfoCmd(CommandDescriptor _, List<string> __)
         {
-            NebStatus stat = NebStatus.Ok;
-
-            _cliOut.WriteLine($"Midi output devices");
+            _cliOut.WriteLine($"Midi output devices:");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                _cliOut.WriteLine(MidiOut.DeviceInfo(i).ProductName);
+                _cliOut.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
             }
 
-            _cliOut.WriteLine($"Midi input devices");
+            _cliOut.WriteLine($"Midi input devices:");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                _cliOut.WriteLine(MidiIn.DeviceInfo(i).ProductName);
+                _cliOut.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
             }
             Write("");
 
-            return stat;
+            return true;
         }
 
         //--------------------------------------------------------//
-        NebStatus UsageCmd(CommandDescriptor _, List<string> __)
+        bool UsageCmd(CommandDescriptor _, List<string> __)
         {
-            NebStatus stat = NebStatus.Ok;
-
             foreach (var cmd in _commands!)
             {
                 _cliOut.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
@@ -381,7 +364,7 @@ namespace Nebulua
             }
             Write("");
 
-            return stat;
+            return true;
         }
         #endregion
     }

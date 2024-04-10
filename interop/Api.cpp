@@ -223,7 +223,7 @@ Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
         case LUA_ERRSYNTAX: nstat = NebStatus::SyntaxError;     break;
         case LUA_ERRFILE:   nstat = NebStatus::FileError;       break;
         case LUA_ERRRUN:    nstat = NebStatus::RunError;        break;
-        default:            nstat = NebStatus::InternalError;   break;
+        default:            nstat = NebStatus::ApiError;        break;
     }
 
     if (nstat != NebStatus::Ok)

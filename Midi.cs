@@ -11,88 +11,6 @@ using Ephemera.NBagOfTricks.Slog;
 namespace Nebulua
 {
     /// <summary>
-    /// A midi output device.
-    /// </summary>
-    public class MidiOutput
-    {
-        #region Fields
-        /// <summary>Low level midi output device.</summary>
-        readonly MidiOut? _midiOut = null;
-
-        /// <summary>My logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("MidiOut");
-        #endregion
-
-        #region Properties
-        /// <summary>Device name as defined by the system.</summary>
-        public string DeviceName { get; }
-
-        /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
-
-        /// <summary>Log traffic at Trace level.</summary>
-        public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
-        #endregion
-
-        #region Lifecycle
-        /// <summary>
-        /// Normal constructor.
-        /// </summary>
-        /// <param name="deviceName">Client must supply name of device.</param>
-        public MidiOutput(string deviceName)
-        {
-            DeviceName = deviceName;
-            LogEnable = false;
-            Channels.ForEach(b => b = false);
-
-            // Figure out which midi output device.
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-            {
-                if (deviceName == MidiOut.DeviceInfo(i).ProductName)
-                {
-                    _midiOut = new MidiOut(i);
-                    break;
-                }
-            }
-
-            if (_midiOut is null)
-            {
-                List<string> devs = ["Valid midi outputs:"];
-                for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-                {
-                    devs.Add($"\"{MidiOut.DeviceInfo(i).ProductName}\"");
-                }
-                throw new ArgumentException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
-            }
-        }
-
-        /// <summary> 
-        /// Clean up any resources being used.
-        /// </summary>
-        public void Dispose()
-        {
-            // Resources.
-            _midiOut?.Dispose();
-        }
-        #endregion
-
-        #region Traffic
-        /// <summary>Send midi event.</summary>
-        public void Send(MidiEvent evt)
-        {
-            if(_midiOut is not null)
-            {
-                _midiOut.Send(evt.GetAsShortMessage());
-                if (LogEnable)
-                {
-                    _logger.Trace(evt.ToString());
-                }
-            }
-        }
-        #endregion
-    }
-
-    /// <summary>
     /// A midi input device.
     /// </summary>
     public class MidiInput
@@ -101,11 +19,8 @@ namespace Nebulua
         /// <summary>Low level midi input device.</summary>
         readonly MidiIn? _midiIn = null;
 
-        /// <summary>Control.</summary>
-        bool _capturing = false;
-
-        /// <summary>My logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("MidiIn");
+        // /// <summary>My logger.</summary>
+        // readonly Logger _logger = LogManager.CreateLogger("MidiIn");
         #endregion
 
         #region Properties
@@ -115,15 +30,16 @@ namespace Nebulua
         /// <summary>True if registered by script, 0-based.</summary>
         public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
 
-        /// <summary>Log traffic at Trace level.</summary>
-        public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
+        // /// <summary>Log traffic at Trace level.</summary>
+        // public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
 
-        /// <summary>Capture on/off.</summary>
+        /// <summary>Device capture on/off.</summary>
         public bool CaptureEnable
         {
             get { return _capturing; }
             set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); _capturing = value; }
         }
+        bool _capturing = false;
         #endregion
 
         #region Events
@@ -139,8 +55,9 @@ namespace Nebulua
         public MidiInput(string deviceName)
         {
             DeviceName = deviceName;
-            LogEnable = false;
-            
+            // LogEnable = false;
+            Channels.ForEach(b => b = false);
+
             // Figure out which midi input device.
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
@@ -160,7 +77,11 @@ namespace Nebulua
                 {
                     devs.Add($"\"{MidiIn.DeviceInfo(i).ProductName}\"");
                 }
-                throw new ArgumentException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
+                throw new ArgumentOutOfRangeException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
+            }
+            else
+            {
+                CaptureEnable = true;
             }
         }
 
@@ -181,13 +102,14 @@ namespace Nebulua
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
             // Decode the message. We only care about a few.
-            MidiEvent me = MidiEvent.FromRawMessage(e.RawMessage);
+            MidiEvent evt = MidiEvent.FromRawMessage(e.RawMessage);
 
             // Is it in our registered inputs?
-            int chan_num = me.Channel;
+            int chan_num = evt.Channel;
             if (Channels[chan_num - 1])
             {
-                ReceiveEvent?.Invoke(this, me);
+                ReceiveEvent?.Invoke(this, evt);
+                // _logger.Trace(evt.ToString());
             }
             // else ignore.
         }
@@ -199,6 +121,88 @@ namespace Nebulua
         {
             // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
             // _logger.Trace(ErrorInfo);
+        }
+        #endregion
+    }
+
+
+    /// <summary>
+    /// A midi output device.
+    /// </summary>
+    public class MidiOutput
+    {
+        #region Fields
+        /// <summary>Low level midi output device.</summary>
+        readonly MidiOut? _midiOut = null;
+
+        // /// <summary>My logger.</summary>
+        // readonly Logger _logger = LogManager.CreateLogger("MidiOut");
+        #endregion
+
+        #region Properties
+        /// <summary>Device name as defined by the system.</summary>
+        public string DeviceName { get; }
+
+        /// <summary>True if registered by script, 0-based.</summary>
+        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
+
+        // /// <summary>Log traffic at Trace level.</summary>
+        // public bool LogEnable { get { return _logger.Enable; } set { _logger.Enable = value; } }
+        #endregion
+
+        #region Lifecycle
+        /// <summary>
+        /// Normal constructor.
+        /// </summary>
+        /// <param name="deviceName">Client must supply name of device.</param>
+        public MidiOutput(string deviceName)
+        {
+            DeviceName = deviceName;
+            // LogEnable = false;
+            Channels.ForEach(b => b = false);
+
+            // Figure out which midi output device.
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                if (deviceName == MidiOut.DeviceInfo(i).ProductName)
+                {
+                    _midiOut = new MidiOut(i);
+                    break;
+                }
+            }
+
+            if (_midiOut is null)
+            {
+                List<string> devs = ["Valid midi outputs:"];
+                for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+                {
+                    devs.Add($"\"{MidiOut.DeviceInfo(i).ProductName}\"");
+                }
+                throw new ArgumentOutOfRangeException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
+            }
+        }
+
+        /// <summary> 
+        /// Clean up any resources being used.
+        /// </summary>
+        public void Dispose()
+        {
+            // Resources.
+            _midiOut?.Dispose();
+        }
+        #endregion
+
+        #region Traffic
+        /// <summary>Send midi event.</summary>
+        public void Send(MidiEvent evt)
+        {
+            // Is it in our registered inputs?
+            int chan_num = evt.Channel;
+            if (Channels[chan_num - 1])
+            {
+                _midiOut?.Send(evt.GetAsShortMessage());
+                // _logger.Trace(evt.ToString());
+            }
         }
         #endregion
     }

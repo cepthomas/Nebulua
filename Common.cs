@@ -1,3 +1,4 @@
+using System;
 using Ephemera.NBagOfTricks;
 
 namespace Nebulua
@@ -28,9 +29,43 @@ namespace Nebulua
     }
     #endregion
 
-    public class Utils
+    #region Exceptions
+    /// <summary>Lua script syntax error.</summary>
+    public class SyntaxException : Exception
     {
-        #region Device handles
+        public SyntaxException() : base() { }
+        public SyntaxException(string message) : base(message) { }
+        //public SyntaxException(string message, Exception inner) : base(message, inner) { }
+    }
+
+    /// <summary>Api error.</summary>
+    public class ApiException : Exception
+    {
+        public ApiException() : base() { }
+        public ApiException(string message, string apiError) : base($"{message}{Environment.NewLine}{apiError}") { }
+        //public ApiException(string message, Exception inner) : base(message, inner) { }
+    }
+
+    /// <summary>App command line error.</summary>
+    public class ApplicationArgumentException : Exception
+    {
+        public ApplicationArgumentException() : base() { }
+        public ApplicationArgumentException(string message) : base(message) { }
+        //public ApplicationArgumentException(string message, Exception inner) : base(message, inner) { }
+    }
+
+    /// <summary>Config file error.</summary>
+    public class ConfigException : Exception
+    {
+        public ConfigException() : base() { }
+        public ConfigException(string message) : base(message) { }
+        public ConfigException(string message, Exception inner) : base(message, inner) { }
+    }
+    #endregion
+
+    /// <summary>Manipulate the internal handle format.</summary>
+    public class ChannelHandle
+    {
         /// <summary>Make a standard output handle.</summary>
         public static int MakeOutHandle(int index, int chan_num) { return (index << 8) | chan_num | 0x8000; }
 
@@ -39,16 +74,18 @@ namespace Nebulua
 
         /// <summary>Take apart a standard in/out handle.</summary>
         public static (int index, int chan_num) DeconstructHandle(int chan_hnd) { return (((chan_hnd & ~0x8000) >> 8) & 0xFF, (chan_hnd & ~0x8000) & 0xFF); }
-        #endregion
+    }
 
-        #region Musical timing
-        /// <summary>The bar number.</summary>
+    /// <summary>Misc musical timing functions.</summary>
+    public class MusicTime
+    {
+        /// <summary>Get the bar number.</summary>
         public static int BAR(int tick) { return tick / Defs.SUBS_PER_BAR; }
 
-        /// <summary>The beat number in the bar.</summary>
+        /// <summary>Get the beat number in the bar.</summary>
         public static int BEAT(int tick) { return tick / Defs.SUBS_PER_BEAT % Defs.BEATS_PER_BAR; }
 
-        /// <summary>The sub in the beat.</summary>
+        /// <summary>Get the sub in the beat.</summary>
         public static int SUB(int tick) { return tick % Defs.SUBS_PER_BEAT; }
 
         /// <summary>
@@ -56,7 +93,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sbt">time string can be "1:2:3" or "1:2" or "1".</param>
         /// <returns>Ticks or -1 if invalid input</returns>
-        public static int ParseBarTime(string sbt)
+        public static int Parse(string sbt)
         {
             int tick = 0;
             var parts = StringUtils.SplitByToken(sbt, ":");
@@ -84,7 +121,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="tick"></param>
         /// <returns></returns>
-        public static string FormatBarTime(int tick)
+        public static string Format(int tick)
         {
             int bar = BAR(tick);
             int beat = BEAT(tick);
@@ -92,6 +129,5 @@ namespace Nebulua
             var s = $"{bar}:{beat}:{sub}";
             return s;
         }
-        #endregion
     }
 }

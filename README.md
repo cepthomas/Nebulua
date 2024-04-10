@@ -275,7 +275,8 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 
 - Consists of a .NET command line application and a C++/CLI interop component that interfaces to the
   lua library.
-- The interop API translate between internal LUA_XXX status and user-facing enum NebStatus.
+- The interop API translate between internal LUA_XXX status and user-facing enum NebStatus. API doesn't throw
+  anything.
 - Windows 64 bit only. Build it with VS2022 and .NET8.
 - Uses 64 bit Lua 5.4.2 from [here](https://luabinaries.sourceforge.net/download.html).
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
