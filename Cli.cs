@@ -70,7 +70,7 @@ namespace Nebulua
                 new("exit",     'x',    '\0',   "exit the application",                     "",                         ExitCmd),
                 new("run",      'r',    ' ',    "toggle running the script",                "",                         RunCmd),
                 new("tempo",    't',    '\0',   "get or set the tempo",                     "(bpm): 40-240",            TempoCmd),
-                new("monitor",  'm',    '^',    "toggle monitor midi traffic",              "(in|out|off): action",     MonCmd),
+                new("monitor",  'm',    '^',    "toggle monitor midi traffic",              "(rx|tx|off): action",      MonCmd),
                 new("kill",     'k',    '~',    "stop all midi",                            "",                         KillCmd),
                 new("position", 'p',    '\0',   "set position to where or tell current",    "(where): bar:beat:sub",    PositionCmd),
                 new("reload",   'l',    '\0',   "re/load current script",                   "",                         ReloadCmd)
@@ -227,18 +227,18 @@ namespace Nebulua
                     switch (args[1])
                     {
                         case "rx":
-                            State.Instance.MonRcv = !State.Instance.MonRcv;
+                            State.Instance.MonRx = !State.Instance.MonRx;
                             Write("");
                             break;
 
                         case "tx":
-                            State.Instance.MonSend = !State.Instance.MonSend;
+                            State.Instance.MonTx = !State.Instance.MonTx;
                             Write("");
                             break;
 
                         case "off":
-                            State.Instance.MonRcv = false;
-                            State.Instance.MonSend = false;
+                            State.Instance.MonRx = false;
+                            State.Instance.MonTx = false;
                             Write("");
                             break;
 

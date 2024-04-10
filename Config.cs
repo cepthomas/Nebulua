@@ -16,8 +16,19 @@ namespace Nebulua
     {
 
         #region Fields
-        readonly Dictionary<string, LogLevel> xlatLevel = new() { { "trace", LogLevel.Trace }, { "debug", LogLevel.Debug },
-                    { "info", LogLevel.Info }, { "warn", LogLevel.Warn }, { "error", LogLevel.Error } };
+        /// <summary>Look up table for log level.</summary>
+        readonly Dictionary<string, LogLevel> xlatLevel = new()
+        {
+            { "trace", LogLevel.Trace }, { "debug", LogLevel.Debug },
+            { "info", LogLevel.Info }, { "warn", LogLevel.Warn }, { "error", LogLevel.Error }
+        };
+
+        /// <summary>Look up table for truth.</summary>
+        readonly Dictionary<string, bool> xlatBoolean = new()
+        {
+            { "true", true }, { "on", true }, { "1", true },
+            { "false", true }, { "off", true }, { "0", true },
+        };
         #endregion
 
         #region Properties
@@ -38,9 +49,6 @@ namespace Nebulua
         readonly LogLevel _notifLevel = LogLevel.Warn;
         #endregion
 
-        // TODO1 monitor/log midi???  new("monitor",  'm',    '^',    "toggle monitor midi traffic",              "(in|out|off): action",     MonCmd),
-
-        //#region Lifecycle
         /// <summary>
         /// Constructor inits stuff. Throws exceptions for invalid entries.
         /// </summary>
@@ -79,6 +87,28 @@ namespace Nebulua
                                 case "cli_prompt":
                                     _prompt = parts[1];
                                     break;
+
+                                case "mon_midi_rx":
+                                    if (xlatBoolean.TryGetValue(parts[1].ToLower(), out bool brx))
+                                    {
+                                        State.Instance.MonRx = brx;
+                                    }
+                                    else
+                                    {
+                                        throw new ConfigException($"Invalid mon_midi_rx value: {parts[1]}");
+                                    }
+                                    break;
+
+                                case "mon_midi_tx":
+                                    if (xlatBoolean.TryGetValue(parts[1].ToLower(), out bool btx))
+                                    {
+                                        State.Instance.MonTx = btx;
+                                    }
+                                    else
+                                    {
+                                        throw new ConfigException($"Invalid mon_midi_tx value: {parts[1]}");
+                                    }
+                                    break;
                             }
                         }
                         else
@@ -88,19 +118,6 @@ namespace Nebulua
                     }
                 }
             }
-            // else use defaults.
-            //try
-            //{
-            //}
-            //catch (ConfigException ex)
-            //{
-            //    throw;
-            //    // FatalError(NebStatus.InvalidProgramArg, ex.Message);
-            //}
-            //catch (Exception ex)
-            //{
-            //    FatalError(NebStatus.InternalError, $"Other flavor... {ex.Message}", ex.StackTrace);
-            //}
         }
     }
 }

@@ -111,7 +111,7 @@ namespace Nebulua
             // Anything that throws is fatal.
             catch (Exception ex)
             {
-                FatalError(NebStatus.AppInternalError, $"Constructor failed. {ex.Message}", ex.StackTrace);
+                FatalError(ex, "App constructor failed.");
             }
         }
 
@@ -216,7 +216,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                FatalError(NebStatus.AppInternalError, "App Run() failed", ex.Message);
+                FatalError(ex, "App Run() failed");
             }
 
             return stat;
@@ -311,7 +311,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                FatalError(NebStatus.AppInternalError, "Api Step() failed", ex.Message);
+                FatalError(ex, "Api Step() failed");
             }
         }
 
@@ -379,7 +379,7 @@ namespace Nebulua
                         throw new ApiException("Midi Receive() failed", api.Error);
                     }
 
-                    if (State.Instance.MonRcv)
+                    if (State.Instance.MonRx)
                     {
                         _logger.Trace($"MIDIRX {e}");
                     }
@@ -387,7 +387,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                FatalError(stat, "Midi Receive() failed", ex.Message);
+                FatalError(ex, "Midi Receive() failed");
             }
         }
         #endregion
@@ -448,7 +448,7 @@ namespace Nebulua
             catch (Exception ex)  // Any exception is considered fatal.
             {
                 e.Ret = 0;
-                FatalError(NebStatus.SyntaxError, "CreateChannel() failed", ex.Message);
+                FatalError(ex, "CreateChannel() failed");
             }
         }
 
@@ -491,7 +491,7 @@ namespace Nebulua
                     output.Send(new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value));
                 }
 
-                if (State.Instance.MonSend)
+                if (State.Instance.MonTx)
                 {
                     _logger.Trace($"MIDITX {e}");
                 }
@@ -499,7 +499,7 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                FatalError(NebStatus.SyntaxError, "Send() failed", ex.Message);
+                FatalError(ex, "Send() failed");
             }
         }
 
@@ -530,17 +530,18 @@ namespace Nebulua
                 {
                     State.Instance.Tempo = e.Bpm;
                     SetTimer(State.Instance.Tempo);
+                    e.Ret = 0;
                 }
                 else
                 {
-                    FatalError(NebStatus.SyntaxError, $"Invalid tempo: {e.Bpm}");
+                    _cli.Write($"Invalid tempo: {e.Bpm}");
+                    e.Ret = 1;
                 }
             }
             else
             {
                 SetTimer(0);
             }
-            e.Ret = 0;
         }
         #endregion
 
@@ -585,14 +586,36 @@ namespace Nebulua
         /// <summary>
         /// General purpose handler for fatal errors. Causes app exit.
         /// </summary>
-        /// <param name="stat"></param>
-        /// <param name="error1"></param>
-        /// <param name="error2"></param>
-        void FatalError(NebStatus stat, string error1, string? error2 = null)
+        /// <param name="ex">The exception</param>
+        /// <param name="info">Extra info</param>
+        void FatalError(Exception e, string info)
         {
-            string s2 = string.IsNullOrEmpty(error2) ? "" : $"{Environment.NewLine}{error2}";
-            string s = $"Fatal error {stat}: {error1}{s2}";
-            _logger.Error(s);
+            string serr;
+
+            switch (e)
+            {
+                case ApiException ex:
+                    serr = $"ApiException: {ex.Message}{Environment.NewLine}ApiError: {ex.ApiError}";
+                    break;
+
+                case ApplicationArgumentException ex:
+                    serr = $"ApplicationArgumentException: {ex.Message}";
+                    break;
+
+                case ConfigException ex:
+                    serr = $"ConfigException: {ex.Message}";
+                    break;
+
+                case SyntaxException ex:
+                    serr = $"SyntaxException: {ex.Message}";
+                    break;
+
+                default:
+                    serr = $"Other exception: {e}{Environment.NewLine}{e.StackTrace}";
+                    break;
+            }
+
+            _logger.Error(serr);
 
             // Stop everything.
             SetTimer(0);
@@ -602,7 +625,7 @@ namespace Nebulua
             // Flush log.
             Thread.Sleep(200);
 
-            Environment.Exit((int)stat);
+            Environment.Exit(1);
         }
         #endregion
     }

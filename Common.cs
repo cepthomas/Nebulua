@@ -33,33 +33,26 @@ namespace Nebulua
     /// <summary>Lua script syntax error.</summary>
     public class SyntaxException : Exception
     {
-        public SyntaxException() : base() { }
         public SyntaxException(string message) : base(message) { }
-        //public SyntaxException(string message, Exception inner) : base(message, inner) { }
     }
 
     /// <summary>Api error.</summary>
     public class ApiException : Exception
     {
-        public ApiException() : base() { }
-        public ApiException(string message, string apiError) : base($"{message}{Environment.NewLine}{apiError}") { }
-        //public ApiException(string message, Exception inner) : base(message, inner) { }
+        public string ApiError { get; init; } = "None";
+        public ApiException(string message, string apiError) : base(message) { ApiError = apiError; }
     }
 
     /// <summary>App command line error.</summary>
     public class ApplicationArgumentException : Exception
     {
-        public ApplicationArgumentException() : base() { }
         public ApplicationArgumentException(string message) : base(message) { }
-        //public ApplicationArgumentException(string message, Exception inner) : base(message, inner) { }
     }
 
     /// <summary>Config file error.</summary>
     public class ConfigException : Exception
     {
-        public ConfigException() : base() { }
         public ConfigException(string message) : base(message) { }
-        public ConfigException(string message, Exception inner) : base(message, inner) { }
     }
     #endregion
 
