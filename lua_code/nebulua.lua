@@ -45,6 +45,10 @@ local _transients = {}
 -- Where we be.
 local _current_tick = 0
 
+-- Map the 0-9 script volume range to internal double. TODO make user configurable.
+local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
+-- original local _vol_map = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 }
+
 
 -- Debug stuff TODO2 remove - or pass a debug/test flag?
 function _mole() return _steps, _transients end
@@ -230,10 +234,9 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     function make_event(offset)
         -- offset is 0-based.
         -- returns nil if ok else error string.
-        -- scale volume - this is simple square power, could be user custom TODO
-        -- vol_map = { 0, 1, 4, 9, 16, 25, 36, 49, 64, 81 } * ~1.5
-        vol_map = { 0, 2, 6, 14, 24, 38, 54, 74, 96, 127 }
-        local vol = vol_map[current_vol]
+
+        -- scale volume
+        local vol = _vol_map[current_vol]
         local dur = offset - start_offset
         local when = start_offset + start_tick
         local evt_err = nil

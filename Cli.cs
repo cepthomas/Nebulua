@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using Ephemera.NBagOfTricks;
 using Interop;
 using NAudio.Midi;
@@ -88,35 +89,48 @@ namespace Nebulua
         }
 
 
-
-
-        
-
-        //The following example shows how to read all the characters in a file by using the ReadAsync(Char[], Int32, Int32) method. It checks whether each character is a letter, digit, or white space before adding the character to an instance of the StringBuilder class.
-        public async void Read_XXX()//Button_Click_1(object sender, EventArgs _)
+        public bool Read_XXX()
         {
-            //bool ret = true;
+            bool ret = true;
 
-            StringBuilder sb = new StringBuilder();
+            //StringBuilder sb = new();
 
+            //while (_cliIn.Peek() > -1)
+            //{
+            //    Console.Write(_cliIn.Read());
+            //}
+            //return true;
 
-            char[] result = new char[99];
-            await _cliIn.ReadAsync(result, 0, 1);
+            //Seems that this is a known bug in StreamReader implementation, as suggested in this answer.The workaround in your case is to use asynchronous stream methods like StreamReader.ReadAsync or StreamReader.ReadLineAsync.
+            //https://stackoverflow.com/questions/4557591/alternative-to-streamreader-peek-and-thread-interrupt
+            int ch = _cliIn.Peek();
 
-            switch(result[0])
+            switch (ch)
             {
+                case -1:
+                    Thread.Sleep(1);
+                    break;
+
                 case ' ':
-                    // Space bar.
+                    RunCmd(new(), new() { "this is stupid" });
+                    _cliIn.Read(); // flush
                     break;
 
-                case '\r':
-                    //Ignore
+                default:
+                    DoCmd();
                     break;
+            }
 
-                case '\n':
-                    // Execute the command. They handle any errors internally.
+
+            void DoCmd()
+            {
+                // Listen.
+                string? res = _cliIn.ReadLine();
+
+                if (res != null)
+                {
                     // Process the line. Chop up the raw command line into args.
-                    List<string> args = StringUtils.SplitByToken(sb.ToString(), " ");
+                    List<string> args = StringUtils.SplitByToken(res, " ");
 
                     // Process the command and its options.
                     bool valid = false;
@@ -129,7 +143,7 @@ namespace Nebulua
                                 // Execute the command. They handle any errors internally.
                                 valid = true;
 
-                                bool ret = cmd.Handler(cmd, args);
+                                ret = cmd.Handler(cmd, args);
                                 // ok = _EvalStatus(stat, "handler failed: %s", cmd->desc.long_name);
                                 break;
                             }
@@ -140,38 +154,16 @@ namespace Nebulua
                             Write("Invalid command");
                         }
                     }
-
-                    sb.Clear();
-                    break;
-
-                default:
-                    // Add to buffer.
-                    sb.Append(result[0]);
-                    break;
+                }
+                else
+                {
+                    // Assume finished.
+                    State.Instance.ExecState = ExecState.Exit;
+                }
             }
 
-
-
-            //string filename = @"C:\Example\existingfile.txt";
-            //char[] result;
-            //StringBuilder builder = new StringBuilder();
-            //using (StreamReader reader = File.OpenText(filename))
-            //{
-            //    result = new char[reader.BaseStream.Length];
-            //    await reader.ReadAsync(result, 0, (int)reader.BaseStream.Length);
-            //}
-            //foreach (char c in result)
-            //{
-            //    if (char.IsLetterOrDigit(c) || char.IsWhiteSpace(c))
-            //    {
-            //        builder.Append(c);
-            //    }
-            //}
-            //FileOutput.Text = builder.ToString();
-
-            //return ret;
+            return ret;
         }
-
 
 
 
@@ -180,7 +172,7 @@ namespace Nebulua
         /// Process user input. Blocks until new line. TODO1 like to peek for spacebar
         /// </summary>
         /// <returns>Success</returns>
-        public bool Read()
+        public bool Read_orig()
         {
             bool ret = true;
 

@@ -598,24 +598,25 @@ namespace Nebulua
             switch (e)
             {
                 case ApiException ex:
-                    // Remove unnecessary detail for user.
-                    int pos = ex.ApiError.IndexOf("stack traceback");
-                    var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
-                    serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
-                    // Log the detail
-                    _logger.Error($">>>>{ex.ApiError}");
+                    serr = $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}";
+                    //// Could remove unnecessary detail for user.
+                    //int pos = ex.ApiError.IndexOf("stack traceback");
+                    //var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
+                    //serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
+                    //// Log the detail.
+                    //_logger.Debug($">>>>{ex.ApiError}");
                     break;
 
                 case ConfigException ex:
-                    serr = $"Config File Error: {ex.Message}";
+                    serr = $"Config File Error: {ex.Message}: {info}";
                     break;
 
                 case ScriptSyntaxException ex:
-                    serr = $"Script Syntax Error: {ex.Message}";
+                    serr = $"Script Syntax Error: {ex.Message}: {info}";
                     break;
 
                 case ApplicationArgumentException ex:
-                    serr = $"Application Argument Error: {ex.Message}";
+                    serr = $"Application Argument Error: {ex.Message}: {info}";
                     break;
 
                 default:
