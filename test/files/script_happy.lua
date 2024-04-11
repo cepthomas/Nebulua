@@ -5,6 +5,7 @@
 
 local bt = require("bar_time")
 local neb = require("nebulua") -- api
+local md = require("music_defs")
 
 
 neb.log_info("=============== Is this thing on? ===============")
@@ -31,6 +32,9 @@ local hnd_in1  = neb.create_input_channel(dev_in1, 3)
 -- Local vars.
 local master_vol = 0.8
 
+-- Get some stock chords and scales.
+local alg_scale = md.get_notes_from_string("G3.Algerian")
+local chord_notes = md.get_notes_from_string("C4.o7")
 
 --------------------- Called from app -----------------------------------
 

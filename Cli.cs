@@ -88,91 +88,12 @@ namespace Nebulua
             _cliOut.Write(Prompt);
         }
 
-
-        public bool Read_XXX()
-        {
-            bool ret = true;
-
-            //StringBuilder sb = new();
-
-            //while (_cliIn.Peek() > -1)
-            //{
-            //    Console.Write(_cliIn.Read());
-            //}
-            //return true;
-
-            //Seems that this is a known bug in StreamReader implementation, as suggested in this answer.The workaround in your case is to use asynchronous stream methods like StreamReader.ReadAsync or StreamReader.ReadLineAsync.
-            //https://stackoverflow.com/questions/4557591/alternative-to-streamreader-peek-and-thread-interrupt
-            int ch = _cliIn.Peek();
-
-            switch (ch)
-            {
-                case -1:
-                    Thread.Sleep(1);
-                    break;
-
-                case ' ':
-                    RunCmd(new(), new() { "this is stupid" });
-                    _cliIn.Read(); // flush
-                    break;
-
-                default:
-                    DoCmd();
-                    break;
-            }
-
-
-            void DoCmd()
-            {
-                // Listen.
-                string? res = _cliIn.ReadLine();
-
-                if (res != null)
-                {
-                    // Process the line. Chop up the raw command line into args.
-                    List<string> args = StringUtils.SplitByToken(res, " ");
-
-                    // Process the command and its options.
-                    bool valid = false;
-                    if (args.Count > 0)
-                    {
-                        foreach (var cmd in _commands!)
-                        {
-                            if (args[0] == cmd.LongName || (args[0].Length == 1 && args[0][0] == cmd.ShortName))
-                            {
-                                // Execute the command. They handle any errors internally.
-                                valid = true;
-
-                                ret = cmd.Handler(cmd, args);
-                                // ok = _EvalStatus(stat, "handler failed: %s", cmd->desc.long_name);
-                                break;
-                            }
-                        }
-
-                        if (!valid)
-                        {
-                            Write("Invalid command");
-                        }
-                    }
-                }
-                else
-                {
-                    // Assume finished.
-                    State.Instance.ExecState = ExecState.Exit;
-                }
-            }
-
-            return ret;
-        }
-
-
-
-
         /// <summary>
-        /// Process user input. Blocks until new line. TODO1 like to peek for spacebar
+        /// Process user input. Blocks until new line.
+        /// TODO Would like to .Peek() for spacebar but it's broken. .Read() doesn't seem to work either.
         /// </summary>
         /// <returns>Success</returns>
-        public bool Read_orig()
+        public bool Read()
         {
             bool ret = true;
 

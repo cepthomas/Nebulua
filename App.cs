@@ -89,8 +89,8 @@ namespace Nebulua
                 _config = new(configFn);
 
                 // Init logging.
-                LogManager.MinLevelFile = LogLevel.Debug;
-                LogManager.MinLevelNotif = LogLevel.Warn;
+                LogManager.MinLevelFile = _config.FileLevel;
+                LogManager.MinLevelNotif = _config.NotifLevel;
                 LogManager.LogMessage += LogManager_LogMessage;
                 var f = File.OpenWrite(_config.LogFilename); // ensure file exists
                 f?.Close();
@@ -196,15 +196,8 @@ namespace Nebulua
 
                 while (State.Instance.ExecState != ExecState.Exit)
                 {
-                    _cli.Read_XXX();
-
-                    //bool cliok = _cli.Read();
-                    //// Should not throw. Cli will take care of its own errors.
-                    //if (!cliok)
-                    //{
-                    //    ////Fatal Error(stat, "Cli Read() failed", api.Error);
-                    //    //throw new("Cli Read() failed", api.Error);
-                    //}
+                    // Should not throw. Cli will take care of its own errors.
+                    _cli.Read();
                 }
 
                 ///// Normal done. /////
@@ -363,28 +356,35 @@ namespace Nebulua
                     {
                         case NoteOnEvent evt:
                             stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                            if (State.Instance.MonRx)
+                            {
+                                _logger.Trace($"MIDIRX {evt}");
+                            }
                             break;
 
                         case NoteEvent evt:
                             stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
+                            if (State.Instance.MonRx)
+                            {
+                                _logger.Trace($"MIDIRX {evt}");
+                            }
                             break;
 
                         case ControlChangeEvent evt:
                             stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                            if (State.Instance.MonRx)
+                            {
+                                _logger.Trace($"MIDIRX {evt}");
+                            }
                             break;
 
-                        default: // Ignore.
+                        default: // Ignore others for now.
                             break;
                     }
 
                     if (stat != NebStatus.Ok)
                     {
                         throw new ApiException("Midi Receive() failed", api.Error);
-                    }
-
-                    if (State.Instance.MonRx)
-                    {
-                        _logger.Trace($"MIDIRX {e}");
                     }
                 }
             }
@@ -485,18 +485,23 @@ namespace Nebulua
 
                 if (e.IsNote)
                 {
-                    output.Send(e.Value == 0 ?
+                    var evt = e.Value == 0 ?
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
-                        new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value));
+                        new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value);
+                    output.Send(evt);
+                    if (State.Instance.MonTx)
+                    {
+                        _logger.Trace($"MIDITX {evt}");
+                    }
                 }
                 else
                 {
-                    output.Send(new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value));
-                }
-
-                if (State.Instance.MonTx)
-                {
-                    _logger.Trace($"MIDITX {e}");
+                    var evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
+                    output.Send(evt);
+                    if (State.Instance.MonTx)
+                    {
+                        _logger.Trace($"MIDITX {evt}");
+                    }
                 }
             }
             catch (Exception ex)

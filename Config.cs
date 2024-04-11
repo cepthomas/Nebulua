@@ -14,7 +14,6 @@ namespace Nebulua
 {
     public class Config
     {
-
         #region Fields
         /// <summary>Look up table for log level.</summary>
         readonly Dictionary<string, LogLevel> xlatLevel = new()
