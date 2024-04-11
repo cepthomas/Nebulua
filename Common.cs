@@ -31,9 +31,9 @@ namespace Nebulua
 
     #region Exceptions
     /// <summary>Lua script syntax error.</summary>
-    public class SyntaxException : Exception
+    public class ScriptSyntaxException : Exception
     {
-        public SyntaxException(string message) : base(message) { }
+        public ScriptSyntaxException(string message) : base(message) { }
     }
 
     /// <summary>Api error.</summary>

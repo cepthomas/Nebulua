@@ -37,9 +37,6 @@ namespace Nebulua
             /// <summary>If you don't.</summary>
             char ShortName,
 
-            /// <summary>TODO1 Optional single char for immediate execution (no CR required). Can be ^(ctrl) or ~(alt) in conjunction with short_name.</summary>
-            char ImmediateKey,
-
             /// <summary>Free text for command description.</summary>
             string Info,
 
@@ -65,18 +62,19 @@ namespace Nebulua
 
             _commands =
             [
-                new("help",     '?',    '\0',   "available commands",                       "",                         UsageCmd),
-                new("info",     'i',    '\0',   "system information",                       "",                         InfoCmd),
-                new("exit",     'x',    '\0',   "exit the application",                     "",                         ExitCmd),
-                new("run",      'r',    ' ',    "toggle running the script",                "",                         RunCmd),
-                new("tempo",    't',    '\0',   "get or set the tempo",                     "(bpm): 40-240",            TempoCmd),
-                new("monitor",  'm',    '^',    "toggle monitor midi traffic",              "(rx|tx|off): action",      MonCmd),
-                new("kill",     'k',    '~',    "stop all midi",                            "",                         KillCmd),
-                new("position", 'p',    '\0',   "set position to where or tell current",    "(where): bar:beat:sub",    PositionCmd),
-                new("reload",   'l',    '\0',   "re/load current script",                   "",                         ReloadCmd)
+                new("help",     '?',    "available commands",                       "",                         UsageCmd),
+                new("info",     'i',    "system information",                       "",                         InfoCmd),
+                new("exit",     'x',    "exit the application",                     "",                         ExitCmd),
+                new("run",      'r',    "toggle running the script",                "",                         RunCmd),
+                new("tempo",    't',    "get or set the tempo",                     "(bpm): 40-240",            TempoCmd),
+                new("monitor",  'm',    "toggle monitor midi traffic",              "(rx|tx|off): action",      MonCmd),
+                new("kill",     'k',    "stop all midi",                            "",                         KillCmd),
+                new("position", 'p',    "set position to where or tell current",    "(where): bar:beat:sub",    PositionCmd),
+                new("reload",   'l',    "re/load current script",                   "",                         ReloadCmd)
             ];
 
-            InfoCmd(new(), []);
+            // Show info now.
+            // InfoCmd(new(), []);
         }
 
         /// <summary>
@@ -89,8 +87,97 @@ namespace Nebulua
             _cliOut.Write(Prompt);
         }
 
+
+
+
+        
+
+        //The following example shows how to read all the characters in a file by using the ReadAsync(Char[], Int32, Int32) method. It checks whether each character is a letter, digit, or white space before adding the character to an instance of the StringBuilder class.
+        public async void Read_XXX()//Button_Click_1(object sender, EventArgs _)
+        {
+            //bool ret = true;
+
+            StringBuilder sb = new StringBuilder();
+
+
+            char[] result = new char[99];
+            await _cliIn.ReadAsync(result, 0, 1);
+
+            switch(result[0])
+            {
+                case ' ':
+                    // Space bar.
+                    break;
+
+                case '\r':
+                    //Ignore
+                    break;
+
+                case '\n':
+                    // Execute the command. They handle any errors internally.
+                    // Process the line. Chop up the raw command line into args.
+                    List<string> args = StringUtils.SplitByToken(sb.ToString(), " ");
+
+                    // Process the command and its options.
+                    bool valid = false;
+                    if (args.Count > 0)
+                    {
+                        foreach (var cmd in _commands!)
+                        {
+                            if (args[0] == cmd.LongName || (args[0].Length == 1 && args[0][0] == cmd.ShortName))
+                            {
+                                // Execute the command. They handle any errors internally.
+                                valid = true;
+
+                                bool ret = cmd.Handler(cmd, args);
+                                // ok = _EvalStatus(stat, "handler failed: %s", cmd->desc.long_name);
+                                break;
+                            }
+                        }
+
+                        if (!valid)
+                        {
+                            Write("Invalid command");
+                        }
+                    }
+
+                    sb.Clear();
+                    break;
+
+                default:
+                    // Add to buffer.
+                    sb.Append(result[0]);
+                    break;
+            }
+
+
+
+            //string filename = @"C:\Example\existingfile.txt";
+            //char[] result;
+            //StringBuilder builder = new StringBuilder();
+            //using (StreamReader reader = File.OpenText(filename))
+            //{
+            //    result = new char[reader.BaseStream.Length];
+            //    await reader.ReadAsync(result, 0, (int)reader.BaseStream.Length);
+            //}
+            //foreach (char c in result)
+            //{
+            //    if (char.IsLetterOrDigit(c) || char.IsWhiteSpace(c))
+            //    {
+            //        builder.Append(c);
+            //    }
+            //}
+            //FileOutput.Text = builder.ToString();
+
+            //return ret;
+        }
+
+
+
+
+
         /// <summary>
-        /// Process user input. Blocks until new line.
+        /// Process user input. Blocks until new line. TODO1 like to peek for spacebar
         /// </summary>
         /// <returns>Success</returns>
         public bool Read()
@@ -313,7 +400,7 @@ namespace Nebulua
             switch (args.Count)
             {
                 case 1: // no args
-                    // TODO1 do something to reload script => ?? The application will watch for changes you make and indicate that reload is needed.
+                    // TODO1 do something to reload script without exiting app. App detect/indicate changed file?
                     // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
                     // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
                     break;

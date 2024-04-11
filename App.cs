@@ -19,7 +19,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("App");
 
         /// <summary>The API(s). Key is opaque lua context pointer.</summary>
-        readonly Dictionary<long, Api> _api = [];
+        readonly Dictionary<long, Api> _apis = [];
 
         /// <summary>Client supplied context for LUA_PATH.</summary>
         readonly List<string> _lpath = [];
@@ -80,6 +80,7 @@ namespace Nebulua
                         throw new ApplicationArgumentException($"Invalid command line: {arg}");
                     }
                 }
+
                 if (_scriptFn is null)
                 {
                     throw new ApplicationArgumentException($"Missing nebulua script file");
@@ -176,7 +177,7 @@ namespace Nebulua
             {
                 // Create script api.
                 Api api = new(_lpath);
-                _api.Add(api.Id, api);
+                _apis.Add(api.Id, api);
 
                 // Load the script.
                 stat = api.OpenScript(_scriptFn);
@@ -195,13 +196,15 @@ namespace Nebulua
 
                 while (State.Instance.ExecState != ExecState.Exit)
                 {
-                    bool cliok = _cli.Read();
-                    // Should not throw. Cli will take care of its own errors.
-                    if (!cliok)
-                    {
-                        ////Fatal Error(stat, "Cli Read() failed", api.Error);
-                        //throw new("Cli Read() failed", api.Error);
-                    }
+                    _cli.Read_XXX();
+
+                    //bool cliok = _cli.Read();
+                    //// Should not throw. Cli will take care of its own errors.
+                    //if (!cliok)
+                    //{
+                    //    ////Fatal Error(stat, "Cli Read() failed", api.Error);
+                    //    //throw new("Cli Read() failed", api.Error);
+                    //}
                 }
 
                 ///// Normal done. /////
@@ -270,7 +273,7 @@ namespace Nebulua
                     // Do script. TODO Handle solo/mute like nebulator.
                     _tan?.Arm();
 
-                    foreach (var api in _api.Values)
+                    foreach (var api in _apis.Values)
                     {
                         NebStatus stat = api.Step(State.Instance.CurrentTick);
                         if (stat != NebStatus.Ok)
@@ -354,7 +357,7 @@ namespace Nebulua
                 int index = _inputs.IndexOf((MidiInput)sender!);
                 int chan_hnd = ChannelHandle.MakeInHandle(index, e.Channel);
 
-                foreach (var api in _api.Values)
+                foreach (var api in _apis.Values)
                 {
                     switch (e)
                     {
@@ -403,14 +406,14 @@ namespace Nebulua
             e.Ret = 0; // chan_hnd default means invalid
 
             // Get Api.
-            //Api api = _api[e.Id];
+            //Api api = _apis[e.Id];
 
             try
             {
                 // Check args.
                 if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > Defs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Script has invalid input midi device: {e.DevName}");
+                    throw new ScriptSyntaxException($"Script has invalid input midi device: {e.DevName}");
                 }
 
                 if (e.IsOutput)
@@ -471,11 +474,11 @@ namespace Nebulua
                 if (index >= _outputs.Count || chan_num < 1 || chan_num > Defs.NUM_MIDI_CHANNELS ||
                     !_outputs[index].Channels[chan_num - 1])
                 {
-                    throw new SyntaxException($"Script has invalid channel: {e.ChanHnd}");
+                    throw new ScriptSyntaxException($"Script has invalid channel: {e.ChanHnd}");
                 }
                 if (e.What < 0 || e.What >= Defs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= Defs.MIDI_VAL_MAX)
                 {
-                    throw new SyntaxException($"Script has invalid payload: {e.What} {e.Value}");
+                    throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
                 }
 
                 var output = _outputs[index];
@@ -595,23 +598,28 @@ namespace Nebulua
             switch (e)
             {
                 case ApiException ex:
-                    serr = $"ApiException: {ex.Message}{Environment.NewLine}ApiError: {ex.ApiError}";
-                    break;
-
-                case ApplicationArgumentException ex:
-                    serr = $"ApplicationArgumentException: {ex.Message}";
+                    // Remove unnecessary detail for user.
+                    int pos = ex.ApiError.IndexOf("stack traceback");
+                    var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
+                    serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
+                    // Log the detail
+                    _logger.Error($">>>>{ex.ApiError}");
                     break;
 
                 case ConfigException ex:
-                    serr = $"ConfigException: {ex.Message}";
+                    serr = $"Config File Error: {ex.Message}";
                     break;
 
-                case SyntaxException ex:
-                    serr = $"SyntaxException: {ex.Message}";
+                case ScriptSyntaxException ex:
+                    serr = $"Script Syntax Error: {ex.Message}";
+                    break;
+
+                case ApplicationArgumentException ex:
+                    serr = $"Application Argument Error: {ex.Message}";
                     break;
 
                 default:
-                    serr = $"Other exception: {e}{Environment.NewLine}{e.StackTrace}";
+                    serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
                     break;
             }
 

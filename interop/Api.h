@@ -11,9 +11,9 @@ namespace Interop
     {
         Ok = 0,
         // Api returns these:
-        SyntaxError = 10, FileError = 11, RunError = 12, ApiError = 13,
+        SyntaxError = 10, RunError = 11, ApiError = 12, FileError = 13,
         // App level errors:
-        AppInternalError = 16,
+        AppInternalError = 20,
     };
 
     #pragma region Forward refs

@@ -13,6 +13,7 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Text;
 
+#define MAX_PATH  260 // win32 def
 
 // The main lua thread. This unnecessary struct decl makes a warning go away
 // per https://github.com/openssl/openssl/issues/6166.
@@ -22,10 +23,9 @@ struct lua_State {};
 static CRITICAL_SECTION _critsect;
 
 // Convert managed string to unmanaged.
-static const char* _ToCString(String^ input);
+static int _ToCString(char* buff, size_t bufflen, String^ input);
 
 // Convert unmanaged string to managed.
-#define MAX_STRING_LEN 2000
 static String^ _ToCliString(const char* input);
 
 
@@ -55,16 +55,22 @@ Interop::Api::Api(List<String^>^ lpath)
 
         StringBuilder^ sb = gcnew StringBuilder(currentPath);
         sb->Append(";"); // default lua path doesn't have this.
-        for each (String^ lp in _lpath)
+        for each (String^ lp in _lpath) // add app specific.
         {
             sb->Append(String::Format("{0}\\?.lua;", lp));
         }
-        const char* newPath = _ToCString(sb->ToString());
+        String^ newPath = sb->ToString();
+
+        // Create a big enough C buffer and convert.
+        int newLen = newPath->Length + 50;
+        char* spath = (char*)malloc(newLen);
+        int ret = _ToCString(spath, newLen, newPath);
 
         lua_pop(_l, 1);
-        lua_pushstring(_l, newPath);
+        lua_pushstring(_l, spath);
         lua_setfield(_l, -2, "path");
         lua_pop(_l, 1);
+        free(spath);
     }
 
     // Load host funcs into lua space. This table gets pushed on the stack and into globals.
@@ -72,7 +78,6 @@ Interop::Api::Api(List<String^>^ lpath)
 
     // Pop the table off the stack as it interferes with calling the module functions.
     lua_pop(_l, 1);
-    //luaL_dostring(_l, "print(package.path");
 }
 
 //--------------------------------------------------------//
@@ -107,7 +112,8 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
     // Load the script.
     if (nstat == NebStatus::Ok)
     {
-        const char* fnx = _ToCString(fn);
+        char fnx[MAX_PATH];
+        int ret = _ToCString(fnx, MAX_PATH, fn);
         // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
         nstat = EvalLuaStatus(lstat, "Load script file failed.");
@@ -211,6 +217,9 @@ Interop::NebStatus Interop::Api::RcvController(int chan_hnd, int controller, int
     return ret;
 }
 
+
+//------------------- Privates ---------------------------//
+
 //--------------------------------------------------------//
 Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
 {
@@ -250,35 +259,39 @@ Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
 }
 
 
-//------------------- Privates ---------------------------//
-
 //--------------------------------------------------------//
-const char* _ToCString(String^ input)
+int _ToCString(char* buff, size_t bufflen, String^ input)
 {
-    static char buff[MAX_STRING_LEN]; // TODO1 I am bad - probably use a std string
-    bool ok = true;
-    int len = input->Length > MAX_STRING_LEN-1 ? MAX_STRING_LEN-1 : input->Length;
+    int ret = 0; // TODO handle errors?
+    int inlen = input->Length;
 
-    // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
-    // not! const char* str4 = context->marshal_as<const char*>(input);
-    interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
-    int i = 0;
-    for (; *ppchar != L'\0' && i < len && ok; ++ppchar, i++)
+    if (inlen < bufflen - 1)
     {
-        int c = wctob(*ppchar);
-        if (c != -1)
+        // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
+        // not! const char* str4 = context->marshal_as<const char*>(input);
+        interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
+        int i = 0;
+        for (; *ppchar != L'\0' && i < inlen && ret >= 0; ++ppchar, i++)
         {
-            buff[i] = c;
+            int c = wctob(*ppchar);
+            if (c != -1)
+            {
+                buff[i] = c;
+            }
+            else
+            {
+                ret = -2; // invalid char
+                buff[i] = '?';
+            }
         }
-        else
-        {
-            ok = false;
-            buff[i] = '?';
-        }
+        buff[i] = 0; // terminate
     }
-    buff[i] = 0; // terminate
+    else
+    {
+        ret = -1; // not enough room.
+    }
 
-    return buff;
+    return ret;
 }
 
 //--------------------------------------------------------//

@@ -70,7 +70,7 @@ namespace Nebulua
                 {
                     devs.Add($"\"{MidiIn.DeviceInfo(i).ProductName}\"");
                 }
-                throw new ArgumentOutOfRangeException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
+                throw new ScriptSyntaxException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
             }
             else
             {
@@ -163,7 +163,7 @@ namespace Nebulua
                 {
                     devs.Add($"\"{MidiOut.DeviceInfo(i).ProductName}\"");
                 }
-                throw new ArgumentOutOfRangeException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
+                throw new ScriptSyntaxException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
             }
         }
 

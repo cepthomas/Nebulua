@@ -215,8 +215,8 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     -- print(chunk[1], chunk[2])
 
     local steps = { }
-    local current_vol = 0 -- default, not sounding
-    local start_offset = 0 -- in pattern for the start of the current event
+    local current_vol = 0 -- 0 -> 9
+    local start_offset = 0 -- offset in pattern for the start of the current event
     -- local chunk_error = nil
 
     -- Process the note descriptor first. Could be number, string, function.
@@ -230,7 +230,10 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     function make_event(offset)
         -- offset is 0-based.
         -- returns nil if ok else error string.
-        local vol = current_vol / 10 -- TODO1 allow custom mappings of the step size.
+        -- scale volume - this is simple square power, could be user custom TODO
+        -- vol_map = { 0, 1, 4, 9, 16, 25, 36, 49, 64, 81 } * ~1.5
+        vol_map = { 0, 2, 6, 14, 24, 38, 54, 74, 96, 127 }
+        local vol = vol_map[current_vol]
         local dur = offset - start_offset
         local when = start_offset + start_tick
         local evt_err = nil
@@ -286,7 +289,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
 
     for i = 1, seq_length do
         local c = pattern:sub(i, i)
-        local cnum = string.byte(c) - 48 -- '0'
+        local vol_num = string.byte(c) - 48 -- '0'
         local seq_err = nil
 
         if c == '-' then
@@ -297,14 +300,14 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 -- invalid condition
                 seq_err = string.format("Invalid \'-\' in pattern string: %s", chunk[1])
             end
-        elseif cnum >= 1 and cnum <= 9 then
+        elseif vol_num >= 1 and vol_num <= 9 then
             -- A new note starting.
             -- Do we need to end the current note?
             if current_vol > 0 then
                 seq_err = make_event(i - 1)
             end
             -- Start new note.
-            current_vol = cnum
+            current_vol = vol_num
             start_offset = i - 1
         elseif c == ' ' or c == '.' then
             -- No sound.
