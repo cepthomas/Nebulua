@@ -55,7 +55,7 @@ namespace Nebulua.Test
                 }
             }
 
-            UT_EQUAL(events.CollectedEvents.Count, 40);
+            UT_EQUAL(events.CollectedEvents.Count, 62);
         }
 
         void State_PropertyChangeEvent(object? sender, string name)

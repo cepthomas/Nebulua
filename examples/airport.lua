@@ -5,7 +5,8 @@
 
 -- Import modules we need.
 local neb = require("nebulua") -- lua api
-local md  = require("midi_defs") -- GM midi instrument definitions
+local mus = require("music_defs")
+local mid  = require("midi_defs") -- GM midi instrument definitions
 local bt  = require("bar_time") -- time utility
 
 
@@ -15,7 +16,7 @@ local bt  = require("bar_time") -- time utility
 local midi_out = "Microsoft GS Wavetable Synth"
 
 -- Specify midi channels.
-local hout = create_output_channel(midi_out, 1, md.instruments.Pad2Warm)
+local hout = create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
 
 
 ------------------------- Variables -----------------------------------
@@ -35,7 +36,7 @@ local loops = {}
 --   duration: how long to play in BarTime
 --   delay: wait before start in BarTime
 local function add_loop(snote, duration, delay)
-    notes, err = md.get_notes_from_string(snote)
+    notes, err = mus.get_notes_from_string(snote)
     dur = duration
     del = delay
     next_start = del

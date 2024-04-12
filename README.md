@@ -136,7 +136,8 @@ Supports standard comparison operators and tostring().
 
 ```lua
 local neb = require("nebulua") -- lua api
-local md  = require("midi_defs") -- GM midi instrument definitions
+local mid = require("midi_defs") -- GM midi instrument definitions
+local mus = require("music_defs") -- chords, scales, etc
 local bt  = require("bar_time") -- time utility
 local ut  = require("utils") -- misc utilities
 ```
@@ -147,7 +148,7 @@ Call these from your script.
 
 
 ```lua
-function create_output_channel(dev_name, chan_num, patch)
+function neb.create_output_channel(dev_name, chan_num, patch)
 ```
 Register an output midi channel.
 - dev_name: The system name.
@@ -157,7 +158,7 @@ Register an output midi channel.
 
 
 ```lua
-function create_input_channel(dev_name, chan_num)
+function neb.create_input_channel(dev_name, chan_num)
 ```
 Register an input midi channel.
 - dev_name: The system name.
@@ -166,7 +167,7 @@ Register an input midi channel.
 
 
 ```lua
-function send_note(chan_hnd, note_num, volume, dur)
+function neb.send_note(chan_hnd, note_num, volume, dur)
 ```
 Send a note on/off immediately. Adds a note off if dur is specified.
 - chan_hnd: The channel handle to send it on.
@@ -176,7 +177,7 @@ Send a note on/off immediately. Adds a note off if dur is specified.
 
 
 ```lua
-function send_controller(chan_hnd, controller, value)
+function neb.send_controller(chan_hnd, controller, value)
 ```
 Send a controller immediately. Useful for things like panning and bank select.
 - chan_hnd: The channel handle to send it on.
@@ -185,30 +186,38 @@ Send a controller immediately. Useful for things like panning and bank select.
 
 
 ```lua
-function log_error(msg)
-function log_info(msg)
-function log_debug(msg)
-function log_trace(msg)
+function neb.set_volume(chan_hnd, volume)
+```
+Set master volume for the channel.
+- chan_hnd: The channel handle to set.
+- volume: Master volume. 0.0 -> 1.0.
+
+
+```lua
+function neb.log_error(msg)
+function neb.log_info(msg)
+function neb.log_debug(msg)
+function neb.log_trace(msg)
 ```
 Log to the application log. Several flavors.
 - msg: Text.
 
 
 ```lua
-function set_tempo(bpm)
+function neb.set_tempo(bpm)
 ```
 Change the play tempo.
 - bpm: New tempo.
 
 ```lua
-function init(sections)
+function neb.init(sections)
 ```
 If it's a static composition call this in setup();
 - sections: The composition collection.
 
 
 ```lua
-function process_step(tick)
+function neb.process_step(tick)
 ```
 If it's a static composition call this in step(tick);
 - tick: current tick.

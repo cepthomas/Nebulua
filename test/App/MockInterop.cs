@@ -5,25 +5,17 @@ namespace Interop
 {
 #pragma warning disable CA1822 // Mark members as static
 
-    /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
     public enum NebStatus
     {
-        Ok = 0,
-        // Api can return these:
-        SyntaxError = 10, FileError = 11, RunError = 12, ApiError = 23,
-        // App level errors:
-        AppInternalError = 13,
+        Ok, SyntaxError, FileError, RunError, ApiError, AppInternalError,
     }
 
     public class Api
     {
-        /// <summary>If a function failed this contains info.</summary>
         public string Error = "";
 
-        /// <summary>What's in the script.</summary>
         public Dictionary<int, string> SectionInfo = [];
 
-        /// <summary>Unique opaque id.</summary>
         public long Id { get { return _l; } }
         static long _l = 0;
 
@@ -65,36 +57,38 @@ namespace Interop
         public static void NotifyPropertyChange(PropertyArgs args) { PropertyChange?.Invoke(null, args); }
     };
 
-    public class BaseArgs : EventArgs
+    public class CreateChannelArgs
     {
         public long Id;       // unique/opaque
         public int Ret;       // handler return value
-    };
-
-    public class CreateChannelArgs : BaseArgs
-    {
         public string? DevName;
         public int ChanNum;
         public bool IsOutput; // else input
         public int Patch;     // output only
     };
 
-    public class SendArgs : BaseArgs
+    public class SendArgs
     {
+        public long Id;       // unique/opaque
+        public int Ret;       // handler return value
         public int ChanHnd;
         public bool IsNote;   // else controller
         public int What;      // note number or controller id
         public int Value;     // note velocity or controller payload
     };
 
-    public class LogArgs : BaseArgs
+    public class LogArgs
     {
+        public long Id;       // unique/opaque
+        public int Ret;       // handler return value
         public int LogLevel;
         public string? Msg;
     };
 
-    public class PropertyArgs : BaseArgs
+    public class PropertyArgs
     {
+        public long Id;       // unique/opaque
+        public int Ret;       // handler return value
         public int Bpm;
     };
 }

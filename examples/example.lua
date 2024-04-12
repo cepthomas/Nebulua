@@ -4,15 +4,16 @@
 
 -- Import modules we need.
 local neb = require("nebulua")
-local md  = require("midi_defs")
+local mus = require("music_defs")
+local mid = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("utils")
 
 -- Aliases for imports - easier typing.
-local inst = md.instruments
-local drum = md.drums
-local kit  = md.drum_kits
-local ctrl = md.controllers
+local inst = mid.instruments
+local drum = mid.drums
+local kit  = mid.drum_kits
+local ctrl = mid.controllers
 
 -- Log something to the application log.
 neb.log_info("=============== go go go =======================")
@@ -36,18 +37,15 @@ local hnd_inp1  = neb.create_input_channel(midi_in, 2)
 
 ------------------------- Variables -----------------------------------
 
--- Misc vars - volumes.
-local synth_vol = 0.8
-local drum_vol = 0.8
 
 -- Get some stock chords and scales.
-local alg_scale = md.get_notes_from_string("G3.Algerian")
-local chord_notes = md.get_notes_from_string("C4.o7")
+local alg_scale = mus.get_notes_from_string("G3.Algerian")
+local chord_notes = mus.get_notes_from_string("C4.o7")
 
 -- Create custom note collection.
-md.create_definition("MY_SCALE", "1 +3 4 -b7")
+mus.create_definition("MY_SCALE", "1 +3 4 -b7")
 -- Now it can be used like stock:
-local my_scale_notes = md.get_notes_from_string("B4.MY_SCALE")
+local my_scale_notes = mus.get_notes_from_string("B4.MY_SCALE")
 
 -- Aliases for instruments - easier typing.
 local snare = drum.AcousticSnare
@@ -65,10 +63,17 @@ local mtom = drum.HiMidTom
 function setup()
     neb.log_info("example initialization")
     math.randomseed(os.time())
+    
     -- How fast?
     neb.set_tempo(88)
 
-    -- This uses static composition so you must call this!
+    -- Set master volumes.
+    neb.set_volume(hnd_keys, 0.7)
+    neb.set_volume(hnd_bass, 0.9)
+    neb.set_volume(hnd_synth, 0.6)
+    neb.set_volume(hnd_drums, 0.9)
+
+    -- This file uses static composition so you must call this!
     neb.init(sections)
     
     return 0
@@ -76,11 +81,12 @@ function setup()
 -----------------------------------------------------------------------------
 -- Main work loop called every subbeat/tick. This is a required function!
 function step(tick)
-    -- This uses static composition so you must call this!
+    -- This file uses static composition so you must call this!
     neb.process_step(tick)
 
     -- Other work you may want to do.
     boing(60) -- a local function that makes a noise.
+
     -- Do something every new bar.
     t = BarTime(tick)
     if t.get_beat() == 0 and t.get_sub() == 0 then
@@ -120,7 +126,7 @@ end
 -- Function called from sequence.
 local function seq_func(tick)
     local note_num = math.random(0, #alg_scale)
-    neb.send_note(hnd_synth, alg_scale[note_num], drum_vol, 8) --0.5)
+    neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8) --0.5)
 end
 
 -- Make a noise.
@@ -131,7 +137,7 @@ local function boing(note_num)
     if note_num == 0 then
         note_num = math.random(30, 80)
         boinged = true
-        neb.send_note(hnd_synth, note_num, synth_vol, 8) --0.5)
+        neb.send_note(hnd_synth, note_num, 0.7, 8) --0.5)
     end
     return boinged
 end

@@ -48,11 +48,11 @@ namespace Nebulua.Test
             bret = cli.Read();
             UT_TRUE(bret);
             capture = cliOut.CaptureLines;
-            UT_EQUAL(capture.Count, 12);
-            UT_EQUAL(capture[0], "help|?: tell me everything");
+            UT_EQUAL(capture.Count, 13);
+            UT_EQUAL(capture[0], "help|?: available commands");
             UT_EQUAL(capture[1], "exit|x: exit the application");
-            UT_EQUAL(capture[10], "reload|l: re/load current script");
-            UT_EQUAL(capture[11], cli.Prompt);
+            UT_EQUAL(capture[11], "reload|l: re/load current script");
+            UT_EQUAL(capture[12], cli.Prompt);
 
             cliOut.Clear();
             cliIn.NextLine = "?";
@@ -176,7 +176,7 @@ namespace Nebulua.Test
 
             //app.Run("script_happy.lua");
 
-            ///// Position commands. TODO1 fix/test these.
+            ///// Position commands. TODO1 fix/test these - needs sim Api?
             cliOut.Clear();
             cliIn.NextLine = "position";
             bret = cli.Read();

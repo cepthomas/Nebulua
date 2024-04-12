@@ -45,10 +45,13 @@ local _transients = {}
 -- Where we be.
 local _current_tick = 0
 
--- Map the 0-9 script volume range to internal double. TODO make user configurable.
+-- Map the 0-9 script volume range to internal double. TODO make user configurable per channel.
 local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
+-- linear local _vol_map = { 0.0, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.0 }
 -- original local _vol_map = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 }
 
+-- Key is chan_hnd, value is double volume.
+local _master_vols = {}
 
 -- Debug stuff TODO2 remove - or pass a debug/test flag?
 function _mole() return _steps, _transients end
@@ -58,18 +61,41 @@ function _mole() return _steps, _transients end
 ----- Script api
 -----------------------------------------------------------------------------
 
--- Log functions. Magic numbers from host C code.
+-- Log functions. Magic numbers from host code.
 function M.log_error(msg) api.log(4, msg) end
 function M.log_info(msg)  api.log(3, msg) end
 function M.log_debug(msg) api.log(2, msg) end
 function M.log_trace(msg) api.log(1, msg) end
 
 
--- These go straight through to the host api.
+-- These go straight through to the host.
 M.create_input_channel = api.create_input_channel
-M.create_output_channel = api.create_output_channel
 M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
+
+
+-----------------------------------------------------------------------------
+--- Create an output channel.
+-- @param dev_name system name
+-- @param chan_num channel number
+-- @param patch send this patch number
+-- @return the new chan_hnd
+function M.create_output_channel(dev_name, chan_num, patch)
+    chan_hnd = api.create_output_channel(dev_name, chan_num, patch)
+    _master_vols[chan_hnd] = 0.8
+    return chan_hnd
+end    
+
+-----------------------------------------------------------------------------
+--- Set master volume for the channel.
+-- @param chan_hnd the channel
+-- @param tick volume master volume
+function M.set_volume(chan_hnd, volume)
+    if volume < 0.0 or volume > 1.0 then
+        error(string.format("Invalid master volume %f", index_section), 1)
+    end
+    _master_vols[chan_hnd] = volume
+end
 
 -----------------------------------------------------------------------------
 --- Process notes due now.
@@ -118,9 +144,11 @@ end
 -----------------------------------------------------------------------------
 -- Send note now. Manages corresponding note off.
 function M.send_note(chan_hnd, note_num, volume, dur)
-    -- print("send", chan_hnd, note_num, volume, dur)
+    M.log_debug("send", chan_hnd, note_num, volume, dur)
     if volume > 0 then -- noteon
         if dur == 0 then dur = 1 end -- (for drum/hit)
+        -- adjust volume
+        volume = volume * _master_vols[chan_hnd]
         -- send note_on now
         api.send_note(chan_hnd, note_num, volume)
         -- chase with noteoff
@@ -148,7 +176,6 @@ function M.init()
         -- Save the start tick for markers.
         section.start = _length
         _section_names[section.name] = section.start
-        -- print(">>>", section.name)
 
         -- The longest sequence in the section.
         local section_max = 0
@@ -172,7 +199,6 @@ function M.init()
                         -- Process the chunks in the sequence.
                         for c, seq_chunk in ipairs(seq_elem) do
                             -- { "|5-------|--      |        |        |7-------|--      |        |        |", notes... }
-                            -- print(">>>", seq_chunk[1], seq_chunk[2])
                             local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
                             if seq_length == 0 then
                                 error(string.format("Couldn't parse sequence in section:%s row:%d elem:%d\n%s",
@@ -216,8 +242,6 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         return 0, "Improperly formed chunk."
     end
 
-    -- print(chunk[1], chunk[2])
-
     local steps = { }
     local current_vol = 0 -- 0 -> 9
     local start_offset = 0 -- offset in pattern for the start of the current event
@@ -228,7 +252,6 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local tn = type(what_to_play)
     local notes = {}
     local func = nil
-    -- print(tn, what_to_play)
 
     ----- Local function to package an event. ------
     function make_event(offset)
@@ -252,7 +275,6 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         else -- note
             for _, n in ipairs(notes) do
                 local si = StepNote(when, chan_hnd, n, vol, dur)
-                -- print(n, si.err)
                 if si.err == nil then
                     table.insert(steps, si)
                 else
@@ -269,7 +291,6 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     if tn == "number" then
         -- use as is
         notes = { what_to_play }
-        -- print(what_to_play)
     elseif tn == "function" then
         -- use as is
         func = what_to_play
@@ -352,28 +373,27 @@ end
 function M.sect_seqs(chan_hnd, ...)
     if _current_section ~= nil then
         elems = {}
-
         if type(chan_hnd) ~= "number" then -- should check for valid/known handle
-            error("Invalid channel", 1)
+            error("Invalid channel", 2)
         end
         table.insert(elems, chan_hnd)
 
         num_args = select('#', ...)
         if num_args < 1 then
-            error("No sequences", 1)
+            error("No sequences", 2)
         end
 
         for i = 1, num_args do
             seq = select(i, ...)
             if type(seq) ~= "table" then -- should check for valid/known
-                error("Invalid sequence "..i, 1)
+                error("Invalid sequence "..i, 2)
             end
             table.insert(elems, seq)
         end
 
         table.insert(_current_section, elems)
     else
-        error("No section name", 1)
+        error("No section name", 2)
     end
 end
 

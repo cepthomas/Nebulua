@@ -16,7 +16,6 @@ using Ephemera.NBagOfTricks.PNUT;
 namespace Nebulua.Test
 {
     /// <summary>Test application functions. TODO1 Doesn't do anything yet.
-    /// Needs MockInterop, MockCli, MockMidi. AppXXX?
     /// </summary>
     public class APP_ONE : TestSuite
     {

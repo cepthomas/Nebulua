@@ -30,7 +30,6 @@
     <Compile Include="..\..\Cli.cs" Link="Cli.cs" />
     <Compile Include="..\..\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\State.cs" Link="State.cs" />
-    <Compile Include="..\MockIO.cs" Link="MockIO.cs" />
   </ItemGroup>
 
   <ItemGroup>

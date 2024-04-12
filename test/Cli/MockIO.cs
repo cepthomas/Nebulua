@@ -41,6 +41,7 @@ namespace Nebulua.Test
     {
         public string NextLine { get; set; } = "";
 
+        // ReadLine() calls Read() repeatedly.
         public override int Read()
         {
             // Return the next char or -1 if done.
@@ -58,6 +59,7 @@ namespace Nebulua.Test
 
         public override int Peek()
         {
+            // throw new NotSupportedException("peek() doesn't work!");
             // Return the next char or -1 if done. Doesn't remove.
             if (NextLine.Length > 0)
             {

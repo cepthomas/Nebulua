@@ -14,36 +14,35 @@ namespace Nebulua
 {
     public class Cli
     {
-        //    readonly TextWriter _cliOut;
-        //    readonly TextReader _cliIn;
+        // readonly TextWriter _cliOut;
+        // readonly TextReader _cliIn;
 
         public string Prompt { get; set; } = ">";
 
+        // From cliOut. May be useful
+        public List<string> WriteLines { get; set; } = [];
+
+        // For cliIn.
+        //public string ReadLine { get; set; } = "";
+
+        // public void Clear()
+        // {
+        //     _capture.Clear();
+        // }
+
         public Cli(TextReader cliIn, TextWriter cliOut)
         {
-            //_cliIn = new CliTextReader();
-            //_cliOut = new CliTextWriter();
+            // _cliIn = cliIn;
+            // _cliOut = cliOut;
         }
 
         public void Write(string s)
         {
-            //_ = CaptureLines.Append(s);
+            WriteLines.Append(s);
         }
 
         public bool Read()
         {
-            //// return the next char or -1 if done.
-            //if (NextLine.Length > 0)
-            //{
-            //    int c = NextLine[0];
-            //    NextLine = NextLine.Remove(0, 1);
-            //    return c;
-            //}
-            //else
-            //{
-            //    return -1;
-            //}
-
             return true;
         }
     }
