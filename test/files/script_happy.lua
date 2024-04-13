@@ -37,7 +37,7 @@ local chord_notes = mus.get_notes_from_string("C4.o7")
 -- Init stuff. Required function.
 function setup()
 
-    neb.init(sections) -- required if using composition
+    neb.process_comp(sections) -- required if using composition
 
     -- Set master volumes.
     neb.set_volume(hnd_piano, 0.6)

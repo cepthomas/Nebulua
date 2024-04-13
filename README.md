@@ -210,7 +210,7 @@ Change the play tempo.
 - bpm: New tempo.
 
 ```lua
-function neb.init(sections)
+function neb.process_comp(sections)
 ```
 If it's a static composition call this in setup();
 - sections: The composition collection.

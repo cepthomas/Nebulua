@@ -155,7 +155,7 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         lua_pop(_l, 1); // Clean up stack.
 
         // Tack on the overal length.
-        SectionInfo->Add(length, _ToCliString("LENGTH"));
+        SectionInfo->Add(length, _ToCliString("_LENGTH"));
     }
     
     LeaveCriticalSection(&_critsect);

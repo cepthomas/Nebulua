@@ -186,7 +186,8 @@ namespace Nebulua
                     throw new ApiException("Api OpenScript() failed", api.Error);
                 }
 
-                State.Instance.Length = api.SectionInfo.Last().Key;
+                var sectionPositions = api.SectionInfo.Keys.OrderBy(k => k).ToList();
+                State.Instance.Length = sectionPositions.Last();
 
                 // Start timer.
                 SetTimer(State.Instance.Tempo);

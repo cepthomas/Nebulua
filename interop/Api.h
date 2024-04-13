@@ -40,8 +40,7 @@ namespace Interop
         property String^ Error;
 
         /// <summary>What's in the script.</summary>
-        //property Dictionary<int, String^>^ SectionInfo;
-        property List<Tuple<int, String^>^>^ SectionInfo;
+        property Dictionary<int, String^>^ SectionInfo;
 
         #pragma warning(push)
         #pragma warning(disable : 4302 4311) // lua_State* casting

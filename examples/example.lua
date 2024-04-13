@@ -74,7 +74,7 @@ function setup()
     neb.set_volume(hnd_drums, 0.9)
 
     -- This file uses static composition so you must call this!
-    neb.init(sections)
+    neb.process_comp(sections)
     
     return 0
 

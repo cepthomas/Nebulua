@@ -3,11 +3,11 @@
 -- Impedance matching between C and Lua. Hides or translates the raw C api.
 -- Manages note collections as described by the composition.
 
-local ut = require("utils")
+local ut  = require("utils")
 local api = require("host_api")
-local st = require("step_types")
-local md = require("midi_defs")
-local mu = require("music_defs")
+local st  = require("step_types")
+local mid = require("midi_defs")
+local mus = require("music_defs")
 local com = require('neb_common')
 
 -- TODO2 stress test and bulletproof this.
@@ -137,7 +137,6 @@ function M.process_step(tick)
         -- Disappear it.
         _transients[tick] = nil
     end
-
     return 0
 end
 
@@ -161,7 +160,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Process all sections into discrete steps.
-function M.init()
+function M.process_comp()
     -- Hard reset.
     _steps = {}
     _transients = {}
@@ -223,7 +222,6 @@ function M.init()
 
         -- Keep track of overall time.
         _length = _length + section_max
-
     end
 
     -- All done.
@@ -298,7 +296,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
             return 0, string.format("Invalid func %s", chunk[2])
         end
     elseif tn == "string" then
-        notes = mu.get_notes_from_string(what_to_play)
+        notes = mus.get_notes_from_string(what_to_play)
         if notes == nil then
             return 0, string.format("Invalid notes %s", chunk[2])
         end
@@ -396,6 +394,26 @@ function M.sect_seqs(chan_hnd, ...)
         error("No section name", 2)
     end
 end
+
+-----------------------------------------------------------------------------
+--- Diagnostic.
+-- @param chan_hnd the channel
+-- @param ... the sequences
+function M.dump()
+    fp = io.open('C:\\Dev\\repos\\Lua\\Nebulua\\test\\_dump.txt', 'w+')
+        -- 00000 01-02 NOTE 67 0.4 10
+        -- 00000 01-02 CTRL 70 101
+
+    for tick, sts in pairs(_steps) do
+        for i, st in ipairs(sts) do
+            fp:write(string.format("%s\n", st.format()))
+            -- fp:write(string.format("%d %s\n", tick, st.format()))
+            -- fp:write(string.format("%d %s\n", tick, ut.dump_table_string(st, true, "X")))
+        end
+    end
+    fp:close()
+end
+
 
 -----------------------------------------------------------------------------
 -- Return module.

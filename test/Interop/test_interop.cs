@@ -28,13 +28,21 @@ namespace Nebulua.Test
             NebStatus stat = interop.OpenScript(scrfn);
             UT_EQUAL(interop.Error, "");
             UT_EQUAL(stat, NebStatus.Ok);
-
-            // Have a look inside. TODO1
-            UT_EQUAL(interop.SectionInfo.Count, 4);
-            foreach (var kv in interop.SectionInfo)
-            {
-            }
             UT_EQUAL(events.CollectedEvents.Count, 6);
+
+            // Have a look inside.
+            UT_EQUAL(interop.SectionInfo.Count, 4);
+
+            var sectionPositions = interop.SectionInfo.Keys.OrderBy(k => k).ToList();
+            UT_EQUAL(sectionPositions.Count, 4);
+            UT_EQUAL(sectionPositions[0], 0);
+            UT_EQUAL(interop.SectionInfo[sectionPositions[0]], "beginning");
+            UT_EQUAL(sectionPositions[1], 690);
+            UT_EQUAL(interop.SectionInfo[sectionPositions[1]], "middle");
+            UT_EQUAL(sectionPositions[2], 2477);
+            UT_EQUAL(interop.SectionInfo[sectionPositions[2]], "ending");
+            UT_EQUAL(sectionPositions[3], 5911);
+            UT_EQUAL(interop.SectionInfo[sectionPositions[3]], "_LENGTH");
 
             // Run fake steps.
             events.CollectedEvents.Clear();

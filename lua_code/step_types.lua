@@ -7,7 +7,7 @@ local com = require('neb_common')
 
 
 local function _FormatChanHnd(chan_hnd)
-    local s = string.format("%02X-%02X)", chan_hnd, (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    local s = string.format("%02X-%02X", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
     return s
 end
 
@@ -35,7 +35,7 @@ function StepNote(tick, chan_hnd, note_num, volume, duration)
     -- end
 
     d.format = function() return d.err or string.format('%05d %s NOTE %d %.1f %d', d.tick, _FormatChanHnd(d.chan_hnd), d.note_num, d.volume, d.duration) end
-    -- setmetatable(d, { __tostring = function(self) self.format() end })
+     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
     return d
 end
@@ -61,7 +61,7 @@ function StepController(tick, chan_hnd, controller, value)
     --     d.err = string.format("Invalid controller: %s", d.err)
     -- end
 
-    d.format = function() return d.err or string.format('%05d %s CONTROLLER %d %d', d.tick, _FormatChanHnd(d.chan_hnd), d.controller, d.value) end
+    d.format = function() return d.err or string.format('%05d %s CTRL %d %d', d.tick, _FormatChanHnd(d.chan_hnd), d.controller, d.value) end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
     return d
@@ -88,7 +88,7 @@ function StepFunction(tick, chan_hnd, func, volume)
     --     d.err = string.format("Invalid function: %s", tostring(d.err))
     -- end
 
-    d.format = function() return d.err or string.format('%05d %s FUNCTION %.1f', d.tick, _FormatChanHnd(d.chan_hnd), d.volume) end
+    d.format = function() return d.err or string.format('%05d %s FUNC %.1f', d.tick, _FormatChanHnd(d.chan_hnd), d.volume) end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
     return d
