@@ -13,7 +13,7 @@ namespace Nebulua
     /// <summary>
     /// A midi input device.
     /// </summary>
-    public class MidiInput
+    public class MidiInput : IDisposable
     {
         #region Fields
         /// <summary>Low level midi input device.</summary>
@@ -120,7 +120,7 @@ namespace Nebulua
     /// <summary>
     /// A midi output device.
     /// </summary>
-    public class MidiOutput
+    public class MidiOutput : IDisposable
     {
         #region Fields
         /// <summary>Low level midi output device.</summary>
@@ -143,7 +143,6 @@ namespace Nebulua
         public MidiOutput(string deviceName)
         {
             DeviceName = deviceName;
-            // LogEnable = false;
             Channels.ForEach(b => b = false);
 
             // Figure out which midi output device.

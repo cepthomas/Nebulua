@@ -15,7 +15,7 @@ using Ephemera.NBagOfTricks.PNUT;
 
 namespace Nebulua.Test
 {
-    /// <summary>Test application functions. TODO1 Doesn't do anything yet.
+    /// <summary>Test application functions. TODO1 Doesn't do anything yet. May be more complicated than it's worth.
     /// </summary>
     public class APP_ONE : TestSuite
     {

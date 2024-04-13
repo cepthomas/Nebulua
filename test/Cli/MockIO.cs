@@ -13,7 +13,7 @@ namespace Nebulua.Test
     /// <summary>Mock IO for testing cli. Captures output lines.</summary>
     public class MockCliOut: TextWriter
     {
-        public List<string> CaptureLines
+        public List<string> Capture
         {
             get { return StringUtils.SplitByTokens(_capture.ToString(), "\r\n"); }
         }
