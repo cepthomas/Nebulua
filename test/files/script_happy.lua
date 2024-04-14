@@ -120,14 +120,14 @@ end
 
 -- Sequences --
 
-local keys_verse =
+local piano_verse =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
 }
 
-local keys_chorus =
+local piano_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|6-      |        |        |        |        |        |        |        |", "F4" },
@@ -135,15 +135,6 @@ local keys_chorus =
     { "|        |6-      |        |        |        |        |        |        |", "C4" },
     { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
 }
-
--- AcousticBassDrum = 035, BassDrum1 = 036, SideStick = 037, AcousticSnare = 038, HandClap = 039, ElectricSnare = 040,
--- LowFloorTom = 041, ClosedHiHat = 042, HighFloorTom = 043, PedalHiHat = 044, LowTom = 045, OpenHiHat = 046,
--- LowMidTom = 047, HiMidTom = 048, CrashCymbal1 = 049, HighTom = 050, RideCymbal1 = 051, ChineseCymbal = 052,
--- RideBell = 053, Tambourine = 054, SplashCymbal = 055, Cowbell = 056, CrashCymbal2 = 057, Vibraslap = 058,
--- RideCymbal2 = 059, HiBongo = 060, LowBongo = 061, MuteHiConga = 062, OpenHiConga = 063, LowConga = 064,
--- HighTimbale = 065, LowTimbale = 066, HighAgogo = 067, LowAgogo = 068, Cabasa = 069, Maracas = 070, ShortWhistle = 071,
--- LongWhistle = 072, ShortGuiro = 073, LongGuiro = 074, Claves = 075, HiWoodBlock = 076, LowWoodBlock = 077,
--- MuteCuica = 078, OpenCuica = 079, MuteTriangle = 080, OpenTriangle = 081,
 
 local drums_verse =
 {
@@ -170,13 +161,24 @@ local drums_chorus =
 quiet = {}
 
 neb.sect_start("beginning")
-neb.sect_seqs(hnd_piano, quiet,        keys_verse,    keys_verse,   keys_verse   )
+neb.sect_seqs(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  )
 neb.sect_seqs(hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  )
 
 neb.sect_start("middle")
-neb.sect_seqs(hnd_piano, quiet,         keys_chorus,  keys_chorus,  keys_chorus  )
+neb.sect_seqs(hnd_piano, quiet,         piano_chorus, piano_chorus, piano_chorus )
 neb.sect_seqs(hnd_drums, drums_chorus,  drums_chorus, drums_chorus, drums_chorus )
 
 neb.sect_start("ending")
-neb.sect_seqs(hnd_piano, drums_verse,   keys_verse,   keys_verse,   quiet        )
+neb.sect_seqs(hnd_piano, drums_verse,   piano_verse,  piano_verse,  quiet        )
 neb.sect_seqs(hnd_drums, drums_verse,   drums_verse,  drums_verse,  drums_chorus )
+
+--[[
+Each seq is 64t.
+total is 12seq => 768t
+
+drums_verse is 18evt X 5 => 90evt
+piano_chorus is 4evt X 3 => 12evt
+piano_verse is 5evt X 5 => 25evt
+total is 127evt
+
+]]

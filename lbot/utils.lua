@@ -95,6 +95,28 @@ function M.dump_table_string(tbl, recursive, name)
 end
 
 -----------------------------------------------------------------------------
+--- Lua has no builtin way to count number of values in an associative table so this does.
+-- @param tbl the table
+-- @return number of values
+function M.table_count(tbl)
+    num = 0
+    for k, _ in pairs(tbl) do
+        num = num + 1
+    end
+    return num
+end
+
+-----------------------------------------------------------------------------
+-- Boilerplate for adding a new kv to a table.
+-- @param tbl the table
+-- @param key new entry key
+-- @param val new entry value
+function M.table_add(tbl, key, val)
+   if tbl[key] == nil then tbl[key] = {} end
+   table.insert(tbl[key], val)
+end
+
+-----------------------------------------------------------------------------
 --- Gets the file and line of the caller.
 -- @param level How deep to look:
 --    0 is the getinfo() itself
@@ -207,28 +229,6 @@ function M.clamp(val, granularity, round)
     res = (val / granularity) * granularity
     if round and (val % granularity > granularity / 2) then res = res + granularity end
     return res
-end
-
------------------------------------------------------------------------------
---- Lua has no builtin way to count number of values in an associative table so this does.
--- @param tbl the table
--- @return number of values
-function M.table_count(tbl)
-    num = 0
-    for k, _ in pairs(tbl) do
-        num = num + 1
-    end
-    return num
-end
-
------------------------------------------------------------------------------
--- Boilerplate for adding a new kv to a table.
--- @param tbl the table
--- @param key new entry key
--- @param val new entry value
-function M.table_add(tbl, key, val)
-   if tbl[key] == nil then tbl[key] = {} end
-   table.insert(tbl[key], val)
 end
 
 

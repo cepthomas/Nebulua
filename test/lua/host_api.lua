@@ -17,7 +17,7 @@ local function capture(msg)
 end
 
 local function format_chan_hnd(chan_hnd)
-    local s = string.format("%02X-%02X", chan_hnd, (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    local s = string.format("%02X-%02X", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
     return s
 end
 
@@ -38,7 +38,7 @@ end
 
 function M.create_output_channel(dev_name, chan_num, patch)
     capture(string.format("create_output_channel: dev_name:%s chan_num:%d patch:%d", dev_name, chan_num, patch))
-    local dev_index = 10 -- upper half
+    local dev_index = 7 -- upper half
     return ((dev_index << 8) | (chan_num))
 end
 
