@@ -131,7 +131,7 @@ local piano_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|6-      |        |        |        |        |        |        |        |", "F4" },
-    { "|    5-  |        |        |        |        |        |        |        |", my_seq_func },
+    { "|    5   |        |        |        |        |        |      7 |        |", my_seq_func },
     { "|        |6-      |        |        |        |        |        |        |", "C4" },
     { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
 }
@@ -161,16 +161,18 @@ local drums_chorus =
 quiet = {}
 
 neb.sect_start("beginning")
-neb.sect_seqs(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  )
-neb.sect_seqs(hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  )
+neb.sect_chan(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  ) -- 6ch
+neb.sect_chan(hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  ) -- 9ch
 
 neb.sect_start("middle")
-neb.sect_seqs(hnd_piano, quiet,         piano_chorus, piano_chorus, piano_chorus )
-neb.sect_seqs(hnd_drums, drums_chorus,  drums_chorus, drums_chorus, drums_chorus )
+neb.sect_chan(hnd_piano, quiet,         piano_chorus, piano_chorus, piano_chorus ) -- 12ch
+neb.sect_chan(hnd_drums, drums_chorus,  drums_chorus, drums_chorus, drums_chorus ) -- 16ch
 
 neb.sect_start("ending")
-neb.sect_seqs(hnd_piano, drums_verse,   piano_verse,  piano_verse,  quiet        )
-neb.sect_seqs(hnd_drums, drums_verse,   drums_verse,  drums_verse,  drums_chorus )
+neb.sect_chan(hnd_piano, piano_verse,   piano_verse,  piano_verse,  quiet        ) -- 6ch
+neb.sect_chan(hnd_drums, drums_verse,   drums_verse,  drums_verse,  drums_chorus ) -- 13ch
+
+-- total 62ch
 
 --[[
 Each seq is 64t.

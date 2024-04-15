@@ -73,28 +73,28 @@ end
 
 
 -----------------------------------------------------------------------------
-function StepFunction(tick, chan_hnd, func)--, volume)
+function StepFunction(tick, chan_hnd, func, volume)
     local d = {}
     d.step_type = "function"
     d.err = nil
     d.tick = tick
     d.chan_hnd = chan_hnd
     d.func = func
-    -- d.volume = volume
+    d.volume = volume
 
     -- Validate.
     d.err = d.err or v.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
     d.err = d.err or v.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
     d.err = d.err or v.val_function(d.func, 0.0, 1.0, 'func')
-    -- d.err = d.err or v.val_number(d.volume, 0.0, 1.0, 'volume')
+    d.err = d.err or v.val_number(d.volume, 0.0, 1.0, 'volume')
 
     -- if d.err ~= nil then
     --     d.err = string.format("Invalid function: %s", tostring(d.err))
     -- end
 
     d.format = function() return d.err or
-        string.format('%05d %s FUNC', d.tick, _FormatChanHnd(d.chan_hnd))
-        -- string.format('%05d %s FUNC %.1f', d.tick, _FormatChanHnd(d.chan_hnd), d.volume)
+        -- string.format('%05d %s FUNC', d.tick, _FormatChanHnd(d.chan_hnd))
+        string.format('%05d %s FUNC %.1f', d.tick, _FormatChanHnd(d.chan_hnd), d.volume)
     end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 

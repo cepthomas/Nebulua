@@ -2,15 +2,15 @@
 -- Unit tests for nebulua.lua.
 
 -- local v  = require('validators')
-local ut = require("utils")
-local st = require("step_types")
-local bt = require("bar_time")
+local ut  = require("utils")
+local st  = require("step_types")
+local bt  = require("bar_time")
 local api = require("host_api") -- host api mock
 local neb = require("nebulua") -- lua api
 local com = require('neb_common')
 
 
-ut.config_debug(true) -- TODO an easy way to toggle this? and/or insert/delete breakpoints from ST.
+ut.config_debug(false) -- TODO an easy way to toggle this? and/or insert/delete breakpoints from ST.
 
 
 -- Create the namespace/module.
@@ -172,7 +172,7 @@ function M.suite_step_types(pn)
 
     local f = StepFunction(508, 122, stub, 0.44)
     pn.UT_NIL(f.err)
-    pn.UT_STR_EQUAL(f.format(), "00508 00-7A FUNC")
+    pn.UT_STR_EQUAL(f.format(), "00508 00-7A FUNC 0.4")
 end
 
 -----------------------------------------------------------------------------

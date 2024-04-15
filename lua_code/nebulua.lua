@@ -16,7 +16,7 @@ local M = {}
 
 
 -----------------------------------------------------------------------------
------ Global vars for access by app TODO1 better way to handle these.
+----- Global vars for access by app TODO1 better way to handle these. Part of M?
 -----------------------------------------------------------------------------
 
 -- Total length of composition.
@@ -92,7 +92,7 @@ end
 -- @param tick volume master volume
 function M.set_volume(chan_hnd, volume)
     if volume < 0.0 or volume > 1.0 then
-        error(string.format("Invalid master volume %f", index_section), 1)
+        error(string.format("Invalid master volume %f", volume), 2)
     end
     _master_vols[chan_hnd] = volume
 end
@@ -169,67 +169,180 @@ function M.process_comp()
 
 dbg()
 
-    for index_section, section in ipairs(_sections) do
-        -- Process one section.
+    for isect, section in ipairs(_sections) do
+        -- Process the section.
         -- Requires a name.
-        if section.name == nil then error(string.format("Missing section name in section %d", index_section), 2) end
-        -- Save the name and start tick for client.
-        section.start = _length
-        _section_names[section.name] = section.start
-
-        -- The longest sequence in the section.
-        local section_max = 0
-
-        -- Iterate through the channel sequences.
-        local chan_seq_index = 0
-        for k, v in pairs(section) do
-            if k == "name" or k == "start" then
-                -- skip, already handled
-            elseif ut.is_table(v) then
-                chan_seq_index = chan_seq_index + 1
-                -- Time offset for this channel events.
-                local tick = section.start
-
-                -- Process the sequences. First element is the channel followed by the sequences.
-                local chan_hnd = 0
-                for index_elem, seq_elem in ipairs(v) do
-                    if index_elem == 1 then
-                        chan_hnd = seq_elem
-                    else -- it's a sequence
-                        -- Process the chunks in the sequence.
-                        for c, seq_chunk in ipairs(seq_elem) do
-                            -- chunk: { "|5-------|--      |        |        |7-------|--      |        |        |", notes... }
-                            local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
-                            if seq_length == 0 then
-                                error(string.format("Couldn't parse sequence in section:%s row:%d elem:%d\n%s",
-                                    section.name, chan_seq_index, index_elem, chunk_steps), 2)
-                            else -- save them
-                                for c, st in ipairs(chunk_steps) do
-                                    ut.table_add(_steps, st.tick, st)
-                                    _length = _length +1
-                                end
-                            end
-
-                            -- bump along
-                            print('>>>', tick, seq_length)
-                            tick = tick + seq_length
-                        end
-                    end
-                end
-
-                -- Keep track of overall time for section.
-                section_max = math.max(section_max, tick)
-            -- else just blow it up??
-            --     error(string.format("Element:%s in section:%s is not a valid channel", tostring(v)), 2)
-            end
+        if section.name == nil then
+            error(string.format("Missing section name in section %d", isect), 2)
         end
 
+        -- Save info for use by client.
+        section.start = _length
+        section.length = 0 -- default
+        _section_names[section.name] = section.start
+
+        -- Do the work.
+        -- section_length = M.parse_section(section)
+        M.parse_section(section)
+
+
+
+        -- -- The longest sequence in the section.
+        -- local section_max = 0
+
+        -- -- Iterate through the channel sequences.
+        -- local chan_seq_index = 0
+        -- for k, v in pairs(section) do
+        --     if k == "name" or k == "start" then
+        --         -- skip, already handled
+        --     elseif ut.is_table(v) then
+        --         chan_seq_index = chan_seq_index + 1
+        --         -- Time offset for this channel events.
+        --         local tick = section.start
+
+        --         -- Process the sequences. First element is the channel followed by the sequences.
+        --         local chan_hnd = 0
+        --         for index_elem, seq_elem in ipairs(v) do
+        --             if index_elem == 1 then
+        --                 chan_hnd = seq_elem
+        --             else -- it's a sequence
+        --                 -- Process the chunks in the sequence.
+        --                 for c, seq_chunk in ipairs(seq_elem) do
+        --                     -- chunk: { "|5-------|--      |        |        |7-------|--      |        |        |", notes... }
+        --                     local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+        --                     if seq_length == 0 then
+        --                         error(string.format("Couldn't parse sequence in section:%s row:%d elem:%d\n%s",
+        --                             section.name, chan_seq_index, index_elem, chunk_steps), 2)
+        --                     else -- save them
+        --                         for c, st in ipairs(chunk_steps) do
+        --                             ut.table_add(_steps, st.tick, st)
+        --                             _length = _length +1
+        --                         end
+        --                     end
+
+        --                     -- bump along
+        --                     print('>>>', tick, seq_length)
+        --                     tick = tick + seq_length
+        --                 end
+        --             end
+        --         end
+
+        --         -- Keep track of overall time for section.
+        --         section_max = math.max(section_max, tick)
+        --     -- else just blow it up??
+        --     --     error(string.format("Element:%s in section:%s is not a valid channel", tostring(v)), 2)
+        --     end
+        -- end
+
         -- Keep track of overall time.
-        _length = _length + section_max
+        -- _length = _length + section_max
+        _length = _length + section.length
     end
 
     -- All done.
 end
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------
+function M.parse_section(section)--, start_tick)
+
+-- neb.sect_start("beginning")
+-- neb.sect_chan(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  )
+-- neb.sect_chan(hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  )
+
+-- local piano_verse =  array of chunks, chunk is array[2]
+-- {
+--     -- |........|........|........|........|........|........|........|........|
+--     { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+--     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
+-- }
+
+-- section = {}
+-- section.name = "name"
+-- section.start = _length
+-- section.length = 0 -- default
+
+-- table.insert(_sections, section)
+
+-- -- for each sect_chan():
+-- elems = {}
+-- table.insert(elems, chan_hnd)
+
+-- for i = 1, num_args do
+--     seq = select(i, ...)
+--     table.insert(elems, seq)
+-- end
+
+-- table.insert(section, elems)
+
+
+    -- The longest sequence in the section.
+    section.length = 0
+
+    -- Iterate through the section contents.
+    local chan_seq_index = 0
+
+
+    for _, sect_chan in ipairs(section) do
+-- print('>>> parse_section 1', k, sect_chan)
+
+
+
+-- print(ut.dump_table_string(sect_chan, false, 'fff'))
+
+
+        -- { hnd_piano, piano_verse, quiet, piano_verse, piano_verse }
+
+        if #sect_chan >= 2 and type(sect_chan[1]) == "number" then
+
+            local chan_hnd = sect_chan[1]
+
+
+            for i = 2, #sect_chan do
+
+                -- Process the chunks in the sequence.
+                seq_length_max = 0 -- track max
+                for _, seq_chunk in ipairs(sect_chan[i]) do
+-- print('>>> parse_section 3', c, seq_chunk)
+                    -- chunk: { "|5-------|--      |        |        |7-------|--      |        |        |", notes... }
+                    local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+                    if seq_length == 0 then
+                        error(string.format("Couldn't parse sequence in section:%s row:%d elem:%d\n%s",
+                            section.name, chan_seq_index, index_elem, chunk_steps), 2)
+                    else -- save them
+                        for _, st in ipairs(chunk_steps) do
+                            ut.table_add(_steps, st.tick, st)
+                            _length = _length +1
+                        end
+                        seq_length_max = math.max(seq_length_max, seq_length)
+                    end
+
+                    -- bump along
+                    -- print('>>>', tick, seq_length)
+                end
+
+                -- Keep track of overall time for section.
+                section.length = math.max(section.length, tick)
+
+            end
+
+
+
+        else -- just blow it up??
+            error(string.format("Element:%s in section:%s is not a valid channel", tostring(v)), section.name, 2)
+        end
+
+    end
+
+end
+
+
+
 
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern. Global for unit testing.
@@ -240,7 +353,7 @@ end
 -- @param start_tick absolute start time 0-based
 -- @return length, list of StepXs OR 0, 'error message' if invalid.
 function M.parse_chunk(chunk, chan_hnd, start_tick)
-print('>>>', chan_hnd, start_tick)
+-- print('>>>', chan_hnd, start_tick)
     if chunk[1] == nil or chunk[2] == nil then
         return 0, "Improperly formed chunk."
     end
@@ -273,8 +386,10 @@ print('>>>', chan_hnd, start_tick)
         return nil
     end
 
-    function make_func_event(offset, func)
-        local si = StepFunction(start_tick + event_offset, chan_hnd, func)--, vol)
+    function make_func_event(offset, func, vol_num)
+        -- scale volume
+        local vol = _vol_map[vol_num]
+        local si = StepFunction(start_tick + event_offset, chan_hnd, func, vol)
         if si.err == nil then
             table.insert(steps, si)
         else
@@ -325,7 +440,7 @@ print('>>>', chan_hnd, start_tick)
         if func ~= nil then -- func
             if vol_num > 0 and vol_num <= 9 then
 -- print('ff-1', i)
-                seq_err = make_func_event(i - 1, func)
+                seq_err = make_func_event(i - 1, func, vol_num)
             end
         else -- note
 -- print(i, '|'..c..'|')
@@ -374,6 +489,8 @@ print('>>>', chan_hnd, start_tick)
         end
     end
 
+print('>>> parse_chunk', chan_hnd, start_tick, seq_length, #steps)
+
     return seq_length, steps
 end
 
@@ -390,7 +507,7 @@ end
 --- Composition spec: add sequences to the current section.
 -- @param chan_hnd the channel
 -- @param ... the sequences
-function M.sect_seqs(chan_hnd, ...)
+function M.sect_chan(chan_hnd, ...)
     if _current_section ~= nil then
         elems = {}
         if type(chan_hnd) ~= "number" then -- should check for valid/known handle
@@ -413,7 +530,7 @@ function M.sect_seqs(chan_hnd, ...)
 
         table.insert(_current_section, elems)
     else
-        error("No section name", 2)
+        error("No section name in sect_start()", 2)
     end
 end
 

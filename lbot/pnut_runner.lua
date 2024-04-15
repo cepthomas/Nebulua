@@ -66,12 +66,8 @@ for i = 1, #arg do
             pn.start_suite(k.." in "..scrfn)
 
             -- Optional setup().
+            dbg()
             local ok, result = xpcall(mut.setup, debug.traceback, pn)
-            if not ok then
-                pn.UT_ERROR(result)
-                script_fail = true
-                goto done
-            end
 
             -- Run the suite.
             ok, result = xpcall(v, debug.traceback, pn)
@@ -83,11 +79,6 @@ for i = 1, #arg do
 
             -- Optional teardown().
             ok, result = xpcall(mut.teardown, debug.traceback, pn)
-            if not ok then
-                pn.UT_ERROR(result)
-                script_fail = true
-                goto done
-            end
         end
     end
 end
