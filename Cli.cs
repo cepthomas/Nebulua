@@ -68,7 +68,7 @@ namespace Nebulua
                 new("exit",     'x',    "exit the application",                     "",                         ExitCmd),
                 new("run",      'r',    "toggle running the script",                "",                         RunCmd),
                 new("tempo",    't',    "get or set the tempo",                     "(bpm): 40-240",            TempoCmd),
-                new("monitor",  'm',    "toggle monitor midi traffic",              "(rx|tx|off): action",      MonCmd),
+                new("monitor",  'm',    "toggle monitor midi traffic",              "(rcv|snd|off): action",    MonCmd),
                 new("kill",     'k',    "stop all midi",                            "",                         KillCmd),
                 new("position", 'p',    "set position to where or tell current",    "(where): bar:beat:sub",    PositionCmd),
                 new("reload",   'l',    "re/load current script",                   "",                         ReloadCmd)
@@ -226,19 +226,19 @@ namespace Nebulua
                 case 2: // set
                     switch (args[1])
                     {
-                        case "rx":
-                            State.Instance.MonRx = !State.Instance.MonRx;
+                        case "rcv":
+                            State.Instance.MonRcv = !State.Instance.MonRcv;
                             Write("");
                             break;
 
-                        case "tx":
-                            State.Instance.MonTx = !State.Instance.MonTx;
+                        case "snd":
+                            State.Instance.MonSnd = !State.Instance.MonSnd;
                             Write("");
                             break;
 
                         case "off":
-                            State.Instance.MonRx = false;
-                            State.Instance.MonTx = false;
+                            State.Instance.MonRcv = false;
+                            State.Instance.MonSnd = false;
                             Write("");
                             break;
 

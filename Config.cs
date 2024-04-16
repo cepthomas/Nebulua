@@ -87,25 +87,25 @@ namespace Nebulua
                                     _prompt = parts[1];
                                     break;
 
-                                case "mon_midi_rx":
-                                    if (!xlatBoolean.TryGetValue(parts[1].ToLower(), out bool brx))
+                                case "mon_midi_rcv":
+                                    if (!xlatBoolean.TryGetValue(parts[1].ToLower(), out bool bmon))
                                     {
-                                        throw new ConfigException($"Invalid mon_midi_rx value: {parts[1]}");
+                                        throw new ConfigException($"Invalid mon_midi_rcv value: {parts[1]}");
                                     }
                                     else
                                     {
-                                        State.Instance.MonRx = brx;
+                                        State.Instance.MonRcv = bmon;
                                     }
                                     break;
 
-                                case "mon_midi_tx":
-                                    if (!xlatBoolean.TryGetValue(parts[1].ToLower(), out bool btx))
+                                case "mon_midi_snd":
+                                    if (!xlatBoolean.TryGetValue(parts[1].ToLower(), out bool bmon))
                                     {
-                                        throw new ConfigException($"Invalid mon_midi_tx value: {parts[1]}");
+                                        throw new ConfigException($"Invalid mon_midi_snd value: {parts[1]}");
                                     }
                                     else
                                     {
-                                        State.Instance.MonTx = btx;
+                                        State.Instance.MonSnd = bmon;
                                     }
                                     break;
                             }

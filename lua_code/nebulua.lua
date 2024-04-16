@@ -58,7 +58,9 @@ function _mole() return _steps, _transients end
 
 
 -----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 ----- Script api -- what you can call from the script
+-----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
 -- Log functions. Magic numbers from host code.
@@ -220,7 +222,9 @@ end
 
 
 -----------------------------------------------------------------------------
------ Internal functions -- called from host
+-----------------------------------------------------------------------------
+----- Internal functions and stuff called from host
+-----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -302,12 +306,14 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local event_offset = 0 -- offset in chunk pattern for the start of the current event
 
 
-    ----- Local function to package an event. ------
+    ---------- Local function to package an event. ------ ------
     function make_note_event(offset, notes_to_play)
         -- scale volume
         local vol = _vol_map[current_vol]
         -- calc duration from start of note
         local dur = offset - event_offset
+        -- must be valid duration, covers drum hits too
+        if dur <= 0 then dur = 1 end
 
         for _, nt in ipairs(notes_to_play) do
             local si = StepNote(start_tick + event_offset, chan_hnd, nt, vol, dur)
@@ -321,7 +327,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         return nil
     end
 
-    ----- Local function to package an event. ------
+    ---------- Local function to package an event. ------------
     function make_func_event(offset, func, vol_num)
         -- scale volume
         local vol = _vol_map[vol_num]
@@ -349,16 +355,16 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     elseif tn == "function" then
         -- use as is
         func = what_to_play
-        if func == nil then
-            return 0, string.format("Invalid func %s", chunk[2])
-        end
+        -- if func == nil then
+        --     return 0, string.format("Invalid func %s", chunk[2])
+        -- end
     elseif tn == "string" then
         notes_to_play = mus.get_notes_from_string(what_to_play)
-        if notes_to_play == nil then
-            return 0, string.format("Invalid notes %s", chunk[2])
-        end
+        -- if notes_to_play == nil then
+        --     return 0, string.format("Invalid notes %s", chunk[2])
+        -- end
     else
-        return 0, string.format("Invalid what_to_play %s", chunk[2])
+        return 0, string.format("Invalid note descriptor '%s'", tostring(chunk[2]))
     end
 
     -- Process note instances.

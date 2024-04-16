@@ -357,25 +357,25 @@ namespace Nebulua
                     {
                         case NoteOnEvent evt:
                             stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                            if (State.Instance.MonRx)
+                            if (State.Instance.MonRcv)
                             {
-                                _logger.Trace($"MIDIRX {evt}");
+                                _logger.Trace($"MIDRCV {evt}");
                             }
                             break;
 
                         case NoteEvent evt:
                             stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
-                            if (State.Instance.MonRx)
+                            if (State.Instance.MonRcv)
                             {
-                                _logger.Trace($"MIDIRX {evt}");
+                                _logger.Trace($"MIDRCV {evt}");
                             }
                             break;
 
                         case ControlChangeEvent evt:
                             stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                            if (State.Instance.MonRx)
+                            if (State.Instance.MonRcv)
                             {
-                                _logger.Trace($"MIDIRX {evt}");
+                                _logger.Trace($"MIDRCV {evt}");
                             }
                             break;
 
@@ -490,18 +490,18 @@ namespace Nebulua
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value);
                     output.Send(evt);
-                    if (State.Instance.MonTx)
+                    if (State.Instance.MonSnd)
                     {
-                        _logger.Trace($"MIDITX {evt}");
+                        _logger.Trace($"MIDSND {evt}");
                     }
                 }
                 else
                 {
                     var evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
                     output.Send(evt);
-                    if (State.Instance.MonTx)
+                    if (State.Instance.MonSnd)
                     {
-                        _logger.Trace($"MIDITX {evt}");
+                        _logger.Trace($"MIDSND {evt}");
                     }
                 }
             }
