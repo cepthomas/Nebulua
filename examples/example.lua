@@ -55,6 +55,9 @@ local ride = drum.RideCymbal1
 local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
+-- Quiet sequence in section. Can't use nil!
+local quiet = {}
+
 
 --------------------- Called from main applicatio ---------------------------
 

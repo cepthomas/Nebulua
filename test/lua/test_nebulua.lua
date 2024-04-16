@@ -90,32 +90,21 @@ function M.suite_process_script(pn)
     -- Process the data.
     neb.process_comp(sections)
 
-
     dumpfn = 'C:\\Dev\\repos\\Lua\\Nebulua\\_dump.txt', 'w+'
     neb.dump_steps(dumpfn) -- diagnostic  INDEX-CHANNEL
 
 
-    pn.UT_EQUAL(_length, 201) --[5911] is not equal to [201].
+    pn.UT_EQUAL(_length, 768)
     pn.UT_EQUAL(ut.table_count(_section_names), 3)
-    print(ut.dump_table_string(_section_names, false, '_section_names'))
-
-
-
-
+    -- print(ut.dump_table_string(_section_names, false, '_section_names'))
 
     -- Look inside.
     local steps, transients = _mole()
 
-
-
-
-
     -- s = ut.dump_table_string(steps, true, "steps")
     -- print(s)
 
-    -- Execute some script steps. Times and counts are based on script_happy.lua observed.
-    -- valid ticks: 0000, 0004, 0032, 0088, 0092, 0120, 0122, 0128, 0160, 0188, 0192, 0196,
-    --              0216, 0248, 0250, 0256, 0284, 0288, 0344, 0376, 0378, 0380, 0384, 0388, 0476
+    -- TODO validate Execute some script steps. Times and counts are based on script_happy.lua observed.
     for i = 0, 200 do
         api.current_tick = i
         stat = neb.process_step(i)
@@ -123,25 +112,24 @@ function M.suite_process_script(pn)
         -- print(">>>", ut.table_count(transients))
 
         if i == 4 then
-            pn.UT_EQUAL(#api.activity, 11)
-            pn.UT_EQUAL(ut.table_count(transients), 1)
+            pn.UT_EQUAL(#api.activity, 12)
+            pn.UT_EQUAL(ut.table_count(transients), 2)
         end
 
         if i == 40 then
-            pn.UT_EQUAL(#api.activity, 23)
+            pn.UT_EQUAL(#api.activity, 47)
             pn.UT_EQUAL(ut.table_count(transients), 1)
         end
     end
 
-    pn.UT_EQUAL(#api.activity, 99)
-    pn.UT_EQUAL(ut.table_count(transients), 0)
+    pn.UT_EQUAL(#api.activity, 165)
+    pn.UT_EQUAL(ut.table_count(transients), 1)
 
     -- Examine collected data.
     --for _, d in ipairs(api.activity) do
 
     -- s = ut.dump_table_string(transients, true, "transients")
     -- print(s)
-
 
     ok, ret = pcall(rcv_note, 10, 11, 0.3)
     pn.UT_TRUE(ok, string.format("Script function rcv_note() failed:\n%s ", ret))

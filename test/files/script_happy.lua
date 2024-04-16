@@ -151,6 +151,7 @@ local drums_chorus =
     { "|        |7 7     |        |7 7     |        |7 7     |        |        |", 60 },
     { "|        |    4   |        |        |        |    4   |        |        |", 35 },
     { "|        |        |        |        |        |        |        |8       |", 49 },
+    { "|    8   |        |    8   |        |    8   |        |    8   |        |", 56 },
 }
 
 
@@ -158,19 +159,27 @@ local drums_chorus =
 -- Sections --
 
 -- Identify space. Can't use nil!
-quiet = {}
+local quiet = { {"|        |        |        |        |        |        |        |        |", 0 } }
+
+
+-- TODO1 is this better?
+-- Section("beginning",
+--     { hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  }, -- 6ch
+--     { hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  }, -- 9ch
+-- }
+
 
 neb.sect_start("beginning")
-neb.sect_chan(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  ) -- 6ch
+neb.sect_chan(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  ) -- 6ch  256t
 neb.sect_chan(hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  ) -- 9ch
 
 neb.sect_start("middle")
 neb.sect_chan(hnd_piano, quiet,         piano_chorus, piano_chorus, piano_chorus ) -- 12ch
-neb.sect_chan(hnd_drums, drums_chorus,  drums_chorus, drums_chorus, drums_chorus ) -- 16ch
+neb.sect_chan(hnd_drums, drums_chorus,  drums_chorus, drums_chorus, drums_chorus ) -- 20ch
 
 neb.sect_start("ending")
 neb.sect_chan(hnd_piano, piano_verse,   piano_verse,  piano_verse,  quiet        ) -- 6ch
-neb.sect_chan(hnd_drums, drums_verse,   drums_verse,  drums_verse,  drums_chorus ) -- 13ch
+neb.sect_chan(hnd_drums, drums_verse,   drums_verse,  drums_verse,  drums_chorus ) -- 14ch
 
 -- total 62ch
 

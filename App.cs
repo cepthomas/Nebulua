@@ -519,8 +519,16 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_Log(object? sender, LogArgs e)
         {
-            _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
-            e.Ret = 0;
+            if (e.LogLevel >= (int)LogLevel.Trace && e.LogLevel <= (int)LogLevel.Error) 
+            {
+                _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
+                e.Ret = 0;
+            }
+            else
+            {
+                _cli.Write($"Invalid log level: {e.LogLevel}");
+                e.Ret = 1;
+            }
         }
 
         /// <summary>
