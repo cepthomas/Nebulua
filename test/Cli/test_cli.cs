@@ -110,21 +110,21 @@ namespace Nebulua.Test
             UT_EQUAL(cliOut.Capture[0], "invalid tempo: 39");
 
             cliOut.Clear();
-            cliIn.NextLine = "monitor rcv";
+            cliIn.NextLine = "monitor r";
             bret = cli.Read();
             UT_TRUE(bret);
             UT_EQUAL(cliOut.Capture.Count, 1);
             UT_EQUAL(cliOut.Capture[0], cli.Prompt);
 
             cliOut.Clear();
-            cliIn.NextLine = "monitor snd";
+            cliIn.NextLine = "monitor s";
             bret = cli.Read();
             UT_TRUE(bret);
             UT_EQUAL(cliOut.Capture.Count, 1);
             UT_EQUAL(cliOut.Capture[0], cli.Prompt);
 
             cliOut.Clear();
-            cliIn.NextLine = "monitor off";
+            cliIn.NextLine = "monitor o";
             bret = cli.Read();
             UT_TRUE(bret);
             UT_EQUAL(cliOut.Capture.Count, 1);

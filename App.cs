@@ -486,6 +486,7 @@ namespace Nebulua
 
                 if (e.IsNote)
                 {
+                    // Check velocity for note off.
                     var evt = e.Value == 0 ?
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value);

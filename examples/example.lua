@@ -21,7 +21,7 @@ neb.log_info("=============== go go go =======================")
 
 ------------------------- Configuration -------------------------------
 
--- Specify midi devices. "VirtualMIDISynth #1"  "loopMIDI Port"  "Microsoft GS Wavetable Synth"
+-- Specify midi devices.
 local midi_in = "loopMIDI Port"
 local midi_out = "Microsoft GS Wavetable Synth"
 
@@ -155,6 +155,8 @@ end
 --     { "|        |        |        |        |        |        |        |        |", "??" },
 --     { "|        |        |        |        |        |        |        |        |", "??" },
 -- },
+
+local quiet = { {"|        |        |        |        |        |        |        |        |", 0 } }
 
 local example_seq =
 {

@@ -66,7 +66,6 @@ for i = 1, #arg do
             pn.start_suite(k.." in "..scrfn)
 
             -- Optional setup().
-            dbg()
             local ok, result = xpcall(mut.setup, debug.traceback, pn)
 
             -- Run the suite.

@@ -13,7 +13,7 @@ neb.log_info("=============== Is this thing on? ===============")
 
 ------------------------- Config ----------------------------------------
 
--- Device names
+-- Specify midi devices.
 local dev_out1 = "Microsoft GS Wavetable Synth"
 local dev_out2 = "loopMIDI Port"
 local dev_in1 = "loopMIDI Port"
@@ -21,7 +21,7 @@ local dev_in1 = "loopMIDI Port"
 -- Channels
 local hnd_piano = neb.create_output_channel(dev_out1, 1, 2)
 local hnd_synth = neb.create_output_channel(dev_out1, 2, 90)
-local hnd_drums = neb.create_output_channel(dev_out2, 10, 16)
+local hnd_drums = neb.create_output_channel(dev_out1, 10, 8)
 local hnd_input = neb.create_input_channel(dev_in1, 3)
 
 
@@ -139,18 +139,18 @@ local piano_chorus =
 local drums_verse =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|8       |        |8       |        |8       |        |8       |        |", 51 },
-    { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 11 },
-    { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 38 }
+    { "|8       |        |8       |        |8       |        |8       |        |", 35 },
+    { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", 38 },
+    { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", 42 }
 }
 
 local drums_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|6       |        |6       |        |6       |        |6       |        |", 38 },
-    { "|        |7 7     |        |7 7     |        |7 7     |        |        |", 60 },
-    { "|        |    4   |        |        |        |    4   |        |        |", 35 },
-    { "|        |        |        |        |        |        |        |8       |", 49 },
+    { "|6       |        |6       |        |6       |        |6       |        |", 35 },
+    { "|        |7 7     |        |7 7     |        |7 7     |        |        |", 38 },
+    { "|        |    4   |        |        |        |    4   |        |        |", 46 },
+    { "|        |        |        |        |        |        |        |8       |", 52 },
     { "|    8   |        |    8   |        |    8   |        |    8   |        |", 56 },
 }
 
@@ -158,38 +158,18 @@ local drums_chorus =
 
 -- Sections --
 
--- Identify space. Can't use nil!
+-- Empty space.
 local quiet = { {"|        |        |        |        |        |        |        |        |", 0 } }
 
 
--- TODO1 is this better?
--- Section("beginning",
---     { hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  }, -- 6ch
---     { hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  }, -- 9ch
--- }
-
-
 neb.sect_start("beginning")
-neb.sect_chan(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  ) -- 6ch  256t
-neb.sect_chan(hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  ) -- 9ch
+neb.sect_chan(hnd_piano, piano_verse,  quiet,         piano_verse,  piano_verse  )
+neb.sect_chan(hnd_drums, drums_verse,  drums_verse,   quiet,        drums_verse  )
 
 neb.sect_start("middle")
-neb.sect_chan(hnd_piano, quiet,         piano_chorus, piano_chorus, piano_chorus ) -- 12ch
-neb.sect_chan(hnd_drums, drums_chorus,  drums_chorus, drums_chorus, drums_chorus ) -- 20ch
+neb.sect_chan(hnd_piano, quiet,         piano_chorus, piano_chorus, piano_chorus )
+neb.sect_chan(hnd_drums, drums_chorus,  drums_chorus, drums_chorus, drums_chorus )
 
 neb.sect_start("ending")
-neb.sect_chan(hnd_piano, piano_verse,   piano_verse,  piano_verse,  quiet        ) -- 6ch
-neb.sect_chan(hnd_drums, drums_verse,   drums_verse,  drums_verse,  drums_chorus ) -- 14ch
-
--- total 62ch
-
---[[
-Each seq is 64t.
-total is 12seq => 768t
-
-drums_verse is 18evt X 5 => 90evt
-piano_chorus is 4evt X 3 => 12evt
-piano_verse is 5evt X 5 => 25evt
-total is 127evt
-
-]]
+neb.sect_chan(hnd_piano, piano_verse,   piano_verse,  piano_verse,  quiet        )
+neb.sect_chan(hnd_drums, drums_verse,   drums_verse,  drums_verse,  drums_chorus )

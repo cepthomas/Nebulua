@@ -10,13 +10,13 @@ local mid = require("midi_defs")
 local mus = require("music_defs")
 local com = require('neb_common')
 
--- TODO2 stress test and bulletproof this.
+-- TODO stress test and bulletproof this.
 
 local M = {}
 
 
 -----------------------------------------------------------------------------
------ Global vars for access by app TODO1 better way to handle these. Part of M?
+----- Global vars for access by app TODO better way to handle these. Part of M? use _mole()?
 -----------------------------------------------------------------------------
 
 -- Total length of composition.
@@ -53,7 +53,7 @@ local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
 -- Key is chan_hnd, value is double volume.
 local _master_vols = {}
 
--- Debug stuff TODO2 remove - or pass a debug/test flag?
+-- Debug stuff TODO remove - or pass a debug/test flag?
 function _mole() return _steps, _transients end
 
 
@@ -130,25 +130,31 @@ function M.set_volume(chan_hnd, volume)
     return 0
 end
 
------------------------------------------------------------------------------
+---------------------------------------------------------   --------------------
 --- Process notes due now.
 -- @param tick Current tick
 -- @return status
 function M.process_step(tick)
     _current_tick = tick
 
+
+-- Note off and Note On Velocity 0 are usually interchangeable. You will want to re-code the arduino code
+-- to ignore Note On messages with velocity 0.
+
+
     -- Composition steps.
     local steps_now = _steps[tick] -- now
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
-                if step.volume > 0 then -- noteon - chase
-                    dur = step.duration
-                    if dur == 0 then dur = 1 end -- (for drum/hit)
-                    -- chase with noteoff
-                    noteoff = StepNote(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
-                    ut.table_add(_transients, noteoff.tick, noteoff)
-                end
+               if step.volume > 0 then -- noteon - add note off chase
+                   dur = step.duration
+                   if dur == 0 then dur = 1 end -- (for drum/hit)
+                   -- chase with noteoff
+                   noteoff = StepNote(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
+                   ut.table_add(_transients, noteoff.tick, noteoff)
+               end
+
                 -- now send
                 api.send_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == "controller" then
@@ -179,14 +185,15 @@ end
 function M.send_note(chan_hnd, note_num, volume, dur)
     M.log_debug("send", chan_hnd, note_num, volume, dur)
     if volume > 0 then -- noteon
-        if dur == 0 then dur = 1 end -- (for drum/hit)
         -- adjust volume
         volume = volume * _master_vols[chan_hnd]
         -- send note_on now
         api.send_note(chan_hnd, note_num, volume)
-        -- chase with noteoff
-        noteoff = StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0)
-        ut.table_add(_transients, noteoff.tick, noteoff)
+        if dur > 0 then
+            -- chase with noteoff
+            noteoff = StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0)
+            ut.table_add(_transients, noteoff.tick, noteoff)
+        end
     else -- send note_off now
        api.send_note(chan_hnd, note_num, 0)
    end
@@ -309,7 +316,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     ---------- Local function to package an event. ------ ------
     function make_note_event(offset, notes_to_play)
         -- scale volume
-        local vol = _vol_map[current_vol]
+        local vol = _vol_map[current_vol + 1] -- to lua index
         -- calc duration from start of note
         local dur = offset - event_offset
         -- must be valid duration, covers drum hits too

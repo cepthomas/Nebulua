@@ -41,7 +41,7 @@ function M.suite_parse_chunk(pn)
     pn.UT_EQUAL(step.tick, 1024)
     pn.UT_EQUAL(step.chan_hnd, 0x030E)
     pn.UT_EQUAL(step.note_num, 89)
---TODO1 fix/test volumes    pn.UT_EQUAL(step.volume, 0.4)
+    pn.UT_CLOSE(step.volume, 0.20, 0.001)
     pn.UT_EQUAL(step.duration, 1)
 
 

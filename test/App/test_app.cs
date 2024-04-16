@@ -5,17 +5,17 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-// void _MidiInHandler(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
-// void _MidiClockHandler(double msec);
-// int exec_Main(const char* script_fn);
-
-// const char* _my_midi_in1  = "loopMIDI Port";
-// const char* _my_midi_out1 = "Microsoft GS Wavetable Synth";
+// out devices:
+// "VirtualMIDISynth #1"
+// "Microsoft GS Wavetable Synth"
+// "loopMIDI Port"
+// in devices:
+// "loopMIDI Port"
 
 
 namespace Nebulua.Test
 {
-    /// <summary>Test application functions. TODO1 Doesn't do anything yet. May be more complicated than it's worth.
+    /// <summary>Test application functions. TODO Doesn't do anything yet. May be more complicated than it's worth.
     /// </summary>
     public class APP_ONE : TestSuite
     {

@@ -63,15 +63,16 @@ namespace Nebulua
 
             _commands =
             [
-                new("help",     '?',    "available commands",                       "",                         UsageCmd),
-                new("info",     'i',    "system information",                       "",                         InfoCmd),
-                new("exit",     'x',    "exit the application",                     "",                         ExitCmd),
-                new("run",      'r',    "toggle running the script",                "",                         RunCmd),
-                new("tempo",    't',    "get or set the tempo",                     "(bpm): 40-240",            TempoCmd),
-                new("monitor",  'm',    "toggle monitor midi traffic",              "(rcv|snd|off): action",    MonCmd),
-                new("kill",     'k',    "stop all midi",                            "",                         KillCmd),
-                new("position", 'p',    "set position to where or tell current",    "(where): bar:beat:sub",    PositionCmd),
-                new("reload",   'l',    "re/load current script",                   "",                         ReloadCmd)
+                new("help",     '?',    "available commands",               "",                         UsageCmd),
+                new("info",     'i',    "system information",               "",                         InfoCmd),
+                new("exit",     'q',    "exit the application",             "",                         ExitCmd),
+                new("run",      'r',    "toggle running the script",        "",                         RunCmd),
+                new("position", 'p',    "set position or tell current",     "(bt)",                     PositionCmd),
+                new("loop",     'l',    "set loop or tell current",         "(start-bt end-bt)|(r)",    LoopCmd),
+                new("tempo",    't',    "get or set the tempo",             "(40-240)",                 TempoCmd),
+                new("monitor",  'm',    "toggle monitor midi traffic",      "(r|s|o): rcv|snd|off",     MonCmd),
+                new("kill",     'k',    "stop all midi",                    "",                         KillCmd),
+                new("reload",   's',    "reload current script",            "",                         ReloadCmd)
             ];
 
             // Show info now.
@@ -301,6 +302,44 @@ namespace Nebulua
                     ret = false;
                     break;
             }
+
+            return ret;
+        }
+
+        //--------------------------------------------------------//
+        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODO1 loops
+        {
+            bool ret = true;
+
+            // switch (args.Count)
+            // {
+            //     case 1: // get
+            //         Write(MusicTime.Format(State.Instance.CurrentTick));
+            //         break;
+
+            //     case 2: // set
+            //         int position = MusicTime.Parse(args[1]);
+            //         if (position < 0)
+            //         {
+            //             Write($"invalid position: {args[1]}");
+            //             ret = false;
+            //         }
+            //         else
+            //         {
+            //             // Limit range maybe.
+            //             int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+            //             int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+            //             State.Instance.CurrentTick = MathUtils.Constrain(position, start, end);
+
+            //             Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
+            //         }
+            //         break;
+
+            //     default:
+            //         Write("");
+            //         ret = false;
+            //         break;
+            // }
 
             return ret;
         }
