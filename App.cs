@@ -180,6 +180,7 @@ namespace Nebulua
                 _apis.Add(api.Id, api);
 
                 // Load the script.
+                _logger.Info($"Loading script file {_scriptFn}");
                 stat = api.OpenScript(_scriptFn);
                 if (stat != NebStatus.Ok)
                 {
@@ -338,7 +339,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Midi input arrived. This is in an interrupt handler so can't throw exceptions.
+        /// Midi input arrived. This is in an interrupt handler so don't throw exceptions.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -350,37 +351,32 @@ namespace Nebulua
             {
                 int index = _inputs.IndexOf((MidiInput)sender!);
                 int chan_hnd = ChannelHandle.MakeInHandle(index, e.Channel);
+                bool logit = true;
 
                 foreach (var api in _apis.Values)
                 {
                     switch (e)
                     {
                         case NoteOnEvent evt:
-                            stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
-                            if (State.Instance.MonRcv)
-                            {
-                                _logger.Trace($"MIDRCV {evt}");
-                            }
+                            stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
                             break;
 
                         case NoteEvent evt:
                             stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
-                            if (State.Instance.MonRcv)
-                            {
-                                _logger.Trace($"MIDRCV {evt}");
-                            }
                             break;
 
                         case ControlChangeEvent evt:
                             stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                            if (State.Instance.MonRcv)
-                            {
-                                _logger.Trace($"MIDRCV {evt}");
-                            }
                             break;
 
                         default: // Ignore others for now.
+                            logit = false;
                             break;
+                    }
+
+                    if (logit && State.Instance.MonRcv)
+                    {
+                        _logger.Trace($"RCV {MidiDefs.FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
                     }
 
                     if (stat != NebStatus.Ok)
@@ -412,7 +408,7 @@ namespace Nebulua
             try
             {
                 // Check args.
-                if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > Defs.NUM_MIDI_CHANNELS)
+                if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > MidiDefs.NUM_MIDI_CHANNELS)
                 {
                     throw new ScriptSyntaxException($"Script has invalid input midi device: {e.DevName}");
                 }
@@ -426,7 +422,6 @@ namespace Nebulua
                         _outputs.Add(output);
                     }
 
-                    //output.LogEnable = State.Instance.MonSend;
                     output.Channels[e.ChanNum - 1] = true;
                     e.Ret = ChannelHandle.MakeOutHandle(_outputs.Count - 1, e.ChanNum);
 
@@ -444,7 +439,6 @@ namespace Nebulua
                         _inputs.Add(input);
                     }
 
-                    //input.LogEnable = State.Instance.MonRcv;
                     input.Channels[e.ChanNum - 1] = true;
                     e.Ret = ChannelHandle.MakeInHandle(_inputs.Count - 1, e.ChanNum);
                 }
@@ -472,38 +466,36 @@ namespace Nebulua
             {
                 // Check args.
                 var (index, chan_num) = ChannelHandle.DeconstructHandle(e.ChanHnd);
-                if (index >= _outputs.Count || chan_num < 1 || chan_num > Defs.NUM_MIDI_CHANNELS ||
+                if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS ||
                     !_outputs[index].Channels[chan_num - 1])
                 {
                     throw new ScriptSyntaxException($"Script has invalid channel: {e.ChanHnd}");
                 }
-                if (e.What < 0 || e.What >= Defs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= Defs.MIDI_VAL_MAX)
+                if (e.What < 0 || e.What >= MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= MidiDefs.MIDI_VAL_MAX)
                 {
                     throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
                 }
 
                 var output = _outputs[index];
+                MidiEvent evt;
 
                 if (e.IsNote)
                 {
                     // Check velocity for note off.
-                    var evt = e.Value == 0 ?
+                    evt = e.Value == 0 ?
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
                         new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value);
-                    output.Send(evt);
-                    if (State.Instance.MonSnd)
-                    {
-                        _logger.Trace($"MIDSND {evt}");
-                    }
                 }
                 else
                 {
-                    var evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
-                    output.Send(evt);
-                    if (State.Instance.MonSnd)
-                    {
-                        _logger.Trace($"MIDSND {evt}");
-                    }
+                    evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
+                }
+
+                output.Send(evt);
+
+                if (State.Instance.MonSnd)
+                {
+                    _logger.Trace($"SND {MidiDefs.FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.ChanHnd)}");
                 }
             }
             catch (Exception ex)
@@ -522,7 +514,7 @@ namespace Nebulua
         {
             if (e.LogLevel >= (int)LogLevel.Trace && e.LogLevel <= (int)LogLevel.Error) 
             {
-                _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
+                _logger.Log((LogLevel)e.LogLevel, $"SCR {e.Msg}");
                 e.Ret = 0;
             }
             else
@@ -590,7 +582,7 @@ namespace Nebulua
         {
             foreach (var o in _outputs)
             {
-                for (int i = 0; i < Defs.NUM_MIDI_CHANNELS; i++)
+                for (int i = 0; i < MidiDefs.NUM_MIDI_CHANNELS; i++)
                 {
                     ControlChangeEvent cevt = new(0, i + 1, MidiController.AllNotesOff, 0);
                     o.Send(cevt);

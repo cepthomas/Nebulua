@@ -17,15 +17,6 @@ namespace Nebulua
 
         /// Arbitrary setting.
         public const int MAX_SECTIONS = 32;
-
-        // Midi caps.
-        public const int MIDI_VAL_MIN = 0;
-
-        // Midi caps.
-        public const int MIDI_VAL_MAX = 127;
-
-        // Midi per device.
-        public const int NUM_MIDI_CHANNELS = 16;
     }
     #endregion
 

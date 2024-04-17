@@ -8,7 +8,7 @@ local mus = require("music_defs")
 local bt  = require("bar_time")
 
 
-neb.log_info("=============== Is this thing on? ===============")
+neb.log_info("======== It's a beautiful script ==========")
 
 
 ------------------------- Config ----------------------------------------

@@ -65,9 +65,10 @@ function _mole() return _steps, _transients end
 
 -- Log functions. Magic numbers from host code.
 function M.log_error(msg) api.log(4, msg) end
-function M.log_info(msg)  api.log(3, msg) end
-function M.log_debug(msg) api.log(2, msg) end
-function M.log_trace(msg) api.log(1, msg) end
+function M.log_warn(msg)  api.log(3, msg) end
+function M.log_info(msg)  api.log(2, msg) end
+function M.log_debug(msg) api.log(1, msg) end
+function M.log_trace(msg) api.log(0, msg) end
 
 
 -----------------------------------------------------------------------------
