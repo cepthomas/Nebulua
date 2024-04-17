@@ -1,5 +1,5 @@
 
--- An example Nebulua composition file. Warning: this is not actual music.
+-- An example Nebulua composition file. 
 
 
 -- Import modules we need.
@@ -16,7 +16,7 @@ local kit  = mid.drum_kits
 local ctrl = mid.controllers
 
 -- Log something to the application log.
-neb.log_info("=============== go go go =======================")
+neb.log_info("======== Warning: this is not actual music =========")
 
 
 ------------------------- Configuration -------------------------------

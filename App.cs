@@ -180,11 +180,13 @@ namespace Nebulua
                 _apis.Add(api.Id, api);
 
                 // Load the script.
-                _logger.Info($"Loading script file {_scriptFn}");
+                var s = $"Loading script file {_scriptFn}";
+                _logger.Info(s);
+                _cli.Write(s);
                 stat = api.OpenScript(_scriptFn);
                 if (stat != NebStatus.Ok)
                 {
-                    throw new ApiException("Api OpenScript() failed", api.Error);
+                    throw new ApiException("OpenScript() failed", api.Error);
                 }
 
                 var sectionPositions = api.SectionInfo.Keys.OrderBy(k => k).ToList();
@@ -214,7 +216,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                FatalError(ex, "App Run() failed");
+                FatalError(ex, "Run() failed");
             }
 
             return stat;
@@ -274,7 +276,7 @@ namespace Nebulua
                         if (stat != NebStatus.Ok)
                         {
                             //Fatal Error(stat, "Api Step() failed", api.Error);
-                            throw new ApiException("Api Step() failed", api.Error);
+                            throw new ApiException("Step() failed", api.Error);
                         }
                     }
 
@@ -309,7 +311,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                FatalError(ex, "Api Step() failed");
+                FatalError(ex, "Step() failed");
             }
         }
 
@@ -501,7 +503,7 @@ namespace Nebulua
             catch (Exception ex)
             {
                 e.Ret = 0;
-                FatalError(ex, "Send() failed");
+                FatalError(ex, "Midi Send() failed");
             }
         }
 

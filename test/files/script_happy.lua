@@ -16,7 +16,7 @@ neb.log_info("======== It's a beautiful script ==========")
 -- Specify midi devices.
 local dev_out1 = "Microsoft GS Wavetable Synth"
 local dev_out2 = "loopMIDI Port"
-local dev_in1 = "loopMIDI Port"
+local dev_in1  = "loopMIDI Port"
 
 -- Channels
 local hnd_piano = neb.create_output_channel(dev_out1, 1, 2)
@@ -36,7 +36,6 @@ local chord_notes = mus.get_notes_from_string("C4.o7")
 -----------------------------------------------------------------------------
 -- Init stuff. Required function.
 function setup()
-
     neb.process_comp(sections) -- required if using composition
 
     -- Set master volumes.

@@ -204,7 +204,7 @@ namespace Nebulua
         #endregion
 
 
-        #region All the names TODO1 ? generate from lua file at runtime.
+        #region All the names TODO1 ? generate from midi_defs.lua at runtime.
         /// <summary>The GM midi instrument definitions.</summary>
         static readonly List<string> _instruments = new()
         {
@@ -275,15 +275,15 @@ namespace Nebulua
         //     return ret;
         // }
 
-        // /// <summary>
-        // /// Get drum name.
-        // /// </summary>
-        // /// <param name="which"></param>
-        // /// <returns>The drum name or a fabricated one if unknown.</returns>
-        // public static string GetDrumName(int which)
-        // {
-        //     return _drums.ContainsKey(which) ? _drums[which] : $"DRUM_{which}";
-        // }
+        /// <summary>
+        /// Get drum name.
+        /// </summary>
+        /// <param name="which"></param>
+        /// <returns>The drum name or a fabricated one if unknown.</returns>
+        public static string GetDrumName(int which)
+        {
+            return _drums.ContainsKey(which) ? _drums[which] : $"DRUM_{which}";
+        }
 
         /// <summary>
         /// Get controller name.
@@ -295,31 +295,31 @@ namespace Nebulua
            return _controllers.ContainsKey(which) ? _controllers[which] : $"CTLR_{which}";
         }
 
-
+        /// <summary>
+        /// Get note or drum name.
+        /// </summary>
+        /// <param name="channel">To determine note or drum name.</param>
+        /// <param name="noteNumber">Midi note.</param>
+        /// <returns>Suitable string.</returns>
         public static string GetNoteName(int channel, int noteNumber)
         {
-            string s;
-
-            switch (channel)
-            {
-                case 16:
-                case 10:
-                    s = GetDrumName(noteNumber);
-                    break;
-
-                default:
-                    s = {MusicDefinitions.NoteNumberToName(noteNumber)});
-                    break;
-            }
-
-            return s;
+            return channel == 10 || channel == 16 ?
+                GetDrumName(noteNumber) :
+                MusicDefinitions.NoteNumberToName(noteNumber);
         }
 
+        /// <summary>
+        /// Create string suitable for logging.
+        /// </summary>
+        /// <param name="evt">Midi event to format.</param>
+        /// <param name="tick">Current tick.</param>
+        /// <param name="chan_hnd">Channel info.</param>
+        /// <returns>Suitable string.</returns>
         public static string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
         {
             // Common part.
             (int index, int chan_num) = ChannelHandle.DeconstructHandle(chan_hnd);
-            string s = $"{tick:00000} {MusicTime.Format(tick)} {e.CommandCode} Dev:{index} Ch:{chan_num} ";
+            string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{index} Ch:{chan_num} ";
 
             switch (evt)
             {
@@ -328,7 +328,7 @@ namespace Nebulua
                     break;
 
                 case ControlChangeEvent e:
-                    s = $"{s} Controller:{(int)e.Controller}({GetControllerName(e.Controller)}) Val:{e.Value}";
+                    s = $"{s} Controller:{(int)e.Controller}({GetControllerName((int)e.Controller)}) Val:{e.ControllerValue}";
                     break;
 
                 default: // Ignore others for now.
