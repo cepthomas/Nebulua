@@ -68,7 +68,7 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, volume)
-    local s = string.format("rcv_note: %d %d %f", chan_hnd, note_num, volume)
+    local s = string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
     neb.log_info(s)
 
     if chan_hnd == hnd_input then
@@ -80,7 +80,7 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input controller events. Optional.
 function rcv_controller(chan_hnd, controller, value)
-    local s = string.format("rcv_controller: %d %d %d", chan_hnd, controller, value)
+    local s = string.format("Script rcv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
     neb.log_info(s)
     return 0
 end
@@ -122,7 +122,7 @@ end
 local piano_verse =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    { "|7-------|--      |        |        |7-------|-       |        |        |", "G4.m7" },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
 }
 
