@@ -32,7 +32,7 @@ function M.suite_1(pn)
 
 
     dumpfn = 'C:\\Dev\\repos\\Lua\\Nebulua\\_dump.txt', 'w+'
-    neb.dump_steps(dumpfn) -- diagnostic  INDEX-CHANNEL
+    neb.dump_steps(dumpfn) -- diagnostic
 
 
     pn.UT_EQUAL(_length, 768)

@@ -204,33 +204,44 @@ namespace Nebulua
         #endregion
 
 
-        #region All the names TODO1 ? generate from midi_defs.lua at runtime.
-        /// <summary>The GM midi instrument definitions.</summary>
-        static readonly List<string> _instruments = new()
-        {
-            "AcousticGrandPiano", "BrightAcousticPiano", "ElectricGrandPiano", "HonkyTonkPiano", "ElectricPiano1", "ElectricPiano2", "Harpsichord",
-            "Clavinet", "Celesta", "Glockenspiel", "MusicBox", "Vibraphone", "Marimba", "Xylophone", "TubularBells", "Dulcimer", "DrawbarOrgan",
-            "PercussiveOrgan", "RockOrgan", "ChurchOrgan", "ReedOrgan", "Accordion", "Harmonica", "TangoAccordion", "AcousticGuitarNylon",
-            "AcousticGuitarSteel", "ElectricGuitarJazz", "ElectricGuitarClean", "ElectricGuitarMuted", "OverdrivenGuitar", "DistortionGuitar",
-            "GuitarHarmonics", "AcousticBass", "ElectricBassFinger", "ElectricBassPick", "FretlessBass", "SlapBass1", "SlapBass2", "SynthBass1",
-            "SynthBass2", "Violin", "Viola", "Cello", "Contrabass", "TremoloStrings", "PizzicatoStrings", "OrchestralHarp", "Timpani",
-            "StringEnsemble1", "StringEnsemble2", "SynthStrings1", "SynthStrings2", "ChoirAahs", "VoiceOohs", "SynthVoice", "OrchestraHit",
-            "Trumpet", "Trombone", "Tuba", "MutedTrumpet", "FrenchHorn", "BrassSection", "SynthBrass1", "SynthBrass2", "SopranoSax", "AltoSax",
-            "TenorSax", "BaritoneSax", "Oboe", "EnglishHorn", "Bassoon", "Clarinet", "Piccolo", "Flute", "Recorder", "PanFlute", "BlownBottle",
-            "Shakuhachi", "Whistle", "Ocarina", "Lead1Square", "Lead2Sawtooth", "Lead3Calliope", "Lead4Chiff", "Lead5Charang", "Lead6Voice",
-            "Lead7Fifths", "Lead8BassAndLead", "Pad1NewAge", "Pad2Warm", "Pad3Polysynth", "Pad4Choir", "Pad5Bowed", "Pad6Metallic", "Pad7Halo",
-            "Pad8Sweep", "Fx1Rain", "Fx2Soundtrack", "Fx3Crystal", "Fx4Atmosphere", "Fx5Brightness", "Fx6Goblins", "Fx7Echoes", "Fx8SciFi",
-            "Sitar", "Banjo", "Shamisen", "Koto", "Kalimba", "BagPipe", "Fiddle", "Shanai", "TinkleBell", "Agogo", "SteelDrums", "Woodblock",
-            "TaikoDrum", "MelodicTom", "SynthDrum", "ReverseCymbal", "GuitarFretNoise", "BreathNoise", "Seashore", "BirdTweet", "TelephoneRing",
-            "Helicopter", "Applause", "Gunshot"
-        };
+        #region All the names TODO ? generate from midi_defs.lua at runtime.
+        // /// <summary>The GM midi instrument definitions.</summary>
+        // static readonly Dictionary<int, string> _instruments = new()
+        // {
+        //     { 000, "AcousticGrandPiano" }, { 001, "BrightAcousticPiano" }, { 002, "ElectricGrandPiano" }, { 003, "HonkyTonkPiano" },
+        //     { 004, "ElectricPiano1" }, { 005, "ElectricPiano2" }, { 006, "Harpsichord" }, { 007, "Clavinet" }, { 008, "Celesta" },
+        //     { 009, "Glockenspiel" }, { 010, "MusicBox" }, { 011, "Vibraphone" },  { 012, "Marimba" }, { 013, "Xylophone" },
+        //     { 014, "TubularBells" }, { 015, "Dulcimer" }, { 016, "DrawbarOrgan" }, { 017, "PercussiveOrgan" },  { 018, "RockOrgan" },
+        //     { 019, "ChurchOrgan" }, { 020, "ReedOrgan" }, { 021, "Accordion" }, { 022, "Harmonica" }, { 023, "TangoAccordion" },
+        //     { 024, "AcousticGuitarNylon" }, { 025, "AcousticGuitarSteel" }, { 026, "ElectricGuitarJazz" }, { 027, "ElectricGuitarClean" },
+        //     { 028, "ElectricGuitarMuted" }, { 029, "OverdrivenGuitar" },  { 030, "DistortionGuitar" }, { 031, "GuitarHarmonics" },
+        //     { 032, "AcousticBass" }, { 033, "ElectricBassFinger" }, { 034, "ElectricBassPick" }, { 035, "FretlessBass" },
+        //     { 036, "SlapBass1" }, { 037, "SlapBass2" }, { 038, "SynthBass1" }, { 039, "SynthBass2" }, { 040, "Violin" }, { 041, "Viola" },
+        //     { 042, "Cello" }, { 043, "Contrabass" }, { 044, "TremoloStrings" }, { 045, "PizzicatoStrings" }, { 046, "OrchestralHarp" },
+        //     { 047, "Timpani" }, { 048, "StringEnsemble1" }, { 049, "StringEnsemble2" }, { 050, "SynthStrings1" }, { 051, "SynthStrings2" },
+        //     { 052, "ChoirAahs" }, { 053, "VoiceOohs" }, { 054, "SynthVoice" }, { 055, "OrchestraHit" }, { 056, "Trumpet" },
+        //     { 057, "Trombone" }, { 058, "Tuba" }, { 059, "MutedTrumpet" }, { 060, "FrenchHorn" }, { 061, "BrassSection" },
+        //     { 062, "SynthBrass1" }, { 063, "SynthBrass2" }, { 064, "SopranoSax" }, { 065, "AltoSax" }, { 066, "TenorSax" },
+        //     { 067, "BaritoneSax" }, { 068, "Oboe" }, { 069, "EnglishHorn" }, { 070, "Bassoon" }, { 071, "Clarinet" }, { 072, "Piccolo" },
+        //     { 073, "Flute" }, { 074, "Recorder" }, { 075, "PanFlute" }, { 076, "BlownBottle" }, { 077, "Shakuhachi" }, { 078, "Whistle" },
+        //     { 079, "Ocarina" }, { 080, "Lead1Square" }, { 081, "Lead2Sawtooth" }, { 082, "Lead3Calliope" }, { 083, "Lead4Chiff" },
+        //     { 084, "Lead5Charang" }, { 085, "Lead6Voice" }, { 086, "Lead7Fifths" }, { 087, "Lead8BassAndLead" }, { 088, "Pad1NewAge" },
+        //     { 089, "Pad2Warm" }, { 090, "Pad3Polysynth" }, { 091, "Pad4Choir" }, { 092, "Pad5Bowed" }, { 093, "Pad6Metallic" },
+        //     { 094, "Pad7Halo" }, { 095, "Pad8Sweep" }, { 096, "Fx1Rain" }, { 097, "Fx2Soundtrack" }, { 098, "Fx3Crystal" },
+        //     { 099, "Fx4Atmosphere" }, { 100, "Fx5Brightness" }, { 101, "Fx6Goblins" }, { 102, "Fx7Echoes" }, { 103, "Fx8SciFi" },
+        //     { 104, "Sitar" }, { 105, "Banjo" },  { 106, "Shamisen" }, { 107, "Koto" }, { 108, "Kalimba" }, { 109, "BagPipe" },
+        //     { 110, "Fiddle" }, { 111, "Shanai" }, { 112, "TinkleBell" }, { 113, "Agogo" }, { 114, "SteelDrums" }, { 115, "Woodblock" },
+        //     { 116, "TaikoDrum" }, { 117, "MelodicTom" }, { 118, "SynthDrum" }, { 119, "ReverseCymbal" }, { 120, "GuitarFretNoise" },
+        //     { 121, "BreathNoise" }, { 122, "Seashore" }, { 123, "BirdTweet" }, { 124, "TelephoneRing" }, { 125, "Helicopter" },
+        //     { 126, "Applause" }, { 127, "Gunshot" }
+        // };
 
-        /// <summary>The GM midi drum kit definitions.</summary>
-        static readonly Dictionary<int, string> _drumKits = new()
-        {
-            { 0, "Standard" }, { 8, "Room" }, { 16, "Power" }, { 24, "Electronic" }, { 25, "TR808" },
-            { 32, "Jazz" }, { 40, "Brush" }, { 48, "Orchestra" }, { 56, "SFX" }
-        };
+        // /// <summary>The GM midi drum kit definitions.</summary>
+        // static readonly Dictionary<int, string> _drumKits = new()
+        // {
+        //     { 0, "Standard" }, { 8, "Room" }, { 16, "Power" }, { 24, "Electronic" }, { 25, "TR808" },
+        //     { 32, "Jazz" }, { 40, "Brush" }, { 48, "Orchestra" }, { 56, "SFX" }
+        // };
 
         /// <summary>The GM midi drum definitions.</summary>
         static readonly Dictionary<int, string> _drums = new()
@@ -275,38 +286,38 @@ namespace Nebulua
         //     return ret;
         // }
 
-        /// <summary>
-        /// Get drum name.
-        /// </summary>
-        /// <param name="which"></param>
-        /// <returns>The drum name or a fabricated one if unknown.</returns>
-        public static string GetDrumName(int which)
-        {
-            return _drums.ContainsKey(which) ? _drums[which] : $"DRUM_{which}";
-        }
+        // /// <summary>
+        // /// Get drum name.
+        // /// </summary>
+        // /// <param name="which"></param>
+        // /// <returns>The drum name or a fabricated one if unknown.</returns>
+        // public static string GetDrumName(int which)
+        // {
+        //     return _drums.ContainsKey(which) ? _drums[which] : $"DRUM_{which}";
+        // }
 
-        /// <summary>
-        /// Get controller name.
-        /// </summary>
-        /// <param name="which"></param>
-        /// <returns>The controller name or a fabricated one if unknown.</returns>
-        public static string GetControllerName(int which)
-        {
-           return _controllers.ContainsKey(which) ? _controllers[which] : $"CTLR_{which}";
-        }
+        // /// <summary>
+        // /// Get controller name.
+        // /// </summary>
+        // /// <param name="which"></param>
+        // /// <returns>The controller name or a fabricated one if unknown.</returns>
+        // public static string GetControllerName(int which)
+        // {
+        //    return _controllers.ContainsKey(which) ? _controllers[which] : $"CTLR_{which}";
+        // }
 
-        /// <summary>
-        /// Get note or drum name.
-        /// </summary>
-        /// <param name="channel">To determine note or drum name.</param>
-        /// <param name="noteNumber">Midi note.</param>
-        /// <returns>Suitable string.</returns>
-        public static string GetNoteName(int channel, int noteNumber)
-        {
-            return channel == 10 || channel == 16 ?
-                GetDrumName(noteNumber) :
-                MusicDefinitions.NoteNumberToName(noteNumber);
-        }
+        // /// <summary>
+        // /// Get note or drum name.
+        // /// </summary>
+        // /// <param name="channel">To determine note or drum name.</param>
+        // /// <param name="noteNumber">Midi note.</param>
+        // /// <returns>Suitable string.</returns>
+        // public static string GetNoteName(int channel, int noteNumber)
+        // {
+        //     return channel == 10 || channel == 16 ?
+        //         GetDrumName(noteNumber) :
+        //         MusicDefinitions.NoteNumberToName(noteNumber);
+        // }
 
         /// <summary>
         /// Create string suitable for logging.
@@ -324,11 +335,17 @@ namespace Nebulua
             switch (evt)
             {
                 case NoteEvent e:
-                    s = $"{s} Note:{e.NoteNumber}({GetNoteName(chan_num, e.NoteNumber)}) Vel:{e.Velocity}";
+                    var snote = chan_num == 10 || chan_num == 16 ?
+                        _drums.ContainsKey(e.NoteNumber) ? _drums[e.NoteNumber] : $"DRUM_{e.NoteNumber}"
+                        GetDrumName(e.NoteNumber) :
+                        MusicDefinitions.NoteNumberToName(e.NoteNumber);
+
+                    s = $"{s} Note:{e.NoteNumber}({snote}) Vel:{e.Velocity}";
                     break;
 
                 case ControlChangeEvent e:
-                    s = $"{s} Controller:{(int)e.Controller}({GetControllerName((int)e.Controller)}) Val:{e.ControllerValue}";
+                    var sctl = _controllers.ContainsKey(e.Controller) ? _controllers[e.Controller] : $"CTLR_{e.Controller}";
+                    s = $"{s} Controller:{(int)e.Controller}({sctl}) Val:{e.ControllerValue}";
                     break;
 
                 default: // Ignore others for now.

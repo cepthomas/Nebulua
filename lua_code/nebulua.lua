@@ -16,7 +16,7 @@ local M = {}
 
 
 -----------------------------------------------------------------------------
------ Global vars for access by app TODO better way to handle these. Part of M? use _mole()?
+----- Global vars for access by app TODO1 better way to handle these. Part of M? use _mole()?
 -----------------------------------------------------------------------------
 
 -- Total length of composition.
