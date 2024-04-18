@@ -140,22 +140,15 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
     // Get length and script info.
     if (nstat == NebStatus::Ok)
     {
-        int ltype = lua_getglobal(_l, "_length");
-        int length = (int)lua_tointeger(_l, -1);
-        lua_pop(_l, 1); // Clean up stack.
-
         // Get section info.
-        ltype = lua_getglobal(_l, "_section_names");
+        int ltype = lua_getglobal(_l, "_section_info");
         lua_pushnil(_l);
-        while (lua_next(_l, -2) != 0)// && lstat ==_lUA_OK)
+        while (lua_next(_l, -2) != 0) // && lstat ==_lUA_OK)
         {
             SectionInfo->Add((int)lua_tointeger(_l, -1), _ToCliString(lua_tostring(_l, -2)));
             lua_pop(_l, 1);
         }
         lua_pop(_l, 1); // Clean up stack.
-
-        // Tack on the overal length.
-        SectionInfo->Add(length, _ToCliString("_LENGTH"));
     }
     
     LeaveCriticalSection(&_critsect);

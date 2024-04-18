@@ -102,7 +102,8 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, velocity)
-    neb.log_info("rcv_note %d %d %d", chan_hnd, note_num, velocity)
+    local s = string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
+    neb.log_debug(s)
 
     if chan_hnd == hnd_inp1 then
         boing(note_num + 10)
@@ -118,7 +119,8 @@ end
 function rcv_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_inp1 then
         -- Do something.
-        neb.log_debug("rcv_controller") --, chan_hnd, ctlid, value)
+        local s = string.format("Script rcv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
+        neb.log_debug(s)
     end
     return 0
 end

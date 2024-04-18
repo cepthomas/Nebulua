@@ -6,18 +6,11 @@ local md = require('midi_defs')
 local com = require('neb_common')
 
 
-00000 07-0A NOTE 51 0.6 1
-00004 07-0A NOTE 11 0.6 1
-00264 07-0A NOTE 60 0.4 1
-00266 07-0A NOTE 60 0.4 1
-00268 07-0A NOTE 35 0.1 1
-00013 07-0A NOTE 38 0.6 1
-00015 07-0A NOTE 38 0.6 1
-00016 07-0A NOTE 51 0.6 1
-00020 07-0A NOTE 11 0.6 1
-
-
-
+-----------------------------------------------------------------------------
+local function _FormatChanHnd(chan_hnd)
+    local s = string.format("DEV:%02d CH:%02d", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    return s
+end
 
 -----------------------------------------------------------------------------
 function StepNote(tick, chan_hnd, note_num, volume, duration)
@@ -42,7 +35,7 @@ function StepNote(tick, chan_hnd, note_num, volume, duration)
     -- end
 
     d.format = function() return d.err or
-        string.format('%05d %s %s NOTE::%d VOL:%.1f DUR:%d',
+        string.format('%05d %s %s NOTE:%d VOL:%.1f DUR:%d',
             d.tick, tostring(BarTime(d.tick)), _FormatChanHnd(d.chan_hnd), d.note_num, d.volume, d.duration)
     end
      -- setmetatable(d, { __tostring = function(self) self.format() end })
@@ -102,17 +95,11 @@ function StepFunction(tick, chan_hnd, func, volume)
     -- end
 
     d.format = function() return d.err or
-        string.format('%05d %s %s FUNC:%d VOL:%.1f',
-            d.tick, tostring(BarTime(d.tick)), func, _FormatChanHnd(d.chan_hnd), d.volume)
+        string.format('%05d %s %s FUNC:? VOL:%.1f',
+            d.tick, tostring(BarTime(d.tick)), _FormatChanHnd(d.chan_hnd), d.volume)
     end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
     return d
 end
 
-
------------------------------------------------------------------------------
-local function _FormatChanHnd(chan_hnd)
-    local s = string.format("D:%02 C:%02", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
-    return s
-end

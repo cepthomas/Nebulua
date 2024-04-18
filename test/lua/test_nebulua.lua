@@ -10,7 +10,7 @@ local neb = require("nebulua") -- lua api
 local com = require('neb_common')
 
 
-ut.config_debug(false) -- TODO an easy way to toggle this? and/or insert/delete breakpoints from ST.
+ut.config_debug(false) -- TODO1 an easy way to toggle this? and/or insert/delete breakpoints from ST.
 
 
 -- Create the namespace/module.
@@ -90,13 +90,12 @@ function M.suite_process_script(pn)
     -- Process the data.
     neb.process_comp(sections)
 
-    dumpfn = 'C:\\Dev\\repos\\Lua\\Nebulua\\_dump.txt', 'w+'
-    neb.dump_steps(dumpfn) -- diagnostic  INDEX-CHANNEL
+    dumpfn = '.\\..\\_dump.txt', 'w+'
+    neb.dump_steps(dumpfn) -- diagnostic
 
-
-    pn.UT_EQUAL(_length, 768)
-    pn.UT_EQUAL(ut.table_count(_section_names), 3)
-    -- print(ut.dump_table_string(_section_names, false, '_section_names'))
+    pn.UT_EQUAL(ut.table_count(_section_info), 4)
+    pn.UT_EQUAL(_section_info['_LENGTH'], 768)
+    -- print(ut.dump_table_string(_section_info, false, '_section_info'))
 
     -- Look inside.
     local steps, transients = _mole()
@@ -104,7 +103,7 @@ function M.suite_process_script(pn)
     -- s = ut.dump_table_string(steps, true, "steps")
     -- print(s)
 
-    -- TODO validate Execute some script steps. Times and counts are based on script_happy.lua observed.
+    -- Execute some script steps.
     for i = 0, 200 do
         api.current_tick = i
         stat = neb.process_step(i)
@@ -142,7 +141,7 @@ function M.suite_step_types(pn)
 
     local n = StepNote(1234, 99, 101, 0.4, 10)
     pn.UT_NIL(n.err)
-    pn.UT_STR_EQUAL(n.format(), "01234 00-63 NOTE 101 0.4 10")
+    pn.UT_STR_EQUAL(n.format(), "01234 38:2:2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")
 
     n = StepNote(100001, 88, 111, 0.3, 22)
     pn.UT_NOT_NIL(n.err)
@@ -150,7 +149,7 @@ function M.suite_step_types(pn)
 
     local c = StepController(344, 37, 88, 55)
     pn.UT_NIL(c.err)
-    pn.UT_STR_EQUAL(c.format(), "00344 00-25 CTRL 88 55")
+    pn.UT_STR_EQUAL(c.format(), "00344 10:3:0 DEV:00 CH:37 CTRL:88 VAL:55")
 
     local c = StepController(455, 55, 260, 23)
     pn.UT_NOT_NIL(c.err)
@@ -160,9 +159,10 @@ function M.suite_step_types(pn)
 
     local f = StepFunction(508, 122, stub, 0.44)
     pn.UT_NIL(f.err)
-    pn.UT_STR_EQUAL(f.format(), "00508 00-7A FUNC 0.4")
+    pn.UT_STR_EQUAL(f.format(), "00508 15:3:4 DEV:00 CH:122 FUNC:? VOL:0.4")
 end
 
+
 -----------------------------------------------------------------------------
--- Return the module.
+-- Return the test module.
 return M

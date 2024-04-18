@@ -35,9 +35,9 @@ function M.suite_1(pn)
     neb.dump_steps(dumpfn) -- diagnostic
 
 
-    pn.UT_EQUAL(_length, 768)
-    pn.UT_EQUAL(ut.table_count(_section_names), 3)
-    print(ut.dump_table_string(_section_names, false, '_section_names'))
+    pn.UT_EQUAL(ut.table_count(_section_info), 4)
+    pn.UT_EQUAL(_section_info['_LENGTH'], 768)
+    print(ut.dump_table_string(_section_info, false, '_section_info'))
 
     -- Look inside.
     local steps, transients = _mole()

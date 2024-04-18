@@ -32,19 +32,16 @@
   <ItemGroup>
     <Compile Remove="interop\obj\**" />
     <Compile Remove="interop\x64\**" />
-    <Compile Remove="lbot\**" />
     <Compile Remove="lib\**" />
     <Compile Remove="test\**" />
     <Compile Remove="x64\**" />
     <EmbeddedResource Remove="interop\obj\**" />
     <EmbeddedResource Remove="interop\x64\**" />
-    <EmbeddedResource Remove="lbot\**" />
     <EmbeddedResource Remove="lib\**" />
     <EmbeddedResource Remove="test\**" />
     <EmbeddedResource Remove="x64\**" />
     <None Remove="interop\obj\**" />
     <None Remove="interop\x64\**" />
-    <None Remove="lbot\**" />
     <None Remove="lib\**" />
     <None Remove="test\**" />
     <None Remove="x64\**" />
@@ -91,21 +88,6 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="lbot\debugger.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="lbot\stringex.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="lbot\utils.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="lbot\validators.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>

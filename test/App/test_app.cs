@@ -5,17 +5,9 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-// out devices:
-// "VirtualMIDISynth #1"
-// "Microsoft GS Wavetable Synth"
-// "loopMIDI Port"
-// in devices:
-// "loopMIDI Port"
-
-
 namespace Nebulua.Test
 {
-    /// <summary>Test application functions. TODO Doesn't do anything yet. May be more complicated than it's worth.
+    /// <summary>Test application functions. Doesn't do anything yet. May be more complicated than it's worth.
     /// </summary>
     public class APP_ONE : TestSuite
     {
@@ -46,7 +38,7 @@ namespace Nebulua.Test
     }
 
     //// Insert some hooks to support testing.
-    //public partial class AppXXX
+    //public partial class App
     //{
     //    // Fake cli output.
     //    CliTextWriter _myCliOut = new();

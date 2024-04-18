@@ -19,11 +19,8 @@ local M = {}
 ----- Global vars for access by app TODO1 better way to handle these. Part of M? use _mole()?
 -----------------------------------------------------------------------------
 
--- Total length of composition.
-_length = 0
-
--- Key is section name, value is start tick.
-_section_names = {}
+-- Key is section name, value is start tick. Total length is the last element.
+_section_info = {}
 
 
 -----------------------------------------------------------------------------
@@ -53,7 +50,7 @@ local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
 -- Key is chan_hnd, value is double volume.
 local _master_vols = {}
 
--- Debug stuff TODO remove - or pass a debug/test flag?
+-- Debug stuff TODO1 remove - or pass a debug/test flag?
 function _mole() return _steps, _transients end
 
 
@@ -206,8 +203,11 @@ function M.process_comp()
     -- Hard reset.
     _steps = {}
     _transients = {}
-    _section_names = {}
-    _length = 0 -- cumulative total length
+    _section_info = {}
+    -- Total length of composition.
+    local length = 0
+
+    length = 0 -- cumulative total length
 
     for isect, section in ipairs(_sections) do
         -- Process the section. Requires a name.
@@ -216,16 +216,17 @@ function M.process_comp()
         end
 
         -- Do the work.
-        M.parse_section(section, _length)
+        M.parse_section(section, length)
 
         -- Save info about section.
-        _section_names[section.name] = section.start
+        _section_info[section.name] = section.start
 
         -- Keep track of overall time.
-        _length = _length + section.length
+        length = length + section.length
     end
 
-    -- All done.
+    -- All done. Tack on the total.
+    _section_info["_LENGTH"] = length
 end
 
 
