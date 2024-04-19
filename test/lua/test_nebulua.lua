@@ -98,7 +98,7 @@ function M.suite_process_script(pn)
     -- print(ut.dump_table_string(_section_info, false, '_section_info'))
 
     -- Look inside.
-    local steps, transients = _mole()
+    -- local steps, transients = _mole()
 
     -- s = ut.dump_table_string(steps, true, "steps")
     -- print(s)
@@ -112,17 +112,17 @@ function M.suite_process_script(pn)
 
         if i == 4 then
             pn.UT_EQUAL(#api.activity, 12)
-            pn.UT_EQUAL(ut.table_count(transients), 2)
+            -- pn.UT_EQUAL(ut.table_count(transients), 2)
         end
 
         if i == 40 then
             pn.UT_EQUAL(#api.activity, 47)
-            pn.UT_EQUAL(ut.table_count(transients), 1)
+            -- pn.UT_EQUAL(ut.table_count(transients), 1)
         end
     end
 
     pn.UT_EQUAL(#api.activity, 165)
-    pn.UT_EQUAL(ut.table_count(transients), 1)
+    -- pn.UT_EQUAL(ut.table_count(transients), 1)
 
     -- Examine collected data.
     --for _, d in ipairs(api.activity) do

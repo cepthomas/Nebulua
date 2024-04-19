@@ -16,7 +16,7 @@ local M = {}
 
 
 -----------------------------------------------------------------------------
------ Global vars for access by app TODO1 better way to handle these. Part of M? use _mole()?
+----- Global vars for access by app
 -----------------------------------------------------------------------------
 
 -- Key is section name, value is start tick. Total length is the last element.
@@ -51,7 +51,7 @@ local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
 local _master_vols = {}
 
 -- Debug stuff TODO1 remove - or pass a debug/test flag?
-function _mole() return _steps, _transients end
+-- function _mole() return _steps, _transients end
 
 
 -----------------------------------------------------------------------------

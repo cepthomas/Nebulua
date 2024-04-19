@@ -40,7 +40,7 @@ function M.suite_1(pn)
     print(ut.dump_table_string(_section_info, false, '_section_info'))
 
     -- Look inside.
-    local steps, transients = _mole()
+    -- local steps, transients = _mole()
 
     -- -- Execute some script steps. Times and counts are based on script_happy.lua observed.
     -- for i = 0, 200 do
