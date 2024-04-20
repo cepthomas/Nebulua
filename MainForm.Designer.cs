@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace Nebulua
+namespace Ephemera.Nebulua
 {
     partial class MainForm
     {
@@ -32,34 +32,36 @@ namespace Nebulua
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             chkPlay = new CheckBox();
             btnRewind = new Button();
-            sldVolume = new Ephemera.NBagOfUis.Slider();
-            sldTempo = new Ephemera.NBagOfUis.Slider();
-            terminal = new Ephemera.NBagOfUis.TextViewer();
+            sldVolume = new NBagOfUis.Slider();
+            sldTempo = new NBagOfUis.Slider();
+            traffic = new NBagOfUis.TextViewer();
             toolTip = new ToolTip(components);
+            barBar = new Test.BarBar();
             SuspendLayout();
             // 
             // chkPlay
             // 
             chkPlay.Appearance = Appearance.Button;
-            chkPlay.Image = Properties.Resources.glyphicons_174_play;
+            chkPlay.Image = (Image)resources.GetObject("chkPlay.Image");
             chkPlay.Location = new Point(189, 46);
             chkPlay.Name = "chkPlay";
             chkPlay.Size = new Size(43, 49);
             chkPlay.TabIndex = 0;
+            toolTip.SetToolTip(chkPlay, "Play project");
             chkPlay.UseVisualStyleBackColor = false;
-            this.toolTip.SetToolTip(this.chkPlay, "Play project");
             // 
             // btnRewind
             // 
-            btnRewind.Image = Properties.Resources.glyphicons_173_rewind;
+            btnRewind.Image = (Image)resources.GetObject("btnRewind.Image");
             btnRewind.Location = new Point(52, 44);
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(45, 49);
             btnRewind.TabIndex = 1;
+            toolTip.SetToolTip(btnRewind, "Reset to start");
             btnRewind.UseVisualStyleBackColor = false;
-            this.toolTip.SetToolTip(this.btnRewind, "Reset to start");
             // 
             // sldVolume
             // 
@@ -75,8 +77,8 @@ namespace Nebulua
             sldVolume.Resolution = 0.05D;
             sldVolume.Size = new Size(88, 52);
             sldVolume.TabIndex = 36;
+            toolTip.SetToolTip(sldVolume, "Master volume");
             sldVolume.Value = 1D;
-            this.toolTip.SetToolTip(this.sldVolume, "Master volume");
             // 
             // sldTempo
             // 
@@ -92,32 +94,46 @@ namespace Nebulua
             sldTempo.Resolution = 5D;
             sldTempo.Size = new Size(88, 52);
             sldTempo.TabIndex = 33;
+            toolTip.SetToolTip(sldTempo, "Speed in BPM");
             sldTempo.Value = 100D;
-            this.toolTip.SetToolTip(this.sldTempo, "Speed in BPM");
             // 
-            // terminal
+            // traffic
             // 
-            terminal.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            terminal.BorderStyle = BorderStyle.FixedSingle;
-            terminal.Location = new Point(69, 277);
-            terminal.Margin = new Padding(4, 5, 4, 5);
-            terminal.MaxText = 5000;
-            terminal.Name = "terminal";
-            terminal.Prompt = "";
-            terminal.Size = new Size(789, 217);
-            terminal.TabIndex = 41;
-            terminal.WordWrap = true;
+            traffic.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            traffic.BorderStyle = BorderStyle.FixedSingle;
+            traffic.Location = new Point(69, 277);
+            traffic.Margin = new Padding(4, 5, 4, 5);
+            traffic.MaxText = 5000;
+            traffic.Name = "traffic";
+            traffic.Prompt = "";
+            traffic.Size = new Size(789, 217);
+            traffic.TabIndex = 41;
+            traffic.WordWrap = true;
+            // 
+            // barBar
+            // 
+            barBar.BorderStyle = BorderStyle.FixedSingle;
+            barBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            barBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            barBar.Location = new Point(167, 158);
+            barBar.MarkerColor = Color.Black;
+            barBar.Name = "barBar";
+            barBar.ProgressColor = Color.White;
+            barBar.Size = new Size(731, 64);
+            barBar.Snap = Test.SnapType.Bar;
+            barBar.TabIndex = 42;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1041, 606);
+            Controls.Add(barBar);
             Controls.Add(btnRewind);
             Controls.Add(chkPlay);
             Controls.Add(sldVolume);
             Controls.Add(sldTempo);
-            Controls.Add(terminal);
+            Controls.Add(traffic);
             Name = "MainForm";
             Text = "Form1";
             ResumeLayout(false);
@@ -129,7 +145,8 @@ namespace Nebulua
         private Button btnRewind;
         private Ephemera.NBagOfUis.Slider sldVolume;
         private Ephemera.NBagOfUis.Slider sldTempo;
-        private Ephemera.NBagOfUis.TextViewer terminal;
+        private Ephemera.NBagOfUis.TextViewer traffic;
         private ToolTip toolTip;
+        private Test.BarBar barBar;
     }
 }

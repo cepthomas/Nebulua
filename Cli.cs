@@ -8,7 +8,7 @@ using Interop;
 using NAudio.Midi;
 
 
-namespace Nebulua
+namespace Ephemera.Nebulua
 {
     public class Cli
     {

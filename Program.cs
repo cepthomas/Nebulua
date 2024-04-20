@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Nebulua
+namespace Ephemera.Nebulua
 {
     internal static class Program
     {

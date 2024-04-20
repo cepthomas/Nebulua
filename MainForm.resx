@@ -117,7 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="chkPlay.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAASCAYAAABSO15qAAAABGdBTUEAALGPC/xhBQAAABl0RVh0U29m
+        dHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAACASURBVDhPpZRLDYAwEEQrAUlIQUIlIAkJSEACEnCw
+        zBxKymYJ7XSS18t2X9JvQjKYzCwpMBwvsIJuEcOxQFGOJn7B1ILCCZaowcP45ppfEeObIiiaRwSFHbxE
+        jJ/UwiNifLGHDYSFVmSBvAR5Ew8gHaN8keSrLD+moec88KFYugHfigV7yup6zAAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="btnRewind.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABcAAAASCAYAAACw50UTAAAABGdBTUEAALGPC/xhBQAAABl0RVh0U29m
+        dHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAADKSURBVDhPtZQNDQIxDIUnAQlIQAISkIAEJCABCUhA
+        ChKQcA7G67EtXfe4awP3ki+5rN812W/KObtAzgCfvK6pLi1qkB24z/JKc+tSqYLswbPJC82RwaWigBzB
+        1MSC9QSEuoNY5GsnKSKuFWXNHq1IiLi68QG8WuELEbc2lqMzrhkn4qabGfgnCxvyK2VZTsA7Vb8rzdUm
+        9ZeAEHFb8/LTNkdRg1w6SRFxO1GDbHP9K4hM3ftwDS4VLYjryRW0SwUGMt9MVrN83DS9AV5NsxckAkX7
+        AAAAAElFTkSuQmCC
+</value>
+  </data>
 </root>

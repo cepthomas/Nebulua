@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Interop;
 
 
-namespace Nebulua
+namespace Ephemera.Nebulua.Test
 {
     public class Cli
     {

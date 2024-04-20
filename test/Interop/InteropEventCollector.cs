@@ -7,7 +7,7 @@ using Ephemera.NBagOfTricks;
 using Interop;
 
 
-namespace Nebulua.Test
+namespace Ephemera.Nebulua.Test
 {
     /// <summary>Used to capture events from test target.</summary>
     public class InteropEventCollector

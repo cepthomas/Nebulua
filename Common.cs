@@ -1,7 +1,7 @@
 using System;
 using Ephemera.NBagOfTricks;
 
-namespace Nebulua
+namespace Ephemera.Nebulua
 {
     #region Definitions
     public class Defs
