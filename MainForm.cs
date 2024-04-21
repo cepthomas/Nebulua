@@ -16,21 +16,21 @@ namespace Ephemera.Nebulua
 
 
             //Location = new Point(_settings.FormGeometry.X, _settings.FormGeometry.Y);
-            ////Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
-            ///
+            //Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
 
-            barBar.BackColor = Color.AliceBlue;
-            barBar.ProgressColor = Color.Pink;
-            barBar.MarkerColor = Color.Black;
+            timeBar.BackColor = Color.AliceBlue;
+            timeBar.ProgressColor = Color.Pink;
+            timeBar.MarkerColor = Color.Black;
+
+            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
 
             Console.WriteLine("");
 
 
-            /////// Text control.
-            //txtInfo.MatchColors.Add("50", Color.Purple);
-            //txtInfo.MatchColors.Add("55", Color.Green);
-            //txtInfo.BackColor = Color.Cornsilk;
-            //txtInfo.Prompt = ">>> ";
+            traffic.MatchColors.Add(" SND ", Color.Purple);
+            traffic.MatchColors.Add(" RCV ", Color.Green);
+            traffic.BackColor = Color.Cornsilk;
+            traffic.Prompt = "->";
 
 
             /////// Slider.
@@ -61,37 +61,67 @@ namespace Ephemera.Nebulua
             //slider1.ValueChanged += (_, __) => meterLinear.AddValue(slider1.Value);
             //// sl2 2 -> 19
             //slider2.ValueChanged += (_, __) => meterDots.AddValue(slider2.Value);
-            ////
+
+
+
+            // These set vars only
+            // this.sldVolume.ValueChanged += new System.EventHandler(this.Volume_ValueChanged);
+            // btnMonIn.Click += Monitor_Click;
+            // btnMonOut.Click += Monitor_Click;
+            // 
+            // this.sldTempo.ValueChanged += new System.EventHandler(this.Speed_ValueChanged);
+            // > SetFastTimerPeriod();
+            // 
+            // ProcessPlay(PlayCommand cmd):
+            // this.btnRewind.Click += new System.EventHandler(this.Rewind_Click);  
+            // this.chkPlay.Click += new System.EventHandler(this.Play_Click);  ProcessPlay(PlayCommand cmd)
+            // void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
+            // 
+            // 
+            // 
+            // btnAbout.Click += About_Click;
+            // > MiscUtils.ShowReadme("Nebulator");
+            // this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
+            // > var docs = MidiDefs.FormatDoc();
+            // > docs.AddRange(MusicDefinitions.FormatDoc());
+            // > Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
+            // 
+            // btnKillComm.Click += (object? _, EventArgs __) => { KillAll(); };
+
 
         }
 
-        protected override void OnLoad(EventArgs e)
+        private void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            //propGrid.ResizeDescriptionArea(6); // This doesn't work in constructor.
-
-            base.OnLoad(e);
+//            throw new NotImplementedException();
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            //SaveSettings();
-            base.OnFormClosing(e);
-        }
+        //protected override void OnLoad(EventArgs e)
+        //{
 
-        void Tell(string msg)
-        {
-            //txtInfo.AppendLine(msg);
-        }
 
-        public void MakeIcon(string fn)
-        {
-            string outfn = fn + ".ico";
-            // Read bmp and convert to icon.
-            var bmp = (Bitmap)Image.FromFile(fn);
-            // Save icon.
-            var ico = GraphicsUtils.CreateIcon(bmp);//, 32);
-            GraphicsUtils.SaveIcon(ico, outfn);
-        }
-        
+        //    base.OnLoad(e);
+        //}
+
+        //protected override void OnFormClosing(FormClosingEventArgs e)
+        //{
+        //    //SaveSettings();
+        //    base.OnFormClosing(e);
+        //}
+
+        //void Tell(string msg)
+        //{
+        //    //txtInfo.AppendLine(msg);
+        //}
+
+        //public void MakeIcon(string fn)
+        //{
+        //    string outfn = fn + ".ico";
+        //    // Read bmp and convert to icon.
+        //    var bmp = (Bitmap)Image.FromFile(fn);
+        //    // Save icon.
+        //    var ico = GraphicsUtils.CreateIcon(bmp);//, 32);
+        //    GraphicsUtils.SaveIcon(ico, outfn);
+        //}
     }
 }

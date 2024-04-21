@@ -11,24 +11,14 @@ namespace Ephemera.Nebulua
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
+            // UI way:
             ApplicationConfiguration.Initialize();
             Application.Run(new MainForm());
+
+            // CLI way:
+            // CommandProc cmdproc = new(Console.In, Console.Out);
+            // var app = new Nebulua.App(cmdproc);
+            // app.Run();
         }
     }
 }
-
-
-// using System;
-// using System.IO;
-// using System.Linq;
-
-// internal class Program
-// {
-//     private static void Main(string[] _)
-//     {
-//         var app = new Nebulua.App();
-//         app.Run();
-//     }
-// }

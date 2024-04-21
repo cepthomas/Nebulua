@@ -6,7 +6,7 @@
     <TargetFramework>net8.0-windows7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StartupObject>Nebulua.Test.Program</StartupObject>
+    <StartupObject>Ephemera.Nebulua.Test.Program</StartupObject>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Cli.cs" Link="Cli.cs" />
+    <Compile Include="..\..\CmdProc.cs" Link="CmdProc.cs" />
     <Compile Include="..\..\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\State.cs" Link="State.cs" />
   </ItemGroup>

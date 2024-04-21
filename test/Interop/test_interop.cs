@@ -21,7 +21,7 @@ namespace Ephemera.Nebulua.Test
             Api interop = new(lpath);
 
             InteropEventCollector events = new(interop);
-            string scrfn = Path.Join(TestUtils.GetTestDir(), "script_happy.lua");
+            string scrfn = Path.Join(TestUtils.GetTestLuaDir(), "script_happy.lua");
             State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
 
             // Load the script.

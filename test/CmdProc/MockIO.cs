@@ -8,7 +8,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Ephemera.Nebulua
 {
     /// <summary>Mock IO for testing cli. Captures output lines.</summary>
     public class MockCliOut: TextWriter

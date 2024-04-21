@@ -12,9 +12,9 @@ namespace Ephemera.Nebulua.Test
     public class TestUtils
     {
         /// <summary>Get environment.</summary>
-        public static string GetTestFilesDir()
+        public static string GetTestLuaDir()
         {
-            return Path.Join(GetProjectSourceDir(), "test", "files");
+            return Path.Join(GetProjectSourceDir(), "test", "lua");
         }
 
         /// <summary>Get environment.</summary>

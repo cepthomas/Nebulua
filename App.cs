@@ -12,7 +12,7 @@ using Interop;
 
 namespace Ephemera.Nebulua
 {
-    public partial class App : IDisposable
+    public class App : IDisposable
     {
         #region Fields
         /// <summary>App logger.</summary>
@@ -25,7 +25,7 @@ namespace Ephemera.Nebulua
         readonly List<string> _lpath = [];
 
         /// <summary>Talk to the user.</summary>
-        readonly Cli _cli;
+        readonly CmdProc _cmdproc;
 
         /// <summary>The config contents.</summary>
         readonly Config? _config;
@@ -53,10 +53,12 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Constructor inits stuff.
         /// </summary>
-        public App()
+        /// <param name="cmdproc"></param>
+        public App(CmdProc cmdproc)
         {
-            _cli = new(Console.In, Console.Out);
-            _cli.Write("Greetings from Nebulua!");
+            _cmdproc = cmdproc;
+            // _cmdproc = new(Console.In, Console.Out);
+            _cmdproc.Write("Greetings from Nebulua!");
 
             try
             {
@@ -107,6 +109,7 @@ namespace Ephemera.Nebulua
                 Api.Log += Interop_Log;
                 Api.PropertyChange += Interop_PropertyChange;
 
+                // State change handler.
                 State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
             }
             // Anything that throws is fatal.
@@ -182,7 +185,7 @@ namespace Ephemera.Nebulua
                 // Load the script.
                 var s = $"Loading script file {_scriptFn}";
                 _logger.Info(s);
-                _cli.Write(s);
+                _cmdproc.Write(s);
                 stat = api.OpenScript(_scriptFn);
                 if (stat != NebStatus.Ok)
                 {
@@ -196,17 +199,17 @@ namespace Ephemera.Nebulua
                 SetTimer(State.Instance.Tempo);
                 _mmTimer.Start();
 
-                ///// Good to go now. Loop forever doing cli requests. /////
+                ///// Good to go now. Loop forever doing cmdproc requests. /////
 
                 while (State.Instance.ExecState != ExecState.Exit)
                 {
                     // Should not throw. Cli will take care of its own errors.
-                    _cli.Read();
+                    _cmdproc.Read();
                 }
 
                 ///// Normal done. /////
 
-                _cli.Write("shutting down");
+                _cmdproc.Write("shutting down");
 
                 // Wait a bit in case there are some lingering events.
                 Thread.Sleep(100);
@@ -257,7 +260,7 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary>
-        /// Process events. This is in an interrupt handler so can't throw exceptions.
+        /// Process events. This is in an interrupt handler so can't throw exceptions back to main thread.
         /// </summary>
         /// <param name="totalElapsed"></param>
         /// <param name="periodElapsed"></param>
@@ -275,7 +278,6 @@ namespace Ephemera.Nebulua
                         NebStatus stat = api.Step(State.Instance.CurrentTick);
                         if (stat != NebStatus.Ok)
                         {
-                            //Fatal Error(stat, "Api Step() failed", api.Error);
                             throw new ApiException("Step() failed", api.Error);
                         }
                     }
@@ -299,7 +301,7 @@ namespace Ephemera.Nebulua
                         else
                         {
                             // Stop and rewind.
-                            _cli.Write("done");
+                            _cmdproc.Write("done");
                             State.Instance.ExecState = ExecState.Idle;
                             State.Instance.CurrentTick = start;
 
@@ -325,13 +327,13 @@ namespace Ephemera.Nebulua
             switch (e.Level)
             {
                 case LogLevel.Error:
-                    _cli.Write(e.Message);
+                    _cmdproc.Write(e.Message);
                     // Fatal, shut down.
                     State.Instance.ExecState = ExecState.Exit;
                     break;
 
                 case LogLevel.Warn:
-                    _cli.Write(e.Message);
+                    _cmdproc.Write(e.Message);
                     break;
 
                 default:
@@ -521,7 +523,7 @@ namespace Ephemera.Nebulua
             }
             else
             {
-                _cli.Write($"Invalid log level: {e.LogLevel}");
+                _cmdproc.Write($"Invalid log level: {e.LogLevel}");
                 e.Ret = 1;
             }
         }
@@ -546,7 +548,7 @@ namespace Ephemera.Nebulua
                 }
                 else
                 {
-                    _cli.Write($"Invalid tempo: {e.Bpm}");
+                    _cmdproc.Write($"Invalid tempo: {e.Bpm}");
                     e.Ret = 1;
                 }
             }

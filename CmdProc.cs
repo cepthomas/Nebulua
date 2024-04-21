@@ -10,7 +10,7 @@ using NAudio.Midi;
 
 namespace Ephemera.Nebulua
 {
-    public class Cli
+    public class CmdProc
     {
         #region Fields
         /// <summary>All the commands.</summary>
@@ -29,7 +29,7 @@ namespace Ephemera.Nebulua
         #endregion
 
         #region Infrastructure
-        /// <summary>Cli command descriptor.</summary>
+        /// <summary>Command descriptor.</summary>
         readonly record struct CommandDescriptor
         (
             /// <summary>If you like to type.</summary>
@@ -48,7 +48,7 @@ namespace Ephemera.Nebulua
             CommandHandler Handler
         );
 
-        /// <summary>Cli command handler.</summary>
+        /// <summary>Command handler.</summary>
         delegate bool CommandHandler(CommandDescriptor cmd, List<string> args);
         #endregion
 
@@ -56,7 +56,7 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Set up command handler. TODO other stream I/O e.g. socket.
         /// </summary>
-        public Cli(TextReader cliIn, TextWriter cliOut)
+        public CmdProc(TextReader cliIn, TextWriter cliOut)
         {
             _cliIn = cliIn;
             _cliOut = cliOut;
@@ -91,7 +91,7 @@ namespace Ephemera.Nebulua
 
         /// <summary>
         /// Process user input. Blocks until new line.
-        /// TODO Would like to .Peek() for spacebar but it's broken. .Read() doesn't seem to work either.
+        /// TODO Would like to .Peek() for spacebar but it's broken. .Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
         public bool Read()
@@ -227,17 +227,17 @@ namespace Ephemera.Nebulua
                 case 2: // set
                     switch (args[1])
                     {
-                        case "rcv":
+                        case "r":
                             State.Instance.MonRcv = !State.Instance.MonRcv;
                             Write("");
                             break;
 
-                        case "snd":
+                        case "s":
                             State.Instance.MonSnd = !State.Instance.MonSnd;
                             Write("");
                             break;
 
-                        case "off":
+                        case "o":
                             State.Instance.MonRcv = false;
                             State.Instance.MonSnd = false;
                             Write("");

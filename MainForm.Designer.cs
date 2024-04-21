@@ -39,14 +39,15 @@ namespace Ephemera.Nebulua
             sldTempo = new NBagOfUis.Slider();
             traffic = new NBagOfUis.TextViewer();
             toolTip = new ToolTip(components);
-            barBar = new Test.BarBar();
+            timeBar = new Test.TimeBar();
+            cliIn = new CliInput();
             SuspendLayout();
             // 
             // chkPlay
             // 
             chkPlay.Appearance = Appearance.Button;
             chkPlay.Image = (Image)resources.GetObject("chkPlay.Image");
-            chkPlay.Location = new Point(189, 46);
+            chkPlay.Location = new Point(187, 12);
             chkPlay.Name = "chkPlay";
             chkPlay.Size = new Size(43, 49);
             chkPlay.TabIndex = 0;
@@ -56,7 +57,7 @@ namespace Ephemera.Nebulua
             // btnRewind
             // 
             btnRewind.Image = (Image)resources.GetObject("btnRewind.Image");
-            btnRewind.Location = new Point(52, 44);
+            btnRewind.Location = new Point(50, 10);
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(45, 49);
             btnRewind.TabIndex = 1;
@@ -68,7 +69,7 @@ namespace Ephemera.Nebulua
             sldVolume.BorderStyle = BorderStyle.FixedSingle;
             sldVolume.DrawColor = Color.Orange;
             sldVolume.Label = "vol";
-            sldVolume.Location = new Point(630, 49);
+            sldVolume.Location = new Point(444, 12);
             sldVolume.Margin = new Padding(4, 5, 4, 5);
             sldVolume.Maximum = 1D;
             sldVolume.Minimum = 0D;
@@ -85,7 +86,7 @@ namespace Ephemera.Nebulua
             sldTempo.BorderStyle = BorderStyle.FixedSingle;
             sldTempo.DrawColor = Color.IndianRed;
             sldTempo.Label = "bpm";
-            sldTempo.Location = new Point(428, 43);
+            sldTempo.Location = new Point(302, 12);
             sldTempo.Margin = new Padding(5, 6, 5, 6);
             sldTempo.Maximum = 240D;
             sldTempo.Minimum = 60D;
@@ -101,7 +102,7 @@ namespace Ephemera.Nebulua
             // 
             traffic.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             traffic.BorderStyle = BorderStyle.FixedSingle;
-            traffic.Location = new Point(69, 277);
+            traffic.Location = new Point(36, 169);
             traffic.Margin = new Padding(4, 5, 4, 5);
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
@@ -110,25 +111,34 @@ namespace Ephemera.Nebulua
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
-            // barBar
+            // timeBar
             // 
-            barBar.BorderStyle = BorderStyle.FixedSingle;
-            barBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            barBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            barBar.Location = new Point(167, 158);
-            barBar.MarkerColor = Color.Black;
-            barBar.Name = "barBar";
-            barBar.ProgressColor = Color.White;
-            barBar.Size = new Size(731, 64);
-            barBar.Snap = Test.SnapType.Bar;
-            barBar.TabIndex = 42;
+            timeBar.BorderStyle = BorderStyle.FixedSingle;
+            timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            timeBar.Location = new Point(50, 82);
+            timeBar.MarkerColor = Color.Black;
+            timeBar.Name = "timeBar";
+            timeBar.ProgressColor = Color.White;
+            timeBar.Size = new Size(731, 64);
+            timeBar.Snap = Test.SnapType.Bar;
+            timeBar.TabIndex = 42;
+            // 
+            // cliIn
+            // 
+            cliIn.Location = new Point(36, 418);
+            cliIn.Name = "cliIn";
+            cliIn.Prompt = "???";
+            cliIn.Size = new Size(773, 125);
+            cliIn.TabIndex = 43;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1041, 606);
-            Controls.Add(barBar);
+            Controls.Add(cliIn);
+            Controls.Add(timeBar);
             Controls.Add(btnRewind);
             Controls.Add(chkPlay);
             Controls.Add(sldVolume);
@@ -147,6 +157,7 @@ namespace Ephemera.Nebulua
         private Ephemera.NBagOfUis.Slider sldTempo;
         private Ephemera.NBagOfUis.TextViewer traffic;
         private ToolTip toolTip;
-        private Test.BarBar barBar;
+        private Test.TimeBar timeBar;
+        private CliInput cliIn;
     }
 }

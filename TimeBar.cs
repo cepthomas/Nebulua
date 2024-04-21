@@ -13,10 +13,8 @@ namespace Ephemera.Nebulua.Test
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Sub }
 
-
-
     /// <summary>The control.</summary>
-    public class BarBar : UserControl
+    public class TimeBar : UserControl
     {
         public SnapType Snap { get; set; }
 
@@ -83,7 +81,7 @@ namespace Ephemera.Nebulua.Test
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public BarBar()
+        public TimeBar()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
         }
@@ -115,51 +113,40 @@ namespace Ephemera.Nebulua.Test
             pe.Graphics.Clear(BackColor);
 
             // Validate times.
-            _start = MathUtils.Constrain(_start, 0, _end);
-            _end = MathUtils.Constrain(_end, 0, _length);
-            _end = MathUtils.Constrain(_end, _start, _length);
-            _current = MathUtils.Constrain(_current, _start, _end);
-            //_start.Constrain(zero, _end);
-            //_end.Constrain(zero, _length);
-            //_end.Constrain(_start, _length);
-            //_current.Constrain(_start, _end);
+            // 0   start   end   length
+            // length >=0
+            // end >=0 <=length
+            // start >=0 <=end
+            if (_length < 0) _length = 0;
+            if (_end < 0) _end = 0;
+            if (_end > _length) _end = _length;
+            if (_start < 0) _start = 0;
+            if (_start > _end) _start = _end;
 
             // Draw the bar.
             if (_current < _length)
             {
-                int dstart = Scale(_start);
-                int dend = _current > _end ? Scale(_end) : Scale(_current);
+                int dstart = GetMouseFromTick(_start);
+                int dend = _current > _end ? GetMouseFromTick(_end) : GetMouseFromTick(_current);
                 pe.Graphics.FillRectangle(_brush, dstart, 0, dend - dstart, Height);
             }
 
             // Draw start/end markers.
             if (_start != 0 || _end != _length)
             {
-                int mstart = Scale(_start);
-                int mend = Scale(_end);
+                int mstart = GetMouseFromTick(_start);
+                int mend = GetMouseFromTick(_end);
                 pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
                 pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
             }
 
             // Text.
-            if (DesignMode) // Can't access LibSettings yet.
-            {
-                _format.Alignment = StringAlignment.Center;
-                pe.Graphics.DrawString("CENTER", FontLarge, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Near;
-                pe.Graphics.DrawString("NEAR", FontSmall, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Far;
-                pe.Graphics.DrawString("FAR", FontSmall, Brushes.Black, ClientRectangle, _format);
-            }
-            else
-            {
-                _format.Alignment = StringAlignment.Center;
-                pe.Graphics.DrawString(MusicTime.Format(_current), FontLarge, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Near;
-                pe.Graphics.DrawString(MusicTime.Format(_start), FontSmall, Brushes.Black, ClientRectangle, _format);
-                _format.Alignment = StringAlignment.Far;
-                pe.Graphics.DrawString(MusicTime.Format(_end), FontSmall, Brushes.Black, ClientRectangle, _format);
-            }
+            _format.Alignment = StringAlignment.Center;
+            pe.Graphics.DrawString(MusicTime.Format(_current), FontLarge, Brushes.Black, ClientRectangle, _format);
+            _format.Alignment = StringAlignment.Near;
+            pe.Graphics.DrawString(MusicTime.Format(_start), FontSmall, Brushes.Black, ClientRectangle, _format);
+            _format.Alignment = StringAlignment.Far;
+            pe.Graphics.DrawString(MusicTime.Format(_end), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -192,12 +179,9 @@ namespace Ephemera.Nebulua.Test
             }
             else if (e.X != _lastXPos)
             {
-                int bs;
-                //var vv = MidiSettings.LibSettings;
-
                 var sub = GetTickFromMouse(e.X);
-                bs = GetRounded(sub, Snap);
-                string sdef = GetTimeDefString(bs);
+                var bs = GetRounded(sub, Snap);
+                var sdef = GetTimeDefString(bs);
                 _toolTip.SetToolTip(this, $"{MusicTime.Format(bs)} {sdef}");
                 _lastXPos = e.X;
             }
@@ -323,12 +307,10 @@ namespace Ephemera.Nebulua.Test
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public int Scale(int tick)
+        int GetMouseFromTick(int tick)
         {
             return tick * Width / _length;
         }
-        #endregion
-
 
         /// <summary>
         /// Set to sub using specified rounding.
@@ -357,7 +339,6 @@ namespace Ephemera.Nebulua.Test
 
             return tick;
         }
-
-
+        #endregion
     }
 }

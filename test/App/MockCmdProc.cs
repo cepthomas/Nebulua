@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Interop;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Ephemera.Nebulua
 {
-    public class Cli
+    public class CmdProc
     {
         // readonly TextWriter _cliOut;
         // readonly TextReader _cliIn;
@@ -30,7 +29,7 @@ namespace Ephemera.Nebulua.Test
         //     _capture.Clear();
         // }
 
-        public Cli(TextReader cliIn, TextWriter cliOut)
+        public CmdProc(TextReader cliIn, TextWriter cliOut)
         {
             // _cliIn = cliIn;
             // _cliOut = cliOut;
