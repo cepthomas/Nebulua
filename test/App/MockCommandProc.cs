@@ -11,17 +11,17 @@ using Interop;
 
 namespace Ephemera.Nebulua
 {
-    public class CmdProc
+    public class CommandProc
     {
-        // readonly TextWriter _cliOut;
-        // readonly TextReader _cliIn;
+        // readonly TextWriter _out;
+        // readonly TextReader _in;
 
         public string Prompt { get; set; } = ">";
 
-        // From cliOut. May be useful
+        // From out. May be useful
         public List<string> WriteLines { get; set; } = [];
 
-        // For cliIn.
+        // For in.
         //public string ReadLine { get; set; } = "";
 
         // public void Clear()
@@ -29,10 +29,10 @@ namespace Ephemera.Nebulua
         //     _capture.Clear();
         // }
 
-        public CmdProc(TextReader cliIn, TextWriter cliOut)
+        public CommandProc(TextReader in, TextWriter out)
         {
-            // _cliIn = cliIn;
-            // _cliOut = cliOut;
+            // _in = in;
+            // _out = out;
         }
 
         public void Write(string s)

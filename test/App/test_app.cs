@@ -41,20 +41,20 @@ namespace Ephemera.Nebulua.Test
     //public partial class App
     //{
     //    // Fake cli output.
-    //    CliTextWriter _myCliOut = new();
+    //    CliTextWriter _out = new();
 
     //    // Fake cli input.
-    //    CliTextReader _myCliIn = new();
+    //    CliTextReader _in = new();
 
     //    public List<string> CaptureLines
     //    {
-    //        get { return StringUtils.SplitByTokens(_myCliOut.Capture.ToString(), "\r\n"); }
+    //        get { return StringUtils.SplitByTokens(_out.Capture.ToString(), "\r\n"); }
     //    }
 
     //    public string NextLine
     //    {
-    //        get { return _myCliIn.NextLine; }
-    //        set { _myCliIn.NextLine = value; }
+    //        get { return _in.NextLine; }
+    //        set { _in.NextLine = value; }
     //    }
 
     //    public string Prompt
@@ -64,8 +64,8 @@ namespace Ephemera.Nebulua.Test
 
     //    public void Clear()
     //    {
-    //        _myCliOut.Capture.Clear();
-    //        _myCliIn.NextLine = "";
+    //        _out.Capture.Clear();
+    //        _in.NextLine = "";
     //    }
 
     //    public string GetPrompt()
@@ -75,8 +75,8 @@ namespace Ephemera.Nebulua.Test
 
     //    public void HookCli()
     //    {
-    //        _cliOut = _myCliOut;
-    //        _cliIn = _myCliIn;
+    //        _cliOut = _out;
+    //        _cliIn = _in;
     //    }
     //}
 

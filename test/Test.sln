@@ -8,7 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "App\TestApp.cspr
 		{953F3806-EB5D-444E-A500-09B455E35E53} = {953F3806-EB5D-444E-A500-09B455E35E53}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCmdProc", "CmdProc\TestCmdProc.csproj", "{44DFD7B4-BA38-49AF-91BE-64B1E80D73A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCommandProc", "CommandProc\TestCommandProc.csproj", "{44DFD7B4-BA38-49AF-91BE-64B1E80D73A5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestInterop", "Interop\TestInterop.csproj", "{EDB9DCD7-9FA6-4CFA-A3BB-7DEAEF41DF09}"
 EndProject

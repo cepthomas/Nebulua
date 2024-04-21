@@ -12,13 +12,14 @@ namespace Ephemera.Nebulua
         static void Main()
         {
             // UI way:
-            ApplicationConfiguration.Initialize();
-            Application.Run(new MainForm());
+            //ApplicationConfiguration.Initialize();
+            //Application.Run(new MainForm());
 
             // CLI way:
-            // CommandProc cmdproc = new(Console.In, Console.Out);
-            // var app = new Nebulua.App(cmdproc);
-            // app.Run();
+            //CommandProc cmdProc = new(Console.In, Console.Out);
+            //var app = new Nebulua.App(cmdProc);
+            var app = new Nebulua.App();
+            app.Run();
         }
     }
 }

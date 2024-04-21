@@ -10,17 +10,17 @@ using NAudio.Midi;
 
 namespace Ephemera.Nebulua
 {
-    public class CmdProc
+    public class CommandProc
     {
         #region Fields
         /// <summary>All the commands.</summary>
         readonly CommandDescriptor[]? _commands;
 
-        /// <summary>CLI.</summary>
-        readonly TextWriter _cliOut;
+        /// <summary>CLI input.</summary>
+        readonly TextReader _in;
 
-        /// <summary>CLI.</summary>
-        readonly TextReader _cliIn;
+        /// <summary>CLI output.</summary>
+        readonly TextWriter _out;
         #endregion
 
         #region Properties
@@ -56,10 +56,10 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Set up command handler. TODO other stream I/O e.g. socket.
         /// </summary>
-        public CmdProc(TextReader cliIn, TextWriter cliOut)
+        public CommandProc(TextReader @in, TextWriter @out)
         {
-            _cliIn = cliIn;
-            _cliOut = cliOut;
+            _in = @in;
+            _out = @out;
 
             _commands =
             [
@@ -85,8 +85,8 @@ namespace Ephemera.Nebulua
         /// <param name="s"></param>
         public void Write(string s)
         {
-            _cliOut.WriteLine(s);
-            _cliOut.Write(Prompt);
+            _out.WriteLine(s);
+            _out.Write(Prompt);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Ephemera.Nebulua
             bool ret = true;
 
             // Listen.
-            string? res = _cliIn.ReadLine();
+            string? res = _in.ReadLine();
 
             if (res != null)
             {
@@ -369,16 +369,16 @@ namespace Ephemera.Nebulua
         //--------------------------------------------------------//
         bool InfoCmd(CommandDescriptor _, List<string> __)
         {
-            _cliOut.WriteLine($"Midi output devices:");
+            _out.WriteLine($"Midi output devices:");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                _cliOut.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
+                _out.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
             }
 
-            _cliOut.WriteLine($"Midi input devices:");
+            _out.WriteLine($"Midi input devices:");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                _cliOut.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
+                _out.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
             }
             Write("");
 
@@ -390,14 +390,14 @@ namespace Ephemera.Nebulua
         {
             foreach (var cmd in _commands!)
             {
-                _cliOut.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
+                _out.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
                 if (cmd.Args.Length > 0)
                 {
                     // Maybe multiline args.
                     var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
                     foreach (var arg in parts)
                     {
-                        _cliOut.WriteLine($"    {arg}");
+                        _out.WriteLine($"    {arg}");
                     }
                 }
             }

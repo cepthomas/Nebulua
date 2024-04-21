@@ -25,7 +25,7 @@ namespace Ephemera.Nebulua
         readonly List<string> _lpath = [];
 
         /// <summary>Talk to the user.</summary>
-        readonly CmdProc _cmdproc;
+        readonly CommandProc _cmdProc;
 
         /// <summary>The config contents.</summary>
         readonly Config? _config;
@@ -53,12 +53,10 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Constructor inits stuff.
         /// </summary>
-        /// <param name="cmdproc"></param>
-        public App(CmdProc cmdproc)
+        public App()
         {
-            _cmdproc = cmdproc;
-            // _cmdproc = new(Console.In, Console.Out);
-            _cmdproc.Write("Greetings from Nebulua!");
+            _cmdProc = new(Console.In, Console.Out);
+            _cmdProc.Write("Greetings from Nebulua!");
 
             try
             {
@@ -101,7 +99,8 @@ namespace Ephemera.Nebulua
                 // Set up runtime lua environment.
                 var exePath = Environment.CurrentDirectory; // where exe lives
                 _lpath.Add($@"{exePath}\lua_code"); // app lua files
-                _lpath.Add($@"{exePath}\lbot"); // lbot files
+                //_lpath.Add($@"{exePath}\lbot"); // lbot files
+                _lpath.Add($@"C:\Dev\repos\Lua\LuaBagOfTricks"); // lbot files
 
                 // Hook script callbacks.
                 Api.CreateChannel += Interop_CreateChannel;
@@ -185,7 +184,7 @@ namespace Ephemera.Nebulua
                 // Load the script.
                 var s = $"Loading script file {_scriptFn}";
                 _logger.Info(s);
-                _cmdproc.Write(s);
+                _cmdProc.Write(s);
                 stat = api.OpenScript(_scriptFn);
                 if (stat != NebStatus.Ok)
                 {
@@ -203,13 +202,13 @@ namespace Ephemera.Nebulua
 
                 while (State.Instance.ExecState != ExecState.Exit)
                 {
-                    // Should not throw. Cli will take care of its own errors.
-                    _cmdproc.Read();
+                    // Should not throw. Command processor will take care of its own errors.
+                    _cmdProc.Read();
                 }
 
                 ///// Normal done. /////
 
-                _cmdproc.Write("shutting down");
+                _cmdProc.Write("shutting down");
 
                 // Wait a bit in case there are some lingering events.
                 Thread.Sleep(100);
@@ -301,7 +300,7 @@ namespace Ephemera.Nebulua
                         else
                         {
                             // Stop and rewind.
-                            _cmdproc.Write("done");
+                            _cmdProc.Write("done");
                             State.Instance.ExecState = ExecState.Idle;
                             State.Instance.CurrentTick = start;
 
@@ -327,13 +326,13 @@ namespace Ephemera.Nebulua
             switch (e.Level)
             {
                 case LogLevel.Error:
-                    _cmdproc.Write(e.Message);
+                    _cmdProc.Write(e.Message);
                     // Fatal, shut down.
                     State.Instance.ExecState = ExecState.Exit;
                     break;
 
                 case LogLevel.Warn:
-                    _cmdproc.Write(e.Message);
+                    _cmdProc.Write(e.Message);
                     break;
 
                 default:
@@ -523,7 +522,7 @@ namespace Ephemera.Nebulua
             }
             else
             {
-                _cmdproc.Write($"Invalid log level: {e.LogLevel}");
+                _cmdProc.Write($"Invalid log level: {e.LogLevel}");
                 e.Ret = 1;
             }
         }
@@ -548,7 +547,7 @@ namespace Ephemera.Nebulua
                 }
                 else
                 {
-                    _cmdproc.Write($"Invalid tempo: {e.Bpm}");
+                    _cmdProc.Write($"Invalid tempo: {e.Bpm}");
                     e.Ret = 1;
                 }
             }

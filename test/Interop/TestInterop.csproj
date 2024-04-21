@@ -27,11 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="MockCli.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="temp.lua" />
+    <None Remove="_test_temp.lua" />
   </ItemGroup>
 
   <ItemGroup>

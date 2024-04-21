@@ -10,8 +10,8 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Ephemera.Nebulua
 {
-    /// <summary>Mock IO for testing cli. Captures output lines.</summary>
-    public class MockCliOut: TextWriter
+    /// <summary>Mock IO for testing processor. Captures output lines.</summary>
+    public class MockOut: TextWriter
     {
         public List<string> Capture
         {
@@ -36,8 +36,8 @@ namespace Ephemera.Nebulua
     }
 
 
-    /// <summary>Mock for testing cli. Force feed input line.</summary>
-    public class MockCliIn: TextReader
+    /// <summary>Mock for testing processor. Force feed input line.</summary>
+    public class MockIn: TextReader
     {
         public string NextLine { get; set; } = "";
 

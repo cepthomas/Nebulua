@@ -26,7 +26,7 @@ static CRITICAL_SECTION _critsect;
 static int _ToCString(char* buff, size_t bufflen, String^ input);
 
 // Convert unmanaged string to managed.
-static String^ _ToCliString(const char* input);
+static String^ _ToManagedString(const char* input);
 
 
 //--------------------------------------------------------//
@@ -51,7 +51,7 @@ Interop::Api::Api(List<String^>^ lpath)
         // https://stackoverflow.com/a/4156038
         lua_getglobal(_l, "package");
         lua_getfield(_l, -1, "path");
-        String^ currentPath = _ToCliString(lua_tostring(_l, -1));
+        String^ currentPath = _ToManagedString(lua_tostring(_l, -1));
 
         StringBuilder^ sb = gcnew StringBuilder(currentPath);
         sb->Append(";"); // default lua path doesn't have this.
@@ -145,7 +145,7 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
         lua_pushnil(_l);
         while (lua_next(_l, -2) != 0) // && lstat ==_lUA_OK)
         {
-            SectionInfo->Add((int)lua_tointeger(_l, -1), _ToCliString(lua_tostring(_l, -2)));
+            SectionInfo->Add((int)lua_tointeger(_l, -1), _ToManagedString(lua_tostring(_l, -2)));
             lua_pop(_l, 1);
         }
         lua_pop(_l, 1); // Clean up stack.
@@ -288,7 +288,7 @@ int _ToCString(char* buff, size_t bufflen, String^ input)
 }
 
 //--------------------------------------------------------//
-String^ _ToCliString(const char* input)
+String^ _ToManagedString(const char* input)
 {
     return gcnew String(input);
 }
