@@ -8,7 +8,7 @@ using Interop;
 using NAudio.Midi;
 
 
-namespace Ephemera.Nebulua
+namespace Ephemera.Nebulua.CliApp
 {
     public class CommandProc
     {

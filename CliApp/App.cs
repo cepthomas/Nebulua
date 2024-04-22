@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Interop;
 
 
-namespace Ephemera.Nebulua
+namespace Ephemera.Nebulua.CliApp
 {
     public class App : IDisposable
     {
@@ -174,6 +174,7 @@ namespace Ephemera.Nebulua
         public NebStatus Run()
         {
             NebStatus stat = NebStatus.Ok;
+            Console.WriteLine("Heeeeer");
 
             try
             {

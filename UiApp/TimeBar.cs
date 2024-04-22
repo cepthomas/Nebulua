@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Ephemera.Nebulua.UiApp
 {
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Sub }

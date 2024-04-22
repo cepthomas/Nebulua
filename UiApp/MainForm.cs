@@ -5,7 +5,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-namespace Ephemera.Nebulua
+namespace Ephemera.Nebulua.UiApp
 {
     public partial class MainForm : Form
     {

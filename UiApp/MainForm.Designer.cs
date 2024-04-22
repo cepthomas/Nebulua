@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace Ephemera.Nebulua
+namespace Ephemera.Nebulua.UiApp
 {
     partial class MainForm
     {
@@ -39,7 +39,7 @@ namespace Ephemera.Nebulua
             sldTempo = new NBagOfUis.Slider();
             traffic = new NBagOfUis.TextViewer();
             toolTip = new ToolTip(components);
-            timeBar = new Test.TimeBar();
+            timeBar = new TimeBar();
             cliIn = new CliInput();
             SuspendLayout();
             // 
@@ -121,7 +121,7 @@ namespace Ephemera.Nebulua
             timeBar.Name = "timeBar";
             timeBar.ProgressColor = Color.White;
             timeBar.Size = new Size(731, 64);
-            timeBar.Snap = Test.SnapType.Bar;
+            timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 42;
             // 
             // cliIn
@@ -157,7 +157,7 @@ namespace Ephemera.Nebulua
         private Ephemera.NBagOfUis.Slider sldTempo;
         private Ephemera.NBagOfUis.TextViewer traffic;
         private ToolTip toolTip;
-        private Test.TimeBar timeBar;
+        private TimeBar timeBar;
         private CliInput cliIn;
     }
 }

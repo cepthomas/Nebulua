@@ -2,91 +2,78 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <UseWindowsForms>true</UseWindowsForms>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x64</Platforms>
-    <ApplicationIcon>marks.ico</ApplicationIcon>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Platforms>x64</Platforms>
+    <!-- <Platforms>AnyCPU;x64</Platforms> -->
+    <ApplicationIcon>..\marks.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+
+<!--   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
-
+ -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+<!--   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
-
+ -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Remove="interop\obj\**" />
-    <Compile Remove="interop\x64\**" />
-    <Compile Remove="lib\**" />
-    <Compile Remove="test\**" />
-    <Compile Remove="x64\**" />
-    <EmbeddedResource Remove="interop\obj\**" />
-    <EmbeddedResource Remove="interop\x64\**" />
-    <EmbeddedResource Remove="lib\**" />
-    <EmbeddedResource Remove="test\**" />
-    <EmbeddedResource Remove="x64\**" />
-    <None Remove="interop\obj\**" />
-    <None Remove="interop\x64\**" />
-    <None Remove="lib\**" />
-    <None Remove="test\**" />
-    <None Remove="x64\**" />
+    <Compile Include="..\Common\Common.cs" Link="Common.cs" />
+    <Compile Include="..\Common\Config.cs" Link="Config.cs" />
+    <Compile Include="..\Common\Midi.cs" Link="Midi.cs" />
+    <Compile Include="..\Common\State.cs" Link="State.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove=".gitignore" />
-  </ItemGroup>
 
   <ItemGroup>
-    <Content Include="lua_code\bar_time.lua">
+    <Content Include="..\lua_code\bar_time.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="lua_code\midi_defs.lua">
+    <Content Include="..\lua_code\midi_defs.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="lua_code\music_defs.lua">
+    <Content Include="..\lua_code\music_defs.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="lua_code\nebulua.lua">
+    <Content Include="..\lua_code\nebulua.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="lua_code\neb_common.lua">
+    <Content Include="..\lua_code\neb_common.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="lua_code\step_types.lua">
+    <Content Include="..\lua_code\step_types.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="marks.ico" />
+    <Content Include="..\marks.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="Interop\Interop.vcxproj" />
+    <ProjectReference Include="..\Interop\Interop.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
-      <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
+      <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
     </Reference>
     <Reference Include="Ephemera.NBagOfUis">
-      <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
+      <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
     </Reference>
   </ItemGroup>
 
