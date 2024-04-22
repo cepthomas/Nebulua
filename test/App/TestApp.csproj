@@ -27,10 +27,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\App.cs" Link="App.cs" />
-    <Compile Include="..\..\Common.cs" Link="Common.cs" />
-    <Compile Include="..\..\Config.cs" Link="Config.cs" />
-    <Compile Include="..\..\State.cs" Link="State.cs" />
+    <Compile Include="..\..\CliApp\App.cs" Link="App.cs" />
+    <Compile Include="..\..\Common\Common.cs" Link="Common.cs" />
+    <Compile Include="..\..\Common\Config.cs" Link="Config.cs" />
+    <Compile Include="..\..\Common\State.cs" Link="State.cs" />
   </ItemGroup>
 
   <ItemGroup>

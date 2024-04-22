@@ -27,9 +27,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\CommandProc.cs" Link="CommandProc.cs" />
-    <Compile Include="..\..\Common.cs" Link="Common.cs" />
-    <Compile Include="..\..\State.cs" Link="State.cs" />
+    <Compile Include="..\..\CliApp\CommandProc.cs" Link="CommandProc.cs" />
+    <Compile Include="..\..\Common\Common.cs" Link="Common.cs" />
+    <Compile Include="..\..\Common\State.cs" Link="State.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +40,10 @@
     <Reference Include="Ephemera.NBagOfTricks">
       <HintPath>..\..\lib\Ephemera.NBagOfTricks.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
   </ItemGroup>
 
 </Project>

@@ -7,26 +7,14 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>disable</ImplicitUsings>
     <Platforms>x64</Platforms>
-    <!-- <Platforms>AnyCPU;x64</Platforms> -->
     <ApplicationIcon>..\marks.ico</ApplicationIcon>
   </PropertyGroup>
 
-
-<!--   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
-  </PropertyGroup>
- -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
 
-<!--   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
-  </PropertyGroup>
- -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
@@ -37,7 +25,6 @@
     <Compile Include="..\Common\Midi.cs" Link="Midi.cs" />
     <Compile Include="..\Common\State.cs" Link="State.cs" />
   </ItemGroup>
-
 
   <ItemGroup>
     <Content Include="..\lua_code\bar_time.lua">

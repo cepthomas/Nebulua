@@ -29,10 +29,10 @@ namespace Ephemera.Nebulua
         //     _capture.Clear();
         // }
 
-        public CommandProc(TextReader in, TextWriter out)
+        public CommandProc(TextReader rin, TextWriter rout)
         {
-            // _in = in;
-            // _out = out;
+            // _in = rin;
+            // _out = rout;
         }
 
         public void Write(string s)

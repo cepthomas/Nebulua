@@ -2,42 +2,29 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- <TargetFramework>net8.0</TargetFramework> -->
     <TargetFramework>net8.0-windows7.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
-    <!-- <Platforms>AnyCPU;x64</Platforms> -->
     <ApplicationIcon>..\marks.ico</ApplicationIcon>
   </PropertyGroup>
 
-
-<!--   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
-  </PropertyGroup>
- -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
 
-<!--   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
-  </PropertyGroup>
- -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\Common\Common.cs" Link="Common.cs" />
     <Compile Include="..\Common\Config.cs" Link="Config.cs" />
     <Compile Include="..\Common\Midi.cs" Link="Midi.cs" />
     <Compile Include="..\Common\State.cs" Link="State.cs" />
   </ItemGroup>
-
 
   <ItemGroup>
     <Content Include="..\lua_code\bar_time.lua">
@@ -74,12 +61,8 @@
     </Reference>
   </ItemGroup>
 
-
   <ItemGroup>
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
-<!--     <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
- -->
   </ItemGroup>
 
 </Project>

@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Common.cs" Link="Common.cs" />
-    <Compile Include="..\..\State.cs" Link="State.cs" />
+    <Compile Include="..\..\Common\Common.cs" Link="Common.cs" />
+    <Compile Include="..\..\Common\State.cs" Link="State.cs" />
     <Compile Include="..\TestUtils.cs" Link="TestUtils.cs" />
   </ItemGroup>
 
