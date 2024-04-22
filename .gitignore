@@ -5,6 +5,4 @@ bin/
 obj/
 temp/
 *.vcxproj.user
-*.sublime-*
-/Properties
-/Nebulua.csproj.user
+*.csproj.user
