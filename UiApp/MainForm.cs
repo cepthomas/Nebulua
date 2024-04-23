@@ -47,6 +47,11 @@ namespace Ephemera.Nebulua.UiApp
 
         Core _core;
 
+        /// <summary>Detect changed script files.</summary>
+        readonly MultiFileWatcher _watcher = new();
+
+
+
 /*  command handlers
 
         bool TempoCmd(CommandDescriptor cmd, List<string> args)
@@ -218,10 +223,8 @@ namespace Ephemera.Nebulua.UiApp
             {
                 KeyPreview = true; // for routing kbd strokes properly
 
+                _watcher.Clear();
                 _watcher.FileChange += Watcher_Changed;
-                //_watcher.Clear();
-
-
 
                 // Process cmd line args.
                 string? configFn = null;
@@ -350,11 +353,6 @@ namespace Ephemera.Nebulua.UiApp
             //_stepTime = new(barBar.Current.Sub);
             //ProcessPlay(PlayCommand.UpdateUiTime);
         }
-
-
-        /// <summary>Detect changed script files.</summary>
-        readonly MultiFileWatcher _watcher = new();
-
 
 
         /// <summary>

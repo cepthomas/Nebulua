@@ -20,29 +20,30 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Common\Common.cs" Link="Common.cs" />
-    <Compile Include="..\Common\Config.cs" Link="Config.cs" />
-    <Compile Include="..\Common\Midi.cs" Link="Midi.cs" />
-    <Compile Include="..\Common\State.cs" Link="State.cs" />
+    <Compile Include="..\Common\Common.cs" Link="Common\Common.cs" />
+    <Compile Include="..\Common\Config.cs" Link="Common\Config.cs" />
+    <Compile Include="..\Common\Core.cs" Link="Common\Core.cs" />
+    <Compile Include="..\Common\Midi.cs" Link="Common\Midi.cs" />
+    <Compile Include="..\Common\State.cs" Link="Common\State.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\lua_code\bar_time.lua">
+    <Content Include="..\lua_code\bar_time.lua" Link="lua\bar_time.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\lua_code\midi_defs.lua">
+    <Content Include="..\lua_code\midi_defs.lua" Link="lua\midi_defs.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\lua_code\music_defs.lua">
+    <Content Include="..\lua_code\music_defs.lua" Link="lua\music_defs.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\lua_code\nebulua.lua">
+    <Content Include="..\lua_code\nebulua.lua" Link="lua\nebulua.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\lua_code\neb_common.lua">
+    <Content Include="..\lua_code\neb_common.lua" Link="lua\neb_common.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\lua_code\step_types.lua">
+    <Content Include="..\lua_code\step_types.lua" Link="lua\step_types.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -63,6 +64,11 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\" />
+    <Folder Include="lua\" />
   </ItemGroup>
 
 </Project>
