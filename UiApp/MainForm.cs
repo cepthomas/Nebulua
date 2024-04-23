@@ -14,40 +14,38 @@ namespace Ephemera.Nebulua.UiApp
     {
 
         #region Fields
-        /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("App");
+        // /// <summary>App logger.</summary>
+        // readonly Logger _logger = LogManager.CreateLogger("App");
 
-        /// <summary>The API(s). Key is opaque lua context pointer.</summary>
-        readonly Dictionary<long, Api> _apis = [];
+        // /// <summary>The API(s). Key is opaque lua context pointer.</summary>
+        // readonly Dictionary<long, Api> _apis = [];
 
-        /// <summary>Client supplied context for LUA_PATH.</summary>
-        readonly List<string> _lpath = [];
+        // /// <summary>Client supplied context for LUA_PATH.</summary>
+        // readonly List<string> _lpath = [];
 
-        // /// <summary>Talk to the user.</summary>
-        // readonly CommandProc _cmdProc;
+        // // /// <summary>Talk to the user.</summary>
+        // // readonly CommandProc _cmdProc;
 
-        /// <summary>The config contents.</summary>
-        readonly Config? _config;
+        // /// <summary>The config contents.</summary>
+        // readonly Config? _config;
 
-        /// <summary>Fast timer.</summary>
-        readonly MmTimerEx _mmTimer = new();
+        // /// <summary>Fast timer.</summary>
+        // readonly MmTimerEx _mmTimer = new();
 
-        /// <summary>Diagnostics for timing measurement.</summary>
-        readonly TimingAnalyzer? _tan = null;
+        // /// <summary>Diagnostics for timing measurement.</summary>
+        // readonly TimingAnalyzer? _tan = null;
 
-        /// <summary>All devices to use for send.</summary>
-        readonly List<MidiOutput> _outputs = [];
+        // /// <summary>All devices to use for send.</summary>
+        // readonly List<MidiOutput> _outputs = [];
 
-        /// <summary>All devices to use for receive.</summary>
-        readonly List<MidiInput> _inputs = [];
+        // /// <summary>All devices to use for receive.</summary>
+        // readonly List<MidiInput> _inputs = [];
 
-        /// <summary>Current script.</summary>
-        readonly string _scriptFn = "";
+        // /// <summary>Current script.</summary>
+        // readonly string _scriptFn = "";
         #endregion
 
-// UI: monX2  kill  about  tempo  volume
-
-
+        Core _core;
 
 /*  command handlers
 
@@ -109,7 +107,7 @@ namespace Ephemera.Nebulua.UiApp
 
 
         bool ReloadCmd(CommandDescriptor cmd, List<string> args)
-        // TODO1 do something to reload script without exiting app. App detect/indicate changed file?
+        // TODO1 do something to reload script without exiting app. App detect/indicate changed file? see _watcher.
         // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
         // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
 
@@ -126,9 +124,6 @@ namespace Ephemera.Nebulua.UiApp
         {
             _out.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
         }
-
-
-
 */
 
 
@@ -140,92 +135,99 @@ namespace Ephemera.Nebulua.UiApp
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
 
-
             //Location = new Point(_settings.FormGeometry.X, _settings.FormGeometry.Y);
             //Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
 
-            timeBar.BackColor = Color.AliceBlue;
-            timeBar.ProgressColor = Color.Pink;
+            // Cosmetics.
+            Color _fclr = Color.Aqua;
+            Color _bclr = Color.AliceBlue;
+
+            timeBar.BackColor = _bclr;
+            timeBar.ProgressColor = _fclr;
             timeBar.MarkerColor = Color.Black;
 
+            cliIn.BackColor = _bclr;
+
+            chkPlay.BackColor = _bclr;
+            chkPlay.ForeColor = _fclr;
+            // btnMonIn.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnMonIn.Image, _settings.IconColor);
+
+            btnRewind.BackColor = _bclr;
+            btnRewind.ForeColor = _fclr;
+
+            btnAbout.BackColor = _bclr;
+            btnAbout.ForeColor = _fclr;
+
+            btnMonRcv.BackColor = _bclr;
+            btnMonRcv.ForeColor = _fclr;
+
+            btnMonSnd.BackColor = _bclr;
+            btnMonSnd.ForeColor = _fclr;
+
+            btnKill.BackColor = _bclr;
+            btnKill.ForeColor = _fclr;
+
+            sldVolume.BackColor = _bclr;
+            sldVolume.ForeColor = _fclr;
+
+            sldTempo.BackColor = _bclr;
+            sldTempo.ForeColor = _fclr;
+
+            // Behavior.
             timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
-
-            Console.WriteLine("");
-
 
             traffic.MatchColors.Add(" SND ", Color.Purple);
             traffic.MatchColors.Add(" RCV ", Color.Green);
-            traffic.BackColor = Color.Cornsilk;
+            traffic.BackColor = _bclr;
+            traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "->";
 
-
-            /////// Slider.
-            //slider1.DrawColor = Color.Orange;
+            //slider1.ValueChanged += (_, __) => Tell($"Slider value: {slider1.Value}");
             //slider1.Minimum = 0;
             //slider1.Maximum = 100;
             //slider1.Resolution = 5;
             //slider1.Value = 40;
             //slider1.Label = "|-|-|";
-            //slider1.ValueChanged += (_, __) => Tell($"Slider value: {slider1.Value}");
 
-
-            /////// OptionsEditor and ChoiceSelector
-            //optionsEd.AllowEdit = true;
-            //optionsEd.BackColor = Color.LightCoral;
-            //optionsEd.Options = new() { { "Apple", true }, { "Orange", false }, { "Peach", true }, { "Bird", false }, { "Cow", true } };
-            //optionsEd.OptionsChanged += (_, __) => Tell($"Options changed:{optionsEd.Options.Where(o => o.Value == true).Count()}");
-            //choicer.Text = "Test choice";
-            //choicer.SetOptions(new() { "Apple", "Orange", "Peach", "Bird", "Cow" });
-            //choicer.ChoiceChanged += (_, __) => Tell($"Choicer changed:{choicer.SelectedChoice}");
-            //btnDump.Click += (_, __) =>
-            //{
-            //    Tell($"ChoiceSelector: {choicer.SelectedChoice}");
-            //    Tell($"OptionsEditor:");
-            //    optionsEd.Options.ForEach(v => Tell($"{v.Key} is {v.Value}"));
-            //};
-
-            //slider1.ValueChanged += (_, __) => meterLinear.AddValue(slider1.Value);
-            //// sl2 2 -> 19
-            //slider2.ValueChanged += (_, __) => meterDots.AddValue(slider2.Value);
-
-
-
-            // These set vars only
-            // this.sldVolume.ValueChanged += new System.EventHandler(this.Volume_ValueChanged);
+            // sldVolume.ValueChanged += new System.EventHandler(this.Volume_ValueChanged);
             // btnMonIn.Click += Monitor_Click;
             // btnMonOut.Click += Monitor_Click;
-            // 
-            // this.sldTempo.ValueChanged += new System.EventHandler(this.Speed_ValueChanged);
-            // > SetFastTimerPeriod();
-            // 
+            // this.sldTempo.ValueChanged += new System.EventHandler(this.Speed_ValueChanged); > SetFastTimerPeriod();
+
             // ProcessPlay(PlayCommand cmd):
             // this.btnRewind.Click += new System.EventHandler(this.Rewind_Click);  
             // this.chkPlay.Click += new System.EventHandler(this.Play_Click);  ProcessPlay(PlayCommand cmd)
             // void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
-            // 
-            // 
-            // 
+
             // btnAbout.Click += About_Click;
             // > MiscUtils.ShowReadme("Nebulator");
             // this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
             // > var docs = MidiDefs.FormatDoc();
             // > docs.AddRange(MusicDefinitions.FormatDoc());
             // > Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
-            // 
+
             // btnKillComm.Click += (object? _, EventArgs __) => { KillAll(); };
-
-
         }
+
+
+        //////// ================ Core stuff custom ===================
 
         protected override void OnLoad(EventArgs e)
         {
-
             try
             {
+                KeyPreview = true; // for routing kbd strokes properly
+
+                _watcher.FileChange += Watcher_Changed;
+                //_watcher.Clear();
+
+
+
                 // Process cmd line args.
                 string? configFn = null;
+                string? _scriptFn = null;
                 var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
-                args.RemoveAt(0); // remove the binary
+                args.RemoveAt(0); // remove the binary name
 
                 foreach (var arg in args)
                 {
@@ -248,100 +250,60 @@ namespace Ephemera.Nebulua.UiApp
                     throw new ApplicationArgumentException($"Missing nebulua script file");
                 }
 
-                _config = new(configFn);
+                // OK so far.
+                _core = new Core(configFn);
 
-                // Init logging.
-                LogManager.MinLevelFile = _config.FileLevel;
-                LogManager.MinLevelNotif = _config.NotifLevel;
                 LogManager.LogMessage += LogManager_LogMessage;
-                var f = File.OpenWrite(_config.LogFilename); // ensure file exists
-                f?.Close();
-                LogManager.Run(_config.LogFilename, 100000);
 
-                // Set up runtime lua environment.
-                var exePath = Environment.CurrentDirectory; // where exe lives
-                _lpath.Add($@"{exePath}\lua_code"); // app lua files
-                //_lpath.Add($@"{exePath}\lbot"); // lbot files
-                _lpath.Add($@"C:\Dev\repos\Lua\LuaBagOfTricks"); // lbot files
+                _core.LoadAndRun(_scriptFn);
 
-                // Hook script callbacks.
-                Api.CreateChannel += Interop_CreateChannel;
-                Api.Send += Interop_Send;
-                Api.Log += Interop_Log;
-                Api.PropertyChange += Interop_PropertyChange;
+                // Update file watcher. TODO1 also any required files in script.
+                _watcher.Add(_scriptFn);
+
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
+
 
                 // State change handler.
                 State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
             }
-            // Anything that throws is fatal.
+            // Anything that throws is fatal. TODO1 generic handling or custom? also log error below.
             catch (Exception ex)
             {
-                FatalError(ex, "App constructor failed.");
+////                FatalError(ex, "App constructor failed.");
             }
-
-
-
 
            base.OnLoad(e);
         }
 
-        /// <summary>
-        /// Clean up.
-        /// </summary>
-        /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    // Template said: dispose managed state (managed objects).
-                    _mmTimer.Stop();
-                    _mmTimer.Dispose();
-
-                    LogManager.Stop();
-
-                    // Destroy devices
-                    _inputs.ForEach(d => d.Dispose());
-                    _inputs.Clear();
-                    _outputs.ForEach(d => d.Dispose());
-                    _outputs.Clear();
-                }
-
-                // Template said: free unmanaged resources (unmanaged objects) and override finalizer.
-                // Template said: set large fields to null.
-                _disposed = true;
-            }
-        }
-
-        /// <summary>
-        /// Template said: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        /// </summary>
-        ~App()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        //protected override void OnFormClosing(FormClosingEventArgs e)
-        //{
-        //    //SaveSettings();
-        //    base.OnFormClosing(e);
-        //}
         #endregion
 
 
+        /// <summary>
+        /// Capture bad events and display them to the user. If error shut down.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            traffic.AppendLine(e.ToString());
 
+            switch (e.Level)
+            {
+                case LogLevel.Error:
+//                    _cmdProc.Write(e.Message);
+                    // Fatal, shut down.
+                    State.Instance.ExecState = ExecState.Exit;
+                    break;
+
+                case LogLevel.Warn:
+//                    _cmdProc.Write(e.Message);
+                    break;
+
+                default:
+                    // ignore
+                    break;
+            }
+        }
 
         /// <summary>
         /// Handler for state changes. Some may originate in this component, others from elsewhere.
@@ -353,11 +315,7 @@ namespace Ephemera.Nebulua.UiApp
             switch (name)
             {
                 case "CurrentTick":
-                    if (sender != this) { }
-                    break;
-
-                case "Tempo":
-                    SetTimer(State.Instance.Tempo);
+                    if (sender != this) { } // Do state handling
                     break;
 
                 case "ScriptState":
@@ -368,8 +326,13 @@ namespace Ephemera.Nebulua.UiApp
                         case ExecState.Exit:
                             break;
 
+
+                        // // Stop and rewind.
+                        // _cmdProc.Write("done"); // handle with state change
+                        // State.Instance.ExecState = ExecState.Idle;
+
                         case ExecState.Kill:
-                            KillAll();
+                            //KillAll();
                             State.Instance.ExecState = ExecState.Idle;
                             break;
                     }
@@ -378,485 +341,59 @@ namespace Ephemera.Nebulua.UiApp
         }
 
 
+
+
+        //////// ================ this UI specific ===================
 
         private void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-//            throw new NotImplementedException();
+            //_stepTime = new(barBar.Current.Sub);
+            //ProcessPlay(PlayCommand.UpdateUiTime);
         }
 
 
+        /// <summary>Detect changed script files.</summary>
+        readonly MultiFileWatcher _watcher = new();
 
-        #region Primary workers
+
+
         /// <summary>
-        /// Load and execute script.
+        /// Do some global key handling. Space bar is used for stop/start playing.
         /// </summary>
-        public NebStatus Run()
+        /// <param name="e"></param>
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-            NebStatus stat = NebStatus.Ok;
-            Console.WriteLine("Heeeeer");
-
-            try
+            if (e.KeyCode == Keys.Space)
             {
-                // Create script api.
-                Api api = new(_lpath);
-                _apis.Add(api.Id, api);
-
-                // Load the script.
-                var s = $"Loading script file {_scriptFn}";
-                _logger.Info(s);
-                _cmdProc.Write(s);
-                stat = api.OpenScript(_scriptFn);
-                if (stat != NebStatus.Ok)
-                {
-                    throw new ApiException("OpenScript() failed", api.Error);
-                }
-
-                var sectionPositions = api.SectionInfo.Keys.OrderBy(k => k).ToList();
-                State.Instance.Length = sectionPositions.Last();
-
-                // Start timer.
-                SetTimer(State.Instance.Tempo);
-                _mmTimer.Start();
-
-                ///// Good to go now. Loop forever doing cmdproc requests. /////
-
-                while (State.Instance.ExecState != ExecState.Exit)
-                {
-                    // Should not throw. Command processor will take care of its own errors.
-                    _cmdProc.Read();
-                }
-
-                ///// Normal done. /////
-
-                _cmdProc.Write("shutting down");
-
-                // Wait a bit in case there are some lingering events.
-                Thread.Sleep(100);
-
-                // Just in case.
-                KillAll();
+                // Handle start/stop toggle.
+                //ProcessPlay(chkPlay.Checked ? PlayCommand.Stop : PlayCommand.Start);
+                e.Handled = true;
             }
-            catch (Exception ex)
-            {
-                FatalError(ex, "Run() failed");
-            }
-
-            return stat;
+            base.OnKeyDown(e);
         }
 
-        /// <summary>
-        /// Process events. This is in an interrupt handler so can't throw exceptions back to main thread.
-        /// </summary>
-        /// <param name="totalElapsed"></param>
-        /// <param name="periodElapsed"></param>
-        void MmTimer_Callback(double totalElapsed, double periodElapsed)
-        {
-            try
-            {
-                if (State.Instance.ExecState == ExecState.Run)
-                {
-                    // Do script. TODO Handle solo/mute like nebulator.
-                    _tan?.Arm();
-
-                    foreach (var api in _apis.Values)
-                    {
-                        NebStatus stat = api.Step(State.Instance.CurrentTick);
-                        if (stat != NebStatus.Ok)
-                        {
-                            throw new ApiException("Step() failed", api.Error);
-                        }
-                    }
-
-                    // Read stopwatch and diff/stats.
-                    string? s = _tan?.Dump();
-
-                    // Update state.
-                    // Bump time and check state.
-                    int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-                    int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
-
-                    if (++State.Instance.CurrentTick >= end) // done
-                    {
-                        // Keep going? else stop/rewind.
-                        if (State.Instance.DoLoop)
-                        {
-                            // Keep going.
-                            State.Instance.CurrentTick = start;
-                        }
-                        else
-                        {
-                            // Stop and rewind.
-                            _cmdProc.Write("done");
-                            State.Instance.ExecState = ExecState.Idle;
-                            State.Instance.CurrentTick = start;
-
-                            // just in case
-                            KillAll();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                FatalError(ex, "Step() failed");
-            }
-        }
 
         /// <summary>
-        /// Capture bad events and display them to the user. If error shut down.
+        /// One or more np files have changed so reload/compile.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        void Watcher_Changed(object? sender, MultiFileWatcher.FileChangeEventArgs e)
         {
-            switch (e.Level)
-            {
-                case LogLevel.Error:
-                    _cmdProc.Write(e.Message);
-                    // Fatal, shut down.
-                    State.Instance.ExecState = ExecState.Exit;
-                    break;
+            //e.FileNames.ForEach(fn => _logger.Debug($"Watcher_Changed {fn}"));
 
-                case LogLevel.Warn:
-                    _cmdProc.Write(e.Message);
-                    break;
-
-                default:
-                    // ignore
-                    break;
-            }
+            //// Kick over to main UI thread.
+            //this.InvokeIfRequired(_ =>
+            //{
+            //    if (_settings.AutoCompile)
+            //    {
+            //        CompileScript();
+            //    }
+            //    else
+            //    {
+            //        SetCompileStatus(false);
+            //    }
+            //});
         }
-
-        /// <summary>
-        /// Midi input arrived. This is in an interrupt handler so don't throw exceptions.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Midi_ReceiveEvent(object? sender, MidiEvent e)
-        {
-            NebStatus stat = NebStatus.Ok;
-
-            try
-            {
-                int index = _inputs.IndexOf((MidiInput)sender!);
-                int chan_hnd = ChannelHandle.MakeInHandle(index, e.Channel);
-                bool logit = true;
-
-                foreach (var api in _apis.Values)
-                {
-                    switch (e)
-                    {
-                        case NoteOnEvent evt:
-                            stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
-                            break;
-
-                        case NoteEvent evt:
-                            stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
-                            break;
-
-                        case ControlChangeEvent evt:
-                            stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                            break;
-
-                        default: // Ignore others for now.
-                            logit = false;
-                            break;
-                    }
-
-                    if (logit && State.Instance.MonRcv)
-                    {
-                        _logger.Trace($"RCV {MidiDefs.FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
-                    }
-
-                    if (stat != NebStatus.Ok)
-                    {
-                        throw new ApiException("Midi Receive() failed", api.Error);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                FatalError(ex, "Midi Receive() failed");
-            }
-        }
-        #endregion
-
-
-
-
-        #region Script Event Handlers
-        /// <summary>
-        /// Script wants to define a channel.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Interop_CreateChannel(object? sender, CreateChannelArgs e)
-        {
-            e.Ret = 0; // chan_hnd default means invalid
-
-            // Get Api.
-            //Api api = _apis[e.Id];
-
-            try
-            {
-                // Check args.
-                if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > MidiDefs.NUM_MIDI_CHANNELS)
-                {
-                    throw new ScriptSyntaxException($"Script has invalid input midi device: {e.DevName}");
-                }
-
-                if (e.IsOutput)
-                {
-                    var output = _outputs.FirstOrDefault(o => o.DeviceName == e.DevName);
-                    if (output == null)
-                    {
-                        output = new(e.DevName); //throws
-                        _outputs.Add(output);
-                    }
-
-                    output.Channels[e.ChanNum - 1] = true;
-                    e.Ret = ChannelHandle.MakeOutHandle(_outputs.Count - 1, e.ChanNum);
-
-                    // Send the patch now.
-                    PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
-                    output.Send(pevt);
-                }
-                else
-                {
-                    var input = _inputs.FirstOrDefault(o => o.DeviceName == e.DevName);
-                    if (input == null)
-                    {
-                        input = new(e.DevName); // throws
-                        input.ReceiveEvent += Midi_ReceiveEvent;
-                        _inputs.Add(input);
-                    }
-
-                    input.Channels[e.ChanNum - 1] = true;
-                    e.Ret = ChannelHandle.MakeInHandle(_inputs.Count - 1, e.ChanNum);
-                }
-            }
-            catch (Exception ex)  // Any exception is considered fatal.
-            {
-                e.Ret = 0;
-                FatalError(ex, "CreateChannel() failed");
-            }
-        }
-
-        /// <summary>
-        /// Sending some midi.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Interop_Send(object? sender, SendArgs e)
-        {
-            e.Ret = 0; // not used
-
-            // Get Api.
-            //Api api = _api[e.Id];
-
-            try
-            {
-                // Check args.
-                var (index, chan_num) = ChannelHandle.DeconstructHandle(e.ChanHnd);
-                if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS ||
-                    !_outputs[index].Channels[chan_num - 1])
-                {
-                    throw new ScriptSyntaxException($"Script has invalid channel: {e.ChanHnd}");
-                }
-                if (e.What < 0 || e.What >= MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= MidiDefs.MIDI_VAL_MAX)
-                {
-                    throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
-                }
-
-                var output = _outputs[index];
-                MidiEvent evt;
-
-                if (e.IsNote)
-                {
-                    // Check velocity for note off.
-                    evt = e.Value == 0 ?
-                        new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
-                        new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value);
-                }
-                else
-                {
-                    evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
-                }
-
-                output.Send(evt);
-
-                if (State.Instance.MonSnd)
-                {
-                    _logger.Trace($"SND {MidiDefs.FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.ChanHnd)}");
-                }
-            }
-            catch (Exception ex)
-            {
-                e.Ret = 0;
-                FatalError(ex, "Midi Send() failed");
-            }
-        }
-
-        /// <summary>
-        /// Log something from script.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Interop_Log(object? sender, LogArgs e)
-        {
-            if (e.LogLevel >= (int)LogLevel.Trace && e.LogLevel <= (int)LogLevel.Error) 
-            {
-                _logger.Log((LogLevel)e.LogLevel, $"SCR {e.Msg}");
-                e.Ret = 0;
-            }
-            else
-            {
-                _cmdProc.Write($"Invalid log level: {e.LogLevel}");
-                e.Ret = 1;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Interop_PropertyChange(object? sender, PropertyArgs e)
-        {
-            // Get Api.
-            //Api api = _api[e.Id];
-
-            if (e.Bpm > 0)
-            {
-                if (e.Bpm >= 30 && e.Bpm <= 240)
-                {
-                    State.Instance.Tempo = e.Bpm;
-                    SetTimer(State.Instance.Tempo);
-                    e.Ret = 0;
-                }
-                else
-                {
-                    _cmdProc.Write($"Invalid tempo: {e.Bpm}");
-                    e.Ret = 1;
-                }
-            }
-            else
-            {
-                SetTimer(0);
-            }
-        }
-        #endregion
-
-
-
-
-
-        #region Private functions
-        /// <summary>
-        /// Set timer for this tempo.
-        /// </summary>
-        /// <param name="tempo"></param>
-        void SetTimer(int tempo)
-        {
-            if (tempo > 0)
-            {
-                double sec_per_beat = 60.0 / tempo;
-                double msec_per_sub = 1000 * sec_per_beat / Defs.SUBS_PER_BEAT;
-                double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
-                _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimer_Callback);
-            }
-            else // stop
-            {
-                _mmTimer.SetTimer(0, MmTimer_Callback);
-            }
-        }
-
-        /// <summary>
-        /// Stop all midi.
-        /// </summary>
-        void KillAll()
-        {
-            foreach (var o in _outputs)
-            {
-                for (int i = 0; i < MidiDefs.NUM_MIDI_CHANNELS; i++)
-                {
-                    ControlChangeEvent cevt = new(0, i + 1, MidiController.AllNotesOff, 0);
-                    o.Send(cevt);
-                }
-            }
-
-            // Hard reset.
-            State.Instance.ExecState = ExecState.Idle;
-        }
-
-        /// <summary>
-        /// General purpose handler for fatal errors. Causes app exit.
-        /// </summary>
-        /// <param name="ex">The exception</param>
-        /// <param name="info">Extra info</param>
-        void FatalError(Exception e, string info)
-        {
-            string serr;
-
-            switch (e)
-            {
-                case ApiException ex:
-                    serr = $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}";
-                    //// Could remove unnecessary detail for user.
-                    //int pos = ex.ApiError.IndexOf("stack traceback");
-                    //var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
-                    //serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
-                    //// Log the detail.
-                    //_logger.Debug($">>>>{ex.ApiError}");
-                    break;
-
-                case ConfigException ex:
-                    serr = $"Config File Error: {ex.Message}: {info}";
-                    break;
-
-                case ScriptSyntaxException ex:
-                    serr = $"Script Syntax Error: {ex.Message}: {info}";
-                    break;
-
-                case ApplicationArgumentException ex:
-                    serr = $"Application Argument Error: {ex.Message}: {info}";
-                    break;
-
-                default:
-                    serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
-                    break;
-            }
-
-            _logger.Error(serr);
-
-            // Stop everything.
-            SetTimer(0);
-            State.Instance.CurrentTick = 0;
-            KillAll();
-
-            // Flush log.
-            Thread.Sleep(200);
-
-            Environment.Exit(1);
-        }
-        #endregion
-
-
-
-
-        //void Tell(string msg)
-        //{
-        //    //txtInfo.AppendLine(msg);
-        //}
-
-        //public void MakeIcon(string fn)
-        //{
-        //    string outfn = fn + ".ico";
-        //    // Read bmp and convert to icon.
-        //    var bmp = (Bitmap)Image.FromFile(fn);
-        //    // Save icon.
-        //    var ico = GraphicsUtils.CreateIcon(bmp);//, 32);
-        //    GraphicsUtils.SaveIcon(ico, outfn);
-        //}
     }
 }

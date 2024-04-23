@@ -39,6 +39,10 @@ namespace Ephemera.Nebulua.UiApp
             sldTempo = new NBagOfUis.Slider();
             traffic = new NBagOfUis.TextViewer();
             toolTip = new ToolTip(components);
+            btnAbout = new Button();
+            btnMonRcv = new Button();
+            btnMonSnd = new Button();
+            btnKill = new Button();
             timeBar = new TimeBar();
             cliIn = new CliInput();
             SuspendLayout();
@@ -111,9 +115,50 @@ namespace Ephemera.Nebulua.UiApp
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
+            // btnAbout
+            // 
+            btnAbout.Image = Properties.Resources.glyphicons_195_question_sign;
+            btnAbout.Location = new Point(844, 18);
+            btnAbout.Name = "btnAbout";
+            btnAbout.Size = new Size(58, 46);
+            btnAbout.TabIndex = 44;
+            toolTip.SetToolTip(btnAbout, "Tell me about yourself");
+            btnAbout.UseVisualStyleBackColor = false;
+            // 
+            // btnMonRcv
+            // 
+            btnMonRcv.Image = Properties.Resources.glyphicons_213_arrow_down;
+            btnMonRcv.Location = new Point(632, 19);
+            btnMonRcv.Name = "btnMonRcv";
+            btnMonRcv.Size = new Size(59, 29);
+            btnMonRcv.TabIndex = 45;
+            toolTip.SetToolTip(btnMonRcv, "Monitor midi rcv");
+            btnMonRcv.UseVisualStyleBackColor = false;
+            // 
+            // btnMonSnd
+            // 
+            btnMonSnd.Image = Properties.Resources.glyphicons_214_arrow_up;
+            btnMonSnd.Location = new Point(722, 27);
+            btnMonSnd.Name = "btnMonSnd";
+            btnMonSnd.Size = new Size(59, 29);
+            btnMonSnd.TabIndex = 46;
+            toolTip.SetToolTip(btnMonSnd, "Monitor midi send");
+            btnMonSnd.UseVisualStyleBackColor = false;
+            // 
+            // btnKill
+            // 
+            btnKill.Image = Properties.Resources.glyphicons_206_electricity;
+            btnKill.Location = new Point(795, 19);
+            btnKill.Name = "btnKill";
+            btnKill.Size = new Size(43, 43);
+            btnKill.TabIndex = 47;
+            toolTip.SetToolTip(btnKill, "Kill all midi out");
+            btnKill.UseVisualStyleBackColor = false;
+            // 
             // timeBar
             // 
             timeBar.BorderStyle = BorderStyle.FixedSingle;
+            timeBar.Font = new Font("Cascadia Mono", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.Location = new Point(50, 82);
@@ -137,6 +182,10 @@ namespace Ephemera.Nebulua.UiApp
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1041, 606);
+            Controls.Add(btnKill);
+            Controls.Add(btnMonSnd);
+            Controls.Add(btnMonRcv);
+            Controls.Add(btnAbout);
             Controls.Add(cliIn);
             Controls.Add(timeBar);
             Controls.Add(btnRewind);
@@ -159,5 +208,9 @@ namespace Ephemera.Nebulua.UiApp
         private ToolTip toolTip;
         private TimeBar timeBar;
         private CliInput cliIn;
+        private Button btnAbout;
+        private Button btnMonRcv;
+        private Button btnMonSnd;
+        private Button btnKill;
     }
 }

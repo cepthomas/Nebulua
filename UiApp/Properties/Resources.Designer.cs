@@ -39,7 +39,7 @@ namespace Ephemera.Nebulua.UiApp.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Nebulua.UiApp.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("UiApp.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -176,6 +176,26 @@ namespace Ephemera.Nebulua.UiApp.Properties {
         internal static System.Drawing.Bitmap glyphicons_206_electricity {
             get {
                 object obj = ResourceManager.GetObject("glyphicons-206-electricity", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_213_arrow_down {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-213-arrow-down", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_214_arrow_up {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-214-arrow-up", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

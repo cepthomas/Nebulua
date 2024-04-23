@@ -10,9 +10,9 @@ using Ephemera.NBagOfTricks.Slog;
 using Interop;
 
 
-namespace Ephemera.Nebulua.CliApp
+namespace Ephemera.Nebulua
 {
-    public class App : IDisposable
+    public class Core : IDisposable
     {
         #region Fields
         /// <summary>App logger.</summary>
@@ -23,9 +23,6 @@ namespace Ephemera.Nebulua.CliApp
 
         /// <summary>Client supplied context for LUA_PATH.</summary>
         readonly List<string> _lpath = [];
-
-        /// <summary>Talk to the user.</summary>
-        readonly CommandProc _cmdProc;
 
         /// <summary>The config contents.</summary>
         readonly Config? _config;
@@ -53,45 +50,17 @@ namespace Ephemera.Nebulua.CliApp
         /// <summary>
         /// Constructor inits stuff.
         /// </summary>
-        public App()
+        /// <param name="configFn">Config to use.</param>
+        public Core(string configFn)
         {
-            _cmdProc = new(Console.In, Console.Out);
-            _cmdProc.Write("Greetings from Nebulua!");
-
             try
             {
-                // Process cmd line args.
-                string? configFn = null;
-                var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
-                args.RemoveAt(0); // remove the binary
-
-                foreach (var arg in args)
-                {
-                    if (arg.EndsWith(".ini"))
-                    {
-                        configFn = arg;
-                    }
-                    else if (arg.EndsWith(".lua"))
-                    {
-                        _scriptFn = arg;
-                    }
-                    else
-                    {
-                        throw new ApplicationArgumentException($"Invalid command line: {arg}");
-                    }
-                }
-
-                if (_scriptFn is null)
-                {
-                    throw new ApplicationArgumentException($"Missing nebulua script file");
-                }
-
                 _config = new(configFn);
 
                 // Init logging.
                 LogManager.MinLevelFile = _config.FileLevel;
                 LogManager.MinLevelNotif = _config.NotifLevel;
-                LogManager.LogMessage += LogManager_LogMessage;
+//                LogManager.LogMessage += LogManager_LogMessage;
                 var f = File.OpenWrite(_config.LogFilename); // ensure file exists
                 f?.Close();
                 LogManager.Run(_config.LogFilename, 100000);
@@ -121,7 +90,7 @@ namespace Ephemera.Nebulua.CliApp
         /// <summary>
         /// Clean up.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -145,7 +114,7 @@ namespace Ephemera.Nebulua.CliApp
 
                 // Release unmanaged resources.
                 // Set large fields to null.
-                _apis.ForEach(a => a = null);
+                //_apis.ForEach(kv => kv.Value = null);
                 _apis.Clear();
                 _disposed = true;
             }
@@ -154,7 +123,7 @@ namespace Ephemera.Nebulua.CliApp
         /// <summary>
         /// Override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         /// </summary>
-        ~App()
+        ~Core()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
@@ -175,10 +144,9 @@ namespace Ephemera.Nebulua.CliApp
         /// <summary>
         /// Load and execute script.
         /// </summary>
-        public NebStatus Run()
+        public NebStatus LoadAndRun(string scriptFn)
         {
             NebStatus stat = NebStatus.Ok;
-            Console.WriteLine("Heeeeer");
 
             try
             {
@@ -187,10 +155,10 @@ namespace Ephemera.Nebulua.CliApp
                 _apis.Add(api.Id, api);
 
                 // Load the script.
-                var s = $"Loading script file {_scriptFn}";
+                var s = $"Loading script file {scriptFn}";
                 _logger.Info(s);
-                _cmdProc.Write(s);
-                stat = api.OpenScript(_scriptFn);
+                // _cmdProc.Write(s);  // custom
+                stat = api.OpenScript(scriptFn);
                 if (stat != NebStatus.Ok)
                 {
                     throw new ApiException("OpenScript() failed", api.Error);
@@ -203,23 +171,23 @@ namespace Ephemera.Nebulua.CliApp
                 SetTimer(State.Instance.Tempo);
                 _mmTimer.Start();
 
-                ///// Good to go now. Loop forever doing cmdproc requests. /////
+                ///// Good to go now. Loop forever doing cmdproc requests. ///// // ================ custom
 
-                while (State.Instance.ExecState != ExecState.Exit)
-                {
-                    // Should not throw. Command processor will take care of its own errors.
-                    _cmdProc.Read();
-                }
+                // while (State.Instance.ExecState != ExecState.Exit)
+                // {
+                //     // Should not throw. Command processor will take care of its own errors.
+                //     _cmdProc.Read();
+                // }
 
-                ///// Normal done. /////
+                // ///// Normal done. /////
 
-                _cmdProc.Write("shutting down");
+                // _cmdProc.Write("shutting down");
 
-                // Wait a bit in case there are some lingering events.
-                Thread.Sleep(100);
+                // // Wait a bit in case there are some lingering events.
+                // Thread.Sleep(100);
 
-                // Just in case.
-                KillAll();
+                // // Just in case.
+                // KillAll();
             }
             catch (Exception ex)
             {
@@ -231,6 +199,7 @@ namespace Ephemera.Nebulua.CliApp
 
         /// <summary>
         /// Handler for state changes. Some may originate in this component, others from elsewhere.
+        /// Responsible for core stuff like tempo, kill.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -238,10 +207,6 @@ namespace Ephemera.Nebulua.CliApp
         {
             switch (name)
             {
-                case "CurrentTick":
-                    if (sender != this) { }
-                    break;
-
                 case "Tempo":
                     SetTimer(State.Instance.Tempo);
                     break;
@@ -249,11 +214,6 @@ namespace Ephemera.Nebulua.CliApp
                 case "ScriptState":
                     switch (State.Instance.ExecState)
                     {
-                        case ExecState.Idle:
-                        case ExecState.Run:
-                        case ExecState.Exit:
-                            break;
-
                         case ExecState.Kill:
                             KillAll();
                             State.Instance.ExecState = ExecState.Idle;
@@ -305,7 +265,7 @@ namespace Ephemera.Nebulua.CliApp
                         else
                         {
                             // Stop and rewind.
-                            _cmdProc.Write("done");
+                            // _cmdProc.Write("done"); // custom handle with state change
                             State.Instance.ExecState = ExecState.Idle;
                             State.Instance.CurrentTick = start;
 
@@ -318,31 +278,6 @@ namespace Ephemera.Nebulua.CliApp
             catch (Exception ex)
             {
                 FatalError(ex, "Step() failed");
-            }
-        }
-
-        /// <summary>
-        /// Capture bad events and display them to the user. If error shut down.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        {
-            switch (e.Level)
-            {
-                case LogLevel.Error:
-                    _cmdProc.Write(e.Message);
-                    // Fatal, shut down.
-                    State.Instance.ExecState = ExecState.Exit;
-                    break;
-
-                case LogLevel.Warn:
-                    _cmdProc.Write(e.Message);
-                    break;
-
-                default:
-                    // ignore
-                    break;
             }
         }
 
@@ -527,8 +462,8 @@ namespace Ephemera.Nebulua.CliApp
             }
             else
             {
-                _cmdProc.Write($"Invalid log level: {e.LogLevel}");
-                e.Ret = 1;
+                var ex = new ScriptSyntaxException("Invalid log level: {e.LogLevel}");
+                FatalError(ex, "Interop_Log()");
             }
         }
 
@@ -552,7 +487,8 @@ namespace Ephemera.Nebulua.CliApp
                 }
                 else
                 {
-                    _cmdProc.Write($"Invalid tempo: {e.Bpm}");
+                    var ex = new ScriptSyntaxException($"Invalid tempo: {e.Bpm}");
+                    FatalError(ex, "Interop_PropertyChange()");
                     e.Ret = 1;
                 }
             }

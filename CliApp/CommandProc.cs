@@ -352,7 +352,7 @@ namespace Ephemera.Nebulua.CliApp
             switch (args.Count)
             {
                 case 1: // no args
-                    // TODO1 do something to reload script without exiting app. App detect/indicate changed file?
+                    // TODO1 do something to reload script without exiting app. App detect/indicate changed file? see _watcher.
                     // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
                     // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
                     break;
