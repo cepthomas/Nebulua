@@ -69,7 +69,7 @@ namespace Ephemera.Nebulua
                 var exePath = Environment.CurrentDirectory; // where exe lives
                 _lpath.Add($@"{exePath}\lua_code"); // app lua files
                 //_lpath.Add($@"{exePath}\lbot"); // lbot files
-                _lpath.Add($@"C:\Dev\repos\Lua\LuaBagOfTricks"); // lbot files
+//TODO1 copy these files                _lpath.Add($@"C:\Dev\repos\Lua\LuaBagOfTricks"); // lbot files
 
                 // Hook script callbacks.
                 Api.CreateChannel += Interop_CreateChannel;

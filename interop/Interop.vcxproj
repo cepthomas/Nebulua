@@ -84,7 +84,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\LuaBagOfTricks\source_code;..\lib\lua\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lbot\source_code;..\lib\lua\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>..\lib\lua\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -125,16 +125,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\LuaBagOfTricks\source_code\luaex.h" />
-    <ClInclude Include="..\..\LuaBagOfTricks\source_code\luautils.h" />
+    <ClInclude Include="..\lbot\source_code\luaex.h" />
+    <ClInclude Include="..\lbot\source_code\luautils.h" />
     <ClInclude Include="Api.h" />
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luaex.c">
+    <ClCompile Include="..\lbot\source_code\luaex.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
-    <ClCompile Include="..\..\LuaBagOfTricks\source_code\luautils.c">
+    <ClCompile Include="..\lbot\source_code\luautils.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="Api.cpp" />
