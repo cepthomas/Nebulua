@@ -34,7 +34,6 @@ namespace Ephemera.Nebulua.CliApp
         readonly MultiFileWatcher _watcher = new();
         #endregion
 
-
         #region Lifecycle
         /// <summary>
         /// Constructor inits stuff.
@@ -110,7 +109,7 @@ namespace Ephemera.Nebulua.CliApp
 
         #region Primary workers
         /// <summary>
-        /// Load and execute script.
+        /// Execute the script. Doesn't return until complete.
         /// </summary>
         public NebStatus Run()
         {
