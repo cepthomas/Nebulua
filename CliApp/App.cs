@@ -15,8 +15,8 @@ namespace Ephemera.Nebulua.CliApp
     public class App : IDisposable
     {
         #region Fields
-        // /// <summary>App logger.</summary>
-        // readonly Logger _logger = LogManager.CreateLogger("App");
+        /// <summary>App logger.</summary>
+        readonly Logger _logger = LogManager.CreateLogger("App");
 
         // /// <summary>The API(s). Key is opaque lua context pointer.</summary>
         // readonly Dictionary<long, Api> _apis = [];
@@ -97,6 +97,7 @@ namespace Ephemera.Nebulua.CliApp
                 // OK so far.
                 _core = new Core(configFn);
 
+                // Hook loog writes.
                 LogManager.LogMessage += LogManager_LogMessage;
 
                 _core.LoadAndRun(_scriptFn);
@@ -207,9 +208,9 @@ namespace Ephemera.Nebulua.CliApp
                 // _apis.Add(api.Id, api);
 
                 // // Load the script.
-                // var s = $"Loading script file {_scriptFn}";
-                // _logger.Info(s);
-                // _cmdProc.Write(s);
+                var s = $"Running script file {_scriptFn}";
+                _logger.Info(s);
+                _cmdProc.Write(s);
                 // stat = api.OpenScript(_scriptFn);
                 // if (stat != NebStatus.Ok)
                 // {
@@ -659,17 +660,18 @@ namespace Ephemera.Nebulua.CliApp
                     break;
             }
 
+            // This will cause the app to exit.
             _logger.Error(serr);
 
-            // Stop everything.
-            SetTimer(0);
-            State.Instance.CurrentTick = 0;
-            KillAll();
+            //// Stop everything.
+            //SetTimer(0);
+            //State.Instance.CurrentTick = 0;
+            //KillAll();
 
-            // Flush log.
-            Thread.Sleep(200);
+            //// Flush log.
+            //Thread.Sleep(200);
 
-            Environment.Exit(1);
+            //Environment.Exit(1);
         }
         #endregion
     }

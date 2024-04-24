@@ -16,7 +16,7 @@ namespace Ephemera.Nebulua
     {
         #region Fields
         /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("App");
+        readonly Logger _logger = LogManager.CreateLogger("Core");
 
         /// <summary>The API(s). Key is opaque lua context pointer.</summary>
         readonly Dictionary<long, Api> _apis = [];
