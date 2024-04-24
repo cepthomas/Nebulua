@@ -12,47 +12,23 @@ namespace Ephemera.Nebulua.UiApp
 {
     public partial class MainForm : Form
     {
-
         #region Fields
-        // /// <summary>App logger.</summary>
-        // readonly Logger _logger = LogManager.CreateLogger("App");
+        /// <summary>App logger.</summary>
+        readonly Logger _logger = LogManager.CreateLogger("Ui");
 
-        // /// <summary>The API(s). Key is opaque lua context pointer.</summary>
-        // readonly Dictionary<long, Api> _apis = [];
+        /// <summary>Current script.</summary>
+        readonly string? _scriptFn = null;
 
-        // /// <summary>Client supplied context for LUA_PATH.</summary>
-        // readonly List<string> _lpath = [];
-
-        // // /// <summary>Talk to the user.</summary>
-        // // readonly CommandProc _cmdProc;
-
-        // /// <summary>The config contents.</summary>
-        // readonly Config? _config;
-
-        // /// <summary>Fast timer.</summary>
-        // readonly MmTimerEx _mmTimer = new();
-
-        // /// <summary>Diagnostics for timing measurement.</summary>
-        // readonly TimingAnalyzer? _tan = null;
-
-        // /// <summary>All devices to use for send.</summary>
-        // readonly List<MidiOutput> _outputs = [];
-
-        // /// <summary>All devices to use for receive.</summary>
-        // readonly List<MidiInput> _inputs = [];
-
-        // /// <summary>Current script.</summary>
-        // readonly string _scriptFn = "";
-        #endregion
-
+        /// <summary>Common functionality.</summary>
         Core _core;
 
         /// <summary>Detect changed script files.</summary>
         readonly MultiFileWatcher _watcher = new();
+        #endregion
 
 
 
-/*  command handlers
+/*  command handlers TODO1
 
         bool TempoCmd(CommandDescriptor cmd, List<string> args)
         if (int.TryParse(args[1], out int t) && t >= 40 && t <= 240)
@@ -131,104 +107,24 @@ namespace Ephemera.Nebulua.UiApp
         }
 */
 
-
-
         #region Lifecycle
-
+        /// <summary>
+        /// Srart here.
+        /// </summary>
         public MainForm()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
+            KeyPreview = true; // for routing kbd strokes properly
 
             //Location = new Point(_settings.FormGeometry.X, _settings.FormGeometry.Y);
             //Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
 
-            // Cosmetics.
-            Color _fclr = Color.Aqua;
-            Color _bclr = Color.AliceBlue;
-
-            timeBar.BackColor = _bclr;
-            timeBar.ProgressColor = _fclr;
-            timeBar.MarkerColor = Color.Black;
-
-            cliIn.BackColor = _bclr;
-
-            chkPlay.BackColor = _bclr;
-            chkPlay.ForeColor = _fclr;
-            // btnMonIn.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnMonIn.Image, _settings.IconColor);
-
-            btnRewind.BackColor = _bclr;
-            btnRewind.ForeColor = _fclr;
-
-            btnAbout.BackColor = _bclr;
-            btnAbout.ForeColor = _fclr;
-
-            btnMonRcv.BackColor = _bclr;
-            btnMonRcv.ForeColor = _fclr;
-
-            btnMonSnd.BackColor = _bclr;
-            btnMonSnd.ForeColor = _fclr;
-
-            btnKill.BackColor = _bclr;
-            btnKill.ForeColor = _fclr;
-
-            sldVolume.BackColor = _bclr;
-            sldVolume.ForeColor = _fclr;
-
-            sldTempo.BackColor = _bclr;
-            sldTempo.ForeColor = _fclr;
-
-            // Behavior.
-            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
-
-            traffic.MatchColors.Add(" SND ", Color.Purple);
-            traffic.MatchColors.Add(" RCV ", Color.Green);
-            traffic.BackColor = _bclr;
-            traffic.Font = new("Cascadia Mono", 9);
-            traffic.Prompt = "->";
-
-            //slider1.ValueChanged += (_, __) => Tell($"Slider value: {slider1.Value}");
-            //slider1.Minimum = 0;
-            //slider1.Maximum = 100;
-            //slider1.Resolution = 5;
-            //slider1.Value = 40;
-            //slider1.Label = "|-|-|";
-
-            // sldVolume.ValueChanged += new System.EventHandler(this.Volume_ValueChanged);
-            // btnMonIn.Click += Monitor_Click;
-            // btnMonOut.Click += Monitor_Click;
-            // this.sldTempo.ValueChanged += new System.EventHandler(this.Speed_ValueChanged); > SetFastTimerPeriod();
-
-            // ProcessPlay(PlayCommand cmd):
-            // this.btnRewind.Click += new System.EventHandler(this.Rewind_Click);  
-            // this.chkPlay.Click += new System.EventHandler(this.Play_Click);  ProcessPlay(PlayCommand cmd)
-            // void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
-
-            // btnAbout.Click += About_Click;
-            // > MiscUtils.ShowReadme("Nebulator");
-            // this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
-            // > var docs = MidiDefs.FormatDoc();
-            // > docs.AddRange(MusicDefinitions.FormatDoc());
-            // > Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
-
-            // btnKillComm.Click += (object? _, EventArgs __) => { KillAll(); };
-        }
-
-
-        //////// ================ Core stuff custom ===================
-
-        protected override void OnLoad(EventArgs e)
-        {
             try
             {
-                KeyPreview = true; // for routing kbd strokes properly
-
-                _watcher.Clear();
-                _watcher.FileChange += Watcher_Changed;
-
                 // Process cmd line args.
                 string? configFn = null;
-                string? _scriptFn = null;
+                _scriptFn = null;
                 var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
                 args.RemoveAt(0); // remove the binary name
 
@@ -253,31 +149,149 @@ namespace Ephemera.Nebulua.UiApp
                     throw new ApplicationArgumentException($"Missing nebulua script file");
                 }
 
+                // Cosmetics.
+                Color _fclr = Color.Aqua;
+                Color _bclr = Color.Pink;
+
+                timeBar.BackColor = _bclr;
+                timeBar.ProgressColor = _fclr;
+                timeBar.MarkerColor = Color.Black;
+
+                cliIn.BackColor = _bclr;
+
+                // btnMonIn.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnMonIn.Image, _settings.IconColor);
+                chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image, _bclr);
+                //chkPlay.BackColor = _bclr;
+                chkPlay.ForeColor = _fclr;
+
+                btnRewind.BackColor = _bclr;
+                btnRewind.ForeColor = _fclr;
+
+                btnAbout.BackColor = _bclr;
+                btnAbout.ForeColor = _fclr;
+
+                btnMonRcv.BackColor = _bclr;
+                btnMonRcv.ForeColor = _fclr;
+
+                btnMonSnd.BackColor = _bclr;
+                btnMonSnd.ForeColor = _fclr;
+
+                btnKill.BackColor = _bclr;
+                btnKill.ForeColor = _fclr;
+
+                sldVolume.BackColor = _bclr;
+                sldVolume.ForeColor = _fclr;
+
+                sldTempo.BackColor = _bclr;
+                sldTempo.ForeColor = _fclr;
+
+                // Behavior.
+                timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
+
+                traffic.MatchColors.Add(" SND ", Color.Purple);
+                traffic.MatchColors.Add(" RCV ", Color.Green);
+                traffic.BackColor = _bclr;
+                traffic.Font = new("Cascadia Mono", 9);
+                traffic.Prompt = "->";
+
+                // sliders like:
+                //slider1.ValueChanged += (_, __) => Tell($"Slider value: {slider1.Value}");
+                //slider1.Minimum = 0;
+                //slider1.Maximum = 100;
+                //slider1.Resolution = 5;
+                //slider1.Value = 40;
+                //slider1.Label = "|-|-|";
+                // sldVolume.ValueChanged += new System.EventHandler(this.Volume_ValueChanged);
+                // this.sldTempo.ValueChanged += new System.EventHandler(this.Speed_ValueChanged); > SetFastTimerPeriod();
+
+                // btnMonIn.Click += Monitor_Click;
+                // btnMonOut.Click += Monitor_Click;
+
+                // ProcessPlay(PlayCommand cmd):
+                // this.btnRewind.Click += new System.EventHandler(this.Rewind_Click);  
+                // this.chkPlay.Click += new System.EventHandler(this.Play_Click);  ProcessPlay(PlayCommand cmd)
+                // void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
+
+                // btnAbout.Click += About_Click;
+                // > MiscUtils.ShowReadme("Nebulator");
+                // this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
+                // > var docs = MidiDefs.FormatDoc();
+                // > docs.AddRange(MusicDefinitions.FormatDoc());
+                // > Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
+
+                // btnKillComm.Click += (object? _, EventArgs __) => { KillAll(); };
+
+
+                _watcher.Clear();
+                _watcher.FileChange += Watcher_Changed;
+
+
                 // OK so far.
                 _core = new Core(configFn);
 
                 LogManager.LogMessage += LogManager_LogMessage;
 
-                _core.LoadAndRun(_scriptFn);
+                _core.Run(_scriptFn);
 
                 // Update file watcher. TODO1 also any required files in script.
                 _watcher.Add(_scriptFn);
 
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
 
-
                 // State change handler.
                 State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
+
+            }
+            // Anything that throws is fatal.
+            catch (Exception ex)
+            {
+                FatalError(ex, "App constructor failed.");
+            }
+        }
+
+
+        //////// ================ Core stuff custom ===================
+
+        protected override void OnLoad(EventArgs e)
+        {
+            try
+            {
+                //KeyPreview = true; // for routing kbd strokes properly
+                //_watcher.Clear();
+                //_watcher.FileChange += Watcher_Changed;
+                //// OK so far.
+                //_core = new Core(configFn);
+                //LogManager.LogMessage += LogManager_LogMessage;
+                //_core.Run(_scriptFn);
+                //// Update file watcher. TODO1 also any required files in script.
+                //_watcher.Add(_scriptFn);
+                //Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
+                //// State change handler.
+                //State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
             }
             // Anything that throws is fatal. TODO1 generic handling or custom? also log error below.
             catch (Exception ex)
             {
-////                FatalError(ex, "App constructor failed.");
+                FatalError(ex, "OnLoad() failed.");
             }
 
            base.OnLoad(e);
         }
 
+
+        /// <summary>
+        ///  Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+                _core.Dispose();
+            }
+            base.Dispose(disposing);
+        }
         #endregion
 
 
@@ -293,13 +307,13 @@ namespace Ephemera.Nebulua.UiApp
             switch (e.Level)
             {
                 case LogLevel.Error:
-//                    _cmdProc.Write(e.Message);
+                    traffic.AppendLine(e.Message);
                     // Fatal, shut down.
                     State.Instance.ExecState = ExecState.Exit;
                     break;
 
                 case LogLevel.Warn:
-//                    _cmdProc.Write(e.Message);
+                    traffic.AppendLine(e.Message);
                     break;
 
                 default:
@@ -318,7 +332,7 @@ namespace Ephemera.Nebulua.UiApp
             switch (name)
             {
                 case "CurrentTick":
-                    if (sender != this) { } // Do state handling
+                    if (sender != this) { } // TODO1 Do state handling with TimeBar_CurrentTimeChanged()
                     break;
 
                 case "ScriptState":
@@ -329,11 +343,6 @@ namespace Ephemera.Nebulua.UiApp
                         case ExecState.Exit:
                             break;
 
-
-                        // // Stop and rewind.
-                        // _cmdProc.Write("done"); // handle with state change
-                        // State.Instance.ExecState = ExecState.Idle;
-
                         case ExecState.Kill:
                             //KillAll();
                             State.Instance.ExecState = ExecState.Idle;
@@ -343,20 +352,24 @@ namespace Ephemera.Nebulua.UiApp
             }
         }
 
-
-
-
-        //////// ================ this UI specific ===================
-
-        private void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
+            // TODO1 do time mgmt
             //_stepTime = new(barBar.Current.Sub);
             //ProcessPlay(PlayCommand.UpdateUiTime);
+
+            // Stop and rewind.
+            traffic.AppendLine("done"); // handle with state change
+            State.Instance.ExecState = ExecState.Idle;
         }
 
-
         /// <summary>
-        /// Do some global key handling. Space bar is used for stop/start playing.
+        /// Do some global key handling. Space bar is used for stop/start playing. TODO1 ?
         /// </summary>
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -370,9 +383,8 @@ namespace Ephemera.Nebulua.UiApp
             base.OnKeyDown(e);
         }
 
-
         /// <summary>
-        /// One or more np files have changed so reload/compile.
+        /// One or more files have changed so reload/compile.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -393,5 +405,49 @@ namespace Ephemera.Nebulua.UiApp
             //    }
             //});
         }
+
+        #region Private functions
+        /// <summary>
+        /// General purpose handler for fatal errors.
+        /// </summary>
+        /// <param name="ex">The exception</param>
+        /// <param name="info">Extra info</param>
+        void FatalError(Exception e, string info)
+        {
+            string serr;
+
+            switch (e)
+            {
+                case ApiException ex:
+                    serr = $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}";
+                    //// Could remove unnecessary detail for user.
+                    //int pos = ex.ApiError.IndexOf("stack traceback");
+                    //var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
+                    //serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
+                    //// Log the detail.
+                    //_logger.Debug($">>>>{ex.ApiError}");
+                    break;
+
+                case ConfigException ex:
+                    serr = $"Config File Error: {ex.Message}: {info}";
+                    break;
+
+                case ScriptSyntaxException ex:
+                    serr = $"Script Syntax Error: {ex.Message}: {info}";
+                    break;
+
+                case ApplicationArgumentException ex:
+                    serr = $"Application Argument Error: {ex.Message}: {info}";
+                    break;
+
+                default:
+                    serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
+                    break;
+            }
+
+            // This will cause the app to exit.
+            _logger.Error(serr);
+        }
+        #endregion
     }
 }

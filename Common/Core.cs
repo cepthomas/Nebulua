@@ -60,7 +60,6 @@ namespace Ephemera.Nebulua
                 // Init logging.
                 LogManager.MinLevelFile = _config.FileLevel;
                 LogManager.MinLevelNotif = _config.NotifLevel;
-//                LogManager.LogMessage += LogManager_LogMessage;
                 var f = File.OpenWrite(_config.LogFilename); // ensure file exists
                 f?.Close();
                 LogManager.Run(_config.LogFilename, 100000);
@@ -68,8 +67,6 @@ namespace Ephemera.Nebulua
                 // Set up runtime lua environment.
                 var exePath = Environment.CurrentDirectory; // where exe lives
                 _lpath.Add($@"{exePath}\lua_code"); // app lua files
-                //_lpath.Add($@"{exePath}\lbot"); // lbot files
-//TODO1 copy these files                _lpath.Add($@"C:\Dev\repos\Lua\LuaBagOfTricks"); // lbot files
 
                 // Hook script callbacks.
                 Api.CreateChannel += Interop_CreateChannel;
@@ -114,8 +111,12 @@ namespace Ephemera.Nebulua
 
                 // Release unmanaged resources.
                 // Set large fields to null.
-                //_apis.ForEach(kv => kv.Value = null);
-                _apis.Clear();
+                foreach (var key in _apis.Keys)
+                {
+                    //_apis[key] = null;
+                    _apis[key].Dispose();
+                }
+
                 _disposed = true;
             }
         }
@@ -144,7 +145,7 @@ namespace Ephemera.Nebulua
         /// <summary>
         /// Load and execute script.
         /// </summary>
-        public NebStatus LoadAndRun(string scriptFn)
+        public NebStatus Run(string scriptFn)
         {
             NebStatus stat = NebStatus.Ok;
 
