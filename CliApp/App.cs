@@ -7,10 +7,11 @@ using System.Threading;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using Interop;
+using Nebulua.Common;
+using Nebulua.Interop;
 
 
-namespace Ephemera.Nebulua.CliApp
+namespace Nebulua.CliApp
 {
     public class App : IDisposable
     {
@@ -154,7 +155,7 @@ namespace Ephemera.Nebulua.CliApp
                 // case "CurrentTick":
                 // case "Tempo":
 
-                case "ScriptState":
+                case "ExecState":
                     switch (State.Instance.ExecState)
                     {
                         case ExecState.Idle:

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Ephemera.Nebulua.UiApp.Properties {
+namespace Nebulua.UiApp.Properties {
     using System;
     
     

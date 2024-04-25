@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Ephemera.NBagOfTricks;
-//using Interop;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Nebulua.Test
 {
     public class TestUtils
     {

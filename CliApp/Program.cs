@@ -1,4 +1,4 @@
-﻿namespace Ephemera.Nebulua.CliApp
+﻿namespace Nebulua.CliApp
 {
     internal class Program
     {

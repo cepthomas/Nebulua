@@ -3,8 +3,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-
-namespace Interop
+namespace Nebulua { namespace Interop
 {
     /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
     public enum class NebStatus
@@ -152,4 +151,4 @@ namespace Interop
         property String^ Msg;
     };
     #pragma endregion
-}
+} }

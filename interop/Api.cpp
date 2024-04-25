@@ -13,6 +13,9 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Text;
 
+using namespace Nebulua::Interop;
+
+
 #define MAX_PATH  260 // win32 def
 
 // The main lua thread. This unnecessary struct decl makes a warning go away
@@ -29,8 +32,9 @@ static int _ToCString(char* buff, size_t bufflen, String^ input);
 static String^ _ToManagedString(const char* input);
 
 
+
 //--------------------------------------------------------//
-Interop::Api::Api(List<String^>^ lpath)
+Api::Api(List<String^>^ lpath)
 {
     _lpath = lpath;
     Error = gcnew String("");
@@ -81,7 +85,7 @@ Interop::Api::Api(List<String^>^ lpath)
 }
 
 //--------------------------------------------------------//
-Interop::Api::~Api()
+Api::~Api()
 {
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
@@ -93,7 +97,7 @@ Interop::Api::~Api()
 }
 
 //--------------------------------------------------------//
-Interop::NebStatus Interop::Api::OpenScript(String^ fn)
+NebStatus Api::OpenScript(String^ fn)
 {
     NebStatus nstat = NebStatus::Ok;
     int lstat = LUA_OK;
@@ -156,7 +160,7 @@ Interop::NebStatus Interop::Api::OpenScript(String^ fn)
 }
 
 //--------------------------------------------------------//
-Interop::NebStatus Interop::Api::Step(int tick)
+NebStatus Api::Step(int tick)
 {
     NebStatus ret = NebStatus::Ok;
     Error = gcnew String("");
@@ -174,7 +178,7 @@ Interop::NebStatus Interop::Api::Step(int tick)
 }
 
 //--------------------------------------------------------//
-Interop::NebStatus Interop::Api::RcvNote(int chan_hnd, int note_num, double volume)
+NebStatus Api::RcvNote(int chan_hnd, int note_num, double volume)
 {
     NebStatus ret = NebStatus::Ok;
     Error = gcnew String("");
@@ -193,7 +197,7 @@ Interop::NebStatus Interop::Api::RcvNote(int chan_hnd, int note_num, double volu
 }
 
 //--------------------------------------------------------//
-Interop::NebStatus Interop::Api::RcvController(int chan_hnd, int controller, int value)
+NebStatus Api::RcvController(int chan_hnd, int controller, int value)
 {
     NebStatus ret = NebStatus::Ok;
     Error = gcnew String("");
@@ -214,7 +218,7 @@ Interop::NebStatus Interop::Api::RcvController(int chan_hnd, int controller, int
 //------------------- Privates ---------------------------//
 
 //--------------------------------------------------------//
-Interop::NebStatus Interop::Api::EvalLuaStatus(int lstat, String^ info)
+NebStatus Api::EvalLuaStatus(int lstat, String^ info)
 {
     NebStatus nstat;
 

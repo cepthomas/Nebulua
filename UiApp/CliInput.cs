@@ -10,7 +10,7 @@ using System.Drawing;
 using Ephemera.NBagOfTricks;
 
 
-namespace Ephemera.Nebulua.UiApp
+namespace Nebulua.UiApp
 {
     public class CliInput : UserControl
     {

@@ -3,10 +3,10 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
-using Ephemera.Nebulua.CliApp;
+using Nebulua.CliApp;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Nebulua.Test
 {
     /// <summary>Test the simpler functions.</summary>
     public class CMDPROC_BASIC : TestSuite

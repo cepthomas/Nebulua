@@ -9,7 +9,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Interop;
 
 
-namespace Ephemera.Nebulua
+namespace Nebulua.Test
 {
     public class CommandProc
     {

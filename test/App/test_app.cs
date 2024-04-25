@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Nebulua.Test
 {
     /// <summary>Test application functions. Doesn't do anything yet. May be more complicated than it's worth.
     /// </summary>

@@ -8,7 +8,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 
 
-namespace Ephemera.Nebulua
+namespace Nebulua.Common
 {
     /// <summary>
     /// A midi input device.

@@ -5,10 +5,11 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
-using Interop;
+using Nebulua.Common;
+//using Interop;
 
 
-namespace Ephemera.Nebulua.UiApp
+namespace Nebulua.UiApp
 {
     public partial class MainForm : Form
     {
@@ -83,11 +84,9 @@ namespace Ephemera.Nebulua.UiApp
                 chkPlay.BackColor = _backclr;
                 chkPlay.FlatAppearance.CheckedBackColor = _selclr;
 
-                btnRewind.BackColor = _backclr;
-                btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, _foreclr);
-
-                btnAbout.BackColor = _backclr;
-                btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, _foreclr);
+                chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, _foreclr);
+                chkLoop.BackColor = _backclr;
+                chkLoop.FlatAppearance.CheckedBackColor = _selclr;
 
                 chkMonRcv.BackColor = _backclr;
                 chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, _foreclr);
@@ -96,6 +95,12 @@ namespace Ephemera.Nebulua.UiApp
                 chkMonSnd.BackColor = _backclr;
                 chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, _foreclr);
                 chkMonSnd.FlatAppearance.CheckedBackColor = _selclr;
+
+                btnRewind.BackColor = _backclr;
+                btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, _foreclr);
+
+                btnAbout.BackColor = _backclr;
+                btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, _foreclr);
 
                 btnKill.BackColor = _backclr;
                 btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, _foreclr);
@@ -108,8 +113,16 @@ namespace Ephemera.Nebulua.UiApp
 
                 // Behavior.
                 timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
-                chkPlay.Click += ChkPlay_Click;
-                btnRewind.Click += BtnRewind_Click;
+                chkPlay.Click += Play_Click;
+                btnRewind.Click += Rewind_Click;
+                btnAbout.Click += About_Click;
+                btnKill.Click += Kill_Click;
+                chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
+                chkMonRcv.Click += (_, __) => State.Instance.MonRcv = chkMonRcv.Checked;
+                chkMonSnd.Click += (_, __) => State.Instance.MonSnd = chkMonSnd.Checked;
+                sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
+                sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
+                //sldTempo.Label = "|-|-|";
 
                 traffic.MatchColors.Add(" SND ", Color.Purple);
                 traffic.MatchColors.Add(" RCV ", Color.Green);
@@ -117,21 +130,8 @@ namespace Ephemera.Nebulua.UiApp
                 traffic.Font = new("Cascadia Mono", 9);
                 traffic.Prompt = "->";
 
-                sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
-                sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
-                sldTempo.Label = "|-|-|";
-
-                chkMonRcv.Click += (_, __) => State.Instance.MonRcv = chkMonRcv.Checked;
-                chkMonSnd.Click += (_, __) => State.Instance.MonSnd = chkMonSnd.Checked;
-
-                btnAbout.Click += About_Click;
-
-                // btnKillComm.Click += (object? _, EventArgs __) => { KillAll(); };
-
-
                 _watcher.Clear();
                 _watcher.FileChange += Watcher_Changed;
-
 
                 // OK so far.
                 _core = new Core(configFn);
@@ -156,32 +156,6 @@ namespace Ephemera.Nebulua.UiApp
             }
         }
 
-        /// <summary>
-        /// The meaning of life.
-        /// </summary>
-        void About_Click(object? sender, EventArgs e)
-        {
-            //TODO1 MiscUtils.ShowReadme("Nebulator");
-            // btnAbout.Click += About_Click;
-            // > MiscUtils.ShowReadme("Nebulator");
-            // this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
-            // > var docs = MidiDefs.FormatDoc();
-            // > docs.AddRange(MusicDefinitions.FormatDoc());
-            // > Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
-
-            //bool InfoCmd(CommandDescriptor _, List<string> __)
-            //_out.WriteLine($"Midi output devices:");
-            //for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-            //{
-            //    _out.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
-            //}
-            //_out.WriteLine($"Midi input devices:");
-            //for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            //{
-            //    _out.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
-            //}
-
-        }
 
 
 
@@ -256,6 +230,12 @@ namespace Ephemera.Nebulua.UiApp
             }
         }
 
+
+
+        ///////////////////////// TODO1 run management //////////////////
+
+
+
         /// <summary>
         /// Handler for state changes. Some may originate in this component, others from elsewhere.
         /// </summary>
@@ -265,11 +245,11 @@ namespace Ephemera.Nebulua.UiApp
         {
             switch (name)
             {
-                case "CurrentTick":
+                case "CurrentTick": // from Core or UI
                     if (sender != this) { } // TODO1 Do state handling with TimeBar_CurrentTimeChanged()
                     break;
 
-                case "ScriptState":
+                case "ExecState":
                     switch (State.Instance.ExecState)
                     {
                         case ExecState.Idle:
@@ -287,12 +267,103 @@ namespace Ephemera.Nebulua.UiApp
         }
 
 
-        ///////////////////////// TODO1 run management //////////////////
 
 
 
 
 
+
+
+        void _set_position(int position)
+        {
+            //bool PositionCmd(CommandDescriptor cmd, List<string> args)
+            // Limit range maybe.
+            int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+            int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+
+            State.Instance.CurrentTick = MathUtils.Constrain(position, start, end);
+
+
+
+        }
+
+
+
+        /// <summary>
+        /// User has moved the time.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
+        {
+            // do time mgmt
+            //_stepTime = new(barBar.Current.Sub);
+            //ProcessPlay(PlayCommand.UpdateUiTime);
+
+            // Stop and rewind.
+            traffic.AppendLine("done"); // handle with state change
+            State.Instance.ExecState = ExecState.Idle;
+        }
+        // /// <summary>
+        // /// User has changed the time.
+        // /// </summary>
+        // /// <param name="sender"></param>
+        // /// <param name="e"></param>
+        // void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
+        // {
+        //     _stepTime = new(barBar.Current.Sub);
+        //     ProcessPlay(PlayCommand.UpdateUiTime);
+        // }
+        // #endregion
+
+
+
+        void Play_Click(object? sender, EventArgs e)
+        {
+
+            //         case PlayCommand.Start:
+            //             bool ok = !_needCompile || CompileScript();
+            //             if (ok)
+            //             {
+            //                 _startTime = DateTime.Now;
+            //                 chkPlay.Checked = true;
+            //                 _mmTimer.Start();
+            //             }
+            //             else
+            //             {
+            //                 chkPlay.Checked = false;
+            //                 ret = false;
+            //             }
+            //             break;
+            //         case PlayCommand.Stop:
+            //             chkPlay.Checked = false;
+            //             _mmTimer.Stop();
+            //             // Send midi stop all notes just in case.
+            //             KillAll();
+            //             break;
+
+
+        }
+        //bool RunCmd(CommandDescriptor cmd, List<string> args)
+        //{
+        //    switch (State.Instance.ExecState)
+        //    {
+        //        case ExecState.Idle:
+        //            State.Instance.ExecState = ExecState.Run;
+        //            Write("running");
+        //            break;
+
+        //        case ExecState.Run:
+        //            State.Instance.ExecState = ExecState.Idle;
+        //            Write("stopped");
+        //            break;
+
+        //        default:
+        //            Write("invalid state");
+        //            ret = false;
+        //            break;
+        //    }
+        //}
         // #region Play control
         // /// <summary>
         // /// Update UI state per param.
@@ -341,70 +412,13 @@ namespace Ephemera.Nebulua.UiApp
         //     return ret;
         // }
 
-        // /// <summary>
-        // /// User has changed the time.
-        // /// </summary>
-        // /// <param name="sender"></param>
-        // /// <param name="e"></param>
-        // void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
-        // {
-        //     _stepTime = new(barBar.Current.Sub);
-        //     ProcessPlay(PlayCommand.UpdateUiTime);
-        // }
-        // #endregion
 
-
-
-        //bool RunCmd(CommandDescriptor cmd, List<string> args)
-        //{
-        //    switch (State.Instance.ExecState)
-        //    {
-        //        case ExecState.Idle:
-        //            State.Instance.ExecState = ExecState.Run;
-        //            Write("running");
-        //            break;
-
-        //        case ExecState.Run:
-        //            State.Instance.ExecState = ExecState.Idle;
-        //            Write("stopped");
-        //            break;
-
-        //        default:
-        //            Write("invalid state");
-        //            ret = false;
-        //            break;
-        //    }
-        //}
-
-
-        //bool PositionCmd(CommandDescriptor cmd, List<string> args)
-        //// Limit range maybe.
-        //int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-        //int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
-        //State.Instance.CurrentTick = MathUtils.Constrain(position, start, end);
-
-        /// <summary>
-        /// User has moved the time.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
-        {
-            // do time mgmt
-            //_stepTime = new(barBar.Current.Sub);
-            //ProcessPlay(PlayCommand.UpdateUiTime);
-
-            // Stop and rewind.
-            traffic.AppendLine("done"); // handle with state change
-            State.Instance.ExecState = ExecState.Idle;
-        }
-
-        void ChkPlay_Click(object? sender, EventArgs e)
+        void Kill_Click(object? sender, EventArgs e)
         {
 
         }
 
-        void BtnRewind_Click(object? sender, EventArgs e)
+        void Rewind_Click(object? sender, EventArgs e)
         {
 
         }
@@ -451,6 +465,33 @@ namespace Ephemera.Nebulua.UiApp
             //        SetCompileStatus(false);
             //    }
             //});
+        }
+
+        /// <summary>
+        /// The meaning of life.
+        /// </summary>
+        void About_Click(object? sender, EventArgs e)
+        {
+            //TODO1 MiscUtils.ShowReadme("Nebulator");
+            // btnAbout.Click += About_Click;
+            // > MiscUtils.ShowReadme("Nebulator");
+            // this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
+            // > var docs = MidiDefs.FormatDoc();
+            // > docs.AddRange(MusicDefinitions.FormatDoc());
+            // > Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
+
+            //bool InfoCmd(CommandDescriptor _, List<string> __)
+            //_out.WriteLine($"Midi output devices:");
+            //for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            //{
+            //    _out.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
+            //}
+            //_out.WriteLine($"Midi input devices:");
+            //for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            //{
+            //    _out.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
+            //}
+
         }
 
         #region Private functions

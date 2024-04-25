@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 
-namespace Ephemera.Nebulua
+namespace Nebulua.Common
 {
     #region Enums
     /// <summary>Internal status.</summary>

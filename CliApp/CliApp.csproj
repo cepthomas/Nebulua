@@ -6,7 +6,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
-    <ApplicationIcon>..\marks.ico</ApplicationIcon>
+    <ApplicationIcon>..\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -20,39 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Common\Common.cs" Link="Common\Common.cs" />
-    <Compile Include="..\Common\Config.cs" Link="Common\Config.cs" />
-    <Compile Include="..\Common\Core.cs" Link="Common\Core.cs" />
-    <Compile Include="..\Common\Midi.cs" Link="Common\Midi.cs" />
-    <Compile Include="..\Common\State.cs" Link="Common\State.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\lua_code\bar_time.lua" Link="lua\bar_time.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lua_code\midi_defs.lua" Link="lua\midi_defs.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lua_code\music_defs.lua" Link="lua\music_defs.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lua_code\nebulua.lua" Link="lua\nebulua.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lua_code\neb_common.lua" Link="lua\neb_common.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lua_code\step_types.lua" Link="lua\step_types.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\marks.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Interop\Interop.vcxproj" />
   </ItemGroup>
 
@@ -64,23 +32,6 @@
 
   <ItemGroup>
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Common\" />
-    <Folder Include="lua\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\lbot\stringex.lua" Link="lua\stringex.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lbot\utils.lua" Link="lua\utils.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lbot\validators.lua" Link="lua\validators.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 </Project>

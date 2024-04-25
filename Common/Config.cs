@@ -7,10 +7,9 @@ using System.Threading;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using Interop;
 
 
-namespace Ephemera.Nebulua
+namespace Nebulua.Common
 {
     public class Config
     {

@@ -1,8 +1,8 @@
-using Ephemera.Nebulua.UiApp;
 using System;
 using System.Windows.Forms;
+using Nebulua.UiApp;
 
-namespace UiApp
+namespace Nebulua.UiApp
 {
     internal static class Program
     {

@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Nebulua.Test
 {
     /// <summary>Odds and ends that have no other home.</summary>
     public class MISC_COMMON : TestSuite

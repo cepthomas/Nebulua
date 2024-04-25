@@ -7,10 +7,10 @@ using System.Threading;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using Interop;
+using Nebulua.Interop;
 
 
-namespace Ephemera.Nebulua
+namespace Nebulua.Common
 {
     public class Core : IDisposable
     {
@@ -212,7 +212,7 @@ namespace Ephemera.Nebulua
                     SetTimer(State.Instance.Tempo);
                     break;
 
-                case "ScriptState":
+                case "ExecState":
                     switch (State.Instance.ExecState)
                     {
                         case ExecState.Kill:

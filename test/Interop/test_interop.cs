@@ -7,7 +7,7 @@ using Ephemera.NBagOfTricks.PNUT;
 using Interop;
 
 
-namespace Ephemera.Nebulua.Test
+namespace Nebulua.Test
 {
     /// <summary>All success operations.</summary>
     public class INTEROP_HAPPY : TestSuite

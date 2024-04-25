@@ -4,11 +4,12 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Ephemera.NBagOfTricks;
-using Interop;
 using NAudio.Midi;
+using Nebulua.Common;
+using Nebulua.Interop;
 
 
-namespace Ephemera.Nebulua.CliApp
+namespace Nebulua.CliApp
 {
     public class CommandProc
     {

@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace Ephemera.Nebulua.UiApp
+namespace Nebulua.UiApp
 {
     partial class MainForm
     {
@@ -23,16 +23,17 @@ namespace Ephemera.Nebulua.UiApp
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             chkPlay = new CheckBox();
             btnRewind = new Button();
-            sldVolume = new NBagOfUis.Slider();
-            sldTempo = new NBagOfUis.Slider();
-            traffic = new NBagOfUis.TextViewer();
+            sldVolume = new Ephemera.NBagOfUis.Slider();
+            sldTempo = new Ephemera.NBagOfUis.Slider();
+            traffic = new Ephemera.NBagOfUis.TextViewer();
             toolTip = new ToolTip(components);
             btnAbout = new Button();
             btnKill = new Button();
-            timeBar = new TimeBar();
-            cliIn = new CliInput();
             chkMonRcv = new CheckBox();
             chkMonSnd = new CheckBox();
+            timeBar = new TimeBar();
+            cliIn = new CliInput();
+            chkLoop = new CheckBox();
             SuspendLayout();
             // 
             // chkPlay
@@ -127,6 +128,30 @@ namespace Ephemera.Nebulua.UiApp
             toolTip.SetToolTip(btnKill, "Kill all midi out");
             btnKill.UseVisualStyleBackColor = false;
             // 
+            // chkMonRcv
+            // 
+            chkMonRcv.Appearance = Appearance.Button;
+            chkMonRcv.FlatStyle = FlatStyle.Flat;
+            chkMonRcv.Image = (Image)resources.GetObject("chkMonRcv.Image");
+            chkMonRcv.Location = new Point(584, 15);
+            chkMonRcv.Name = "chkMonRcv";
+            chkMonRcv.Size = new Size(40, 40);
+            chkMonRcv.TabIndex = 48;
+            toolTip.SetToolTip(chkMonRcv, "Play project");
+            chkMonRcv.UseVisualStyleBackColor = false;
+            // 
+            // chkMonSnd
+            // 
+            chkMonSnd.Appearance = Appearance.Button;
+            chkMonSnd.FlatStyle = FlatStyle.Flat;
+            chkMonSnd.Image = (Image)resources.GetObject("chkMonSnd.Image");
+            chkMonSnd.Location = new Point(633, 14);
+            chkMonSnd.Name = "chkMonSnd";
+            chkMonSnd.Size = new Size(40, 40);
+            chkMonSnd.TabIndex = 49;
+            toolTip.SetToolTip(chkMonSnd, "Play project");
+            chkMonSnd.UseVisualStyleBackColor = false;
+            // 
             // timeBar
             // 
             timeBar.BorderStyle = BorderStyle.FixedSingle;
@@ -149,35 +174,24 @@ namespace Ephemera.Nebulua.UiApp
             cliIn.Size = new Size(773, 125);
             cliIn.TabIndex = 43;
             // 
-            // chkMonRcv
+            // chkLoop
             // 
-            chkMonRcv.Appearance = Appearance.Button;
-            chkMonRcv.FlatStyle = FlatStyle.Flat;
-            chkMonRcv.Image = Properties.Resources.glyphicons_213_arrow_down;
-            chkMonRcv.Location = new Point(584, 15);
-            chkMonRcv.Name = "chkMonRcv";
-            chkMonRcv.Size = new Size(40, 40);
-            chkMonRcv.TabIndex = 48;
-            toolTip.SetToolTip(chkMonRcv, "Play project");
-            chkMonRcv.UseVisualStyleBackColor = false;
-            // 
-            // chkMonSnd
-            // 
-            chkMonSnd.Appearance = Appearance.Button;
-            chkMonSnd.FlatStyle = FlatStyle.Flat;
-            chkMonSnd.Image = Properties.Resources.glyphicons_214_arrow_up;
-            chkMonSnd.Location = new Point(633, 14);
-            chkMonSnd.Name = "chkMonSnd";
-            chkMonSnd.Size = new Size(40, 40);
-            chkMonSnd.TabIndex = 49;
-            toolTip.SetToolTip(chkMonSnd, "Play project");
-            chkMonSnd.UseVisualStyleBackColor = false;
+            chkLoop.Appearance = Appearance.Button;
+            chkLoop.FlatStyle = FlatStyle.Flat;
+            chkLoop.Image = Properties.Resources.glyphicons_86_repeat;
+            chkLoop.Location = new Point(245, 21);
+            chkLoop.Name = "chkLoop";
+            chkLoop.Size = new Size(40, 40);
+            chkLoop.TabIndex = 50;
+            toolTip.SetToolTip(chkLoop, "Play project");
+            chkLoop.UseVisualStyleBackColor = false;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1041, 606);
+            Controls.Add(chkLoop);
             Controls.Add(chkMonSnd);
             Controls.Add(chkMonRcv);
             Controls.Add(btnKill);
@@ -208,5 +222,6 @@ namespace Ephemera.Nebulua.UiApp
         private Button btnKill;
         private CheckBox chkMonRcv;
         private CheckBox chkMonSnd;
+        private CheckBox chkLoop;
     }
 }
