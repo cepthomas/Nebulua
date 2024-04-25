@@ -22,7 +22,7 @@ namespace Ephemera.Nebulua
         readonly Dictionary<long, Api> _apis = [];
 
         /// <summary>Client supplied context for LUA_PATH.</summary>
-        readonly List<string> _lpath = [];
+        readonly List<string> _luaPath = [];
 
         /// <summary>The config contents.</summary>
         readonly Config? _config;
@@ -40,7 +40,7 @@ namespace Ephemera.Nebulua
         readonly List<MidiInput> _inputs = [];
 
         /// <summary>Current script.</summary>
-        readonly string _scriptFn = "";
+        readonly string? _scriptFn = null;
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -66,7 +66,7 @@ namespace Ephemera.Nebulua
 
                 // Set up runtime lua environment.
                 var exePath = Environment.CurrentDirectory; // where exe lives
-                _lpath.Add($@"{exePath}\lua_code"); // app lua files
+                _luaPath.Add($@"{exePath}\lua_code"); // app lua files
 
                 // Hook script callbacks.
                 Api.CreateChannel += Interop_CreateChannel;
@@ -75,7 +75,7 @@ namespace Ephemera.Nebulua
                 Api.PropertyChange += Interop_PropertyChange;
 
                 // State change handler.
-                State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
+                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
             }
             // Anything that throws is fatal.
             catch (Exception ex)
@@ -152,7 +152,7 @@ namespace Ephemera.Nebulua
             try
             {
                 // Create script api.
-                Api api = new(_lpath);
+                Api api = new(_luaPath);
                 _apis.Add(api.Id, api);
 
                 // Load the script.
@@ -199,12 +199,12 @@ namespace Ephemera.Nebulua
         }
 
         /// <summary>
-        /// Handler for state changes. Some may originate in this component, others from elsewhere.
+        /// Handler for state changes of interest. Some may originate in this component, others from elsewhere.
         /// Responsible for core stuff like tempo, kill.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void State_PropertyChangeEvent(object? sender, string name)
+        /// <param name="_"></param>
+        /// <param name="name">Specific State value.</param>
+        void State_ValueChangeEvent(object? _, string name)
         {
             switch (name)
             {

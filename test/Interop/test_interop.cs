@@ -22,7 +22,7 @@ namespace Ephemera.Nebulua.Test
 
             InteropEventCollector events = new(interop);
             string scrfn = Path.Join(TestUtils.GetTestLuaDir(), "script_happy.lua");
-            State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
+            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             // Load the script.
             NebStatus stat = interop.OpenScript(scrfn);
@@ -66,7 +66,7 @@ namespace Ephemera.Nebulua.Test
             UT_EQUAL(events.CollectedEvents.Count, 62);
         }
 
-        void State_PropertyChangeEvent(object? sender, string name)
+        void State_ValueChangeEvent(object? sender, string name)
         {
             switch (name)
             {

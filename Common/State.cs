@@ -15,7 +15,7 @@ namespace Ephemera.Nebulua
     /// <summary>System globals. Some notify clients.</summary>
     public class State
     {
-        #region Properties
+        #region Properties that notify
         public ExecState ExecState
         {
             get { return _execState; }
@@ -38,7 +38,9 @@ namespace Ephemera.Nebulua
             set { if (value != _currentTick) { _currentTick = value; NotifyStateChanged(); } }
         }
         int _currentTick = 0;
+        #endregion
 
+        #region Properties that don't notify
         /// <summary>Length of composition in ticks.</summary>
         public int Length { get; set; } = 0;
 
@@ -51,6 +53,9 @@ namespace Ephemera.Nebulua
         /// <summary>Loop end tick. -1 means end of composition.</summary>
         public int LoopEnd { get; set; } = -1;
 
+        /// <summary>Master volume.</summary>
+        public double Volume { get; set; } = 0.8;
+
         /// <summary>Monitor midi input.</summary>
         public bool MonRcv { get; set; } = false;
 
@@ -59,10 +64,10 @@ namespace Ephemera.Nebulua
         #endregion
 
         #region Events
-        public event EventHandler<string>? PropertyChangeEvent;
+        public event EventHandler<string>? ValueChangeEvent;
         public void NotifyStateChanged([CallerMemberName] string name = "")
         {
-            PropertyChangeEvent?.Invoke(this, name);
+            ValueChangeEvent?.Invoke(this, name);
         }
         #endregion
 

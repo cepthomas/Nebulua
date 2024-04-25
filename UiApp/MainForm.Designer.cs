@@ -28,16 +28,17 @@ namespace Ephemera.Nebulua.UiApp
             traffic = new NBagOfUis.TextViewer();
             toolTip = new ToolTip(components);
             btnAbout = new Button();
-            btnMonRcv = new Button();
-            btnMonSnd = new Button();
             btnKill = new Button();
             timeBar = new TimeBar();
             cliIn = new CliInput();
+            chkMonRcv = new CheckBox();
+            chkMonSnd = new CheckBox();
             SuspendLayout();
             // 
             // chkPlay
             // 
             chkPlay.Appearance = Appearance.Button;
+            chkPlay.FlatStyle = FlatStyle.Flat;
             chkPlay.Image = (Image)resources.GetObject("chkPlay.Image");
             chkPlay.Location = new Point(187, 12);
             chkPlay.Name = "chkPlay";
@@ -48,6 +49,7 @@ namespace Ephemera.Nebulua.UiApp
             // 
             // btnRewind
             // 
+            btnRewind.FlatStyle = FlatStyle.Flat;
             btnRewind.Image = (Image)resources.GetObject("btnRewind.Image");
             btnRewind.Location = new Point(50, 10);
             btnRewind.Name = "btnRewind";
@@ -71,7 +73,7 @@ namespace Ephemera.Nebulua.UiApp
             sldVolume.Size = new Size(88, 52);
             sldVolume.TabIndex = 36;
             toolTip.SetToolTip(sldVolume, "Master volume");
-            sldVolume.Value = 1D;
+            sldVolume.Value = 0.8D;
             // 
             // sldTempo
             // 
@@ -84,7 +86,7 @@ namespace Ephemera.Nebulua.UiApp
             sldTempo.Minimum = 60D;
             sldTempo.Name = "sldTempo";
             sldTempo.Orientation = Orientation.Horizontal;
-            sldTempo.Resolution = 5D;
+            sldTempo.Resolution = 1D;
             sldTempo.Size = new Size(88, 52);
             sldTempo.TabIndex = 33;
             toolTip.SetToolTip(sldTempo, "Speed in BPM");
@@ -105,40 +107,22 @@ namespace Ephemera.Nebulua.UiApp
             // 
             // btnAbout
             // 
-            btnAbout.Image = Properties.Resources.glyphicons_195_question_sign;
+            btnAbout.FlatStyle = FlatStyle.Flat;
+            btnAbout.Image = (Image)resources.GetObject("btnAbout.Image");
             btnAbout.Location = new Point(844, 18);
             btnAbout.Name = "btnAbout";
-            btnAbout.Size = new Size(58, 46);
+            btnAbout.Size = new Size(40, 40);
             btnAbout.TabIndex = 44;
             toolTip.SetToolTip(btnAbout, "Tell me about yourself");
             btnAbout.UseVisualStyleBackColor = false;
             // 
-            // btnMonRcv
-            // 
-            btnMonRcv.Image = Properties.Resources.glyphicons_213_arrow_down;
-            btnMonRcv.Location = new Point(632, 19);
-            btnMonRcv.Name = "btnMonRcv";
-            btnMonRcv.Size = new Size(59, 29);
-            btnMonRcv.TabIndex = 45;
-            toolTip.SetToolTip(btnMonRcv, "Monitor midi rcv");
-            btnMonRcv.UseVisualStyleBackColor = false;
-            // 
-            // btnMonSnd
-            // 
-            btnMonSnd.Image = Properties.Resources.glyphicons_214_arrow_up;
-            btnMonSnd.Location = new Point(722, 27);
-            btnMonSnd.Name = "btnMonSnd";
-            btnMonSnd.Size = new Size(59, 29);
-            btnMonSnd.TabIndex = 46;
-            toolTip.SetToolTip(btnMonSnd, "Monitor midi send");
-            btnMonSnd.UseVisualStyleBackColor = false;
-            // 
             // btnKill
             // 
-            btnKill.Image = Properties.Resources.glyphicons_206_electricity;
+            btnKill.FlatStyle = FlatStyle.Flat;
+            btnKill.Image = (Image)resources.GetObject("btnKill.Image");
             btnKill.Location = new Point(795, 19);
             btnKill.Name = "btnKill";
-            btnKill.Size = new Size(43, 43);
+            btnKill.Size = new Size(40, 40);
             btnKill.TabIndex = 47;
             toolTip.SetToolTip(btnKill, "Kill all midi out");
             btnKill.UseVisualStyleBackColor = false;
@@ -165,14 +149,38 @@ namespace Ephemera.Nebulua.UiApp
             cliIn.Size = new Size(773, 125);
             cliIn.TabIndex = 43;
             // 
+            // chkMonRcv
+            // 
+            chkMonRcv.Appearance = Appearance.Button;
+            chkMonRcv.FlatStyle = FlatStyle.Flat;
+            chkMonRcv.Image = Properties.Resources.glyphicons_213_arrow_down;
+            chkMonRcv.Location = new Point(584, 15);
+            chkMonRcv.Name = "chkMonRcv";
+            chkMonRcv.Size = new Size(40, 40);
+            chkMonRcv.TabIndex = 48;
+            toolTip.SetToolTip(chkMonRcv, "Play project");
+            chkMonRcv.UseVisualStyleBackColor = false;
+            // 
+            // chkMonSnd
+            // 
+            chkMonSnd.Appearance = Appearance.Button;
+            chkMonSnd.FlatStyle = FlatStyle.Flat;
+            chkMonSnd.Image = Properties.Resources.glyphicons_214_arrow_up;
+            chkMonSnd.Location = new Point(633, 14);
+            chkMonSnd.Name = "chkMonSnd";
+            chkMonSnd.Size = new Size(40, 40);
+            chkMonSnd.TabIndex = 49;
+            toolTip.SetToolTip(chkMonSnd, "Play project");
+            chkMonSnd.UseVisualStyleBackColor = false;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1041, 606);
+            Controls.Add(chkMonSnd);
+            Controls.Add(chkMonRcv);
             Controls.Add(btnKill);
-            Controls.Add(btnMonSnd);
-            Controls.Add(btnMonRcv);
             Controls.Add(btnAbout);
             Controls.Add(cliIn);
             Controls.Add(timeBar);
@@ -197,8 +205,8 @@ namespace Ephemera.Nebulua.UiApp
         private TimeBar timeBar;
         private CliInput cliIn;
         private Button btnAbout;
-        private Button btnMonRcv;
-        private Button btnMonSnd;
         private Button btnKill;
+        private CheckBox chkMonRcv;
+        private CheckBox chkMonSnd;
     }
 }

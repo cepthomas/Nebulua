@@ -155,7 +155,7 @@ namespace Ephemera.Nebulua.UiApp
         /// Handle selection operations.
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnKeyDown(KeyEventArgs e)//TODO1 handle keys app-wide.
+        protected override void OnKeyDown(KeyEventArgs e)
         {
             if(e.KeyData == Keys.Escape)
             {

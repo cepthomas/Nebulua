@@ -17,7 +17,7 @@ namespace Ephemera.Nebulua.Test
             UT_STOP_ON_FAIL(true);
 
             var st = State.Instance;
-            st.PropertyChangeEvent += (sender, e) => { };
+            st.ValueChangeEvent += (sender, e) => { };
 
             MockIn min = new();
             MockOut mout = new();
@@ -152,7 +152,7 @@ namespace Ephemera.Nebulua.Test
             UT_STOP_ON_FAIL(true);
 
             var st = State.Instance;
-            st.PropertyChangeEvent += (sender, e) => { };
+            st.ValueChangeEvent += (sender, e) => { };
 
             MockIn min = new();
             MockOut mout = new();

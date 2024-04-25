@@ -46,17 +46,17 @@ namespace Ephemera.Nebulua.CliApp
             try
             {
                 // Process cmd line args.
-                string? configFn = null; // optional
+                string? configFn = null;
                 var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
                 args.RemoveAt(0); // remove the binary
 
                 foreach (var arg in args)
                 {
-                    if (arg.EndsWith(".ini"))
+                    if (arg.EndsWith(".ini")) // optional
                     {
                         configFn = arg;
                     }
-                    else if (arg.EndsWith(".lua"))
+                    else if (arg.EndsWith(".lua")) // required
                     {
                         _scriptFn = arg;
                     }
@@ -66,7 +66,7 @@ namespace Ephemera.Nebulua.CliApp
                     }
                 }
 
-                if (_scriptFn is null) // required
+                if (_scriptFn is null)
                 {
                     throw new ApplicationArgumentException($"Missing nebulua script file");
                 }
@@ -83,12 +83,12 @@ namespace Ephemera.Nebulua.CliApp
                 _watcher.Add(_scriptFn);
 
                 // State change handler.
-                State.Instance.PropertyChangeEvent += State_PropertyChangeEvent;
+                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
             }
             // Anything that throws is fatal.
             catch (Exception ex)
             {
-                FatalError(ex, "App constructor failed.");
+                FatalError(ex, "App() failed.");
             }
         }
 
@@ -98,10 +98,10 @@ namespace Ephemera.Nebulua.CliApp
         /// <exception cref="NotImplementedException"></exception>
         public void Dispose()
         {
-            if (_disposed)
+            if (!_disposed)
             {
                 _core = null;
-                // _core.Dispose();
+                // _core.Dispose(); or ??
                 _disposed = true;
             }
         }
@@ -114,7 +114,6 @@ namespace Ephemera.Nebulua.CliApp
         public NebStatus Run()
         {
             NebStatus stat = NebStatus.Ok;
-            Console.WriteLine("Heeeeer");
 
             try
             {
@@ -122,23 +121,18 @@ namespace Ephemera.Nebulua.CliApp
                 _logger.Info(s);
                 _cmdProc.Write(s);
 
-                ///// Good to go now. Loop forever doing cmdproc requests. /////
-
+                // Good to go now. Loop forever doing cmdproc requests.
                 while (State.Instance.ExecState != ExecState.Exit)
                 {
                     // Should not throw. Command processor will take care of its own errors.
                     _cmdProc.Read();
                 }
 
-                ///// Normal done. /////
-
+                // Normal done.
                 _cmdProc.Write("shutting down");
 
                 // Wait a bit in case there are some lingering events.
                 Thread.Sleep(100);
-
-                //// Just in case.
-                //KillAll();
             }
             catch (Exception ex)
             {
@@ -149,11 +143,11 @@ namespace Ephemera.Nebulua.CliApp
         }
 
         /// <summary>
-        /// Handler for state changes. Some may originate in this component, others from elsewhere.
+        /// Handler for state changes of interest. Some may originate in this component, others from elsewhere.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void State_PropertyChangeEvent(object? sender, string name)
+        void State_ValueChangeEvent(object? sender, string name)
         {
             switch (name)
             {
@@ -170,7 +164,7 @@ namespace Ephemera.Nebulua.CliApp
 
                         case ExecState.Kill:
                             // KillAll();
-                            State.Instance.ExecState = ExecState.Idle;
+                            // State.Instance.ExecState = ExecState.Idle;
                             break;
                     }
                     break;
