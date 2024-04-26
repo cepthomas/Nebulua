@@ -11,6 +11,9 @@ using Nebulua.Common;
 using Nebulua.Interop;
 
 
+// TODO display running tick/bartime in console?
+
+
 namespace Nebulua.CliApp
 {
     public class App : IDisposable
@@ -144,7 +147,7 @@ namespace Nebulua.CliApp
         }
 
         /// <summary>
-        /// Handler for state changes of interest. Some may originate in this component, others from elsewhere.
+        /// Handler for state changes of interest. TODO1 needed?
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

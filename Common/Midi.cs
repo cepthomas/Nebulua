@@ -43,7 +43,7 @@ namespace Nebulua.Common
 
         #region Lifecycle
         /// <summary>
-        /// Normal constructor.
+        /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
         public MidiInput(string deviceName)
@@ -90,7 +90,7 @@ namespace Nebulua.Common
 
         #region Traffic
         /// <summary>
-        /// Process input midi event.
+        /// Process input midi event. Dont throw!
         /// </summary>
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
@@ -101,6 +101,7 @@ namespace Nebulua.Common
             int chan_num = evt.Channel;
             if (Channels[chan_num - 1])
             {
+                // Invoke takes care of cross-thread issues.
                 ReceiveEvent?.Invoke(this, evt);
             }
             // else ignore.
@@ -115,7 +116,6 @@ namespace Nebulua.Common
         }
         #endregion
     }
-
 
     /// <summary>
     /// A midi output device.
@@ -137,7 +137,7 @@ namespace Nebulua.Common
 
         #region Lifecycle
         /// <summary>
-        /// Normal constructor.
+        /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
         public MidiOutput(string deviceName)
@@ -177,7 +177,7 @@ namespace Nebulua.Common
         #endregion
 
         #region Traffic
-        /// <summary>Send midi event.</summary>
+        /// <summary>Send midi event. OK to throw in here.</summary>
         public void Send(MidiEvent evt)
         {
             // Is it in our registered inputs?

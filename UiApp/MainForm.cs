@@ -6,7 +6,6 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
-//using Interop;
 
 
 namespace Nebulua.UiApp
@@ -37,7 +36,7 @@ namespace Nebulua.UiApp
             InitializeComponent();
             KeyPreview = true; // for routing kbd strokes properly
 
-            //Location = new Point(_settings.FormGeometry.X, _settings.FormGeometry.Y);
+            Location = new Point(100, 100);
             //Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
 
             try
@@ -70,9 +69,9 @@ namespace Nebulua.UiApp
                 }
 
                 // Cosmetics.
-                Color _foreclr = Color.Aqua;
-                Color _backclr = Color.Pink;
-                Color _selclr = Color.Green;
+                Color _backclr = Color.LightYellow;
+                Color _foreclr = Color.DodgerBlue;
+                Color _selclr = Color.Moccasin;
 
                 timeBar.BackColor = _backclr;
                 timeBar.ProgressColor = _foreclr;
@@ -122,11 +121,11 @@ namespace Nebulua.UiApp
                 chkMonSnd.Click += (_, __) => State.Instance.MonSnd = chkMonSnd.Checked;
                 sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
                 sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
-                //sldTempo.Label = "|-|-|";
 
+                // Text display.
+                traffic.BackColor = _backclr;
                 traffic.MatchColors.Add(" SND ", Color.Purple);
                 traffic.MatchColors.Add(" RCV ", Color.Green);
-                traffic.BackColor = _backclr;
                 traffic.Font = new("Cascadia Mono", 9);
                 traffic.Prompt = "->";
 
@@ -216,7 +215,7 @@ namespace Nebulua.UiApp
             {
                 case LogLevel.Error:
                     traffic.AppendLine(e.Message);
-                    // Fatal, shut down.
+                    // Fatal, shut down. TODO1 or?
                     State.Instance.ExecState = ExecState.Exit;
                     break;
 
@@ -236,8 +235,28 @@ namespace Nebulua.UiApp
 
 
 
+        ///// Good to go now. Loop forever doing cmdproc requests. ///// // ================ custom
+
+        // while (State.Instance.ExecState != ExecState.Exit)
+        // {
+        //     // Should not throw. Command processor will take care of its own errors.
+        //     _cmdProc.Read();
+        // }
+
+        // ///// Normal done. /////
+
+        // _cmdProc.Write("shutting down");
+
+        // // Wait a bit in case there are some lingering events.
+        // Thread.Sleep(100);
+
+        // // Just in case.
+        // KillAll();
+
+
+
         /// <summary>
-        /// Handler for state changes. Some may originate in this component, others from elsewhere.
+        /// Handler for state changes.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

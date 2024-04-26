@@ -48,7 +48,7 @@ namespace Nebulua.Common
 
         #region Lifecycle
         /// <summary>
-        /// Constructor inits stuff.
+        /// Constructor inits stuff. Can throw.
         /// </summary>
         /// <param name="configFn">Config to use.</param>
         public Core(string configFn)
@@ -143,9 +143,9 @@ namespace Nebulua.Common
 
         #region Primary workers
         /// <summary>
-        /// Load and execute script.
+        /// Load and execute script. Can throw.
         /// </summary>
-        public NebStatus Run(string scriptFn)
+        public NebStatus Run(string scriptFn) //TODO1 refactor this with constructor.
         {
             NebStatus stat = NebStatus.Ok;
 
@@ -171,24 +171,6 @@ namespace Nebulua.Common
                 // Start timer.
                 SetTimer(State.Instance.Tempo);
                 _mmTimer.Start();
-
-                ///// Good to go now. Loop forever doing cmdproc requests. ///// // ================ custom
-
-                // while (State.Instance.ExecState != ExecState.Exit)
-                // {
-                //     // Should not throw. Command processor will take care of its own errors.
-                //     _cmdProc.Read();
-                // }
-
-                // ///// Normal done. /////
-
-                // _cmdProc.Write("shutting down");
-
-                // // Wait a bit in case there are some lingering events.
-                // Thread.Sleep(100);
-
-                // // Just in case.
-                // KillAll();
             }
             catch (Exception ex)
             {
@@ -199,7 +181,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// Handler for state changes of interest. Some may originate in this component, others from elsewhere.
+        /// Handler for state changes of interest. Doesn't throw.
         /// Responsible for core stuff like tempo, kill.
         /// </summary>
         /// <param name="_"></param>
@@ -225,7 +207,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// Process events. This is in an interrupt handler so can't throw exceptions back to main thread.
+        /// Process events. These are on the client UI thread now. Can throw.
         /// </summary>
         /// <param name="totalElapsed"></param>
         /// <param name="periodElapsed"></param>
@@ -283,7 +265,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// Midi input arrived. This is in an interrupt handler so don't throw exceptions.
+        /// Midi input arrived. These are on the client UI thread now. Can throw.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -338,7 +320,7 @@ namespace Nebulua.Common
 
         #region Script Event Handlers
         /// <summary>
-        /// Script wants to define a channel.
+        /// Script wants to define a channel. Can throw.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -362,7 +344,7 @@ namespace Nebulua.Common
                     var output = _outputs.FirstOrDefault(o => o.DeviceName == e.DevName);
                     if (output == null)
                     {
-                        output = new(e.DevName); //throws
+                        output = new(e.DevName);
                         _outputs.Add(output);
                     }
 
@@ -395,7 +377,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// Sending some midi.
+        /// Sending some midi. Can throw.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -450,7 +432,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// Log something from script.
+        /// Log something from script. Can throw.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -469,7 +451,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// 
+        /// Script wants to change a property. Can throw.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -539,7 +521,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// General purpose handler for fatal errors. Causes app exit.
+        /// General purpose handler for fatal errors. Causes app exit. TODO1 or let client handle this?
         /// </summary>
         /// <param name="ex">The exception</param>
         /// <param name="info">Extra info</param>
