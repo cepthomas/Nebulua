@@ -54,6 +54,9 @@ namespace Nebulua.CliApp
                 var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
                 args.RemoveAt(0); // remove the binary
 
+                // Hook loog writes.
+                LogManager.LogMessage += LogManager_LogMessage;
+
                 foreach (var arg in args)
                 {
                     if (arg.EndsWith(".ini")) // optional
@@ -76,18 +79,16 @@ namespace Nebulua.CliApp
                 }
 
                 // OK so far.
-                // Hook loog writes.
-                LogManager.LogMessage += LogManager_LogMessage;
 
-                // Create.
+                // Create core.
                 _core = new Core(configFn);
                 _core.Run(_scriptFn);
 
                 // Update file watcher. TODO1 also any required files in script.
                 _watcher.Add(_scriptFn);
 
-                // State change handler.
-                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+                //// State change handler.
+                //State.Instance.ValueChangeEvent += State_ValueChangeEvent;
             }
             // Anything that throws is fatal.
             catch (Exception ex)
@@ -146,34 +147,34 @@ namespace Nebulua.CliApp
             return stat;
         }
 
-        /// <summary>
-        /// Handler for state changes of interest. TODO1 needed?
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void State_ValueChangeEvent(object? sender, string name)
-        {
-            switch (name)
-            {
-                // case "CurrentTick":
-                // case "Tempo":
+        ///// <summary>
+        ///// Handler for state changes of interest. TODO1 needed?
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //void State_ValueChangeEvent(object? sender, string name)
+        //{
+        //    switch (name)
+        //    {
+        //        // case "CurrentTick":
+        //        // case "Tempo":
 
-                case "ExecState":
-                    switch (State.Instance.ExecState)
-                    {
-                        case ExecState.Idle:
-                        case ExecState.Run:
-                        case ExecState.Exit:
-                            break;
+        //        case "ExecState":
+        //            switch (State.Instance.ExecState)
+        //            {
+        //                case ExecState.Idle:
+        //                case ExecState.Run:
+        //                case ExecState.Exit:
+        //                    break;
 
-                        case ExecState.Kill:
-                            // KillAll();
-                            // State.Instance.ExecState = ExecState.Idle;
-                            break;
-                    }
-                    break;
-            }
-        }
+        //                case ExecState.Kill:
+        //                    // KillAll();
+        //                    // State.Instance.ExecState = ExecState.Idle;
+        //                    break;
+        //            }
+        //            break;
+        //    }
+        //}
 
         /// <summary>
         /// Capture bad events and display them to the user. If error shut down.

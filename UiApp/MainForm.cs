@@ -47,6 +47,8 @@ namespace Nebulua.UiApp
                 var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
                 args.RemoveAt(0); // remove the binary name
 
+                LogManager.LogMessage += LogManager_LogMessage;
+
                 foreach (var arg in args)
                 {
                     if (arg.EndsWith(".ini"))
@@ -135,8 +137,6 @@ namespace Nebulua.UiApp
                 // OK so far.
                 _core = new Core(configFn);
 
-                LogManager.LogMessage += LogManager_LogMessage;
-
                 _core.Run(_scriptFn);
 
                 // Update file watcher. TODO1 also any required files in script.
@@ -151,7 +151,7 @@ namespace Nebulua.UiApp
             // Anything that throws is fatal.
             catch (Exception ex)
             {
-                FatalError(ex, "App constructor failed.");
+                //TODO1 FatalError(ex, "App constructor failed.");
             }
         }
 
@@ -181,10 +181,10 @@ namespace Nebulua.UiApp
             // Anything that throws is fatal. TODO1 generic handling or custom? also log error below.
             catch (Exception ex)
             {
-                FatalError(ex, "OnLoad() failed.");
+                //TODO1  FatalError(ex, "OnLoad() failed.");
             }
 
-           base.OnLoad(e);
+            base.OnLoad(e);
         }
 
         /// <summary>
@@ -282,6 +282,9 @@ namespace Nebulua.UiApp
                             break;
                     }
                     break;
+
+                default:
+                    break;
             }
         }
 
@@ -360,8 +363,6 @@ namespace Nebulua.UiApp
             //             // Send midi stop all notes just in case.
             //             KillAll();
             //             break;
-
-
         }
         //bool RunCmd(CommandDescriptor cmd, List<string> args)
         //{
@@ -514,47 +515,47 @@ namespace Nebulua.UiApp
         }
 
         #region Private functions
-        /// <summary>
-        /// General purpose handler for fatal errors.
-        /// </summary>
-        /// <param name="ex">The exception</param>
-        /// <param name="info">Extra info</param>
-        void FatalError(Exception e, string info)
-        {
-            string serr;
+        ///// <summary>
+        ///// General purpose handler for fatal errors.
+        ///// </summary>
+        ///// <param name="ex">The exception</param>
+        ///// <param name="info">Extra info</param>
+        //void FatalError(Exception e, string info)
+        //{
+        //    string serr;
 
-            switch (e)
-            {
-                case ApiException ex:
-                    serr = $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}";
-                    //// Could remove unnecessary detail for user.
-                    //int pos = ex.ApiError.IndexOf("stack traceback");
-                    //var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
-                    //serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
-                    //// Log the detail.
-                    //_logger.Debug($">>>>{ex.ApiError}");
-                    break;
+        //    switch (e)
+        //    {
+        //        case ApiException ex:
+        //            serr = $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}";
+        //            //// Could remove unnecessary detail for user.
+        //            //int pos = ex.ApiError.IndexOf("stack traceback");
+        //            //var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
+        //            //serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
+        //            //// Log the detail.
+        //            //_logger.Debug($">>>>{ex.ApiError}");
+        //            break;
 
-                case ConfigException ex:
-                    serr = $"Config File Error: {ex.Message}: {info}";
-                    break;
+        //        case ConfigException ex:
+        //            serr = $"Config File Error: {ex.Message}: {info}";
+        //            break;
 
-                case ScriptSyntaxException ex:
-                    serr = $"Script Syntax Error: {ex.Message}: {info}";
-                    break;
+        //        case ScriptSyntaxException ex:
+        //            serr = $"Script Syntax Error: {ex.Message}: {info}";
+        //            break;
 
-                case ApplicationArgumentException ex:
-                    serr = $"Application Argument Error: {ex.Message}: {info}";
-                    break;
+        //        case ApplicationArgumentException ex:
+        //            serr = $"Application Argument Error: {ex.Message}: {info}";
+        //            break;
 
-                default:
-                    serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
-                    break;
-            }
+        //        default:
+        //            serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
+        //            break;
+        //    }
 
-            // This will cause the app to exit.
-            _logger.Error(serr);
-        }
+        //    // This will cause the app to exit.
+        //    _logger.Error(serr);
+        //}
         #endregion
     }
 }
