@@ -32,7 +32,7 @@ namespace Nebulua.CliApp
         bool _disposed = false;
 
         /// <summary>Common functionality.</summary>
-        Core _core;
+        Core? _core;
 
         /// <summary>Detect changed script files.</summary>
         readonly MultiFileWatcher _watcher = new();
@@ -78,9 +78,7 @@ namespace Nebulua.CliApp
                     throw new ApplicationArgumentException($"Missing nebulua script file");
                 }
 
-                // OK so far.
-
-                // Create core.
+                // OK so far. Assemble the engine.
                 _core = new Core(configFn);
                 _core.Run(_scriptFn);
 
@@ -147,35 +145,6 @@ namespace Nebulua.CliApp
             return stat;
         }
 
-        ///// <summary>
-        ///// Handler for state changes of interest. TODO1 needed?
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //void State_ValueChangeEvent(object? sender, string name)
-        //{
-        //    switch (name)
-        //    {
-        //        // case "CurrentTick":
-        //        // case "Tempo":
-
-        //        case "ExecState":
-        //            switch (State.Instance.ExecState)
-        //            {
-        //                case ExecState.Idle:
-        //                case ExecState.Run:
-        //                case ExecState.Exit:
-        //                    break;
-
-        //                case ExecState.Kill:
-        //                    // KillAll();
-        //                    // State.Instance.ExecState = ExecState.Idle;
-        //                    break;
-        //            }
-        //            break;
-        //    }
-        //}
-
         /// <summary>
         /// Capture bad events and display them to the user. If error shut down.
         /// </summary>
@@ -186,8 +155,8 @@ namespace Nebulua.CliApp
             switch (e.Level)
             {
                 case LogLevel.Error:
-                    _cmdProc.Write(e.Message);
-                    // Fatal, shut down.
+                    // Fatal error, shut down.
+                    _cmdProc.Write($"Fatal, shutting down:{Environment.NewLine}{e.Message}");
                     State.Instance.ExecState = ExecState.Exit;
                     break;
 
@@ -210,36 +179,15 @@ namespace Nebulua.CliApp
         /// <param name="info">Extra info</param>
         void FatalError(Exception e, string info)
         {
-            string serr;
-
-            switch (e)
+            State.Instance.ExecState = ExecState.Dead;
+            string serr = e switch
             {
-                case ApiException ex:
-                    serr = $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}";
-                    //// Could remove unnecessary detail for user.
-                    //int pos = ex.ApiError.IndexOf("stack traceback");
-                    //var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
-                    //serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
-                    //// Log the detail.
-                    //_logger.Debug($">>>>{ex.ApiError}");
-                    break;
-
-                case ConfigException ex:
-                    serr = $"Config File Error: {ex.Message}: {info}";
-                    break;
-
-                case ScriptSyntaxException ex:
-                    serr = $"Script Syntax Error: {ex.Message}: {info}";
-                    break;
-
-                case ApplicationArgumentException ex:
-                    serr = $"Application Argument Error: {ex.Message}: {info}";
-                    break;
-
-                default:
-                    serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
-                    break;
-            }
+                ApiException ex => $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}",
+                ConfigException ex => $"Config File Error: {ex.Message}: {info}",
+                ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}: {info}",
+                ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}: {info}",
+                _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
+            };
 
             // This will cause the app to exit.
             _logger.Error(serr);

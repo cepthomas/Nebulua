@@ -6,6 +6,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
+using System.Collections.Generic;
 
 
 namespace Nebulua.UiApp
@@ -17,10 +18,10 @@ namespace Nebulua.UiApp
         readonly Logger _logger = LogManager.CreateLogger("Ui");
 
         /// <summary>Current script.</summary>
-        readonly string? _scriptFn = null;
+        string? _scriptFn = null;
 
         /// <summary>Common functionality.</summary>
-        Core _core;
+        Core? _core;
 
         /// <summary>Detect changed script files.</summary>
         readonly MultiFileWatcher _watcher = new();
@@ -28,7 +29,7 @@ namespace Nebulua.UiApp
 
         #region Lifecycle
         /// <summary>
-        /// Srart here.
+        /// Inits control behavior.
         /// </summary>
         public MainForm()
         {
@@ -39,6 +40,33 @@ namespace Nebulua.UiApp
             Location = new Point(100, 100);
             //Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
 
+            // Hook loog writes.
+            LogManager.LogMessage += LogManager_LogMessage;
+
+            // Behavior.
+            timeBar.CurrentTimeChanged += (object? sender, EventArgs e) => { State.Instance.CurrentTick = timeBar.Current; };
+            chkPlay.Click += Play_Click;
+            btnRewind.Click += Rewind_Click;
+            btnAbout.Click += About_Click;
+            btnKill.Click += (_, __) => { State.Instance.ExecState = ExecState.Kill; };
+            btnReload.Click += (_, __) => { State.Instance.ExecState = ExecState.Reload; };
+;
+            chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
+            chkMonRcv.Click += (_, __) => State.Instance.MonRcv = chkMonRcv.Checked;
+            chkMonSnd.Click += (_, __) => State.Instance.MonSnd = chkMonSnd.Checked;
+            sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
+            sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
+
+            _watcher.Clear();
+            _watcher.FileChange += Watcher_Changed;
+        }
+
+        /// <summary>
+        /// Inits control appearance. Opens config and script. Can throw.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLoad(EventArgs e)
+        {
             try
             {
                 // Process cmd line args.
@@ -46,8 +74,6 @@ namespace Nebulua.UiApp
                 _scriptFn = null;
                 var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
                 args.RemoveAt(0); // remove the binary name
-
-                LogManager.LogMessage += LogManager_LogMessage;
 
                 foreach (var arg in args)
                 {
@@ -70,7 +96,7 @@ namespace Nebulua.UiApp
                     throw new ApplicationArgumentException($"Missing nebulua script file");
                 }
 
-                // Cosmetics.
+                #region Cosmetics TODO get from config?
                 Color _backclr = Color.LightYellow;
                 Color _foreclr = Color.DodgerBlue;
                 Color _selclr = Color.Moccasin;
@@ -78,8 +104,6 @@ namespace Nebulua.UiApp
                 timeBar.BackColor = _backclr;
                 timeBar.ProgressColor = _foreclr;
                 timeBar.MarkerColor = Color.Black;
-
-                cliIn.BackColor = _backclr;
 
                 chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, _foreclr);
                 chkPlay.BackColor = _backclr;
@@ -106,82 +130,38 @@ namespace Nebulua.UiApp
                 btnKill.BackColor = _backclr;
                 btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, _foreclr);
 
+                btnReload.BackColor = _backclr;
+                btnReload.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnReload.Image!, _foreclr);
+
                 sldVolume.BackColor = _backclr;
                 sldVolume.ForeColor = _foreclr;
 
                 sldTempo.BackColor = _backclr;
                 sldTempo.ForeColor = _foreclr;
 
-                // Behavior.
-                timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
-                chkPlay.Click += Play_Click;
-                btnRewind.Click += Rewind_Click;
-                btnAbout.Click += About_Click;
-                btnKill.Click += Kill_Click;
-                chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
-                chkMonRcv.Click += (_, __) => State.Instance.MonRcv = chkMonRcv.Checked;
-                chkMonSnd.Click += (_, __) => State.Instance.MonSnd = chkMonSnd.Checked;
-                sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
-                sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
-
                 // Text display.
                 traffic.BackColor = _backclr;
                 traffic.MatchColors.Add(" SND ", Color.Purple);
                 traffic.MatchColors.Add(" RCV ", Color.Green);
                 traffic.Font = new("Cascadia Mono", 9);
-                traffic.Prompt = "->";
+                traffic.Prompt = "";
+                #endregion
 
-                _watcher.Clear();
-                _watcher.FileChange += Watcher_Changed;
-
-                // OK so far.
+                // OK so far. Assemble the engine.
                 _core = new Core(configFn);
-
                 _core.Run(_scriptFn);
 
                 // Update file watcher. TODO1 also any required files in script.
                 _watcher.Add(_scriptFn);
 
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-
-                // State change handler.
-                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-
             }
             // Anything that throws is fatal.
             catch (Exception ex)
             {
-                //TODO1 FatalError(ex, "App constructor failed.");
-            }
-        }
-
-
-
-
-
-        //////// ================ Core stuff custom ===================
-
-        protected override void OnLoad(EventArgs e)
-        {
-            try
-            {
-                //KeyPreview = true; // for routing kbd strokes properly
-                //_watcher.Clear();
-                //_watcher.FileChange += Watcher_Changed;
-                //// OK so far.
-                //_core = new Core(configFn);
-                //LogManager.LogMessage += LogManager_LogMessage;
-                //_core.Run(_scriptFn);
-                //// Update file watcher. TODO1 also any required files in script.
-                //_watcher.Add(_scriptFn);
-                //Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                //// State change handler.
-                //State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-            }
-            // Anything that throws is fatal. TODO1 generic handling or custom? also log error below.
-            catch (Exception ex)
-            {
-                //TODO1  FatalError(ex, "OnLoad() failed.");
+                State.Instance.ExecState = ExecState.Dead;
+                var serr = $"Fatal error - restart application.{Environment.NewLine}{ex}{Environment.NewLine}{ex.StackTrace}";
+                traffic.AppendLine(serr);
             }
 
             base.OnLoad(e);
@@ -196,272 +176,73 @@ namespace Nebulua.UiApp
             if (disposing && (components != null))
             {
                 components.Dispose();
-                _core.Dispose();
+                _core?.Dispose();
             }
             base.Dispose(disposing);
         }
         #endregion
 
+        #region Run control
         /// <summary>
-        /// Capture bad events and display them to the user. If error shut down.
+        /// 
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        {
-            traffic.AppendLine(e.ToString());
-
-            switch (e.Level)
-            {
-                case LogLevel.Error:
-                    traffic.AppendLine(e.Message);
-                    // Fatal, shut down. TODO1 or?
-                    State.Instance.ExecState = ExecState.Exit;
-                    break;
-
-                case LogLevel.Warn:
-                    traffic.AppendLine(e.Message);
-                    break;
-
-                default:
-                    // ignore
-                    break;
-            }
-        }
-
-
-
-        ///////////////////////// TODO1 run management //////////////////
-
-
-
-        ///// Good to go now. Loop forever doing cmdproc requests. ///// // ================ custom
-
-        // while (State.Instance.ExecState != ExecState.Exit)
-        // {
-        //     // Should not throw. Command processor will take care of its own errors.
-        //     _cmdProc.Read();
-        // }
-
-        // ///// Normal done. /////
-
-        // _cmdProc.Write("shutting down");
-
-        // // Wait a bit in case there are some lingering events.
-        // Thread.Sleep(100);
-
-        // // Just in case.
-        // KillAll();
-
-
-
-        /// <summary>
-        /// Handler for state changes.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void State_ValueChangeEvent(object? sender, string name)
-        {
-            switch (name)
-            {
-                case "CurrentTick": // from Core or UI
-                    if (sender != this) { } // TODO1 Do state handling with TimeBar_CurrentTimeChanged()
-                    break;
-
-                case "ExecState":
-                    switch (State.Instance.ExecState)
-                    {
-                        case ExecState.Idle:
-                        case ExecState.Run:
-                        case ExecState.Exit:
-                            break;
-
-                        case ExecState.Kill:
-                            //KillAll();
-                            // State.Instance.ExecState = ExecState.Idle;
-                            break;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-
-
-
-
-
-
-
-
-        void _set_position(int position)
-        {
-            //bool PositionCmd(CommandDescriptor cmd, List<string> args)
-            // Limit range maybe.
-            int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-            int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
-
-            State.Instance.CurrentTick = MathUtils.Constrain(position, start, end);
-
-
-
-        }
-
-
-
-        /// <summary>
-        /// User has moved the time.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
-        {
-            // do time mgmt
-            //_stepTime = new(barBar.Current.Sub);
-            //ProcessPlay(PlayCommand.UpdateUiTime);
-
-            // Stop and rewind.
-            traffic.AppendLine("done"); // handle with state change
-            State.Instance.ExecState = ExecState.Idle;
-        }
-        // /// <summary>
-        // /// User has changed the time.
-        // /// </summary>
-        // /// <param name="sender"></param>
-        // /// <param name="e"></param>
-        // void BarBar_CurrentTimeChanged(object? sender, EventArgs e)
-        // {
-        //     _stepTime = new(barBar.Current.Sub);
-        //     ProcessPlay(PlayCommand.UpdateUiTime);
-        // }
-        // #endregion
-
-
-
         void Play_Click(object? sender, EventArgs e)
         {
-
-            //         case PlayCommand.Start:
-            //             bool ok = !_needCompile || CompileScript();
-            //             if (ok)
-            //             {
-            //                 _startTime = DateTime.Now;
-            //                 chkPlay.Checked = true;
-            //                 _mmTimer.Start();
-            //             }
-            //             else
-            //             {
-            //                 chkPlay.Checked = false;
-            //                 ret = false;
-            //             }
-            //             break;
-            //         case PlayCommand.Stop:
-            //             chkPlay.Checked = false;
-            //             _mmTimer.Stop();
-            //             // Send midi stop all notes just in case.
-            //             KillAll();
-            //             break;
+            if (chkPlay.Checked && State.Instance.ExecState == ExecState.Idle)
+            {
+                State.Instance.ExecState = ExecState.Run;
+            }
+            else if (!chkPlay.Checked && State.Instance.ExecState == ExecState.Run)
+            {
+                State.Instance.ExecState = ExecState.Idle;
+            }
+            // else other?? { Idle, Run, Kill, Exit, Dead }
         }
-        //bool RunCmd(CommandDescriptor cmd, List<string> args)
-        //{
-        //    switch (State.Instance.ExecState)
-        //    {
-        //        case ExecState.Idle:
-        //            State.Instance.ExecState = ExecState.Run;
-        //            Write("running");
-        //            break;
-
-        //        case ExecState.Run:
-        //            State.Instance.ExecState = ExecState.Idle;
-        //            Write("stopped");
-        //            break;
-
-        //        default:
-        //            Write("invalid state");
-        //            ret = false;
-        //            break;
-        //    }
-        //}
-        // #region Play control
-        // /// <summary>
-        // /// Update UI state per param.
-        // /// </summary>
-        // /// <param name="cmd">The command.</param>
-        // /// <returns>Indication of success.</returns>
-        // bool ProcessPlay(PlayCommand cmd)
-        // {
-        //     bool ret = true;
-        //     switch (cmd)
-        //     {
-        //         case PlayCommand.Start:
-        //             bool ok = !_needCompile || CompileScript();
-        //             if (ok)
-        //             {
-        //                 _startTime = DateTime.Now;
-        //                 chkPlay.Checked = true;
-        //                 _mmTimer.Start();
-        //             }
-        //             else
-        //             {
-        //                 chkPlay.Checked = false;
-        //                 ret = false;
-        //             }
-        //             break;
-        //         case PlayCommand.Stop:
-        //             chkPlay.Checked = false;
-        //             _mmTimer.Stop();
-        //             // Send midi stop all notes just in case.
-        //             KillAll();
-        //             break;
-        //         case PlayCommand.Rewind:
-        //             _stepTime.Reset();
-        //             barBar.Current = new();
-        //             break;
-        //         case PlayCommand.StopRewind:
-        //             chkPlay.Checked = false;
-        //             _stepTime.Reset();
-        //             break;
-        //         case PlayCommand.UpdateUiTime:
-        //             // See below.
-        //             break;
-        //     }
-        //     // Always do this.
-        //     barBar.Current = new(_stepTime.TotalSubs);
-        //     return ret;
-        // }
-
-
-        void Kill_Click(object? sender, EventArgs e)
-        {
-
-        }
-
-        void Rewind_Click(object? sender, EventArgs e)
-        {
-
-        }
-
-
-
-
-
-
 
         /// <summary>
-        /// Do some global key handling. Space bar is used for stop/start playing. TODO1 ?
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Rewind_Click(object? sender, EventArgs e)
+        {
+            State.Instance.CurrentTick = 0;
+            // Current tick may have been corrected for loop.
+            timeBar.Current = State.Instance.CurrentTick;
+        }
+
+        /// <summary>
+        /// Do some global key handling. Space bar is used for stop/start playing.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Space)
             {
-                // Handle start/stop toggle.
-                //ProcessPlay(chkPlay.Checked ? PlayCommand.Stop : PlayCommand.Start);
+                chkPlay.Checked = !chkPlay.Checked;
                 e.Handled = true;
             }
             base.OnKeyDown(e);
+        }
+        #endregion
+
+        #region Private functions
+        /// <summary>
+        /// Capture bad events and display them to the user.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            traffic.AppendLine(e.ToString()!);
+
+            if (e.Level == LogLevel.Error)
+            {
+                traffic.AppendLine("Fatal error, you must restart");
+                State.Instance.ExecState = ExecState.Dead;
+            }
         }
 
         /// <summary>
@@ -492,70 +273,23 @@ namespace Nebulua.UiApp
         /// </summary>
         void About_Click(object? sender, EventArgs e)
         {
-            //TODO1 MiscUtils.ShowReadme("Nebulator");
-            // btnAbout.Click += About_Click;
-            // > MiscUtils.ShowReadme("Nebulator");
-            // this.showDefinitionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDefinitions_Click);
-            // > var docs = MidiDefs.FormatDoc();
-            // > docs.AddRange(MusicDefinitions.FormatDoc());
-            // > Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
+            List<string> ls = [];
 
-            //bool InfoCmd(CommandDescriptor _, List<string> __)
-            //_out.WriteLine($"Midi output devices:");
-            //for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-            //{
-            //    _out.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
-            //}
-            //_out.WriteLine($"Midi input devices:");
-            //for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            //{
-            //    _out.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
-            //}
+            MiscUtils.ShowReadme("Nebulua");
 
+            ls.Add($"Midi output devices:");
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+               ls.Add("  " + MidiOut.DeviceInfo(i).ProductName);
+            }
+            ls.Add($"Midi input devices:");
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                ls.Add("  " + MidiIn.DeviceInfo(i).ProductName);
+            }
+
+            traffic.AppendLine(string.Join(Environment.NewLine, ls));
         }
-
-        #region Private functions
-        ///// <summary>
-        ///// General purpose handler for fatal errors.
-        ///// </summary>
-        ///// <param name="ex">The exception</param>
-        ///// <param name="info">Extra info</param>
-        //void FatalError(Exception e, string info)
-        //{
-        //    string serr;
-
-        //    switch (e)
-        //    {
-        //        case ApiException ex:
-        //            serr = $"Api Error: {ex.Message}: {info}{Environment.NewLine}{ex.ApiError}";
-        //            //// Could remove unnecessary detail for user.
-        //            //int pos = ex.ApiError.IndexOf("stack traceback");
-        //            //var s = pos > 0 ? StringUtils.Left(ex.ApiError, pos) : ex.ApiError;
-        //            //serr = $"Api Error: {ex.Message}{Environment.NewLine}{s}";
-        //            //// Log the detail.
-        //            //_logger.Debug($">>>>{ex.ApiError}");
-        //            break;
-
-        //        case ConfigException ex:
-        //            serr = $"Config File Error: {ex.Message}: {info}";
-        //            break;
-
-        //        case ScriptSyntaxException ex:
-        //            serr = $"Script Syntax Error: {ex.Message}: {info}";
-        //            break;
-
-        //        case ApplicationArgumentException ex:
-        //            serr = $"Application Argument Error: {ex.Message}: {info}";
-        //            break;
-
-        //        default:
-        //            serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
-        //            break;
-        //    }
-
-        //    // This will cause the app to exit.
-        //    _logger.Error(serr);
-        //}
         #endregion
     }
 }

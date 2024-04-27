@@ -20,6 +20,10 @@
     <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="MainForm_all_old.cs" />
+  </ItemGroup>
+
     <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Interop\Interop.vcxproj" />

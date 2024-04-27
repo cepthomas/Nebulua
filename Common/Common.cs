@@ -22,28 +22,24 @@ namespace Nebulua.Common
 
     #region Exceptions
     /// <summary>Lua script syntax error.</summary>
-    public class ScriptSyntaxException : Exception
+    public class ScriptSyntaxException(string message) : Exception(message)
     {
-        public ScriptSyntaxException(string message) : base(message) { }
     }
 
     /// <summary>Api error.</summary>
-    public class ApiException : Exception
+    public class ApiException(string message, string apiError) : Exception(message)
     {
-        public string ApiError { get; init; } = "None";
-        public ApiException(string message, string apiError) : base(message) { ApiError = apiError; }
+        public string ApiError { get; init; } = apiError;
     }
 
     /// <summary>App command line error.</summary>
-    public class ApplicationArgumentException : Exception
+    public class ApplicationArgumentException(string message) : Exception(message)
     {
-        public ApplicationArgumentException(string message) : base(message) { }
     }
 
     /// <summary>Config file error.</summary>
-    public class ConfigException : Exception
+    public class ConfigException(string message) : Exception(message)
     {
-        public ConfigException(string message) : base(message) { }
     }
     #endregion
 

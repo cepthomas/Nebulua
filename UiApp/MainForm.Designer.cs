@@ -31,9 +31,9 @@ namespace Nebulua.UiApp
             btnKill = new Button();
             chkMonRcv = new CheckBox();
             chkMonSnd = new CheckBox();
-            timeBar = new TimeBar();
-            cliIn = new CliInput();
             chkLoop = new CheckBox();
+            btnReload = new Button();
+            timeBar = new TimeBar();
             SuspendLayout();
             // 
             // chkPlay
@@ -41,7 +41,7 @@ namespace Nebulua.UiApp
             chkPlay.Appearance = Appearance.Button;
             chkPlay.FlatStyle = FlatStyle.Flat;
             chkPlay.Image = (Image)resources.GetObject("chkPlay.Image");
-            chkPlay.Location = new Point(187, 12);
+            chkPlay.Location = new Point(101, 11);
             chkPlay.Name = "chkPlay";
             chkPlay.Size = new Size(43, 49);
             chkPlay.TabIndex = 0;
@@ -56,7 +56,7 @@ namespace Nebulua.UiApp
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(45, 49);
             btnRewind.TabIndex = 1;
-            toolTip.SetToolTip(btnRewind, "Reset to start");
+            toolTip.SetToolTip(btnRewind, "Rewind to start");
             btnRewind.UseVisualStyleBackColor = false;
             // 
             // sldVolume
@@ -137,7 +137,7 @@ namespace Nebulua.UiApp
             chkMonRcv.Name = "chkMonRcv";
             chkMonRcv.Size = new Size(40, 40);
             chkMonRcv.TabIndex = 48;
-            toolTip.SetToolTip(chkMonRcv, "Play project");
+            toolTip.SetToolTip(chkMonRcv, "Monitor midi rcv");
             chkMonRcv.UseVisualStyleBackColor = false;
             // 
             // chkMonSnd
@@ -149,55 +149,57 @@ namespace Nebulua.UiApp
             chkMonSnd.Name = "chkMonSnd";
             chkMonSnd.Size = new Size(40, 40);
             chkMonSnd.TabIndex = 49;
-            toolTip.SetToolTip(chkMonSnd, "Play project");
+            toolTip.SetToolTip(chkMonSnd, "Monitor midi send");
             chkMonSnd.UseVisualStyleBackColor = false;
-            // 
-            // timeBar
-            // 
-            timeBar.BorderStyle = BorderStyle.FixedSingle;
-            timeBar.Font = new Font("Cascadia Mono", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            timeBar.Location = new Point(50, 82);
-            timeBar.MarkerColor = Color.Black;
-            timeBar.Name = "timeBar";
-            timeBar.ProgressColor = Color.White;
-            timeBar.Size = new Size(731, 64);
-            timeBar.Snap = SnapType.Bar;
-            timeBar.TabIndex = 42;
-            // 
-            // cliIn
-            // 
-            cliIn.Location = new Point(36, 418);
-            cliIn.Name = "cliIn";
-            cliIn.Prompt = "???";
-            cliIn.Size = new Size(773, 125);
-            cliIn.TabIndex = 43;
             // 
             // chkLoop
             // 
             chkLoop.Appearance = Appearance.Button;
             chkLoop.FlatStyle = FlatStyle.Flat;
-            chkLoop.Image = Properties.Resources.glyphicons_86_repeat;
+            chkLoop.Image = (Image)resources.GetObject("chkLoop.Image");
             chkLoop.Location = new Point(245, 21);
             chkLoop.Name = "chkLoop";
             chkLoop.Size = new Size(40, 40);
             chkLoop.TabIndex = 50;
-            toolTip.SetToolTip(chkLoop, "Play project");
+            toolTip.SetToolTip(chkLoop, "Loop selection");
             chkLoop.UseVisualStyleBackColor = false;
+            // 
+            // btnReload
+            // 
+            btnReload.FlatStyle = FlatStyle.Flat;
+            btnReload.Image = (Image)resources.GetObject("btnReload.Image");
+            btnReload.Location = new Point(168, 15);
+            btnReload.Name = "btnReload";
+            btnReload.Size = new Size(40, 40);
+            btnReload.TabIndex = 51;
+            toolTip.SetToolTip(btnReload, "Reload script");
+            btnReload.UseVisualStyleBackColor = false;
+            // 
+            // timeBar
+            // 
+            timeBar.BorderStyle = BorderStyle.FixedSingle;
+            timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            timeBar.Location = new Point(45, 95);
+            timeBar.MarkerColor = Color.Black;
+            timeBar.Name = "timeBar";
+            timeBar.ProgressColor = Color.White;
+            timeBar.Size = new Size(745, 51);
+            timeBar.Snap = SnapType.Bar;
+            timeBar.TabIndex = 52;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1041, 606);
+            Controls.Add(timeBar);
+            Controls.Add(btnReload);
             Controls.Add(chkLoop);
             Controls.Add(chkMonSnd);
             Controls.Add(chkMonRcv);
             Controls.Add(btnKill);
             Controls.Add(btnAbout);
-            Controls.Add(cliIn);
-            Controls.Add(timeBar);
             Controls.Add(btnRewind);
             Controls.Add(chkPlay);
             Controls.Add(sldVolume);
@@ -216,12 +218,12 @@ namespace Nebulua.UiApp
         private Ephemera.NBagOfUis.Slider sldTempo;
         private Ephemera.NBagOfUis.TextViewer traffic;
         private ToolTip toolTip;
-        private TimeBar timeBar;
-        private CliInput cliIn;
         private Button btnAbout;
         private Button btnKill;
         private CheckBox chkMonRcv;
         private CheckBox chkMonSnd;
         private CheckBox chkLoop;
+        private Button btnReload;
+        private TimeBar timeBar;
     }
 }

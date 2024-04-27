@@ -153,9 +153,9 @@ namespace Nebulua.UiApp
                     }
                     break;
 
-                //case Keys.Space:
-                //    // TODO1? Use for start stop.
-                //    break;
+                case Keys.Space:
+                   // Use for start stop.
+                   break;
 
                 default:
                     //e.SuppressKeyPress = true;

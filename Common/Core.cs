@@ -30,8 +30,8 @@ namespace Nebulua.Common
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
 
-        /// <summary>Diagnostics for timing measurement.</summary>
-        readonly TimingAnalyzer? _tan = null;
+        ///// <summary>Diagnostics for timing measurement.</summary>
+        //readonly TimingAnalyzer? _tan = null;
 
         /// <summary>All devices to use for send.</summary>
         readonly List<MidiOutput> _outputs = [];
@@ -40,7 +40,7 @@ namespace Nebulua.Common
         readonly List<MidiInput> _inputs = [];
 
         /// <summary>Current script.</summary>
-        readonly string? _scriptFn = null;
+        string? _scriptFn = null;
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -51,7 +51,7 @@ namespace Nebulua.Common
         /// Constructor inits stuff. Can throw on main thread.
         /// </summary>
         /// <param name="configFn">Config to use.</param>
-        public Core(string configFn)
+        public Core(string? configFn)
         {
             _config = new(configFn);
 
@@ -137,9 +137,10 @@ namespace Nebulua.Common
         /// <summary>
         /// Load and execute script. Can throw on main thread.
         /// </summary>
-        public NebStatus Run(string scriptFn) //TODO1 refactor this with constructor.
+        public NebStatus Run(string scriptFn)
         {
             NebStatus stat = NebStatus.Ok;
+            _scriptFn = scriptFn;
 
             // Create script api.
             Api api = new(_luaPath);
@@ -166,15 +167,29 @@ namespace Nebulua.Common
         }
 
         /// <summary>
+        /// Reload the externally modified script.
+        /// </summary>
+        public void Reload()
+        {
+            // TODO1 do something to reload script without exiting app.
+            // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
+            // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
+        }
+
+        /// <summary>
         /// Handler for state changes of interest. Doesn't throw.
         /// Responsible for core stuff like tempo, kill.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="name">Specific State value.</param>
-        void State_ValueChangeEvent(object? _, string name)
+        void State_ValueChangeEvent(object? sender, string name)
         {
             switch (name)
             {
+                case "CurrentTick": // from Core or UI TODO1
+                    if (sender != this) { }
+                    break;
+
                 case "Tempo":
                     SetTimer(State.Instance.Tempo);
                     break;
@@ -184,6 +199,11 @@ namespace Nebulua.Common
                     {
                         case ExecState.Kill:
                             KillAll();
+                            State.Instance.ExecState = ExecState.Idle;
+                            break;
+
+                        case ExecState.Reload:
+                            Reload();
                             State.Instance.ExecState = ExecState.Idle;
                             break;
                     }
@@ -201,19 +221,19 @@ namespace Nebulua.Common
             if (State.Instance.ExecState == ExecState.Run)
             {
                 // Do script. TODO Handle solo/mute like nebulator.
-                _tan?.Arm();
+                //_tan?.Arm();
 
                 foreach (var api in _apis.Values)
                 {
-                    NebStatus stat = api.Step(State.Instance.CurrentTick); //TODO1 handle script stat/error
-                    //if (stat != NebStatus.Ok)
-                    //{
-                    //    throw new ApiException("Step() failed", api.Error);
-                    //}
+                    NebStatus stat = api.Step(State.Instance.CurrentTick);
+                    if (stat != NebStatus.Ok)
+                    {
+                       CallbackError(new ApiException("Step() failed", api.Error));
+                    }
                 }
 
                 // Read stopwatch and diff/stats.
-                string? s = _tan?.Dump();
+                //string? s = _tan?.Dump();
 
                 // Update state.
                 // Bump time and check state.
@@ -281,10 +301,10 @@ namespace Nebulua.Common
                     _logger.Trace($"RCV {MidiDefs.FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
                 }
 
-                //if (stat != NebStatus.Ok) //TODO1 handle script stat/error
-                //{
-                //    throw new ApiException("Midi Receive() failed", api.Error);
-                //}
+                if (stat != NebStatus.Ok)
+                {
+                   CallbackError(new ApiException("Midi Receive() failed", api.Error));
+                }
             }
         }
         #endregion
@@ -400,8 +420,7 @@ namespace Nebulua.Common
             }
             else
             {
-                //var ex = new ScriptSyntaxException("Invalid log level: {e.LogLevel}"); //TODO1 handle this.
-                //FatalError(ex, "Interop_Log()");
+                CallbackError(new ScriptSyntaxException("Invalid log level: {e.LogLevel}"));
             }
         }
 
@@ -470,6 +489,41 @@ namespace Nebulua.Common
 
             // Hard reset.
             State.Instance.ExecState = ExecState.Idle;
+        }
+
+        /// <summary>
+        /// General purpose handler for errors in callback functions ecause they can't throw exceptions.
+        /// </summary>
+        /// <param name="ex">The exception</param>
+        void CallbackError(Exception e)
+        {
+           string serr;
+
+           switch (e)
+           {
+               case ApiException ex:
+                   serr = $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}";
+                   break;
+
+               case ConfigException ex:
+                   serr = $"Config File Error: {ex.Message}";
+                   break;
+
+               case ScriptSyntaxException ex:
+                   serr = $"Script Syntax Error: {ex.Message}";
+                   break;
+
+               case ApplicationArgumentException ex:
+                   serr = $"Application Argument Error: {ex.Message}";
+                   break;
+
+               default:
+                   serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
+                   break;
+           }
+
+           // Client can decide what to do with this.
+           _logger.Error(serr);
         }
         #endregion
     }

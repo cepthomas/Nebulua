@@ -10,7 +10,7 @@ local neb = require("nebulua") -- lua api
 local com = require('neb_common')
 
 
-ut.config_debug(false) -- TODO1 an easy way to toggle this? and/or insert/delete breakpoints from ST.
+ut.config_debug(false) -- TODO an easy way to toggle this? and/or insert/delete breakpoints from ST.
 
 
 -- Create the namespace/module.

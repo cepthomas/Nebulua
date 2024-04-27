@@ -9,7 +9,7 @@ namespace Nebulua.Common
 {
     #region Enums
     /// <summary>Internal status.</summary>
-    public enum ExecState { Idle, Run, Kill, Exit }
+    public enum ExecState { Idle, Run, Kill, Exit, Dead, Reload }
     #endregion
 
     /// <summary>System globals. Some notify clients.</summary>
