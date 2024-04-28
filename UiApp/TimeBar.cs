@@ -33,28 +33,28 @@ namespace Nebulua.UiApp
         #region Backing fields
         readonly SolidBrush _brush = new(Color.White);
         readonly Pen _penMarker = new(Color.Black, 1);
-        int _length;
-        int _start;
-        int _end;
-        int _current;
+        int _length = 0; >>> use State instead
+        int _loopStart = -1;
+        int _loopEnd = -1;
+        int _current = 0;
         #endregion
 
         #region Properties
         /// <summary>Total length of the bar.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int Length { get { return _length; } set { _length = value; Invalidate(); } }
+        public int Length { get { return _length; } set { _length = value; ValidateTimes(); Invalidate(); } }
 
         /// <summary>Start of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int Start { get { return _start; } set { _start = value; Invalidate(); } }
+        public int LoopStart { get { return _loopStart; } set { _loopStart = value; ValidateTimes(); Invalidate(); } }
 
         /// <summary>End of marked region.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int End { get { return _end; } set { _end = value; Invalidate(); } }
+        public int LoopEnd { get { return _loopEnd; } set { _loopEnd = value; ValidateTimes(); Invalidate(); } }
 
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int Current { get { return _current; } set { _current = value; Invalidate(); } }
+        public int Current { get { return _current; } set { _current = value; ValidateTimes(); Invalidate(); } }
 
         /// <summary>For styling.</summary>
         public Color ProgressColor { get { return _brush.Color; } set { _brush.Color = value; } }
@@ -113,30 +113,19 @@ namespace Nebulua.UiApp
             // Setup.
             pe.Graphics.Clear(BackColor);
 
-            // Validate times.
-            // 0   start   end   length
-            // length >=0
-            // end >=0 <=length
-            // start >=0 <=end
-            if (_length < 0) _length = 0;
-            if (_end < 0) _end = 0;
-            if (_end > _length) _end = _length;
-            if (_start < 0) _start = 0;
-            if (_start > _end) _start = _end;
-
             // Draw the bar.
             if (_current < _length)
             {
-                int dstart = GetMouseFromTick(_start);
-                int dend = _current > _end ? GetMouseFromTick(_end) : GetMouseFromTick(_current);
+                int dstart = GetMouseFromTick(_loopStart);
+                int dend = _current > _loopEnd ? GetMouseFromTick(_loopEnd) : GetMouseFromTick(_current);
                 pe.Graphics.FillRectangle(_brush, dstart, 0, dend - dstart, Height);
             }
 
             // Draw start/end markers.
-            if (_start != 0 || _end != _length)
+            if (_loopStart != 0 || _loopEnd != _length)
             {
-                int mstart = GetMouseFromTick(_start);
-                int mend = GetMouseFromTick(_end);
+                int mstart = GetMouseFromTick(_loopStart);
+                int mend = GetMouseFromTick(_loopEnd);
                 pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
                 pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
             }
@@ -145,9 +134,9 @@ namespace Nebulua.UiApp
             _format.Alignment = StringAlignment.Center;
             pe.Graphics.DrawString(MusicTime.Format(_current), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(MusicTime.Format(_start), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(MusicTime.Format(_loopStart), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(MusicTime.Format(_end), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(MusicTime.Format(_loopEnd), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -161,8 +150,8 @@ namespace Nebulua.UiApp
             if(e.KeyData == Keys.Escape)
             {
                 // Reset.
-                _start = 0;
-                _end = 0;
+                _loopStart = 0;
+                _loopEnd = 0;
                 Invalidate();
             }
             base.OnKeyDown(e);
@@ -198,11 +187,11 @@ namespace Nebulua.UiApp
         {
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                _start = GetRounded(GetTickFromMouse(e.X), Snap);
+                _loopStart = GetRounded(GetTickFromMouse(e.X), Snap);
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
-                _end = GetRounded(GetTickFromMouse(e.X), Snap);
+                _loopEnd = GetRounded(GetTickFromMouse(e.X), Snap);
             }
             else
             {
@@ -231,14 +220,14 @@ namespace Nebulua.UiApp
             {
                 _current = 0;
             }
-            else if (_current < _start)
+            else if (_current < _loopStart)
             {
-                _current = GetRounded(_start, SnapType.Sub);
+                _current = GetRounded(_loopStart, SnapType.Sub);
                 done = true;
             }
-            else if (_current > _end)
+            else if (_current > _loopEnd)
             {
-                _current = GetRounded(_end, SnapType.Sub);
+                _current = GetRounded(_loopEnd, SnapType.Sub);
                 done = true;
             }
 
@@ -247,19 +236,20 @@ namespace Nebulua.UiApp
             return done;
         }
 
-        /// <summary>
-        /// Clear everything.
-        /// </summary>
-        public void Reset()
-        {
-            _lastXPos = 0;
-            _length = 0;
-            _current = 0;
-            _start = 0;
-            _end = 0;
+        // /// <summary>
+        // /// Clear everything.
+        // /// </summary>
+        // public void Reset()
+        // {
+        //     _lastXPos = 0;
+        //     _length = 0;
+        //     _current = 0;
+        //     _loopStart = 0;
+        //     _loopEnd = 0;
 
-            Invalidate();
-        }
+        //     Invalidate();
+        // }
+
         /// <summary>
         /// Gets the time def string associated with val.
         /// </summary>
@@ -287,6 +277,28 @@ namespace Nebulua.UiApp
 
         #region Private functions
         /// <summary>
+        /// Validate and correct all times.
+        /// </summary>
+        void ValidateTimes()
+        {
+            // 0 -> start -> end -> length
+
+            // Must have this.
+            if (_length <= 0)
+            {
+                throw new ScriptSyntaxException("Length not set");
+            }
+
+            // Fix end points.
+            if (_loopStart < 0) _loopStart = 0;
+            if (_loopEnd < 0) _loopEnd = _length;
+            // and loop points...
+            _loopEnd = Math.Min(_loopEnd, _length);
+            _loopStart = Math.Min(_loopStart, _loopEnd);
+            _current = MathUtils.Constrain(_current, _loopStart, _loopEnd);
+        }
+
+        /// <summary>
         /// Convert x pos to tick.
         /// </summary>
         /// <param name="x"></param>
@@ -310,7 +322,7 @@ namespace Nebulua.UiApp
         /// <returns></returns>
         int GetMouseFromTick(int tick)
         {
-            return tick * Width / _length;
+            return _length > 0 ? tick * Width / _length : 0;
         }
 
         /// <summary>

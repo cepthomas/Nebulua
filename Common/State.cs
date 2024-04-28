@@ -42,7 +42,15 @@ namespace Nebulua.Common
 
         #region Properties that don't notify
         /// <summary>Length of composition in ticks.</summary>
-        public int Length { get; set; } = 0;
+        public int Length { get; private set; } = 0;
+
+        /// <summary>Parts of the composition plus total length.</summary>
+        public Dictionary<int, string> SectionInfo
+        {
+            get { return _sectionInfo; }
+            set { _sectionInfo = value; Length = value.Keys.OrderBy(k => k).ToList().Last(); }
+        }
+        Dictionary<int, string> _sectionInfo = [];
 
         /// <summary>Keep going at end of loop.</summary> 
         public bool DoLoop { get; set; } = false;

@@ -12,7 +12,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua.UiApp
 {
-    public class CliInput : UserControl
+    public class CliInput : UserControl // TODO not used currently.
     {
         #region Properties
         /// <summary>Cosmetics.</summary>

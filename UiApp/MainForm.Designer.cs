@@ -34,6 +34,7 @@ namespace Nebulua.UiApp
             chkLoop = new CheckBox();
             btnReload = new Button();
             timeBar = new TimeBar();
+            lblState = new Label();
             SuspendLayout();
             // 
             // chkPlay
@@ -41,9 +42,9 @@ namespace Nebulua.UiApp
             chkPlay.Appearance = Appearance.Button;
             chkPlay.FlatStyle = FlatStyle.Flat;
             chkPlay.Image = (Image)resources.GetObject("chkPlay.Image");
-            chkPlay.Location = new Point(101, 11);
+            chkPlay.Location = new Point(64, 9);
             chkPlay.Name = "chkPlay";
-            chkPlay.Size = new Size(43, 49);
+            chkPlay.Size = new Size(40, 40);
             chkPlay.TabIndex = 0;
             toolTip.SetToolTip(chkPlay, "Play project");
             chkPlay.UseVisualStyleBackColor = false;
@@ -52,9 +53,9 @@ namespace Nebulua.UiApp
             // 
             btnRewind.FlatStyle = FlatStyle.Flat;
             btnRewind.Image = (Image)resources.GetObject("btnRewind.Image");
-            btnRewind.Location = new Point(50, 10);
+            btnRewind.Location = new Point(13, 8);
             btnRewind.Name = "btnRewind";
-            btnRewind.Size = new Size(45, 49);
+            btnRewind.Size = new Size(40, 40);
             btnRewind.TabIndex = 1;
             toolTip.SetToolTip(btnRewind, "Rewind to start");
             btnRewind.UseVisualStyleBackColor = false;
@@ -64,7 +65,7 @@ namespace Nebulua.UiApp
             sldVolume.BorderStyle = BorderStyle.FixedSingle;
             sldVolume.DrawColor = Color.Orange;
             sldVolume.Label = "vol";
-            sldVolume.Location = new Point(444, 12);
+            sldVolume.Location = new Point(348, 8);
             sldVolume.Margin = new Padding(4, 5, 4, 5);
             sldVolume.Maximum = 1D;
             sldVolume.Minimum = 0D;
@@ -81,7 +82,7 @@ namespace Nebulua.UiApp
             sldTempo.BorderStyle = BorderStyle.FixedSingle;
             sldTempo.DrawColor = Color.IndianRed;
             sldTempo.Label = "bpm";
-            sldTempo.Location = new Point(302, 12);
+            sldTempo.Location = new Point(238, 8);
             sldTempo.Margin = new Padding(5, 6, 5, 6);
             sldTempo.Maximum = 240D;
             sldTempo.Minimum = 60D;
@@ -97,12 +98,12 @@ namespace Nebulua.UiApp
             // 
             traffic.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             traffic.BorderStyle = BorderStyle.FixedSingle;
-            traffic.Location = new Point(36, 169);
+            traffic.Location = new Point(13, 137);
             traffic.Margin = new Padding(4, 5, 4, 5);
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
             traffic.Prompt = "";
-            traffic.Size = new Size(789, 217);
+            traffic.Size = new Size(789, 368);
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
@@ -110,7 +111,7 @@ namespace Nebulua.UiApp
             // 
             btnAbout.FlatStyle = FlatStyle.Flat;
             btnAbout.Image = (Image)resources.GetObject("btnAbout.Image");
-            btnAbout.Location = new Point(844, 18);
+            btnAbout.Location = new Point(596, 10);
             btnAbout.Name = "btnAbout";
             btnAbout.Size = new Size(40, 40);
             btnAbout.TabIndex = 44;
@@ -121,7 +122,7 @@ namespace Nebulua.UiApp
             // 
             btnKill.FlatStyle = FlatStyle.Flat;
             btnKill.Image = (Image)resources.GetObject("btnKill.Image");
-            btnKill.Location = new Point(795, 19);
+            btnKill.Location = new Point(550, 10);
             btnKill.Name = "btnKill";
             btnKill.Size = new Size(40, 40);
             btnKill.TabIndex = 47;
@@ -133,7 +134,7 @@ namespace Nebulua.UiApp
             chkMonRcv.Appearance = Appearance.Button;
             chkMonRcv.FlatStyle = FlatStyle.Flat;
             chkMonRcv.Image = (Image)resources.GetObject("chkMonRcv.Image");
-            chkMonRcv.Location = new Point(584, 15);
+            chkMonRcv.Location = new Point(458, 10);
             chkMonRcv.Name = "chkMonRcv";
             chkMonRcv.Size = new Size(40, 40);
             chkMonRcv.TabIndex = 48;
@@ -145,7 +146,7 @@ namespace Nebulua.UiApp
             chkMonSnd.Appearance = Appearance.Button;
             chkMonSnd.FlatStyle = FlatStyle.Flat;
             chkMonSnd.Image = (Image)resources.GetObject("chkMonSnd.Image");
-            chkMonSnd.Location = new Point(633, 14);
+            chkMonSnd.Location = new Point(504, 10);
             chkMonSnd.Name = "chkMonSnd";
             chkMonSnd.Size = new Size(40, 40);
             chkMonSnd.TabIndex = 49;
@@ -157,7 +158,7 @@ namespace Nebulua.UiApp
             chkLoop.Appearance = Appearance.Button;
             chkLoop.FlatStyle = FlatStyle.Flat;
             chkLoop.Image = (Image)resources.GetObject("chkLoop.Image");
-            chkLoop.Location = new Point(245, 21);
+            chkLoop.Location = new Point(180, 8);
             chkLoop.Name = "chkLoop";
             chkLoop.Size = new Size(40, 40);
             chkLoop.TabIndex = 50;
@@ -168,7 +169,7 @@ namespace Nebulua.UiApp
             // 
             btnReload.FlatStyle = FlatStyle.Flat;
             btnReload.Image = (Image)resources.GetObject("btnReload.Image");
-            btnReload.Location = new Point(168, 15);
+            btnReload.Location = new Point(124, 8);
             btnReload.Name = "btnReload";
             btnReload.Size = new Size(40, 40);
             btnReload.TabIndex = 51;
@@ -180,19 +181,28 @@ namespace Nebulua.UiApp
             timeBar.BorderStyle = BorderStyle.FixedSingle;
             timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            timeBar.Location = new Point(45, 95);
+            timeBar.Location = new Point(13, 69);
             timeBar.MarkerColor = Color.Black;
             timeBar.Name = "timeBar";
             timeBar.ProgressColor = Color.White;
-            timeBar.Size = new Size(745, 51);
+            timeBar.Size = new Size(789, 51);
             timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 52;
+            // 
+            // lblState
+            // 
+            lblState.AutoSize = true;
+            lblState.Location = new Point(656, 10);
+            lblState.Name = "lblState";
+            lblState.Size = new Size(0, 20);
+            lblState.TabIndex = 53;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1041, 606);
+            ClientSize = new Size(819, 547);
+            Controls.Add(lblState);
             Controls.Add(timeBar);
             Controls.Add(btnReload);
             Controls.Add(chkLoop);
@@ -208,6 +218,7 @@ namespace Nebulua.UiApp
             Name = "MainForm";
             Text = "Form1";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -225,5 +236,6 @@ namespace Nebulua.UiApp
         private CheckBox chkLoop;
         private Button btnReload;
         private TimeBar timeBar;
+        private Label lblState;
     }
 }

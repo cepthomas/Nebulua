@@ -18,14 +18,14 @@ namespace Nebulua.Common
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("Core");
 
-        /// <summary>The API(s). Key is opaque lua context pointer.</summary>
-        readonly Dictionary<long, Api> _apis = [];
+        /// <summary>The interop API. TODO support multiple?</summary>
+        Api? _api;
 
         /// <summary>Client supplied context for LUA_PATH.</summary>
         readonly List<string> _luaPath = [];
 
         /// <summary>The config contents.</summary>
-        readonly Config? _config;
+        readonly Config _config;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -101,13 +101,9 @@ namespace Nebulua.Common
                     _outputs.Clear();
                 }
 
-                // Release unmanaged resources.
+                // Release unmanaged resources. https://stackoverflow.com/a/4935448
                 // Set large fields to null.
-                foreach (var key in _apis.Keys)
-                {
-                    //_apis[key] = null;
-                    _apis[key].Dispose();
-                }
+                _api?.Dispose();
 
                 _disposed = true;
             }
@@ -123,7 +119,7 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// 
+        /// Cleanup.
         /// </summary>
         public void Dispose()
         {
@@ -139,25 +135,25 @@ namespace Nebulua.Common
         /// </summary>
         public NebStatus Run(string scriptFn)
         {
-            NebStatus stat = NebStatus.Ok;
+            NebStatus stat;
             _scriptFn = scriptFn;
 
             // Create script api.
-            Api api = new(_luaPath);
-            _apis.Add(api.Id, api);
+            _api = new(_luaPath);
 
             // Load the script.
             var s = $"Loading script file {scriptFn}";
             _logger.Info(s);
             // _cmdProc.Write(s);  // custom
-            stat = api.OpenScript(scriptFn);
+            stat = _api.OpenScript(scriptFn);
             if (stat != NebStatus.Ok)
             {
-                throw new ApiException("OpenScript() failed", api.Error);
+                throw new ApiException("OpenScript() failed", _api.Error);
             }
 
-            var sectionPositions = api.SectionInfo.Keys.OrderBy(k => k).ToList();
-            State.Instance.Length = sectionPositions.Last();
+            //var sectionPositions = _api.SectionInfo.Keys.OrderBy(k => k).ToList();
+            //State.Instance.Length = sectionPositions.Last();
+            State.Instance.SectionInfo = _api.SectionInfo;
 
             // Start timer.
             SetTimer(State.Instance.Tempo);
@@ -223,13 +219,10 @@ namespace Nebulua.Common
                 // Do script. TODO Handle solo/mute like nebulator.
                 //_tan?.Arm();
 
-                foreach (var api in _apis.Values)
+                NebStatus stat = _api!.Step(State.Instance.CurrentTick);
+                if (stat != NebStatus.Ok)
                 {
-                    NebStatus stat = api.Step(State.Instance.CurrentTick);
-                    if (stat != NebStatus.Ok)
-                    {
-                       CallbackError(new ApiException("Step() failed", api.Error));
-                    }
+                   CallbackError(new ApiException("Step() failed", _api.Error));
                 }
 
                 // Read stopwatch and diff/stats.
@@ -275,36 +268,33 @@ namespace Nebulua.Common
             int chan_hnd = ChannelHandle.MakeInHandle(index, e.Channel);
             bool logit = true;
 
-            foreach (var api in _apis.Values)
+            switch (e)
             {
-                switch (e)
-                {
-                    case NoteOnEvent evt:
-                        stat = api.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
-                        break;
+                case NoteOnEvent evt:
+                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
+                    break;
 
-                    case NoteEvent evt:
-                        stat = api.RcvNote(chan_hnd, evt.NoteNumber, 0);
-                        break;
+                case NoteEvent evt:
+                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, 0);
+                    break;
 
-                    case ControlChangeEvent evt:
-                        stat = api.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                        break;
+                case ControlChangeEvent evt:
+                    stat = _api!.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                    break;
 
-                    default: // Ignore others for now.
-                        logit = false;
-                        break;
-                }
+                default: // Ignore others for now.
+                    logit = false;
+                    break;
+            }
 
-                if (logit && State.Instance.MonRcv)
-                {
-                    _logger.Trace($"RCV {MidiDefs.FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
-                }
+            if (logit && State.Instance.MonRcv)
+            {
+                _logger.Trace($"RCV {MidiDefs.FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
+            }
 
-                if (stat != NebStatus.Ok)
-                {
-                   CallbackError(new ApiException("Midi Receive() failed", api.Error));
-                }
+            if (stat != NebStatus.Ok)
+            {
+               CallbackError(new ApiException("Midi Receive() failed", _api!.Error));
             }
         }
         #endregion
@@ -318,9 +308,6 @@ namespace Nebulua.Common
         void Interop_CreateChannel(object? sender, CreateChannelArgs e)
         {
             e.Ret = 0; // chan_hnd default means invalid
-
-            // Get Api.
-            //Api api = _apis[e.Id];
 
             // Check args.
             if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > MidiDefs.NUM_MIDI_CHANNELS)
@@ -367,9 +354,6 @@ namespace Nebulua.Common
         void Interop_Send(object? sender, SendArgs e)
         {
             e.Ret = 0; // not used
-
-            // Get Api.
-            //Api api = _api[e.Id];
 
             // Check args.
             var (index, chan_num) = ChannelHandle.DeconstructHandle(e.ChanHnd);
@@ -431,9 +415,6 @@ namespace Nebulua.Common
         /// <param name="e"></param>
         void Interop_PropertyChange(object? sender, PropertyArgs e)
         {
-            // Get Api.
-            //Api api = _api[e.Id];
-
             if (e.Bpm >= 30 && e.Bpm <= 240)
             {
                 State.Instance.Tempo = e.Bpm;
@@ -497,33 +478,17 @@ namespace Nebulua.Common
         /// <param name="ex">The exception</param>
         void CallbackError(Exception e)
         {
-           string serr;
+            string serr = e switch
+            {
+                ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
+                ConfigException ex => $"Config File Error: {ex.Message}",
+                ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
+                ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
+                _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
+            };
 
-           switch (e)
-           {
-               case ApiException ex:
-                   serr = $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}";
-                   break;
-
-               case ConfigException ex:
-                   serr = $"Config File Error: {ex.Message}";
-                   break;
-
-               case ScriptSyntaxException ex:
-                   serr = $"Script Syntax Error: {ex.Message}";
-                   break;
-
-               case ApplicationArgumentException ex:
-                   serr = $"Application Argument Error: {ex.Message}";
-                   break;
-
-               default:
-                   serr = $"Other error: {e}{Environment.NewLine}{e.StackTrace}";
-                   break;
-           }
-
-           // Client can decide what to do with this.
-           _logger.Error(serr);
+            // Client can decide what to do with this.
+            _logger.Error(serr);
         }
         #endregion
     }

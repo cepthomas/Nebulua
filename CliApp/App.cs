@@ -11,7 +11,7 @@ using Nebulua.Common;
 using Nebulua.Interop;
 
 
-// TODO display running tick/bartime in console?
+// TODO display running tick/bartime somewhere in console?
 
 
 namespace Nebulua.CliApp
@@ -20,7 +20,7 @@ namespace Nebulua.CliApp
     {
         #region Fields
         /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("App");
+        readonly Logger _logger = LogManager.CreateLogger("CliApp");
 
         /// <summary>Talks to the user.</summary>
         readonly CommandProc _cmdProc;
@@ -33,9 +33,6 @@ namespace Nebulua.CliApp
 
         /// <summary>Common functionality.</summary>
         Core? _core;
-
-        /// <summary>Detect changed script files.</summary>
-        readonly MultiFileWatcher _watcher = new();
         #endregion
 
         #region Lifecycle
@@ -81,12 +78,6 @@ namespace Nebulua.CliApp
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
                 _core.Run(_scriptFn);
-
-                // Update file watcher. TODO1 also any required files in script.
-                _watcher.Add(_scriptFn);
-
-                //// State change handler.
-                //State.Instance.ValueChangeEvent += State_ValueChangeEvent;
             }
             // Anything that throws is fatal.
             catch (Exception ex)
@@ -103,8 +94,7 @@ namespace Nebulua.CliApp
         {
             if (!_disposed)
             {
-                _core = null;
-                // _core.Dispose(); or ??
+                _core.Dispose();
                 _disposed = true;
             }
         }
@@ -189,7 +179,7 @@ namespace Nebulua.CliApp
                 _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
             };
 
-            // This will cause the app to exit.
+            // Logging error will cause the app to exit.
             _logger.Error(serr);
         }
         #endregion

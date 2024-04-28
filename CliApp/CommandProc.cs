@@ -308,7 +308,7 @@ namespace Nebulua.CliApp
         }
 
         //--------------------------------------------------------//
-        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODO1 loops
+        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODO loops
         {
             bool ret = true;
 

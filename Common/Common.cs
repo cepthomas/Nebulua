@@ -103,11 +103,17 @@ namespace Nebulua.Common
         /// <returns></returns>
         public static string Format(int tick)
         {
-            int bar = BAR(tick);
-            int beat = BEAT(tick);
-            int sub = SUB(tick);
-            var s = $"{bar}:{beat}:{sub}";
-            return s;
+            if (tick >= 0)
+            {
+                int bar = BAR(tick);
+                int beat = BEAT(tick);
+                int sub = SUB(tick);
+                return $"{bar}:{beat}:{sub}";
+            }
+            else
+            {
+                return "Invalid";
+            }
         }
     }
 }

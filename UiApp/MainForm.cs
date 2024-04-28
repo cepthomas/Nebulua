@@ -15,16 +15,13 @@ namespace Nebulua.UiApp
     {
         #region Fields
         /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("Ui");
+        readonly Logger _logger = LogManager.CreateLogger("UiApp");
 
         /// <summary>Current script.</summary>
         string? _scriptFn = null;
 
         /// <summary>Common functionality.</summary>
         Core? _core;
-
-        /// <summary>Detect changed script files.</summary>
-        readonly MultiFileWatcher _watcher = new();
         #endregion
 
         #region Lifecycle
@@ -57,8 +54,8 @@ namespace Nebulua.UiApp
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
-            _watcher.Clear();
-            _watcher.FileChange += Watcher_Changed;
+            // State change handler.
+            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
         }
 
         /// <summary>
@@ -151,8 +148,10 @@ namespace Nebulua.UiApp
                 _core = new Core(configFn);
                 _core.Run(_scriptFn);
 
-                // Update file watcher. TODO1 also any required files in script.
-                _watcher.Add(_scriptFn);
+                timeBar.Length = State.Instance.Length;
+                timeBar.LoopStart = -1;
+                timeBar.LoopEnd = -1;
+                timeBar.TimeDefs = State.Instance.SectionInfo;
 
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
             }
@@ -182,6 +181,45 @@ namespace Nebulua.UiApp
         }
         #endregion
 
+
+
+        /// <summary>
+        /// Handler for state changes for ui display.
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="name">Specific State value.</param>
+        void State_ValueChangeEvent(object? sender, string name)
+        {
+            switch (name)
+            {
+                case "CurrentTick":
+                    timeBar.Current = State.Instance.CurrentTick;
+                    break;
+
+                case "Tempo":
+                    sldTempo.Value = State.Instance.Tempo;
+                    // display?
+                    break;
+
+                case "ExecState":
+                    lblState.Text = State.Instance.ExecState.ToString();
+                    break;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         #region Run control
         /// <summary>
         /// 
@@ -190,15 +228,15 @@ namespace Nebulua.UiApp
         /// <param name="e"></param>
         void Play_Click(object? sender, EventArgs e)
         {
-            if (chkPlay.Checked && State.Instance.ExecState == ExecState.Idle)
+            //traffic.AppendLine("Play boy");
+            if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
             {
-                State.Instance.ExecState = ExecState.Run;
+                State.Instance.ExecState = chkPlay.Checked ? ExecState.Run : ExecState.Idle;
             }
-            else if (!chkPlay.Checked && State.Instance.ExecState == ExecState.Run)
+            else // something wrong
             {
-                State.Instance.ExecState = ExecState.Idle;
+                //State.Instance.ExecState = ExecState.Dead;
             }
-            // else other?? { Idle, Run, Kill, Exit, Dead }
         }
 
         /// <summary>
@@ -210,7 +248,7 @@ namespace Nebulua.UiApp
         {
             State.Instance.CurrentTick = 0;
             // Current tick may have been corrected for loop.
-            timeBar.Current = State.Instance.CurrentTick;
+            //timeBar.Current = State.Instance.CurrentTick;
         }
 
         /// <summary>
@@ -222,6 +260,7 @@ namespace Nebulua.UiApp
             if (e.KeyCode == Keys.Space)
             {
                 chkPlay.Checked = !chkPlay.Checked;
+                Play_Click(null, null);
                 e.Handled = true;
             }
             base.OnKeyDown(e);
@@ -243,29 +282,6 @@ namespace Nebulua.UiApp
                 traffic.AppendLine("Fatal error, you must restart");
                 State.Instance.ExecState = ExecState.Dead;
             }
-        }
-
-        /// <summary>
-        /// One or more files have changed so reload/compile.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Watcher_Changed(object? sender, MultiFileWatcher.FileChangeEventArgs e)
-        {
-            //e.FileNames.ForEach(fn => _logger.Debug($"Watcher_Changed {fn}"));
-
-            //// Kick over to main UI thread.
-            //this.InvokeIfRequired(_ =>
-            //{
-            //    if (_settings.AutoCompile)
-            //    {
-            //        CompileScript();
-            //    }
-            //    else
-            //    {
-            //        SetCompileStatus(false);
-            //    }
-            //});
         }
 
         /// <summary>
