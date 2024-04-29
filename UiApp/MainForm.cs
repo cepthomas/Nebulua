@@ -7,6 +7,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
 using System.Collections.Generic;
+using System.Reflection;
 
 
 namespace Nebulua.UiApp
@@ -33,15 +34,17 @@ namespace Nebulua.UiApp
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
             KeyPreview = true; // for routing kbd strokes properly
-
             Location = new Point(100, 100);
             //Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
+
+            // Gets the icon associated with the currently executing assembly.
+            Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
 
             // Hook loog writes.
             LogManager.LogMessage += LogManager_LogMessage;
 
             // Behavior.
-            timeBar.CurrentTimeChanged += (object? sender, EventArgs e) => { State.Instance.CurrentTick = timeBar.Current; };
+            //timeBar.CurrentTimeChanged += (object? sender, EventArgs e) => { State.Instance.CurrentTick = timeBar.CurrentTick; };
             chkPlay.Click += Play_Click;
             btnRewind.Click += Rewind_Click;
             btnAbout.Click += About_Click;
@@ -146,12 +149,14 @@ namespace Nebulua.UiApp
 
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
-                _core.Run(_scriptFn);
+                _core.RunScript(_scriptFn);
 
-                timeBar.Length = State.Instance.Length;
-                timeBar.LoopStart = -1;
-                timeBar.LoopEnd = -1;
-                timeBar.TimeDefs = State.Instance.SectionInfo;
+                timeBar.Invalidate();
+
+                //timeBar.Length = State.Instance.Length;
+                //timeBar.LoopStart = -1;
+                //timeBar.LoopEnd = -1;
+                //timeBar.TimeDefs = State.Instance.SectionInfo;
 
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
             }
@@ -190,21 +195,24 @@ namespace Nebulua.UiApp
         /// <param name="name">Specific State value.</param>
         void State_ValueChangeEvent(object? sender, string name)
         {
-            switch (name)
+            this.InvokeIfRequired(_ =>
             {
-                case "CurrentTick":
-                    timeBar.Current = State.Instance.CurrentTick;
-                    break;
+                switch (name)
+                {
+                    case "CurrentTick":
+                        timeBar.Invalidate();
+                        break;
 
-                case "Tempo":
-                    sldTempo.Value = State.Instance.Tempo;
-                    // display?
-                    break;
+                    case "Tempo":
+                        sldTempo.Value = State.Instance.Tempo;
+                        // display?
+                        break;
 
-                case "ExecState":
-                    lblState.Text = State.Instance.ExecState.ToString();
-                    break;
-            }
+                    case "ExecState":
+                        lblState.Text = State.Instance.ExecState.ToString();
+                        break;
+                }
+            });
         }
 
 

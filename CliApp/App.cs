@@ -77,7 +77,7 @@ namespace Nebulua.CliApp
 
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
-                _core.Run(_scriptFn);
+                _core.RunScript(_scriptFn);
             }
             // Anything that throws is fatal.
             catch (Exception ex)
@@ -94,7 +94,7 @@ namespace Nebulua.CliApp
         {
             if (!_disposed)
             {
-                _core.Dispose();
+                _core?.Dispose();
                 _disposed = true;
             }
         }

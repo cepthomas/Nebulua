@@ -14,6 +14,9 @@ namespace Nebulua.Common
 {
     public class Core : IDisposable
     {
+
+
+
         #region Fields
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("Core");
@@ -133,7 +136,7 @@ namespace Nebulua.Common
         /// <summary>
         /// Load and execute script. Can throw on main thread.
         /// </summary>
-        public NebStatus Run(string scriptFn)
+        public NebStatus RunScript(string scriptFn)
         {
             NebStatus stat;
             _scriptFn = scriptFn;
@@ -144,16 +147,21 @@ namespace Nebulua.Common
             // Load the script.
             var s = $"Loading script file {scriptFn}";
             _logger.Info(s);
-            // _cmdProc.Write(s);  // custom
+
             stat = _api.OpenScript(scriptFn);
             if (stat != NebStatus.Ok)
             {
                 throw new ApiException("OpenScript() failed", _api.Error);
             }
 
-            //var sectionPositions = _api.SectionInfo.Keys.OrderBy(k => k).ToList();
-            //State.Instance.Length = sectionPositions.Last();
-            State.Instance.SectionInfo = _api.SectionInfo;
+            // Adjust the section info.
+            State.Instance.SectionInfo.Clear();
+
+            var spos = _api.SectionInfo.Keys.OrderBy(k => k).ToList();
+            List<(int tick, string name)> sinfo = [];
+
+            spos.ForEach(sp => sinfo.Add((sp, _api.SectionInfo[sp])));
+            State.Instance.SectionInfo = sinfo;
 
             // Start timer.
             SetTimer(State.Instance.Tempo);
