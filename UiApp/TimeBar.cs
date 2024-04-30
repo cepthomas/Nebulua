@@ -15,15 +15,6 @@ namespace Nebulua.UiApp
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Sub }
 
-    ///// <summary>Notify client of ui changes.</summary>
-    //public class TimeChangeEventArgs : EventArgs
-    //{
-    //    public int Tick { get; set; } = 0;
-    //    public TimeType TimeType { get; set; } = TimeType.CurrentTick;
-    //}
-    //public enum TimeType { CurrentTick, LoopStart, LoopEnd }
-
-
     /// <summary>The control.</summary>
     public class TimeBar : UserControl
     {
@@ -41,10 +32,6 @@ namespace Nebulua.UiApp
         #region Backing fields
         readonly SolidBrush _brush = new(Color.White);
         readonly Pen _penMarker = new(Color.Black, 1);
-        //int State.Instance.Length = 0; //TODO1 ?? use State instead
-        //int State.Instance.LoopStart = -1;
-        //int State.Instance.LoopEnd = -1;
-        //int State.Instance.CurrentTick = 0;
         #endregion
 
         #region Properties
@@ -62,58 +49,6 @@ namespace Nebulua.UiApp
 
         /// <summary>How to select times.</summary>
         public SnapType Snap { get; set; }
-
-
-
-
-
-        ///// <summary>Parts of the composition plus total length.</summary>
-        //public List<(int tick, string name)> SectionInfo
-        //{
-        //    get { return _sectionInfo; }
-        //    set { _sectionInfo = value; State.Instance.Length = value.Last().tick; ValidateTimes(); Invalidate(); }
-        //}
-        //List<(int tick, string name)> _sectionInfo = [];
-
-        ///// <summary>Total length of the composition.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        //public int Length { get { return State.Instance.Length; } }
-
-        ///// <summary>Start of marked region.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        //public int LoopStart { get { return State.Instance.LoopStart; } set { State.Instance.LoopStart = value; ValidateTimes(); Invalidate(); } }
-
-        ///// <summary>End of marked region.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        //public int LoopEnd { get { return State.Instance.LoopEnd; } set { State.Instance.LoopEnd = value; ValidateTimes(); Invalidate(); } }
-
-        ///// <summary>Where we be now.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        //public int CurrentTick { get { return State.Instance.CurrentTick; } set { State.Instance.CurrentTick = value; ValidateTimes(); Invalidate(); } }
-
-
-
-        // /// <summary>All the important beat points with their names. Used also by tooltip.</summary>
-        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        // public Dictionary<int, string> TimeDefs { get; set; } = new Dictionary<int, string>();
-
-        // /// <summary>Total length of the bar.</summary>
-        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        // public int Length { get { return State.Instance.Length; } set { State.Instance.Length = value; ValidateTimes(); Invalidate(); } }
-
-        // /// <summary>Start of marked region.</summary>
-        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        // public int LoopStart { get { return State.Instance.LoopStart; } set { State.Instance.LoopStart = value; ValidateTimes(); Invalidate(); } }
-
-        // /// <summary>End of marked region.</summary>
-        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        // public int LoopEnd { get { return State.Instance.LoopEnd; } set { State.Instance.LoopEnd = value; ValidateTimes(); Invalidate(); } }
-
-        // /// <summary>Where we be now.</summary>
-        // [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        // public int Current { get { return State.Instance.CurrentTick; } set { State.Instance.CurrentTick = value; ValidateTimes(); Invalidate(); } }
-
-
         #endregion
 
         #region Events
@@ -157,22 +92,20 @@ namespace Nebulua.UiApp
             pe.Graphics.Clear(BackColor);
 
             // Draw the bar.
-            
-            //if (State.Instance.CurrentTick < State.Instance.Length)
-            {
-                int dstart = GetMouseFromTick(State.Instance.LoopStart);
-                int dend = State.Instance.CurrentTick > State.Instance.LoopEnd ? GetMouseFromTick(State.Instance.LoopEnd) : GetMouseFromTick(State.Instance.CurrentTick);
-                pe.Graphics.FillRectangle(_brush, dstart, 0, dend - dstart, Height);
-            }
+            int dcurrent = GetClientFromTick(State.Instance.CurrentTick);
+            pe.Graphics.FillRectangle(_brush, dcurrent - 1, 0, 2, Height);
+
+            //int dstart = GetClientFromTick(State.Instance.LoopStart);
+            //int dend = State.Instance.CurrentTick > State.Instance.LoopEnd ?
+            //    GetClientFromTick(State.Instance.LoopEnd) :
+            //    GetClientFromTick(State.Instance.CurrentTick);
+            //pe.Graphics.FillRectangle(_brush, dstart, 0, dend - dstart, Height);
 
             // Draw start/end markers.
-            //if (State.Instance.LoopStart != 0 || State.Instance.LoopEnd != State.Instance.Length)
-            {
-                int mstart = GetMouseFromTick(State.Instance.LoopStart);
-                int mend = GetMouseFromTick(State.Instance.LoopEnd);
-                pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
-                pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
-            }
+            int mstart = GetClientFromTick(State.Instance.LoopStart);
+            int mend = GetClientFromTick(State.Instance.LoopEnd);
+            pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
+            pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
 
             // Text.
             _format.Alignment = StringAlignment.Center;
@@ -206,19 +139,14 @@ namespace Nebulua.UiApp
         /// </summary>
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            //if (e.Button == MouseButtons.Left)//TODO1 ??
-            //{
-            //    State.Instance.CurrentTick = GetRounded(GetTickFromMouse(e.X), Snap);
-            //    CurrentTimeChanged?.Invoke(this, new EventArgs());
-            //}
-            //else if (e.X != _lastXPos)
-            {
-                var sub = GetTickFromMouse(e.X);
-                var bs = GetRounded(sub, Snap);
-                var sdef = GetTimeDefString(bs);
-                _toolTip.SetToolTip(this, $"{MusicTime.Format(bs)} {sdef}");
-                _lastXPos = e.X;
-            }
+            var sub = GetTickFromClient(e.X);
+            var bs = GetRounded(sub, Snap);
+            var sdef = GetTimeDefString(bs);
+
+            _toolTip.SetToolTip(this, $"{MusicTime.Format(bs)} {sdef}");
+            //_toolTip.SetToolTip(this, $"{State.Instance.CurrentTick}: 0 {State.Instance.LoopStart} {State.Instance.LoopEnd} {State.Instance.Length} ");
+
+            _lastXPos = e.X;
 
             Invalidate();
             base.OnMouseMove(e);
@@ -231,7 +159,7 @@ namespace Nebulua.UiApp
         {
             int lstart = State.Instance.LoopStart;
             int lend = State.Instance.LoopEnd;
-            int newval = GetRounded(GetTickFromMouse(e.X), Snap);
+            int newval = GetRounded(GetTickFromClient(e.X), Snap);
 
             if (ModifierKeys.HasFlag(Keys.Control))
             {
@@ -239,7 +167,7 @@ namespace Nebulua.UiApp
                 {
                     State.Instance.LoopStart = newval;
                 }
-                // else beeeeeep
+                // else beeeeeep?
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
@@ -247,7 +175,7 @@ namespace Nebulua.UiApp
                 {
                     State.Instance.LoopEnd = newval;
                 }
-                // else beeeeeep
+                // else beeeeeep?
             }
             else
             {
@@ -259,58 +187,13 @@ namespace Nebulua.UiApp
         }
         #endregion
 
-        #region Public functions
-        ///// <summary>
-        ///// Change current time. 
-        ///// </summary>
-        ///// <param name="num">Ticks.</param>
-        ///// <returns>True if at the end of the sequence.</returns>
-        //public bool IncrementCurrent(int num)
-        //{
-        //    bool done = false;
-
-        //    State.Instance.CurrentTick += num;
-
-        //    if (State.Instance.CurrentTick < 0)
-        //    {
-        //        State.Instance.CurrentTick = 0;
-        //    }
-        //    else if (State.Instance.CurrentTick < State.Instance.LoopStart)
-        //    {
-        //        State.Instance.CurrentTick = GetRounded(State.Instance.LoopStart, SnapType.Sub);
-        //        done = true;
-        //    }
-        //    else if (State.Instance.CurrentTick > State.Instance.LoopEnd)
-        //    {
-        //        State.Instance.CurrentTick = GetRounded(State.Instance.LoopEnd, SnapType.Sub);
-        //        done = true;
-        //    }
-
-        //    Invalidate();
-
-        //    return done;
-        //}
-
-        // /// <summary>
-        // /// Clear everything.
-        // /// </summary>
-        // public void Reset()
-        // {
-        //     _lastXPos = 0;
-        //     State.Instance.Length = 0;
-        //     State.Instance.CurrentTick = 0;
-        //     State.Instance.LoopStart = 0;
-        //     State.Instance.LoopEnd = 0;
-
-        //     Invalidate();
-        // }
-
+        #region Private functions
         /// <summary>
         /// Gets the time def string associated with val.
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        private string GetTimeDefString(int val)
+        string GetTimeDefString(int val)
         {
             string s = "";
 
@@ -328,36 +211,12 @@ namespace Nebulua.UiApp
 
             return s;
         }
-        #endregion
-
-        #region Private functions
-        ///// <summary>
-        ///// Validate and correct all times.
-        ///// </summary>
-        //void ValidateTimes()
-        //{
-        //    // 0 -> start -> end -> length
-
-        //    // Must have this.
-        //    if (State.Instance.Length <= 0)
-        //    {
-        //        throw new ScriptSyntaxException("Length not set");
-        //    }
-
-        //    // Fix end points.
-        //    if (State.Instance.LoopStart < 0) State.Instance.LoopStart = 0;
-        //    if (State.Instance.LoopEnd < 0) State.Instance.LoopEnd = State.Instance.Length;
-        //    // and loop points...
-        //    State.Instance.LoopEnd = Math.Min(State.Instance.LoopEnd, State.Instance.Length);
-        //    State.Instance.LoopStart = Math.Min(State.Instance.LoopStart, State.Instance.LoopEnd);
-        //    State.Instance.CurrentTick = MathUtils.Constrain(State.Instance.CurrentTick, State.Instance.LoopStart, State.Instance.LoopEnd);
-        //}
 
         /// <summary>
         /// Convert x pos to tick.
         /// </summary>
         /// <param name="x"></param>
-        int GetTickFromMouse(int x)
+        int GetTickFromClient(int x)
         {
             int tick = 0;
 
@@ -375,7 +234,7 @@ namespace Nebulua.UiApp
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        int GetMouseFromTick(int tick)
+        int GetClientFromTick(int tick)
         {
             return State.Instance.Length > 0 ? tick * Width / State.Instance.Length : 0;
         }
@@ -392,10 +251,12 @@ namespace Nebulua.UiApp
             {
                 // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
                 int res = snapType == SnapType.Bar ? Defs.SUBS_PER_BAR : Defs.SUBS_PER_BEAT;
-                int floor = (tick / res) * res;
+
+                double dtick = Math.Floor((double)tick);
+                int floor = (int)(dtick / res) * res;
                 int ceiling = floor + res;
 
-                if (up || (ceiling - tick) >= res / 2)
+                if (up || (ceiling - tick) < res / 2)
                 {
                     tick = ceiling;
                 }

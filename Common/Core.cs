@@ -14,9 +14,6 @@ namespace Nebulua.Common
 {
     public class Core : IDisposable
     {
-
-
-
         #region Fields
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("Core");
@@ -190,8 +187,7 @@ namespace Nebulua.Common
         {
             switch (name)
             {
-                case "CurrentTick": // from Core or UI TODO1
-                    if (sender != this) { }
+                case "CurrentTick":
                     break;
 
                 case "Tempo":

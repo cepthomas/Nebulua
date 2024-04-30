@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
-using Interop;
+using Nebulua.Common;
+using Nebulua.Test;
 
 
-namespace Nebulua.Test
+namespace Nebulua.Interop
 {
     /// <summary>All success operations.</summary>
     public class INTEROP_HAPPY : TestSuite

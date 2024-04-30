@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
+using Nebulua.Common;
 
 
 namespace Nebulua.Test

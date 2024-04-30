@@ -186,8 +186,7 @@ namespace Nebulua.UiApp
         }
         #endregion
 
-
-
+        #region Event handlers
         /// <summary>
         /// Handler for state changes for ui display.
         /// </summary>
@@ -205,38 +204,26 @@ namespace Nebulua.UiApp
 
                     case "Tempo":
                         sldTempo.Value = State.Instance.Tempo;
-                        // display?
                         break;
 
                     case "ExecState":
                         lblState.Text = State.Instance.ExecState.ToString();
+                        if (State.Instance.ExecState != ExecState.Run)
+                        {
+                            chkPlay.Checked = false;
+                        }
                         break;
                 }
             });
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #region Run control
         /// <summary>
-        /// 
+        /// Update state.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void Play_Click(object? sender, EventArgs e)
         {
-            //traffic.AppendLine("Play boy");
             if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
             {
                 State.Instance.ExecState = chkPlay.Checked ? ExecState.Run : ExecState.Idle;
@@ -248,7 +235,7 @@ namespace Nebulua.UiApp
         }
 
         /// <summary>
-        /// 
+        /// Rewind
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -273,9 +260,7 @@ namespace Nebulua.UiApp
             }
             base.OnKeyDown(e);
         }
-        #endregion
 
-        #region Private functions
         /// <summary>
         /// Capture bad events and display them to the user.
         /// </summary>

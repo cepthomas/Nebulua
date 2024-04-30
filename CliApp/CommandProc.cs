@@ -141,6 +141,7 @@ namespace Nebulua.CliApp
         #endregion
 
         #region Command handlers
+
         //--------------------------------------------------------//
         bool TempoCmd(CommandDescriptor cmd, List<string> args)
         {
@@ -324,11 +325,7 @@ namespace Nebulua.CliApp
             //         }
             //         else
             //         {
-            //             // Limit range maybe.
-            //             int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-            //             int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
-            //             State.Instance.CurrentTick = MathUtils.Constrain(position, start, end);
-
+            //             State.Instance.CurrentTick = position;
             //             Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
             //         }
             //         break;

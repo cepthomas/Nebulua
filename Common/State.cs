@@ -22,8 +22,8 @@ namespace Nebulua.Common
         int _tempo = 100;
         int _currentTick = 0;
         int _length = 0;
-        int _loopStart = -1;
-        int _loopEnd = -1;
+        int _loopStart = -1; // uninited
+        int _loopEnd = -1; // uninited
         #endregion
 
         #region Properties that notify
@@ -89,8 +89,6 @@ namespace Nebulua.Common
                 // Init internals.
                 _sectionInfo = value;
                 _length = _sectionInfo.Last().tick;
-                //_loopStart = 0;
-                //_loopEnd = _length;
                 ValidateTimes();
                 //NotifyStateChanged();
             }
@@ -178,12 +176,10 @@ namespace Nebulua.Common
 
         #region Private functions
         /// <summary>
-        /// Validate and correct all times.
+        /// Validate and correct all times. 0 -> loop-start -> loop-end -> length
         /// </summary>
         void ValidateTimes()
         {
-            // 0 -> loop-start -> loop-end -> length
-
             // Must have this.
             if (_length <= 0)
             {
@@ -192,10 +188,13 @@ namespace Nebulua.Common
 
             // Fix loop points.
             int lstart = _loopStart < 0 ? 0 : _loopStart;
-            int lend = _loopEnd < 0 ? _length : _loopStart;
+            int lend = _loopEnd < 0 ? _length : _loopEnd;
             lstart = Math.Min(lstart, _loopEnd);
             lend = Math.Min(lend, _length);
-            _currentTick = MathUtils.Constrain(_currentTick, lstart, lend);
+            _loopStart = lstart;
+            _loopEnd = lend;
+            _currentTick = MathUtils.Constrain(_currentTick, _loopStart, _loopEnd);
+            //_currentTick = MathUtils.Constrain(_currentTick, lstart, lend);
         }
         #endregion
     }

@@ -35,6 +35,7 @@ namespace Nebulua.UiApp
             btnReload = new Button();
             timeBar = new TimeBar();
             lblState = new Label();
+            lblInfo = new Label();
             SuspendLayout();
             // 
             // chkPlay
@@ -192,16 +193,29 @@ namespace Nebulua.UiApp
             // lblState
             // 
             lblState.AutoSize = true;
+            lblState.BorderStyle = BorderStyle.FixedSingle;
             lblState.Location = new Point(656, 10);
+            lblState.MinimumSize = new Size(120, 22);
             lblState.Name = "lblState";
-            lblState.Size = new Size(0, 20);
+            lblState.Size = new Size(120, 22);
             lblState.TabIndex = 53;
+            // 
+            // lblInfo
+            // 
+            lblInfo.AutoSize = true;
+            lblInfo.BorderStyle = BorderStyle.FixedSingle;
+            lblInfo.Location = new Point(656, 38);
+            lblInfo.MinimumSize = new Size(120, 22);
+            lblInfo.Name = "lblInfo";
+            lblInfo.Size = new Size(120, 22);
+            lblInfo.TabIndex = 54;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(819, 547);
+            Controls.Add(lblInfo);
             Controls.Add(lblState);
             Controls.Add(timeBar);
             Controls.Add(btnReload);
@@ -237,5 +251,6 @@ namespace Nebulua.UiApp
         private Button btnReload;
         private TimeBar timeBar;
         private Label lblState;
+        private Label lblInfo;
     }
 }
