@@ -39,12 +39,15 @@ namespace Nebulua.Test
             UT_EQUAL(sectionPositions.Count, 4);
             UT_EQUAL(sectionPositions[0], 0);
             UT_EQUAL(interop.SectionInfo[sectionPositions[0]], "beginning");
-            UT_EQUAL(sectionPositions[1], 690);
+            UT_EQUAL(sectionPositions[1], 256);
             UT_EQUAL(interop.SectionInfo[sectionPositions[1]], "middle");
-            UT_EQUAL(sectionPositions[2], 2477);
+            UT_EQUAL(sectionPositions[2], 512);
             UT_EQUAL(interop.SectionInfo[sectionPositions[2]], "ending");
-            UT_EQUAL(sectionPositions[3], 5911);
+            UT_EQUAL(sectionPositions[3], 768);
             UT_EQUAL(interop.SectionInfo[sectionPositions[3]], "_LENGTH");
+
+            // Fake valid loaded script.
+            TestUtils.SetupFakeScript();
 
             // Run fake steps.
             events.CollectedEvents.Clear();
@@ -65,7 +68,7 @@ namespace Nebulua.Test
                 }
             }
 
-            UT_EQUAL(events.CollectedEvents.Count, 62);
+            UT_EQUAL(events.CollectedEvents.Count, 120);
         }
 
         void State_ValueChangeEvent(object? sender, string name)
@@ -171,7 +174,7 @@ namespace Nebulua.Test
     }
 
     /// <summary>Used to capture events from test target.</summary>
-    public class InteropEventCollector //TODO1 should be MockApi?
+    public class InteropEventCollector // TODO could be a mock
     {
         public List<string> CollectedEvents { get; set; }
 

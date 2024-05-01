@@ -24,6 +24,7 @@
     <Compile Include="..\..\Common\State.cs" Link="State.cs" />
     <Compile Include="..\common\MockIO.cs" Link="MockIO.cs" />
     <Compile Include="..\common\MockMidi.cs" Link="MockMidi.cs" />
+    <Compile Include="..\common\TestUtils.cs" Link="TestUtils.cs" />
   </ItemGroup>
 
   <ItemGroup>

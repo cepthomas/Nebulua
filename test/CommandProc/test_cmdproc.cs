@@ -159,9 +159,10 @@ namespace Nebulua.Test
             MockOut mout = new();
             var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
 
-            //app.Run("script_happy.lua");
+            // Fake valid loaded script.
+            TestUtils.SetupFakeScript();
 
-            ///// Position commands. TODO fix/test these - sim Api?
+            ///// Position commands.
             mout.Clear();
             min.NextLine = "position";
             bret = cmdProc.Read();
@@ -170,17 +171,20 @@ namespace Nebulua.Test
             UT_EQUAL(mout.Capture[0], $"0:0:0");
             UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
 
-            // Fake valid loaded script.
-            // pos 6518 <-> 203:2:6
-            State.Instance.LoopStart = 100;
-            State.Instance.LoopEnd = 7000;
-
             mout.Clear();
-            min.NextLine = "position 203:2:6";
+            min.NextLine = "position 10:2:6";
             bret = cmdProc.Read();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"203:2:6");
+            UT_EQUAL(mout.Capture[0], $"10:2:6");
+            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+
+            mout.Clear();
+            min.NextLine = "position 203:2:6"; // too late
+            bret = cmdProc.Read();
+            UT_FALSE(bret);
+            UT_EQUAL(mout.Capture.Count, 2);
+            UT_EQUAL(mout.Capture[0], "invalid requested position: 203:2:6");
             UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
 
             mout.Clear();
@@ -188,7 +192,7 @@ namespace Nebulua.Test
             bret = cmdProc.Read();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"203:2:6");
+            UT_EQUAL(mout.Capture[0], $"10:2:6");
             UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
 
             mout.Clear();
@@ -196,7 +200,7 @@ namespace Nebulua.Test
             bret = cmdProc.Read();
             UT_FALSE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"invalid position: 111:9:6");
+            UT_EQUAL(mout.Capture[0], $"invalid requested position: 111:9:6");
             UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
 
             ///// Misc commands.

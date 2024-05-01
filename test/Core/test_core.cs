@@ -3,82 +3,44 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
+using Nebulua.Common;
+using Nebulua.Interop;
 
 
 namespace Nebulua.Test
 {
-    /// <summary>Test application functions. Doesn't do anything yet. TODO1 May be more complicated than it's worth. Or convert to test_core?
-    /// </summary>
-    public class CORE_ONE : TestSuite
+    /// <summary>Test core functions.</summary>
+    public class CORE_HAPPY : TestSuite
     {
         public override void RunSuite()
         {
-            // int stat = 0;
+            NebStatus stat = NebStatus.Ok;
 
-            // //////
-            // HMIDIIN hMidiIn = 0;
-            // UINT wMsg = 0;
-            // DWORD_PTR dwInstance = 0;
-            // DWORD_PTR dwParam1 = 0;
-            // DWORD_PTR dwParam2 = 0;
-            // _MidiInHandler(hMidiIn, wMsg, dwInstance, dwParam1, dwParam2);
+            var configFn = Path.Join(TestUtils.GetTestLuaDir(), "test_config.ini");
+            var scriptFn = Path.Join(TestUtils.GetTestLuaDir(), "script_happy.lua");
 
-            // //////
-            // double msec = 12.34;
-            // _MidiClockHandler(msec);
+            Core _core = new Core(configFn);
+            UT_NOT_NULL(_core);
+            stat = _core.RunScript(scriptFn);
+            UT_EQUAL(stat, NebStatus.Ok);
 
-            // //////
-            // // stat = exec_Main(script_fn);
-            // // Needs luapath.
 
-            // lua_close(_l);
+            _core.Reload();
 
-            // return 0;
+            _core.Dispose();
+
+            //void CallbackError(Exception e)
+            //void Interop_CreateChannel(object? sender, CreateChannelArgs e)
+            //void Interop_Log(object? sender, LogArgs e)
+            //void Interop_PropertyChange(object? sender, PropertyArgs e)
+            //void Interop_Send(object? sender, SendArgs e)
+            //void KillAll()
+            //void Midi_ReceiveEvent(object? sender, MidiEvent e)
+            //void MmTimer_Callback(double totalElapsed, double periodElapsed)
+            //void SetTimer(int tempo)
+            //void State_ValueChangeEvent(object? sender, string name)
         }
     }
-
-    //// Insert some hooks to support testing.
-    //public partial class App
-    //{
-    //    // Fake cli output.
-    //    CliTextWriter _out = new();
-
-    //    // Fake cli input.
-    //    CliTextReader _in = new();
-
-    //    public List<string> CaptureLines
-    //    {
-    //        get { return StringUtils.SplitByTokens(_out.Capture.ToString(), "\r\n"); }
-    //    }
-
-    //    public string NextLine
-    //    {
-    //        get { return _in.NextLine; }
-    //        set { _in.NextLine = value; }
-    //    }
-
-    //    public string Prompt
-    //    {
-    //        get { return _prompt; }
-    //    }
-
-    //    public void Clear()
-    //    {
-    //        _out.Capture.Clear();
-    //        _in.NextLine = "";
-    //    }
-
-    //    public string GetPrompt()
-    //    {
-    //        return _prompt;
-    //    }
-
-    //    public void HookCli()
-    //    {
-    //        _cliOut = _out;
-    //        _cliIn = _in;
-    //    }
-    //}
 
     /// <summary>Test entry.</summary>
     static class Program
@@ -87,7 +49,7 @@ namespace Nebulua.Test
         static void Main(string[] _)
         {
             TestRunner runner = new(OutputFormat.Readable);
-            var cases = new[] { "APP" };
+            var cases = new[] { "CORE" };
             runner.RunSuites(cases);
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }

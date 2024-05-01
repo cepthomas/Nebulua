@@ -19,12 +19,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="test_config.ini" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\Common\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\Common\Core.cs" Link="Core.cs" />
     <Compile Include="..\..\Common\Config.cs" Link="Config.cs" />
     <Compile Include="..\..\Common\State.cs" Link="State.cs" />
     <Compile Include="..\common\MockInterop.cs" Link="MockInterop.cs" />
     <Compile Include="..\common\MockMidi.cs" Link="MockMidi.cs" />
+    <Compile Include="..\common\TestUtils.cs" Link="TestUtils.cs" />
   </ItemGroup>
 
   <ItemGroup>

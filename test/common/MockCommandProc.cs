@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua.Test
 {
-    public class CommandProc
+    public class CommandProc // TODO not used
     {
         // readonly TextWriter _out;
         // readonly TextReader _in;

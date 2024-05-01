@@ -5,20 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using Nebulua.Common;
 
 
-/////////////////////////// from Midi.cs /////////////////////////////////
-namespace Nebulua.Common ///Test
+/////////////////////////// mock Midi.cs /////////////////////////////////
+namespace Nebulua.Common
 {
     public class MidiInput
     {
         public string DeviceName { get; }
-
         public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
-
         public bool CaptureEnable { get; set; } = true;
-
         public event EventHandler<MidiEvent>? ReceiveEvent;
 
         public MidiInput(string deviceName)
@@ -33,13 +29,10 @@ namespace Nebulua.Common ///Test
 
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
-            // Decode the message. We only care about a few.
-            MidiEvent evt = MidiEvent.FromRawMessage(e.RawMessage);
         }
 
         void MidiIn_ErrorReceived(object? sender, MidiInMessageEventArgs e)
         {
-            // string ErrorInfo = $"Message:0x{e.RawMessage:X8}";
         }
     }
 
@@ -49,9 +42,7 @@ namespace Nebulua.Common ///Test
     public class MidiOutput
     {
         public string DeviceName { get; }
-
         public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
-
         public MidiOutput(string deviceName)
         {
             DeviceName = deviceName;
@@ -70,13 +61,8 @@ namespace Nebulua.Common ///Test
 
     public class MidiDefs
     {
-        // Midi caps.
         public const int MIDI_VAL_MIN = 0;
-
-        // Midi caps.
         public const int MIDI_VAL_MAX = 127;
-
-        // Midi per device.
         public const int NUM_MIDI_CHANNELS = 16;
 
         public static string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
@@ -153,11 +139,9 @@ namespace NAudio.Midi
     public class NoteEvent : MidiEvent
     {
         public virtual int NoteNumber { get; set; } = 0;
-
         public int Velocity { get; set; } = 0;
 
         public NoteEvent(long absoluteTime, int channel, MidiCommandCode commandCode, int noteNumber, int velocity)
-            //: base(absoluteTime, channel, commandCode)
         {
             NoteNumber = noteNumber;
             Velocity = velocity;
@@ -169,22 +153,18 @@ namespace NAudio.Midi
         public int NoteLength { get; set; } = 0;
 
         public NoteOnEvent(long absoluteTime, int channel, int noteNumber, int velocity, int duration)
-        : base(absoluteTime, channel, MidiCommandCode.NoteOn, noteNumber, velocity)
+            : base(absoluteTime, channel, MidiCommandCode.NoteOn, noteNumber, velocity)
         {
-            //OffEvent = new NoteEvent(absoluteTime, channel, MidiCommandCode.NoteOff, noteNumber, 0);
             NoteLength = duration;
         }
     }
 
-
     public class ControlChangeEvent : MidiEvent
     {
         public MidiController Controller { get; set; } = 0;
-
         public int ControllerValue { get; set; } = 0;
 
         public ControlChangeEvent(long absoluteTime, int channel, MidiController controller, int controllerValue)
-            //: base(absoluteTime, channel, MidiCommandCode.ControlChange)
         {
             Controller = controller;
             ControllerValue = controllerValue;
@@ -196,7 +176,6 @@ namespace NAudio.Midi
         public int Patch { get; set; } = 0;
 
         public PatchChangeEvent(long absoluteTime, int channel, int patchNumber)
-            //: base(absoluteTime, channel, MidiCommandCode.PatchChange)
         {
             Patch = patchNumber;
         }
@@ -206,11 +185,8 @@ namespace NAudio.Midi
     public class MidiEvent
     {
         public virtual int Channel { get; set; } = 0;
-
         public int DeltaTime { get; set; } = 0;
-
         public long AbsoluteTime { get; set; } = 0;
-
         public MidiCommandCode CommandCode { get; set; } = 0;
 
         public static MidiEvent FromRawMessage(int rawMessage)
@@ -243,7 +219,6 @@ namespace NAudio.Midi
         {
             return new DeviceInfo() { ProductName = $"DeviceIn{i}" };
         }
-
     }
     public class MidiOut
     {
@@ -252,17 +227,5 @@ namespace NAudio.Midi
         {
             return new DeviceInfo() { ProductName = $"DeviceOut{i}" };
         }
-
     }
-    //    for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-    //{
-    //    _out.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
-    //}
-
-    //_out.WriteLine($"Midi input devices:");
-    //for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-    //{
-    //    _out.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
-    //}
-
 }

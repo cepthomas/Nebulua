@@ -281,17 +281,28 @@ namespace Nebulua.CliApp
                     break;
 
                 case 2: // set
-                    int position = MusicTime.Parse(args[1]);
-                    if (position < 0)
+                    int curpos = State.Instance.CurrentTick;
+                    int reqpos = MusicTime.Parse(args[1]);
+                    if (reqpos < 0)
                     {
-                        Write($"invalid position: {args[1]}");
+                        Write($"invalid requested position: {args[1]}");
                         ret = false;
                     }
                     else
                     {
                         // State will validate the requested position.
-                        State.Instance.CurrentTick = position;
-                        Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
+                        State.Instance.CurrentTick = reqpos;
+                        int actpos = State.Instance.CurrentTick;
+                        if (actpos != reqpos)
+                        {
+                            Write($"invalid requested position: {args[1]}");
+                            State.Instance.CurrentTick = curpos;
+                            ret = false;
+                        }
+                        else
+                        {
+                            Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
+                        }
                     }
                     break;
 
@@ -311,28 +322,6 @@ namespace Nebulua.CliApp
 
             // switch (args.Count)
             // {
-            //     case 1: // get
-            //         Write(MusicTime.Format(State.Instance.CurrentTick));
-            //         break;
-
-            //     case 2: // set
-            //         int position = MusicTime.Parse(args[1]);
-            //         if (position < 0)
-            //         {
-            //             Write($"invalid position: {args[1]}");
-            //             ret = false;
-            //         }
-            //         else
-            //         {
-            //             State.Instance.CurrentTick = position;
-            //             Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
-            //         }
-            //         break;
-
-            //     default:
-            //         Write("");
-            //         ret = false;
-            //         break;
             // }
 
             return ret;
