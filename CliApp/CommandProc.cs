@@ -6,7 +6,6 @@ using System.Threading;
 using Ephemera.NBagOfTricks;
 using NAudio.Midi;
 using Nebulua.Common;
-using Nebulua.Interop;
 
 
 namespace Nebulua.CliApp

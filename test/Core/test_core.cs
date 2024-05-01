@@ -7,9 +7,9 @@ using Ephemera.NBagOfTricks.PNUT;
 
 namespace Nebulua.Test
 {
-    /// <summary>Test application functions. Doesn't do anything yet. May be more complicated than it's worth.
+    /// <summary>Test application functions. Doesn't do anything yet. TODO1 May be more complicated than it's worth. Or convert to test_core?
     /// </summary>
-    public class APP_ONE : TestSuite
+    public class CORE_ONE : TestSuite
     {
         public override void RunSuite()
         {

@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using Interop;
 
 
-namespace Nebulua.CliApp
+namespace Nebulua.Test
 {
     public class CommandProc
     {

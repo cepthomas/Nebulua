@@ -1,6 +1,6 @@
 
 
-namespace Nebulua.Interop
+namespace Nebulua.Interop //Test
 {
 #pragma warning disable CA1822 // Mark members as static
 
@@ -23,6 +23,10 @@ namespace Nebulua.Interop
             _l++;
         }
 
+        public void Dispose()
+        {
+
+        }
         public NebStatus OpenScript(string fn)
         {
             return NebStatus.Ok;

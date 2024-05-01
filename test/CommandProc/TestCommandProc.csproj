@@ -7,18 +7,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <StartupObject>Nebulua.Test.Program</StartupObject>
-    <Platforms>AnyCPU;x64</Platforms>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;CA1416</NoWarn>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NoWarn>1701;1702;CA1416</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;CA1416</NoWarn>
   </PropertyGroup>
 
@@ -30,20 +22,14 @@
     <Compile Include="..\..\CliApp\CommandProc.cs" Link="CommandProc.cs" />
     <Compile Include="..\..\Common\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\Common\State.cs" Link="State.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\interop\Interop.vcxproj" />
+    <Compile Include="..\common\MockIO.cs" Link="MockIO.cs" />
+    <Compile Include="..\common\MockMidi.cs" Link="MockMidi.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
       <HintPath>..\..\lib\Ephemera.NBagOfTricks.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
   </ItemGroup>
 
 </Project>

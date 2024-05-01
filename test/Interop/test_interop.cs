@@ -5,10 +5,11 @@ using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua.Common;
+using Nebulua.Interop;
 using Nebulua.Test;
 
 
-namespace Nebulua.Interop
+namespace Nebulua.Test
 {
     /// <summary>All success operations.</summary>
     public class INTEROP_HAPPY : TestSuite
@@ -166,6 +167,54 @@ namespace Nebulua.Interop
                 UT_STRING_CONTAINS(interop.Error, "attempt to perform arithmetic on a nil value (global 'ng')");
                 UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
             }
+        }
+    }
+
+    /// <summary>Used to capture events from test target.</summary>
+    public class InteropEventCollector //TODO1 should be MockApi?
+    {
+        public List<string> CollectedEvents { get; set; }
+
+        readonly Api _api;
+
+        public InteropEventCollector(Api api)
+        {
+            _api = api;
+            CollectedEvents = [];
+
+            // Hook script events.
+            Api.CreateChannel += Interop_CreateChannel;
+            Api.Send += Interop_Send;
+            Api.Log += Interop_Log;
+            Api.PropertyChange += Interop_PropertyChange;
+        }
+
+        void Interop_CreateChannel(object? sender, CreateChannelArgs e)
+        {
+            string s = $"CreateChannel DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
+            CollectedEvents.Add(s);
+            e.Ret = 0x0102;
+        }
+
+        void Interop_Send(object? sender, SendArgs e)
+        {
+            string s = $"Send ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
+            CollectedEvents.Add(s);
+            e.Ret = (int)NebStatus.Ok;
+        }
+
+        void Interop_Log(object? sender, LogArgs e)
+        {
+            string s = $"Log LogLevel:{e.LogLevel} Msg:{e.Msg}";
+            CollectedEvents.Add(s);
+            e.Ret = (int)NebStatus.Ok;
+        }
+
+        void Interop_PropertyChange(object? sender, PropertyArgs e)
+        {
+            string s = $"PropertyChange Bpm:{e.Bpm}";
+            CollectedEvents.Add(s);
+            e.Ret = (int)NebStatus.Ok;
         }
     }
 
