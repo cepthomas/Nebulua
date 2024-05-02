@@ -181,18 +181,25 @@ namespace Nebulua.Common
         /// <param name="apiSectionInfo"></param>
         public void InitSectionInfo(Dictionary<int, string> apiSectionInfo)
         {
-            _sectionInfo.Clear();
-            List<(int tick, string name)> sinfo = [];
-            var spos = apiSectionInfo.Keys.OrderBy(k => k).ToList();
-            spos.ForEach(sp => _sectionInfo.Add((sp, apiSectionInfo[sp])));
+            if (apiSectionInfo.Count > 0)
+            {
+                _sectionInfo.Clear();
+                List<(int tick, string name)> sinfo = [];
+                var spos = apiSectionInfo.Keys.OrderBy(k => k).ToList();
+                spos.ForEach(sp => _sectionInfo.Add((sp, apiSectionInfo[sp])));
 
-            // Also reset position stuff.
-            _length = _sectionInfo.Last().tick;
-            _loopStart = -1;
-            _loopEnd = -1;
-            _currentTick = 0;
+                // Also reset position stuff.
+                _length = _sectionInfo.Last().tick;
+                _loopStart = -1;
+                _loopEnd = -1;
+                _currentTick = 0;
 
-            ValidateTimes();
+                ValidateTimes();
+            }
+            else
+            {
+                throw new ScriptSyntaxException("InitSectionInfo() script has no sections");
+            }
         }
         #endregion
 

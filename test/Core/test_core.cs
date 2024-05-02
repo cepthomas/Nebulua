@@ -9,47 +9,23 @@ using Nebulua.Interop;
 
 namespace Nebulua.Test
 {
-    /// <summary>Test core functions. TODO1 more</summary>
+    /// <summary>Test core functions.</summary>
     public class CORE_HAPPY : TestSuite
     {
         public override void RunSuite()
         {
-            NebStatus stat = NebStatus.Ok;
+            NebStatus stat;
             var configFn = Path.Join(TestUtils.GetProjectSourceDir(), "test", "test_config.ini");
             var scriptFn = Path.Join(TestUtils.GetProjectSourceDir(), "test", "script_happy.lua");
 
-            Core _core = new Core(configFn);
+            // Load the script.
+            Core _core = new(configFn);
             UT_NOT_NULL(_core);
             stat = _core.RunScript(scriptFn);
             UT_EQUAL(stat, NebStatus.Ok);
 
 
-            //// Load the script.
-            //NebStatus stat = interop.OpenScript(scrfn);
-            //UT_EQUAL(interop.Error, "");
-            //UT_EQUAL(stat, NebStatus.Ok);
-            //UT_EQUAL(events.CollectedEvents.Count, 6);
-
-            //// Have a look inside.
-            //UT_EQUAL(State.Instance.SectionInfo.Count, 4);
-            //UT_EQUAL(State.Instance.SectionInfo[0].tick, 0);
-            //UT_EQUAL(State.Instance.SectionInfo[0].name, "beginning");
-            //UT_EQUAL(State.Instance.SectionInfo[1].tick, 256);
-            //UT_EQUAL(State.Instance.SectionInfo[1].name, "middle");
-            //UT_EQUAL(State.Instance.SectionInfo[2].tick, 512);
-            //UT_EQUAL(State.Instance.SectionInfo[2].name, "ending");
-            //UT_EQUAL(State.Instance.SectionInfo[3].tick, 768);
-            //UT_EQUAL(State.Instance.SectionInfo[3].name, "_LENGTH");
-
-
-
-
-
-            _core.Reload();
-
-            _core.Dispose();
-
-            // private stuff:
+            // TODO more? look inside private stuff:
             //void CallbackError(Exception e)
             //void Interop_CreateChannel(object? sender, CreateChannelArgs e)
             //void Interop_Log(object? sender, LogArgs e)
@@ -60,6 +36,14 @@ namespace Nebulua.Test
             //void MmTimer_Callback(double totalElapsed, double periodElapsed)
             //void SetTimer(int tempo)
             //void State_ValueChangeEvent(object? sender, string name)
+
+            // TODO1 test this + trace construct/destruct/dispose for leaks.
+            // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
+            // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
+            _core.Reload();
+
+            // Clean up.
+            _core.Dispose();
         }
     }
 

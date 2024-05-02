@@ -30,6 +30,9 @@ namespace Nebulua.Interop
 
         public NebStatus OpenScript(string fn)
         {
+            // Fake contents.
+            SectionInfo = new() { [0] = "start", [200] = "middle", [300] = "end", [400] = "LENGTH" };
+
             return NebStatus.Ok;
         }
 

@@ -135,24 +135,10 @@ namespace Nebulua.Common
         /// </summary>
         public NebStatus RunScript(string scriptFn)
         {
-            NebStatus stat;
+            NebStatus stat = NebStatus.Ok;
             _scriptFn = scriptFn;
 
-            // Create script api.
-            _api = new(_luaPath);
-
-            // Load the script.
-            var s = $"Loading script file {scriptFn}";
-            _logger.Info(s);
-
-            stat = _api.OpenScript(scriptFn);
-            if (stat != NebStatus.Ok)
-            {
-                throw new ApiException("OpenScript() failed", _api.Error);
-            }
-
-            // Fix the section info.
-            State.Instance.InitSectionInfo(_api.SectionInfo);
+            OpenScript(_scriptFn);
 
             // Start timer.
             SetTimer(State.Instance.Tempo);
@@ -166,9 +152,9 @@ namespace Nebulua.Common
         /// </summary>
         public void Reload()
         {
-            // TODO1 do something to reload script without exiting app.
-            // - https://stackoverflow.com/questions/2812071/what-is-a-way-to-reload-lua-scripts-during-run-time
-            // - https://stackoverflow.com/questions/9369318/hot-swap-code-in-lua
+            _api?.Dispose();
+            _api = null;
+            OpenScript(_scriptFn);
         }
 
         /// <summary>
@@ -433,6 +419,30 @@ namespace Nebulua.Common
         #endregion
 
         #region Private functions
+        /// <summary>
+        /// Open the specified script.
+        /// </summary>
+        /// <param name="scriptFn"></param>
+        /// <exception cref="ApiException"></exception>
+        void OpenScript(string scriptFn)
+        {
+            // Create script api.
+            _api = new(_luaPath);
+
+            // Load the script.
+            var s = $"Loading script file {scriptFn}";
+            _logger.Info(s);
+
+            NebStatus stat = _api.OpenScript(scriptFn);
+            if (stat != NebStatus.Ok)
+            {
+                throw new ApiException("OpenScript() failed", _api.Error);
+            }
+
+            // Fix the section info.
+            State.Instance.InitSectionInfo(_api.SectionInfo);
+        }
+
         /// <summary>
         /// Set timer for this tempo.
         /// </summary>
