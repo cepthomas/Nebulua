@@ -151,14 +151,8 @@ namespace Nebulua.Common
                 throw new ApiException("OpenScript() failed", _api.Error);
             }
 
-            // Adjust the section info.
-            State.Instance.SectionInfo.Clear();
-
-            var spos = _api.SectionInfo.Keys.OrderBy(k => k).ToList();
-            List<(int tick, string name)> sinfo = [];
-
-            spos.ForEach(sp => sinfo.Add((sp, _api.SectionInfo[sp])));
-            State.Instance.SectionInfo = sinfo;
+            // Fix the section info.
+            State.Instance.InitSectionInfo(_api.SectionInfo);
 
             // Start timer.
             SetTimer(State.Instance.Tempo);

@@ -36,13 +36,7 @@ namespace Nebulua.Test
             UT_EQUAL(interop.SectionInfo.Count, 4);
 
             // Fake valid loaded script.
-            List<(int tick, string name)> sinfo = [];
-            var sectionPositions = interop.SectionInfo.Keys.OrderBy(k => k).ToList();
-            sectionPositions.ForEach(sp => sinfo.Add((sp, interop.SectionInfo[sp])));
-            UT_EQUAL(sinfo.Count, 4);
-            State.Instance.SectionInfo = sinfo;
-            State.Instance.LoopStart = -1;
-            State.Instance.LoopEnd = -1;
+            State.Instance.InitSectionInfo(interop.SectionInfo);
 
             // Run script steps.
             events.CollectedEvents.Clear();

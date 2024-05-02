@@ -153,11 +153,6 @@ namespace Nebulua.UiApp
 
                 timeBar.Invalidate();
 
-                //timeBar.Length = State.Instance.Length;
-                //timeBar.LoopStart = -1;
-                //timeBar.LoopEnd = -1;
-                //timeBar.TimeDefs = State.Instance.SectionInfo;
-
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
             }
             // Anything that throws is fatal.

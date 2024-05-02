@@ -160,15 +160,9 @@ namespace Nebulua.Test
             var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
 
             ///// Fake valid loaded script.
-            //TestUtils.SetupFakeScript();
-            List<(int tick, string name)> sinfo = [];
-            sinfo.Add((0, "start"));
-            sinfo.Add((200, "middle"));
-            sinfo.Add((300, "end"));
-            sinfo.Add((400, "LENGTH"));
-            State.Instance.SectionInfo = sinfo;
-            State.Instance.LoopStart = -1;
-            State.Instance.LoopEnd = -1;
+            Dictionary<int, string> sectionInfo = new() { [0] = "start", [200] = "middle", [300] = "end", [400] = "LENGTH" };
+            State.Instance.InitSectionInfo(sectionInfo);
+            UT_EQUAL(State.Instance.SectionInfo.Count, 4);
 
             ///// Position commands.
             mout.Clear();

@@ -155,7 +155,7 @@ namespace Nebulua.Common
         #endregion
 
         #region Lifecycle
-        /// <summary>Prevent client instantiation.</summary>
+        /// <summary>Prevent client multiple instantiation.</summary>
         State()
         {
         }
@@ -172,6 +172,28 @@ namespace Nebulua.Common
 
         /// <summary>The singleton instance.</summary>
         static State? _instance;
+        #endregion
+
+        #region Public functions
+        /// <summary>
+        /// Convert api version into internal format.
+        /// </summary>
+        /// <param name="apiSectionInfo"></param>
+        public void InitSectionInfo(Dictionary<int, string> apiSectionInfo)
+        {
+            _sectionInfo.Clear();
+            List<(int tick, string name)> sinfo = [];
+            var spos = apiSectionInfo.Keys.OrderBy(k => k).ToList();
+            spos.ForEach(sp => _sectionInfo.Add((sp, apiSectionInfo[sp])));
+
+            // Also reset position stuff.
+            _length = _sectionInfo.Last().tick;
+            _loopStart = -1;
+            _loopEnd = -1;
+            _currentTick = 0;
+
+            ValidateTimes();
+        }
         #endregion
 
         #region Private functions
