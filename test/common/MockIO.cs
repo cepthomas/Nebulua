@@ -13,20 +13,13 @@ namespace Nebulua.Test
     /// <summary>Mock IO for testing processor. Captures output lines.</summary>
     public class MockOut: TextWriter
     {
-        public List<string> Capture
-        {
-            get { return StringUtils.SplitByTokens(_capture.ToString(), "\r\n"); }
-        }
-
         StringBuilder _capture = new();
+        public override Encoding Encoding { get { return Encoding.Default; } }
+        public List<string> Capture { get { return StringUtils.SplitByTokens(_capture.ToString(), "\r\n"); } }
 
         public override void Write(char value)
         {
             _capture.Append(value);
-        }
-        public override Encoding Encoding
-        {
-            get { return Encoding.Default; }
         }
 
         public void Clear()
@@ -59,7 +52,6 @@ namespace Nebulua.Test
 
         public override int Peek()
         {
-            // throw new NotSupportedException("peek() doesn't work!");
             // Return the next char or -1 if done. Doesn't remove.
             if (NextLine.Length > 0)
             {

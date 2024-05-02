@@ -9,6 +9,7 @@ namespace Nebulua.Interop
         Ok, SyntaxError, FileError, RunError, ApiError, AppInternalError,
     }
 
+    /// <summary>Mock interop API. See real class for doc.</summary>
     public class Api
     {
         public string Error = "";
@@ -60,6 +61,7 @@ namespace Nebulua.Interop
         public static void NotifyPropertyChange(PropertyArgs args) { PropertyChange?.Invoke(null, args); }
     };
 
+    #region Event args
     public class CreateChannelArgs
     {
         public long Id;       // unique/opaque
@@ -94,4 +96,5 @@ namespace Nebulua.Interop
         public int Ret;       // handler return value
         public int Bpm;
     };
+    #endregion
 }

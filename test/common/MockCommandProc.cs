@@ -10,7 +10,8 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua.Test
 {
-    public class CommandProc // TODO not used
+    /// <summary>Mock CliApp command processor. See real class for doc. TODO not used.</summary>
+    public class CommandProc
     {
         // readonly TextWriter _out;
         // readonly TextReader _in;

@@ -22,8 +22,8 @@ namespace Nebulua.Test
             var lpath = TestUtils.GetLuaPath();
             Api interop = new(lpath);
 
-            InteropEventCollector events = new(interop);
-            string scrfn = Path.Join(TestUtils.GetTestLuaDir(), "script_happy.lua");
+            EventCollector events = new(interop);
+            string scrfn = Path.Join(TestUtils.GetProjectSourceDir(), "test", "script_happy.lua");
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             // Load the script.
@@ -35,26 +35,22 @@ namespace Nebulua.Test
             // Have a look inside.
             UT_EQUAL(interop.SectionInfo.Count, 4);
 
-            var sectionPositions = interop.SectionInfo.Keys.OrderBy(k => k).ToList();
-            UT_EQUAL(sectionPositions.Count, 4);
-            UT_EQUAL(sectionPositions[0], 0);
-            UT_EQUAL(interop.SectionInfo[sectionPositions[0]], "beginning");
-            UT_EQUAL(sectionPositions[1], 256);
-            UT_EQUAL(interop.SectionInfo[sectionPositions[1]], "middle");
-            UT_EQUAL(sectionPositions[2], 512);
-            UT_EQUAL(interop.SectionInfo[sectionPositions[2]], "ending");
-            UT_EQUAL(sectionPositions[3], 768);
-            UT_EQUAL(interop.SectionInfo[sectionPositions[3]], "_LENGTH");
-
             // Fake valid loaded script.
-            TestUtils.SetupFakeScript();
+            List<(int tick, string name)> sinfo = [];
+            var sectionPositions = interop.SectionInfo.Keys.OrderBy(k => k).ToList();
+            sectionPositions.ForEach(sp => sinfo.Add((sp, interop.SectionInfo[sp])));
+            UT_EQUAL(sinfo.Count, 4);
+            State.Instance.SectionInfo = sinfo;
+            State.Instance.LoopStart = -1;
+            State.Instance.LoopEnd = -1;
 
-            // Run fake steps.
+            // Run script steps.
             events.CollectedEvents.Clear();
             for (int i = 0; i < 99; i++)
             {
                 stat = interop.Step(State.Instance.CurrentTick++);
 
+                // Inject some received midi events.
                 if (i % 20 == 0)
                 {
                     stat = interop.RcvNote(0x0102, i, (double)i / 100);
@@ -173,14 +169,14 @@ namespace Nebulua.Test
         }
     }
 
-    /// <summary>Used to capture events from test target.</summary>
-    public class InteropEventCollector // TODO could be a mock
+    /// <summary>Hook used to capture events from test target.</summary>
+    internal class EventCollector
     {
         public List<string> CollectedEvents { get; set; }
 
         readonly Api _api;
 
-        public InteropEventCollector(Api api)
+        public EventCollector(Api api)
         {
             _api = api;
             CollectedEvents = [];

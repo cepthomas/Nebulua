@@ -7,9 +7,9 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
-/////////////////////////// mock Midi.cs /////////////////////////////////
 namespace Nebulua.Common
 {
+    /// <summary>Mock for entities in Midi.cs. See real class for doc.</summary>
     public class MidiInput
     {
         public string DeviceName { get; }
@@ -36,9 +36,7 @@ namespace Nebulua.Common
         }
     }
 
-    /// <summary>
-    /// A midi output device.
-    /// </summary>
+    /// <summary>Mock for entities in Midi.cs. See real class for doc.</summary>
     public class MidiOutput
     {
         public string DeviceName { get; }
@@ -59,6 +57,7 @@ namespace Nebulua.Common
     }
 
 
+    /// <summary>Required definitions from Midi.cs. See real class for doc.</summary>
     public class MidiDefs
     {
         public const int MIDI_VAL_MIN = 0;
@@ -71,161 +70,14 @@ namespace Nebulua.Common
             (int index, int chan_num) = ChannelHandle.DeconstructHandle(chan_hnd);
             string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{index} Ch:{chan_num} ";
 
-            //switch (evt)
-            //{
-            //    case NoteEvent e:
-            //        var snote = chan_num == 10 || chan_num == 16 ?
-            //            _drums.ContainsKey(e.NoteNumber) ? _drums[e.NoteNumber] : $"DRUM_{e.NoteNumber}" :
-            //            MusicDefinitions.NoteNumberToName(e.NoteNumber);
-            //        s = $"{s} {e.NoteNumber}:{snote} Vel:{e.Velocity}";
-            //        break;
-
-            //    case ControlChangeEvent e:
-            //        var sctl = Enum.IsDefined(e.Controller) ? e.Controller.ToString() : $"CTLR_{e.Controller}";
-            //        s = $"{s} {(int)e.Controller}:{sctl} Val:{e.ControllerValue}";
-            //        break;
-
-            //    default: // Ignore others for now.
-            //        break;
-            //}
+            switch (evt)
+            {
+               case NoteEvent e: s = $"{s} {e.NoteNumber} Vel:{e.Velocity}"; break;
+               case ControlChangeEvent e: s = $"{s} {(int)e.Controller} Val:{e.ControllerValue}"; break;
+               default: break; // Ignore others for now.
+            }
 
             return s;
-        }
-    }
-}
-
-/////////////////////////// from NAudio.Midi /////////////////////////////////
-namespace NAudio.Midi
-{
-    public enum MidiCommandCode : byte
-    {
-        NoteOff = 128,
-        NoteOn = 144,
-        KeyAfterTouch = 160,
-        ControlChange = 176,
-        PatchChange = 192,
-        ChannelAfterTouch = 208,
-        PitchWheelChange = 224,
-        Sysex = 240,
-        Eox = 247,
-        TimingClock = 248,
-        StartSequence = 250,
-        ContinueSequence = 251,
-        StopSequence = 252,
-        AutoSensing = 254,
-        MetaEvent = byte.MaxValue
-    }
-
-    public enum MidiController : byte
-    {
-        BankSelect = 0,
-        Modulation = 1,
-        BreathController = 2,
-        FootController = 4,
-        MainVolume = 7,
-        Pan = 10,
-        Expression = 11,
-        BankSelectLsb = 32,
-        Sustain = 64,
-        Portamento = 65,
-        Sostenuto = 66,
-        SoftPedal = 67,
-        LegatoFootswitch = 68,
-        ResetAllControllers = 121,
-        AllNotesOff = 123
-    }
-
-
-    public class NoteEvent : MidiEvent
-    {
-        public virtual int NoteNumber { get; set; } = 0;
-        public int Velocity { get; set; } = 0;
-
-        public NoteEvent(long absoluteTime, int channel, MidiCommandCode commandCode, int noteNumber, int velocity)
-        {
-            NoteNumber = noteNumber;
-            Velocity = velocity;
-        }
-    }
-
-    public class NoteOnEvent : NoteEvent
-    {
-        public int NoteLength { get; set; } = 0;
-
-        public NoteOnEvent(long absoluteTime, int channel, int noteNumber, int velocity, int duration)
-            : base(absoluteTime, channel, MidiCommandCode.NoteOn, noteNumber, velocity)
-        {
-            NoteLength = duration;
-        }
-    }
-
-    public class ControlChangeEvent : MidiEvent
-    {
-        public MidiController Controller { get; set; } = 0;
-        public int ControllerValue { get; set; } = 0;
-
-        public ControlChangeEvent(long absoluteTime, int channel, MidiController controller, int controllerValue)
-        {
-            Controller = controller;
-            ControllerValue = controllerValue;
-        }
-    }
-
-    public class PatchChangeEvent : MidiEvent
-    {
-        public int Patch { get; set; } = 0;
-
-        public PatchChangeEvent(long absoluteTime, int channel, int patchNumber)
-        {
-            Patch = patchNumber;
-        }
-    }
-
-
-    public class MidiEvent
-    {
-        public virtual int Channel { get; set; } = 0;
-        public int DeltaTime { get; set; } = 0;
-        public long AbsoluteTime { get; set; } = 0;
-        public MidiCommandCode CommandCode { get; set; } = 0;
-
-        public static MidiEvent FromRawMessage(int rawMessage)
-        {
-            return new MidiEvent();
-        }
-
-        protected MidiEvent()
-        {
-        }
-    }
-
-    public class MidiInMessageEventArgs : EventArgs
-    {
-        public int RawMessage { get; private set; } = 0;
-        public MidiEvent? MidiEvent { get; private set; }
-        public int Timestamp { get; private set; } = 0;
-        public MidiInMessageEventArgs(int message, int timestamp) { }
-    }
-
-    public class DeviceInfo()
-    {
-        public string ProductName { get; set; } = "";
-    }
-
-    public class MidiIn
-    {
-        public static int NumberOfDevices { get; set; } = 3;
-        public static DeviceInfo DeviceInfo(int i)
-        {
-            return new DeviceInfo() { ProductName = $"DeviceIn{i}" };
-        }
-    }
-    public class MidiOut
-    {
-        public static int NumberOfDevices { get; set; } = 3;
-        public static DeviceInfo DeviceInfo(int i)
-        {
-            return new DeviceInfo() { ProductName = $"DeviceOut{i}" };
         }
     }
 }
