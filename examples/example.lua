@@ -55,9 +55,9 @@ local ride = drum.RideCymbal1
 local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
--- Quiet sequence in section. Can't use nil!
-local quiet = {}
 
+-- Forward ref.
+local function boing(note_num) end
 
 --------------------- Called from main applicatio ---------------------------
 
@@ -220,27 +220,17 @@ local bass_chorus =
 
 
 -----------------------------------------------------------------------------
-sections =
-{
-    beginning =
-    {
-        { hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-    },
+neb.sect_start("beginning")
+neb.sect_chan(hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse)
+neb.sect_chan(hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse)
+neb.sect_chan(hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse)
 
-    middle =
-    {
-        { hnd_keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus },
-        { hnd_drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus },
-        { hnd_bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus },
-    },
+neb.sect_start("middle")
+neb.sect_chan(hnd_keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus)
+neb.sect_chan(hnd_drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus)
+neb.sect_chan(hnd_bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus)
 
-    ending =
-    {
-        { hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse },
-        { hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse },
-        { hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse }
-    }
-}
-
+neb.sect_start("ending")
+neb.sect_chan(hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse)
+neb.sect_chan(hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse)
+neb.sect_chan(hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse)

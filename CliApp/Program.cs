@@ -2,9 +2,9 @@
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main(string[] _)
         {
-            var app = new App();
+            using var app = new App(); // guarantees Dispose()
             app.Run();
         }
     }

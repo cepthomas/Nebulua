@@ -213,7 +213,7 @@ namespace Nebulua.CliApp
         bool ExitCmd(CommandDescriptor cmd, List<string> args)
         {
             State.Instance.ExecState = ExecState.Exit;
-            Write($"goodbye!");
+            Write($"Exit - goodbye!");
 
             return true;
         }

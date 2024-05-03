@@ -12,7 +12,7 @@ extern "C" {
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Text;
-
+using namespace System::Diagnostics;
 using namespace Nebulua::Interop;
 
 
@@ -45,7 +45,7 @@ Api::Api(List<String^>^ lpath)
     // Init lua.
     _l = luaL_newstate();
 
-Console::WriteLine("DBG Api::Api() this={0} _l={1}", this, (long)_l);
+    Debug::WriteLine("DBG Api::Api() this={0} _l={1}", this->GetHashCode(), (long)_l);
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -88,7 +88,7 @@ Console::WriteLine("DBG Api::Api() this={0} _l={1}", this, (long)_l);
 //--------------------------------------------------------//
 Api::~Api()
 {
-Console::WriteLine("DBG Api::~Api() this={0} _l={1}", this, (long)_l);
+    Debug::WriteLine("DBG Api::~Api() this={0} _l={1}", this->GetHashCode(), (long)_l);
 
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
@@ -55,7 +56,7 @@ namespace Nebulua.Common
         {
             _config = new(configFn);
 
-Console.WriteLine($"DBG Core.Core() this={this.GetHashCode()}");
+            Debug.WriteLine($"DBG Core.Core() this={this.GetHashCode()}");
 
             // Init logging.
             LogManager.MinLevelFile = _config.FileLevel;
@@ -84,8 +85,7 @@ Console.WriteLine($"DBG Core.Core() this={this.GetHashCode()}");
         /// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
         protected virtual void Dispose(bool disposing)
         {
-
-Console.WriteLine($"DBG Core.Dispose()1 this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed} disposing={disposing}");
+            Debug.WriteLine($"DBG Core.Dispose(bool disposing) this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
 
             if (!_disposed)
             {
@@ -119,8 +119,7 @@ Console.WriteLine($"DBG Core.Dispose()1 this={this.GetHashCode()} _api={_api.Get
         /// </summary>
         ~Core()
         {
-
-Console.WriteLine($"DBG Core.~Core() this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed}");
+            Debug.WriteLine($"DBG Core.~Core() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
 
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
@@ -131,6 +130,7 @@ Console.WriteLine($"DBG Core.~Core() this={this.GetHashCode()} _api={_api.GetHas
         /// </summary>
         public void Dispose()
         {
+            Debug.WriteLine($"DBG Core.Dispose() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
@@ -160,20 +160,20 @@ Console.WriteLine($"DBG Core.~Core() this={this.GetHashCode()} _api={_api.GetHas
         /// </summary>
         public void Reload()
         {
-Console.WriteLine($"DBG Core.Reload()1 this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed}");
+            Debug.WriteLine($"DBG Core.Reload()1 this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
             
             _api?.Dispose();
             _api = null;
-            OpenScript(_scriptFn);
+            OpenScript(_scriptFn!);
 
-Console.WriteLine($"DBG Core.Reload()2 this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed}");
+            Debug.WriteLine($"DBG Core.Reload()2 this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
         }
 
         /// <summary>
         /// Handler for state changes of interest. Doesn't throw.
         /// Responsible for core stuff like tempo, kill.
         /// </summary>
-        /// <param name="_"></param>
+        /// <param name="sender"></param>
         /// <param name="name">Specific State value.</param>
         void State_ValueChangeEvent(object? sender, string name)
         {
@@ -441,7 +441,7 @@ Console.WriteLine($"DBG Core.Reload()2 this={this.GetHashCode()} _api={_api.GetH
             // Create script api.
             _api = new(_luaPath);
 
-Console.WriteLine($"DBG Core.OpenScript() this={this.GetHashCode()} _api={_api.GetHashCode()}");
+            Debug.WriteLine($"DBG Core.OpenScript() this={this.GetHashCode()} _api={_api.GetHashCode()}");
 
             // Load the script.
             var s = $"Loading script file {scriptFn}";

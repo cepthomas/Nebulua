@@ -9,6 +9,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Nebulua.Common;
 using Nebulua.Interop;
+using System.Diagnostics;
 
 
 // TODO display running tick/bartime somewhere in console?
@@ -32,7 +33,7 @@ namespace Nebulua.CliApp
         bool _disposed = false;
 
         /// <summary>Common functionality.</summary>
-        Core? _core;
+        readonly Core? _core;
         #endregion
 
         #region Lifecycle
@@ -44,7 +45,7 @@ namespace Nebulua.CliApp
             _cmdProc = new(Console.In, Console.Out);
             _cmdProc.Write("Greetings from Nebulua!");
 
-Console.WriteLine($"DBG CliApp.CliApp() this={this.GetHashCode()}");
+            Debug.WriteLine($"DBG CliApp.CliApp() this={this.GetHashCode()}");
 
             try
             {
@@ -80,7 +81,7 @@ Console.WriteLine($"DBG CliApp.CliApp() this={this.GetHashCode()}");
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
 
-Console.WriteLine($"DBG CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+                Debug.WriteLine($"DBG CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
 
                 _core.RunScript(_scriptFn);
             }
@@ -94,18 +95,19 @@ Console.WriteLine($"DBG CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.
         /// <summary>
         /// 
         /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
         public void Dispose()
         {
-
-Console.WriteLine($"DBG CliApp.Dispose()1 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+            Debug.WriteLine($"DBG CliApp.Dispose()1 this={this.GetHashCode()} _core={_core.GetHashCode()}");
 
             if (!_disposed)
             {
                 _core?.Dispose();
                 _disposed = true;
             }
-Console.WriteLine($"DBG CliApp.Dispose()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+
+            GC.SuppressFinalize(this);
+
+            Debug.WriteLine($"DBG CliApp.Dispose()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
         }
         #endregion
 
@@ -131,7 +133,7 @@ Console.WriteLine($"DBG CliApp.Dispose()2 this={this.GetHashCode()} _core={_core
                 }
 
                 // Normal done.
-                _cmdProc.Write("shutting down");
+                //_cmdProc.Write("Happy shutting down");
 
                 // Wait a bit in case there are some lingering events.
                 Thread.Sleep(100);
@@ -155,8 +157,9 @@ Console.WriteLine($"DBG CliApp.Dispose()2 this={this.GetHashCode()} _core={_core
             {
                 case LogLevel.Error:
                     // Fatal error, shut down.
-                    _cmdProc.Write($"Fatal, shutting down:{Environment.NewLine}{e.Message}");
+                    _cmdProc.Write($"Fatal shutting down: {Environment.NewLine}{e.Message}");
                     State.Instance.ExecState = ExecState.Exit;
+                    Environment.Exit(1);
                     break;
 
                 case LogLevel.Warn:

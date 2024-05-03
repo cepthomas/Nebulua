@@ -1,13 +1,14 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
-using System.Collections.Generic;
-using System.Reflection;
 
 
 namespace Nebulua.UiApp
@@ -31,14 +32,13 @@ namespace Nebulua.UiApp
         /// </summary>
         public MainForm()
         {
-
-Console.WriteLine($"DEBUG MainForm.MainForm() this={this}");
+            Debug.WriteLine($"DBG MainForm.MainForm() this={this}");
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
             KeyPreview = true; // for routing kbd strokes properly
             Location = new Point(100, 100);
-            //Size = new Size(_settings.FormGeometry.Width, _settings.FormGeometry.Height);
+            Size = new Size(1200, 600);
 
             // Gets the icon associated with the currently executing assembly.
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
@@ -153,7 +153,8 @@ Console.WriteLine($"DEBUG MainForm.MainForm() this={this}");
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
                 _core.RunScript(_scriptFn);
-Console.WriteLine($"DEBUG MainForm.OnLoad() this={this} _core={_core}");
+
+                Debug.WriteLine($"DBG MainForm.OnLoad() this={this} _core={_core}");
 
                 timeBar.Invalidate();
 
@@ -163,7 +164,7 @@ Console.WriteLine($"DEBUG MainForm.OnLoad() this={this} _core={_core}");
             catch (Exception ex)
             {
                 State.Instance.ExecState = ExecState.Dead;
-                var serr = $"Fatal error - restart application.{Environment.NewLine}{ex}{Environment.NewLine}{ex.StackTrace}";
+                var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex}";
                 traffic.AppendLine(serr);
             }
 
@@ -176,7 +177,7 @@ Console.WriteLine($"DEBUG MainForm.OnLoad() this={this} _core={_core}");
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-Console.WriteLine($"DEBUG MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
+            Debug.WriteLine($"DBG MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
 
             if (disposing && (components != null))
             {
@@ -269,13 +270,16 @@ Console.WriteLine($"DEBUG MainForm.Dispose() this={this} _core={_core} disposing
         /// <param name="e"></param>
         void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
         {
-            traffic.AppendLine(e.ToString()!);
-
-            if (e.Level == LogLevel.Error)
+            this.InvokeIfRequired(_ =>
             {
-                traffic.AppendLine("Fatal error, you must restart");
-                State.Instance.ExecState = ExecState.Dead;
-            }
+                traffic.AppendLine(e.Message);
+
+                if (e.Level == LogLevel.Error)
+                {
+                    traffic.AppendLine("Fatal error, you must restart");
+                    State.Instance.ExecState = ExecState.Dead;
+                }
+            });
         }
 
         /// <summary>
