@@ -55,6 +55,8 @@ namespace Nebulua.Common
         {
             _config = new(configFn);
 
+Console.WriteLine($"DBG Core.Core() this={this.GetHashCode()}");
+
             // Init logging.
             LogManager.MinLevelFile = _config.FileLevel;
             LogManager.MinLevelNotif = _config.NotifLevel;
@@ -82,6 +84,9 @@ namespace Nebulua.Common
         /// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
         protected virtual void Dispose(bool disposing)
         {
+
+Console.WriteLine($"DBG Core.Dispose()1 this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed} disposing={disposing}");
+
             if (!_disposed)
             {
                 if (disposing)
@@ -114,6 +119,9 @@ namespace Nebulua.Common
         /// </summary>
         ~Core()
         {
+
+Console.WriteLine($"DBG Core.~Core() this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed}");
+
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
         }
@@ -152,9 +160,13 @@ namespace Nebulua.Common
         /// </summary>
         public void Reload()
         {
+Console.WriteLine($"DBG Core.Reload()1 this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed}");
+            
             _api?.Dispose();
             _api = null;
             OpenScript(_scriptFn);
+
+Console.WriteLine($"DBG Core.Reload()2 this={this.GetHashCode()} _api={_api.GetHashCode()} _disposed={_disposed}");
         }
 
         /// <summary>
@@ -428,6 +440,8 @@ namespace Nebulua.Common
         {
             // Create script api.
             _api = new(_luaPath);
+
+Console.WriteLine($"DBG Core.OpenScript() this={this.GetHashCode()} _api={_api.GetHashCode()}");
 
             // Load the script.
             var s = $"Loading script file {scriptFn}";

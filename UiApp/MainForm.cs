@@ -31,6 +31,9 @@ namespace Nebulua.UiApp
         /// </summary>
         public MainForm()
         {
+
+Console.WriteLine($"DEBUG MainForm.MainForm() this={this}");
+
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
             KeyPreview = true; // for routing kbd strokes properly
@@ -150,6 +153,7 @@ namespace Nebulua.UiApp
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
                 _core.RunScript(_scriptFn);
+Console.WriteLine($"DEBUG MainForm.OnLoad() this={this} _core={_core}");
 
                 timeBar.Invalidate();
 
@@ -172,6 +176,8 @@ namespace Nebulua.UiApp
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+Console.WriteLine($"DEBUG MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
+
             if (disposing && (components != null))
             {
                 components.Dispose();

@@ -44,6 +44,8 @@ namespace Nebulua.CliApp
             _cmdProc = new(Console.In, Console.Out);
             _cmdProc.Write("Greetings from Nebulua!");
 
+Console.WriteLine($"DBG CliApp.CliApp() this={this.GetHashCode()}");
+
             try
             {
                 // Process cmd line args.
@@ -77,6 +79,9 @@ namespace Nebulua.CliApp
 
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
+
+Console.WriteLine($"DBG CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+
                 _core.RunScript(_scriptFn);
             }
             // Anything that throws is fatal.
@@ -92,11 +97,15 @@ namespace Nebulua.CliApp
         /// <exception cref="NotImplementedException"></exception>
         public void Dispose()
         {
+
+Console.WriteLine($"DBG CliApp.Dispose()1 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+
             if (!_disposed)
             {
                 _core?.Dispose();
                 _disposed = true;
             }
+Console.WriteLine($"DBG CliApp.Dispose()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
         }
         #endregion
 

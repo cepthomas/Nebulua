@@ -32,7 +32,6 @@ static int _ToCString(char* buff, size_t bufflen, String^ input);
 static String^ _ToManagedString(const char* input);
 
 
-
 //--------------------------------------------------------//
 Api::Api(List<String^>^ lpath)
 {
@@ -45,6 +44,8 @@ Api::Api(List<String^>^ lpath)
 
     // Init lua.
     _l = luaL_newstate();
+
+Console::WriteLine("DBG Api::Api() this={0} _l={1}", this, (long)_l);
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -87,6 +88,8 @@ Api::Api(List<String^>^ lpath)
 //--------------------------------------------------------//
 Api::~Api()
 {
+Console::WriteLine("DBG Api::~Api() this={0} _l={1}", this, (long)_l);
+
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
     if (_l != nullptr)
