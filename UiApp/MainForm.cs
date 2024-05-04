@@ -32,7 +32,7 @@ namespace Nebulua.UiApp
         /// </summary>
         public MainForm()
         {
-            Debug.WriteLine($"DBG MainForm.MainForm() this={this}");
+            Debug.WriteLine($"*** MainForm.MainForm() this={this}");
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
@@ -154,7 +154,7 @@ namespace Nebulua.UiApp
                 _core = new Core(configFn);
                 _core.RunScript(_scriptFn);
 
-                Debug.WriteLine($"DBG MainForm.OnLoad() this={this} _core={_core}");
+                Debug.WriteLine($"*** MainForm.OnLoad() this={this} _core={_core}");
 
                 timeBar.Invalidate();
 
@@ -177,7 +177,7 @@ namespace Nebulua.UiApp
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            Debug.WriteLine($"DBG MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
+            Debug.WriteLine($"*** MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
 
             if (disposing && (components != null))
             {
@@ -194,7 +194,7 @@ namespace Nebulua.UiApp
         /// </summary>
         /// <param name="_"></param>
         /// <param name="name">Specific State value.</param>
-        void State_ValueChangeEvent(object? sender, string name)
+        void State_ValueChangeEvent(object? _, string name)
         {
             this.InvokeIfRequired(_ =>
             {
@@ -257,7 +257,7 @@ namespace Nebulua.UiApp
             if (e.KeyCode == Keys.Space)
             {
                 chkPlay.Checked = !chkPlay.Checked;
-                Play_Click(null, null);
+                Play_Click(null, new());
                 e.Handled = true;
             }
             base.OnKeyDown(e);

@@ -2,7 +2,7 @@
 
 namespace Nebulua.Interop
 {
-#pragma warning disable CA1822 // Mark members as static
+//#pragma warning disable CA1822 // Mark members as static
 
     public enum NebStatus
     {

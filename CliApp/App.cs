@@ -4,15 +4,13 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
+using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Nebulua.Common;
 using Nebulua.Interop;
-using System.Diagnostics;
 
-
-// TODO display running tick/bartime somewhere in console?
 
 
 namespace Nebulua.CliApp
@@ -45,7 +43,7 @@ namespace Nebulua.CliApp
             _cmdProc = new(Console.In, Console.Out);
             _cmdProc.Write("Greetings from Nebulua!");
 
-            Debug.WriteLine($"DBG CliApp.CliApp() this={this.GetHashCode()}");
+            Debug.WriteLine($"*** CliApp.CliApp() this={this.GetHashCode()}");
 
             try
             {
@@ -56,6 +54,9 @@ namespace Nebulua.CliApp
 
                 // Hook loog writes.
                 LogManager.LogMessage += LogManager_LogMessage;
+
+                // State change handler.
+                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
                 foreach (var arg in args)
                 {
@@ -81,9 +82,23 @@ namespace Nebulua.CliApp
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
 
-                Debug.WriteLine($"DBG CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+                Debug.WriteLine($"*** CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
 
+                // Run it.
+                var s = $"Running script file {_scriptFn}";
+                _logger.Info(s);
+                _cmdProc.Write(s);
                 _core.RunScript(_scriptFn);
+
+                // Loop forever doing cmdproc requests.
+                while (State.Instance.ExecState != ExecState.Exit)
+                {
+                    // Should not throw. Command processor will take care of its own errors.
+                    _cmdProc.Read();
+                }
+
+                // Normal done. Wait a bit in case there are some lingering events.
+                Thread.Sleep(100);
             }
             // Anything that throws is fatal.
             catch (Exception ex)
@@ -97,7 +112,7 @@ namespace Nebulua.CliApp
         /// </summary>
         public void Dispose()
         {
-            Debug.WriteLine($"DBG CliApp.Dispose()1 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+            Debug.WriteLine($"*** CliApp.Dispose()1 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
 
             if (!_disposed)
             {
@@ -107,43 +122,28 @@ namespace Nebulua.CliApp
 
             GC.SuppressFinalize(this);
 
-            Debug.WriteLine($"DBG CliApp.Dispose()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+            Debug.WriteLine($"*** CliApp.Dispose()2 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
+        }
+
+        /// <summary>Gotta start somewhere.</summary>
+        static void Main()
+        {
+            using var app = new App(); // guarantees Dispose()
         }
         #endregion
 
-        #region Primary workers
+        #region Private functions
         /// <summary>
-        /// Execute the script. Doesn't return until complete.
+        /// Handler for state changes
         /// </summary>
-        public NebStatus Run()
+        /// <param name="_"></param>
+        /// <param name="name">Specific State value.</param>
+        void State_ValueChangeEvent(object? _, string name)
         {
-            NebStatus stat = NebStatus.Ok;
-
-            try
+            if (name == "CurrentTick")
             {
-                var s = $"Running script file {_scriptFn}";
-                _logger.Info(s);
-                _cmdProc.Write(s);
-
-                // Good to go now. Loop forever doing cmdproc requests.
-                while (State.Instance.ExecState != ExecState.Exit)
-                {
-                    // Should not throw. Command processor will take care of its own errors.
-                    _cmdProc.Read();
-                }
-
-                // Normal done.
-                //_cmdProc.Write("Happy shutting down");
-
-                // Wait a bit in case there are some lingering events.
-                Thread.Sleep(100);
+                // TODO display running tick/bartime somewhere in console?
             }
-            catch (Exception ex)
-            {
-                FatalError(ex, "Run() failed");
-            }
-
-            return stat;
         }
 
         /// <summary>
@@ -171,9 +171,7 @@ namespace Nebulua.CliApp
                     break;
             }
         }
-        #endregion
 
-        #region Private functions
         /// <summary>
         /// General purpose handler for fatal errors. Causes app exit.
         /// </summary>
@@ -191,7 +189,7 @@ namespace Nebulua.CliApp
                 _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
             };
 
-            // Logging error will cause the app to exit.
+            // Logging an error will cause the app to exit.
             _logger.Error(serr);
         }
         #endregion

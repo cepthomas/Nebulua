@@ -193,19 +193,19 @@ namespace Nebulua.UiApp
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        string GetTimeDefString(int val)
+        static string GetTimeDefString(int val)
         {
             string s = "";
 
-            foreach (var si in State.Instance.SectionInfo)
+            foreach (var (tick, name) in State.Instance.SectionInfo)
             {
-                if (si.tick > val)
+                if (tick > val)
                 {
                     break;
                 }
                 else
                 {
-                    s = si.name;
+                    s = name;
                 }
             }
 
@@ -245,7 +245,7 @@ namespace Nebulua.UiApp
         /// <param name="tick"></param>
         /// <param name="snapType"></param>
         /// <param name="up">To ceiling otherwise closest.</param>
-        int GetRounded(int tick, SnapType snapType, bool up = false)
+        static int GetRounded(int tick, SnapType snapType, bool up = false)
         {
             if (tick > 0 && snapType != SnapType.Sub)
             {

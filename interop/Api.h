@@ -3,6 +3,10 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
+// This is crude but should be ok for nw.
+#define MAKE_ID(l)  ((int)((long long)l & 0X00000000FFFFFFFF))
+
+
 namespace Nebulua { namespace Interop
 {
     /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
@@ -41,11 +45,8 @@ namespace Nebulua { namespace Interop
         /// <summary>What's in the script.</summary>
         property Dictionary<int, String^>^ SectionInfo;
 
-        #pragma warning(push)
-        #pragma warning(disable : 4302 4311) // lua_State* casting
         /// <summary>Unique opaque id.</summary>
-        property long Id { long get() { return (long)_l; }}
-        #pragma warning(pop) 
+        property int Id { int get() { return MAKE_ID(_l); }}
     #pragma endregion
 
     #pragma region Lifecycle
@@ -112,7 +113,7 @@ namespace Nebulua { namespace Interop
     public ref class BaseArgs : public EventArgs
     {
     public:
-        property long Id;       // unique/opaque
+        property int Sender;    // unique/opaque id or 0 for generic
         property int Ret;       // handler return value
     };
 

@@ -56,7 +56,7 @@ namespace Nebulua.Common
         {
             _config = new(configFn);
 
-            Debug.WriteLine($"DBG Core.Core() this={this.GetHashCode()}");
+            Debug.WriteLine($"*** Core.Core() this={this.GetHashCode()}");
 
             // Init logging.
             LogManager.MinLevelFile = _config.FileLevel;
@@ -85,7 +85,7 @@ namespace Nebulua.Common
         /// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
         protected virtual void Dispose(bool disposing)
         {
-            Debug.WriteLine($"DBG Core.Dispose(bool disposing) this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
+            Debug.WriteLine($"*** Core.Dispose(bool disposing) this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
 
             if (!_disposed)
             {
@@ -119,7 +119,7 @@ namespace Nebulua.Common
         /// </summary>
         ~Core()
         {
-            Debug.WriteLine($"DBG Core.~Core() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            Debug.WriteLine($"*** Core.~Core() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
 
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
@@ -130,7 +130,7 @@ namespace Nebulua.Common
         /// </summary>
         public void Dispose()
         {
-            Debug.WriteLine($"DBG Core.Dispose() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            Debug.WriteLine($"*** Core.Dispose() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
@@ -160,13 +160,13 @@ namespace Nebulua.Common
         /// </summary>
         public void Reload()
         {
-            Debug.WriteLine($"DBG Core.Reload()1 this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            Debug.WriteLine($"*** Core.Reload()1 this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
             
             _api?.Dispose();
             _api = null;
             OpenScript(_scriptFn!);
 
-            Debug.WriteLine($"DBG Core.Reload()2 this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            Debug.WriteLine($"*** Core.Reload()2 this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
         }
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace Nebulua.Common
         {
             if (e.LogLevel >= (int)LogLevel.Trace && e.LogLevel <= (int)LogLevel.Error) 
             {
-                _logger.Log((LogLevel)e.LogLevel, $"SCR {e.Msg}");
+                _logger.Log((LogLevel)e.LogLevel, $"{e.Msg}");
                 e.Ret = 0;
             }
             else
@@ -441,7 +441,7 @@ namespace Nebulua.Common
             // Create script api.
             _api = new(_luaPath);
 
-            Debug.WriteLine($"DBG Core.OpenScript() this={this.GetHashCode()} _api={_api.GetHashCode()}");
+            Debug.WriteLine($"*** Core.OpenScript() this={this.GetHashCode()} _api={_api.GetHashCode()}");
 
             // Load the script.
             var s = $"Loading script file {scriptFn}";
