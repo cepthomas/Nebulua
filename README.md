@@ -1,5 +1,7 @@
 # Nebulua
-- A comand line version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
+- Two flavors of application:
+  - A comand line version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
+  - A GUI version which is a stripped down version of Nebulator.
 - While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
 - Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
   - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
@@ -30,10 +32,6 @@ bar        | int    | 0 -> N, absolute                                |
 beat       | int    | 0 -> 3, in bar, quarter note                    |
 sub        | int    | 0 -> 7, in beat, "musical"                      |
 tick       | int    | absolute time, see ##Timing, same length as sub |
-
-also:
-chunk
-
 
 
 ## Time
@@ -286,7 +284,7 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 
 # Tech Notes
 
-- Consists of a .NET command line application and a C++/CLI interop component that interfaces to the
+- Consists of two .NET applications (Command line and WinForms) and a C++/CLI interop component that interfaces to the
   lua library.
 - The interop API translate between internal LUA_XXX status and user-facing enum NebStatus. API doesn't throw
   anything.

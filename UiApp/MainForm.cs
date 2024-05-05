@@ -32,6 +32,8 @@ namespace Nebulua.UiApp
         /// </summary>
         public MainForm()
         {
+            Debug.AutoFlush = true;
+
             Debug.WriteLine($"*** MainForm.MainForm() this={this}");
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);

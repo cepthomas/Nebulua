@@ -12,7 +12,6 @@ using Nebulua.Common;
 using Nebulua.Interop;
 
 
-
 namespace Nebulua.CliApp
 {
     public class App : IDisposable
@@ -40,13 +39,14 @@ namespace Nebulua.CliApp
         /// </summary>
         public App()
         {
-            _cmdProc = new(Console.In, Console.Out);
-            _cmdProc.Write("Greetings from Nebulua!");
-
-            Debug.WriteLine($"*** CliApp.CliApp() this={this.GetHashCode()}");
-
             try
             {
+                Debug.AutoFlush = true;
+                Debug.WriteLine($"*** CliApp.CliApp() this={this.GetHashCode()}");
+
+                _cmdProc = new(Console.In, Console.Out);
+                _cmdProc.Write("Greetings from Nebulua!");
+
                 // Process cmd line args.
                 string? configFn = null;
                 var args = StringUtils.SplitByToken(Environment.CommandLine, " ");

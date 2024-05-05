@@ -32,16 +32,6 @@ static String^ _ToManagedString(const char* input);
 
 
 //--------------------------------------------------------//
-void _LogTrace(String^ msg)
-{
-    LogArgs^ args = gcnew LogArgs();
-    args->Sender = 0; // generic
-    args->LogLevel = 0; // aka trace
-    args->Msg = msg;
-    Api::NotifyLog(args); // do work
-}
-
-//--------------------------------------------------------//
 Api::Api(List<String^>^ lpath)
 {
     _lpath = lpath;
@@ -55,7 +45,6 @@ Api::Api(List<String^>^ lpath)
     _l = luaL_newstate();
 
     Debug::WriteLine("*** Api::Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
-    //_LogTrace(String::Format("1234 *** Api::Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l)));
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -99,7 +88,6 @@ Api::Api(List<String^>^ lpath)
 Api::~Api()
 {
     Debug::WriteLine("*** Api::~Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
-    //_LogTrace(String::Format("*** Api::~Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
 
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
