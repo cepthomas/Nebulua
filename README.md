@@ -293,8 +293,10 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 - There are 3 threads:
     - main which does cli
-    - midi in events
-    - timer periodic events
+    - midi in events callback
+    - timer periodic events callback
+- The shared resource that requires synchronization is a singleton `Api`. It is protected by a 
+  `CRITICAL_SECTION`. Thread access to the UI is protected by `InvokeIfRequired()`.
 - Almost all errors are considered fatal as they are usually things the user needs to fix before continuing
   such as script syntax errors. They are logged, written to the CLI, and then the application exits.
 - Lua functions defined in C do not call `luaL_error()`. Only call `luaL_error()` in code that is called from
