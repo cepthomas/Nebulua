@@ -41,8 +41,11 @@ namespace Nebulua.CliApp
         {
             try
             {
-                Debug.AutoFlush = true;
-                Debug.WriteLine($"*** CliApp.CliApp() this={this.GetHashCode()}");
+                string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
+                string logFileName = Path.Combine(appDir, "applog.txt");
+                LogManager.Run(logFileName, 100000);
+
+                _logger.Debug($"CliApp.CliApp() this={this.GetHashCode()}");
 
                 _cmdProc = new(Console.In, Console.Out);
                 _cmdProc.Write("Greetings from Nebulua!");
@@ -82,7 +85,7 @@ namespace Nebulua.CliApp
                 // OK so far. Assemble the engine.
                 _core = new Core(configFn);
 
-                Debug.WriteLine($"*** CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+                _logger.Debug($"CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
 
                 // Run it.
                 var s = $"Running script file {_scriptFn}";
@@ -112,7 +115,7 @@ namespace Nebulua.CliApp
         /// </summary>
         public void Dispose()
         {
-            Debug.WriteLine($"*** CliApp.Dispose()1 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
+            _logger.Debug($"CliApp.Dispose()1 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
 
             if (!_disposed)
             {
@@ -122,7 +125,7 @@ namespace Nebulua.CliApp
 
             GC.SuppressFinalize(this);
 
-            Debug.WriteLine($"*** CliApp.Dispose()2 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
+            _logger.Debug($"CliApp.Dispose()2 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
         }
 
         /// <summary>Gotta start somewhere.</summary>

@@ -23,7 +23,9 @@ neb.log_info("======== Warning: this is not actual music =========")
 
 -- Specify midi devices.
 local midi_in = "loopMIDI Port"
-local midi_out = "Microsoft GS Wavetable Synth"
+-- local midi_out = "Microsoft GS Wavetable Synth"
+local midi_out = "VirtualMIDISynth #1"
+-- local midi_out = "bad device"
 
 -- Specify midi output channels.
 local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)

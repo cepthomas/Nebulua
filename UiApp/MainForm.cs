@@ -4,12 +4,14 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Diagnostics;
+using System.IO;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
 
+// TODO1 slow startup.
 
 namespace Nebulua.UiApp
 {
@@ -32,9 +34,11 @@ namespace Nebulua.UiApp
         /// </summary>
         public MainForm()
         {
-            Debug.AutoFlush = true;
+            string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
+            string logFileName = Path.Combine(appDir, "uilog.txt");
+            LogManager.Run(logFileName, 100000);
 
-            Debug.WriteLine($"*** MainForm.MainForm() this={this}");
+            _logger.Debug($"MainForm.MainForm() this={this}");
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
@@ -74,6 +78,8 @@ namespace Nebulua.UiApp
         {
             try
             {
+                _logger.Debug($"MainForm.OnLoad() this={this} _core={_core}");
+
                 // Process cmd line args.
                 string? configFn = null;
                 _scriptFn = null;
@@ -153,10 +159,12 @@ namespace Nebulua.UiApp
                 #endregion
 
                 // OK so far. Assemble the engine.
-                _core = new Core(configFn);
-                _core.RunScript(_scriptFn);
+                _logger.Debug($"MainForm.OnLoad() 1");
 
-                Debug.WriteLine($"*** MainForm.OnLoad() this={this} _core={_core}");
+                _core = new Core(configFn);
+                _logger.Debug($"MainForm.OnLoad() 2");
+                _core.RunScript(_scriptFn);
+                _logger.Debug($"MainForm.OnLoad() 3");
 
                 timeBar.Invalidate();
 
@@ -166,11 +174,18 @@ namespace Nebulua.UiApp
             catch (Exception ex)
             {
                 State.Instance.ExecState = ExecState.Dead;
-                var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex}";
+                var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex.Message}";
                 traffic.AppendLine(serr);
             }
 
             base.OnLoad(e);
+            _logger.Debug($"MainForm.OnLoad() 4");
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            _logger.Debug($"MainForm.OnShown()");
+            base.OnShown(e);
         }
 
         /// <summary>
@@ -179,7 +194,7 @@ namespace Nebulua.UiApp
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            Debug.WriteLine($"*** MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
+            _logger.Debug($"MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
 
             if (disposing && (components != null))
             {
