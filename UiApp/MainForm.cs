@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
 
-// Slow startup when running from VS/debugger.
+// Slow startup when running from VS/debugger but not from .exe.
 
 
 namespace Nebulua.UiApp
@@ -108,7 +109,7 @@ namespace Nebulua.UiApp
                     throw new ApplicationArgumentException($"Missing nebulua script file");
                 }
 
-                #region Cosmetics TODO get from config?
+                #region Cosmetics TODO maybe get from config/settings
                 Color _backclr = Color.LightYellow;
                 Color _foreclr = Color.DodgerBlue;
                 Color _selclr = Color.Moccasin;
@@ -307,7 +308,33 @@ namespace Nebulua.UiApp
         {
             List<string> ls = [];
 
-            MiscUtils.ShowReadme("Nebulua");
+            var text = File.ReadAllLines("README.md").ToList();
+
+            //var docs = MidiDefs.FormatDoc();
+            //docs.AddRange(MusicDefinitions.FormatDoc());
+
+
+            Tools.MarkdownToHtml(text, Color.LightYellow, new Font("arial", 16), true);
+
+            //MiscUtils.ShowReadme("Nebulua");
+
+            //        public static string MarkdownToHtml(List<string> body, Color bgcolor, Font font, bool show)
+
+            ///// <summary>
+            ///// Show the builtin definitions.
+            ///// </summary>
+            ///// <param name="sender"></param>
+            ///// <param name="e"></param>
+            //void ShowDefinitions_Click(object sender, EventArgs e)
+            //{
+            //    var docs = MidiDefs.FormatDoc();
+            //    docs.AddRange(MusicDefinitions.FormatDoc());
+            //    Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
+            //}
+
+
+
+
 
             ls.Add($"Midi output devices:");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)

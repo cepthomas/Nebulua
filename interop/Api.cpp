@@ -24,7 +24,7 @@ struct lua_State {};
 // Protect lua context calls by multiple threads.
 static CRITICAL_SECTION _critsect;
 
-// Convert managed string to unmanaged.
+// Convert managed string to unmanaged. Returns actual length or <0 if error TODO handle.
 static int _ToCString(char* buff, size_t bufflen, String^ input);
 
 // Convert unmanaged string to managed.
@@ -69,7 +69,6 @@ Api::Api(List<String^>^ lpath)
         int newLen = newPath->Length + 50;
         char* spath = (char*)malloc(newLen);
         int ret = _ToCString(spath, newLen, newPath);
-
         lua_pop(_l, 1);
         lua_pushstring(_l, spath);
         lua_setfield(_l, -2, "path");
@@ -261,7 +260,7 @@ NebStatus Api::EvalLuaStatus(int lstat, String^ info)
 //--------------------------------------------------------//
 int _ToCString(char* buff, size_t bufflen, String^ input)
 {
-    int ret = 0; // TODO handle errors?
+    int ret = 0;
     int inlen = input->Length;
 
     if (inlen < bufflen - 1)

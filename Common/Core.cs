@@ -19,7 +19,7 @@ namespace Nebulua.Common
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("Core");
 
-        /// <summary>The interop API. TODO support multiple?</summary>
+        /// <summary>The interop API.</summary>
         Api? _api;
 
         /// <summary>Client supplied context for LUA_PATH.</summary>
@@ -212,7 +212,7 @@ namespace Nebulua.Common
         {
             if (State.Instance.ExecState == ExecState.Run)
             {
-                // Do script. TODO Handle solo/mute like nebulator.
+                // Do script. TODO Handle solo and/or mute like nebulator.
                 //_tan?.Arm();
 
                 NebStatus stat = _api!.Step(State.Instance.CurrentTick);
@@ -316,7 +316,7 @@ namespace Nebulua.Common
                 var output = _outputs.FirstOrDefault(o => o.DeviceName == e.DevName);
                 if (output == null) 
                 {
-                    output = new(e.DevName); // throws if bad name TODO1 - keep, notify user, swap in "Microsoft GS Wavetable Synth"
+                    output = new(e.DevName); // throws if invalid
                     _outputs.Add(output);
                 }
 
@@ -332,7 +332,7 @@ namespace Nebulua.Common
                 var input = _inputs.FirstOrDefault(o => o.DeviceName == e.DevName);
                 if (input == null)
                 {
-                    input = new(e.DevName); // throws TODO1 not
+                    input = new(e.DevName); // throws if invalid
                     input.ReceiveEvent += Midi_ReceiveEvent;
                     _inputs.Add(input);
                 }

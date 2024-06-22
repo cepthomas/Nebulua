@@ -103,8 +103,8 @@ function M.suite_music_defs(pn)
     res, serr = md.get_notes_from_string("C.NONEXISTENT_CHORD") -- invalid
     pn.UT_NIL(res, serr)
 
-    ----- format_doc().
-    res = md.format_doc()
+    ----- gen_md().
+    res = md.gen_md()
     pn.UT_EQUAL(#res, 83)
 
 end

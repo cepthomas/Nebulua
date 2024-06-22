@@ -275,24 +275,26 @@ end
 -----------------------------------------------------------------------------
 --- Make markdown content from the definitions.
 -- @return list of strings
-function M.format_doc()
+function M.gen_md()
     local docs = {}
 
-    table.insert(docs, "# Chords")
-    table.insert(docs, "These are the built-in chords.")
+    table.insert(docs, "# Builtin Chords")
+    table.insert(docs, "")
     table.insert(docs, "Chord   | Notes             | Description")
     table.insert(docs, "------- | ----------------- | -----------")
     for _, s in ipairs(chord_defs) do
         table.insert(docs, s)
     end
+    table.insert(docs, "")
 
-    table.insert(docs, "# Scales")
-    table.insert(docs, "These are the built-in scales.")
+    table.insert(docs, "# Builtin Scales")
+    table.insert(docs, "")
     table.insert(docs, "Scale   | Notes             | Description       | Lower tetrachord  | Upper tetrachord")
     table.insert(docs, "------- | ----------------- | ----------------- | ----------------  | ----------------")
     for _, s in ipairs(scale_defs) do
         table.insert(docs, s)
     end
+    table.insert(docs, "")
 
     return docs
 end

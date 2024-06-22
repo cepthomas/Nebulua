@@ -25,7 +25,7 @@ namespace Nebulua.Test
             stat = core.RunScript(scriptFn);
             UT_EQUAL(stat, NebStatus.Ok);
 
-            // TODO more? look inside private stuff:
+            // Look inside private stuff:
             //void CallbackError(Exception e)
             //void Interop_CreateChannel(object? sender, CreateChannelArgs e)
             //void Interop_Log(object? sender, LogArgs e)
@@ -37,7 +37,7 @@ namespace Nebulua.Test
             //void SetTimer(int tempo)
             //void State_ValueChangeEvent(object? sender, string name)
 
-            // Reload. TODO need real interop to test this.
+            // Reload. Need real interop to test this.
             core.Reload();
 
             // Clean up.

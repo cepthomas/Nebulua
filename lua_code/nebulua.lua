@@ -50,7 +50,7 @@ local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
 -- Key is chan_hnd, value is double volume.
 local _master_vols = {}
 
--- Debug stuff TODO remove - or pass a debug/test flag?
+-- Debug stuff.
 -- function _mole() return _steps, _transients end
 
 

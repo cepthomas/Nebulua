@@ -51,6 +51,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\README.md" Link="README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
       <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
     </Reference>
