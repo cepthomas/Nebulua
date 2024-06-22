@@ -11,7 +11,8 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
 
-// TODO1 slow startup.
+// Slow startup when running from VS/debugger.
+
 
 namespace Nebulua.UiApp
 {
