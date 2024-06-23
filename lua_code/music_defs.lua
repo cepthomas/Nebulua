@@ -278,7 +278,10 @@ end
 function M.gen_md()
     local docs = {}
 
-    table.insert(docs, "# Builtin Chords")
+    table.insert(docs, "# Builtin Music Definitions")
+    table.insert(docs, "")
+
+    table.insert(docs, "## Chords")
     table.insert(docs, "")
     table.insert(docs, "Chord   | Notes             | Description")
     table.insert(docs, "------- | ----------------- | -----------")
@@ -287,7 +290,7 @@ function M.gen_md()
     end
     table.insert(docs, "")
 
-    table.insert(docs, "# Builtin Scales")
+    table.insert(docs, "## Scales")
     table.insert(docs, "")
     table.insert(docs, "Scale   | Notes             | Description       | Lower tetrachord  | Upper tetrachord")
     table.insert(docs, "------- | ----------------- | ----------------- | ----------------  | ----------------")

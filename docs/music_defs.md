@@ -1,4 +1,6 @@
-# Builtin Chords
+# Builtin Music Definitions
+
+## Chords
 
 Chord   | Notes             | Description
 ------- | ----------------- | -----------
@@ -31,7 +33,7 @@ sus4    | 1 4 5             |
 sus2    | 1 2 5             | Sometimes considered as an inverted sus4 (GCD).
 5       | 1 5               | Power chord.
 
-# Builtin Scales
+## Scales
 
 Scale   | Notes             | Description       | Lower tetrachord  | Upper tetrachord
 ------- | ----------------- | ----------------- | ----------------  | ----------------

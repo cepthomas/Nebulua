@@ -307,23 +307,32 @@ namespace Nebulua.UiApp
         /// </summary>
         void About_Click(object? sender, EventArgs e)
         {
-            // TODO consolidate docs.
-            Tools.MarkdownToHtml([.. File.ReadAllLines("docs\\README.md")], Color.LightYellow, new Font("arial", 16), true);
-            Tools.MarkdownToHtml([.. File.ReadAllLines("docs\\midi_defs.md")], Color.LightYellow, new Font("arial", 16), true);
-            Tools.MarkdownToHtml([.. File.ReadAllLines("docs\\music_defs.md")], Color.LightYellow, new Font("arial", 16), true);
-
+            // Consolidate docs.
             List<string> ls = [];
-            ls.Add($"Midi output devices:");
+            ls.AddRange(File.ReadAllLines("docs\\README.md"));
+            ls.Add($"");
+            ls.AddRange(File.ReadAllLines("docs\\midi_defs.md"));
+            ls.Add($"");
+            ls.AddRange(File.ReadAllLines("docs\\music_defs.md"));
+            ls.Add($"");
+
+            ls.Add($"# Your Midi Devices");
+            ls.Add($"");
+            ls.Add($"## Outputs");
+            ls.Add($"");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
                ls.Add("- " + MidiOut.DeviceInfo(i).ProductName);
             }
-            ls.Add($"Midi input devices:");
+            ls.Add($"");
+            ls.Add($"## Inputs");
+            ls.Add($"");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
                 ls.Add("- " + MidiIn.DeviceInfo(i).ProductName);
             }
-            Tools.MarkdownToHtml([.. ls], Color.LightYellow, new Font("arial", 16), true);
+
+            Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, true);
         }
         #endregion
     }

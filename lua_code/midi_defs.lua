@@ -84,21 +84,24 @@ end
 function M.gen_md()
     local docs = {}
 
-    table.insert(docs, "# Midi GM Instruments")
+    table.insert(docs, "# Midi GM Definitions")
+    table.insert(docs, "")
+
+    table.insert(docs, "## Instruments")
     table.insert(docs, "")
     table.insert(docs, "Instrument  |  Number")
     table.insert(docs, "----------  |  ------")
     for i, v in ipairs(sort_by_value(M.instruments)) do table.insert(docs, v) end
     table.insert(docs, "")
 
-    table.insert(docs, "# Midi GM Drums")
+    table.insert(docs, "## Drums")
     table.insert(docs, "")
     table.insert(docs, "Drum   |  Number")
     table.insert(docs, "----   |  ------")
     for i, v in ipairs(sort_by_value(M.drums)) do table.insert(docs, v) end
     table.insert(docs, "")
 
-    table.insert(docs, "# Midi GM Controllers")
+    table.insert(docs, "## Controllers")
     table.insert(docs, "")
     table.insert(docs, "- Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119")
     table.insert(docs, "- For most controllers marked on/off, on=127 and off=0")
@@ -108,7 +111,7 @@ function M.gen_md()
     for i, v in ipairs(sort_by_value(M.controllers)) do table.insert(docs, v) end
     table.insert(docs, "")
 
-    table.insert(docs, "# Midi GM Drum Kits")
+    table.insert(docs, "## Drum Kits")
     table.insert(docs, "")
     table.insert(docs, "Note that these will vary depending on your Soundfont file.")
     table.insert(docs, "")

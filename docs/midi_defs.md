@@ -1,4 +1,6 @@
-# Midi GM Instruments
+# Midi GM Definitions
+
+## Instruments
 
 Instrument  |  Number
 ----------  |  ------
@@ -131,7 +133,7 @@ Helicopter | 125
 Applause | 126
 Gunshot | 127
 
-# Midi GM Drums
+## Drums
 
 Drum   |  Number
 ----   |  ------
@@ -183,7 +185,7 @@ OpenCuica | 79
 MuteTriangle | 80
 OpenTriangle | 81
 
-# Midi GM Controllers
+## Controllers
 
 - Undefined: 3, 9, 14-15, 20-31, 85-90, 102-119
 - For most controllers marked on/off, on=127 and off=0
@@ -220,7 +222,7 @@ ResetAllControllers | 121
 LocalKeyboard | 122
 AllNotesOff | 123
 
-# Midi GM Drum Kits
+## Drum Kits
 
 Note that these will vary depending on your Soundfont file.
 
