@@ -12,7 +12,8 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
 
-// Slow startup when running from VS/debugger but not from .exe.
+
+// Curious - slow startup when running from VS/debugger but not from .exe.
 
 
 namespace Nebulua.UiApp
@@ -306,48 +307,23 @@ namespace Nebulua.UiApp
         /// </summary>
         void About_Click(object? sender, EventArgs e)
         {
+            // TODO consolidate docs.
+            Tools.MarkdownToHtml([.. File.ReadAllLines("docs\\README.md")], Color.LightYellow, new Font("arial", 16), true);
+            Tools.MarkdownToHtml([.. File.ReadAllLines("docs\\midi_defs.md")], Color.LightYellow, new Font("arial", 16), true);
+            Tools.MarkdownToHtml([.. File.ReadAllLines("docs\\music_defs.md")], Color.LightYellow, new Font("arial", 16), true);
+
             List<string> ls = [];
-
-            var text = File.ReadAllLines("README.md").ToList();
-
-            //var docs = MidiDefs.FormatDoc();
-            //docs.AddRange(MusicDefinitions.FormatDoc());
-
-
-            Tools.MarkdownToHtml(text, Color.LightYellow, new Font("arial", 16), true);
-
-            //MiscUtils.ShowReadme("Nebulua");
-
-            //        public static string MarkdownToHtml(List<string> body, Color bgcolor, Font font, bool show)
-
-            ///// <summary>
-            ///// Show the builtin definitions.
-            ///// </summary>
-            ///// <param name="sender"></param>
-            ///// <param name="e"></param>
-            //void ShowDefinitions_Click(object sender, EventArgs e)
-            //{
-            //    var docs = MidiDefs.FormatDoc();
-            //    docs.AddRange(MusicDefinitions.FormatDoc());
-            //    Tools.MarkdownToHtml(docs, Color.LightYellow, new Font("arial", 16), true);
-            //}
-
-
-
-
-
             ls.Add($"Midi output devices:");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-               ls.Add("  " + MidiOut.DeviceInfo(i).ProductName);
+               ls.Add("- " + MidiOut.DeviceInfo(i).ProductName);
             }
             ls.Add($"Midi input devices:");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                ls.Add("  " + MidiIn.DeviceInfo(i).ProductName);
+                ls.Add("- " + MidiIn.DeviceInfo(i).ProductName);
             }
-
-            traffic.AppendLine(string.Join(Environment.NewLine, ls));
+            Tools.MarkdownToHtml([.. ls], Color.LightYellow, new Font("arial", 16), true);
         }
         #endregion
     }

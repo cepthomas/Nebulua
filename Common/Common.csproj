@@ -51,7 +51,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Link="README.md">
+    <None Include="..\docs\midi_defs.md" Link="docs\midi_defs.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\docs\music_defs.md" Link="docs\music_defs.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\README.md" Link="docs\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -68,6 +74,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\interop\Interop.vcxproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="docs\" />
   </ItemGroup>
 
 </Project>

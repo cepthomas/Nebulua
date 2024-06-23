@@ -60,42 +60,23 @@ M.controllers =
 
 ut = require("utils")
 
--- Returns v-k sorted by value 
+
+-----------------------------------------------------------------------------
+-- Crude sorter. Input is one of the above tables. Returns a list of sorted formatted strings.
 local function sort_by_value(t)
-
-    local reverso = {}
-    local v_keys = {}
-    local sorted = {}
-
-    print(ut.dump_table_string(t, false, 't'))
-
-    for k, v in pairs(t) do
-        table.insert(v_keys, v)
-        reverso[v] = k
+    local res = {}
+    -- Make an empty sparse list.
+    local l = {}
+    for i = 1, 128 do table.insert(l, i, "") end
+    -- Fill the slots.
+    for k, v in pairs(t) do l[v+1] = k end
+    -- Format results.
+    for i, name in ipairs(l) do
+        if #name > 0 then table.insert(res, name.." | "..(i-1)) end
     end
-
-    -- print(ut.dump_table_string(t, true))
-
-    -- print(ut.dump_table_string(v_keys))
-
-
-    table.sort(v_keys)
-
-    print(ut.dump_table_string(v_keys, false, 'v_keys'))
-
-    print(ut.dump_table_string(reverso, true, 'reverso'))
-
-    -- for _, v in ipairs(v_keys) do
-    --     sorted[]
-    --     table.insert(v_keys, v)
-    --     reverso[v] = k
-    -- end
-
-    -- table.sort(reverso, function(keyLhs, keyRhs) return v_keys[keyLhs] < v_keys[keyRhs] end)
-
-
-    return reverso
+    return res
 end
+
 
 -----------------------------------------------------------------------------
 --- Make markdown content from the definitions for consumption by UI.
@@ -107,23 +88,14 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Instrument  |  Number")
     table.insert(docs, "----------  |  ------")
-
-    local rev = sort_by_value(M.instruments)
-
-    -- for name, num in pairs(M.instruments) do
-    for num, name in pairs(rev) do
-        table.insert(docs, name.." | "..num)
-    end
+    for i, v in ipairs(sort_by_value(M.instruments)) do table.insert(docs, v) end
     table.insert(docs, "")
-
 
     table.insert(docs, "# Midi GM Drums")
     table.insert(docs, "")
     table.insert(docs, "Drum   |  Number")
     table.insert(docs, "----   |  ------")
-    for name, num in pairs(M.drums) do
-        table.insert(docs, name.." | "..num)
-    end
+    for i, v in ipairs(sort_by_value(M.drums)) do table.insert(docs, v) end
     table.insert(docs, "")
 
     table.insert(docs, "# Midi GM Controllers")
@@ -133,9 +105,7 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Controller   |  Number")
     table.insert(docs, "----------   |  ------")
-    for name, num in pairs(M.controllers) do
-        table.insert(docs, name.." | "..num)
-    end
+    for i, v in ipairs(sort_by_value(M.controllers)) do table.insert(docs, v) end
     table.insert(docs, "")
 
     table.insert(docs, "# Midi GM Drum Kits")
@@ -144,22 +114,11 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Kit  |  Number")
     table.insert(docs, "---  |  ------")
-    for name, num in pairs(M.drum_kits) do
-        table.insert(docs, name.." | "..num)
-    end
+    for i, v in ipairs(sort_by_value(M.drum_kits)) do table.insert(docs, v) end
     table.insert(docs, "")
 
     return docs;
 end
-
------- Init stuff ---------------------------------------------------------------------
-
--- for _, coll in ipairs({ scale_defs, chord_defs }) do
---     for _, sc in ipairs(coll) do
---         local parts = sx.strsplit(sc, "|", true)
---         M.create_definition(parts[1], parts[2])
---     end
--- end    
 
 
 -- Return the module.
