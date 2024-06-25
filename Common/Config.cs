@@ -11,7 +11,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua.Common
 {
-    public class Config
+    public class ConfigXXX
     {
         #region Fields
         /// <summary>Look up table for log level.</summary>
@@ -50,7 +50,7 @@ namespace Nebulua.Common
         /// <summary>
         /// Constructor inits stuff. Throws exceptions for invalid entries.
         /// </summary>
-        public Config(string? configFn) //TODO UserSettings?
+        public ConfigXXX(string? configFn)
         {
             if (configFn is not null)
             {

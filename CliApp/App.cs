@@ -41,51 +41,33 @@ namespace Nebulua.CliApp
         {
             try
             {
+                // Set up log.
                 string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
                 string logFileName = Path.Combine(appDir, "applog.txt");
+                LogManager.LogMessage += LogManager_LogMessage;
                 LogManager.Run(logFileName, 100000);
-
                 _logger.Debug($"CliApp.CliApp() this={this.GetHashCode()}");
 
-                _cmdProc = new(Console.In, Console.Out);
-                _cmdProc.Write("Greetings from Nebulua!");
-
                 // Process cmd line args.
-                string? configFn = null;
-                var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
-                args.RemoveAt(0); // remove the binary
+                _scriptFn = null;
 
-                // Hook loog writes.
-                LogManager.LogMessage += LogManager_LogMessage;
-
-                // State change handler.
-                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-
-                foreach (var arg in args)
+                var args = Environment.GetCommandLineArgs();
+                if (args.Count() == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
                 {
-                    if (arg.EndsWith(".ini")) // optional
-                    {
-                        configFn = arg;
-                    }
-                    else if (arg.EndsWith(".lua")) // required
-                    {
-                        _scriptFn = arg;
-                    }
-                    else
-                    {
-                        throw new ApplicationArgumentException($"Invalid command line: {arg}");
-                    }
+                    _scriptFn = args[1];
                 }
-
-                if (_scriptFn is null)
+                else
                 {
-                    throw new ApplicationArgumentException($"Missing nebulua script file");
+                    throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
                 }
 
                 // OK so far. Assemble the engine.
-                _core = new Core(configFn);
+                _cmdProc = new(Console.In, Console.Out);
+                _cmdProc.Write("Greetings from Nebulua!");
+                _core = new Core();
+                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-                _logger.Debug($"CliApp.CliApp()2 this={this.GetHashCode()} _core={_core.GetHashCode()}");
+                _logger.Debug($"CliApp.CliApp()2 this={GetHashCode()} _core={_core.GetHashCode()}");
 
                 // Run it.
                 var s = $"Running script file {_scriptFn}";

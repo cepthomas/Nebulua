@@ -25,6 +25,9 @@ namespace Nebulua.UiApp
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("UiApp");
 
+        /// <summary>App settings.</summary>
+        UserSettings _settings;
+
         /// <summary>Current script.</summary>
         string? _scriptFn = null;
 
@@ -38,44 +41,45 @@ namespace Nebulua.UiApp
         /// </summary>
         public MainForm()
         {
-            string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            string logFileName = Path.Combine(appDir, "uilog.txt");
-            LogManager.Run(logFileName, 100000);
-
-            _logger.Debug($"MainForm.MainForm() this={this}");
-
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
             KeyPreview = true; // for routing kbd strokes properly
-            Location = new Point(100, 100);
-            Size = new Size(1200, 600);
+
+            string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
+            _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            LogManager.LogMessage += LogManager_LogMessage;
+            LogManager.MinLevelFile = _settings.FileLogLevel;
+            LogManager.MinLevelNotif = _settings.NotifLogLevel;
+            LogManager.Run(Path.Combine(appDir, "uilog.txt"), 100000);
+            _logger.Debug($"MainForm.MainForm() this={this}");
+
+            Location = _settings.FormGeometry.Location;
+            Size = _settings.FormGeometry.Size;
+            WindowState = FormWindowState.Normal;
+            BackColor = _settings.BackColor;
 
             // Gets the icon associated with the currently executing assembly.
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
 
-            // Hook loog writes.
-            LogManager.LogMessage += LogManager_LogMessage;
-
             // Behavior.
-            //timeBar.CurrentTimeChanged += (object? sender, EventArgs e) => { State.Instance.CurrentTick = timeBar.CurrentTick; };
             chkPlay.Click += Play_Click;
             btnRewind.Click += Rewind_Click;
             btnAbout.Click += About_Click;
+            btnSettings.Click += Settings_Click;
             btnKill.Click += (_, __) => { State.Instance.ExecState = ExecState.Kill; };
             btnReload.Click += (_, __) => { State.Instance.ExecState = ExecState.Reload; };
-;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
             chkMonRcv.Click += (_, __) => State.Instance.MonRcv = chkMonRcv.Checked;
             chkMonSnd.Click += (_, __) => State.Instance.MonSnd = chkMonSnd.Checked;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
-            // State change handler.
+            // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
         }
 
         /// <summary>
-        /// Inits control appearance. Opens config and script. Can throw.
+        /// Inits control appearance. Opens script. Can throw.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
@@ -85,87 +89,74 @@ namespace Nebulua.UiApp
                 _logger.Debug($"MainForm.OnLoad() this={this} _core={_core}");
 
                 // Process cmd line args.
-                string? configFn = null;
                 _scriptFn = null;
-                var args = StringUtils.SplitByToken(Environment.CommandLine, " ");
-                args.RemoveAt(0); // remove the binary name
 
-                foreach (var arg in args)
+                var args = Environment.GetCommandLineArgs();
+                if (args.Count() == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
                 {
-                    if (arg.EndsWith(".ini"))
-                    {
-                        configFn = arg;
-                    }
-                    else if (arg.EndsWith(".lua"))
-                    {
-                        _scriptFn = arg;
-                    }
-                    else
-                    {
-                        throw new ApplicationArgumentException($"Invalid command line: {arg}");
-                    }
+                    _scriptFn = args[1];
+                }
+                else
+                {
+                    throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
                 }
 
-                if (_scriptFn is null)
-                {
-                    throw new ApplicationArgumentException($"Missing nebulua script file");
-                }
-
-                #region Cosmetics TODO maybe get from config/settings
-                Color _backclr = Color.LightYellow;
-                Color _foreclr = Color.DodgerBlue;
-                Color _selclr = Color.Moccasin;
-
-                timeBar.BackColor = _backclr;
-                timeBar.ProgressColor = _foreclr;
+                #region Cosmetics
+                timeBar.BackColor = _settings.BackColor;
+                timeBar.ProgressColor = _settings.ControlColor;
                 timeBar.MarkerColor = Color.Black;
 
-                chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, _foreclr);
-                chkPlay.BackColor = _backclr;
-                chkPlay.FlatAppearance.CheckedBackColor = _selclr;
+                chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, _settings.ControlColor);
+                chkPlay.BackColor = _settings.BackColor;
+                chkPlay.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
 
-                chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, _foreclr);
-                chkLoop.BackColor = _backclr;
-                chkLoop.FlatAppearance.CheckedBackColor = _selclr;
+                chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, _settings.ControlColor);
+                chkLoop.BackColor = _settings.BackColor;
+                chkLoop.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
 
-                chkMonRcv.BackColor = _backclr;
-                chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, _foreclr);
-                chkMonRcv.FlatAppearance.CheckedBackColor = _selclr;
+                chkMonRcv.BackColor = _settings.BackColor;
+                chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, _settings.ControlColor);
+                chkMonRcv.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
 
-                chkMonSnd.BackColor = _backclr;
-                chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, _foreclr);
-                chkMonSnd.FlatAppearance.CheckedBackColor = _selclr;
+                chkMonSnd.BackColor = _settings.BackColor;
+                chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, _settings.ControlColor);
+                chkMonSnd.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
 
-                btnRewind.BackColor = _backclr;
-                btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, _foreclr);
+                btnRewind.BackColor = _settings.BackColor;
+                btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, _settings.ControlColor);
 
-                btnAbout.BackColor = _backclr;
-                btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, _foreclr);
+                btnAbout.BackColor = _settings.BackColor;
+                btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, _settings.ControlColor);
 
-                btnKill.BackColor = _backclr;
-                btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, _foreclr);
+                btnKill.BackColor = _settings.BackColor;
+                btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, _settings.ControlColor);
 
-                btnReload.BackColor = _backclr;
-                btnReload.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnReload.Image!, _foreclr);
+                btnReload.BackColor = _settings.BackColor;
+                btnReload.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnReload.Image!, _settings.ControlColor);
 
-                sldVolume.BackColor = _backclr;
-                sldVolume.ForeColor = _foreclr;
+                btnSettings.BackColor = _settings.BackColor;
+                btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, _settings.ControlColor);
 
-                sldTempo.BackColor = _backclr;
-                sldTempo.ForeColor = _foreclr;
+                sldVolume.BackColor = _settings.BackColor;
+                sldVolume.DrawColor = _settings.ControlColor;
+
+                sldTempo.BackColor = _settings.BackColor;
+                sldTempo.DrawColor = _settings.ControlColor;
 
                 // Text display.
-                traffic.BackColor = _backclr;
+                traffic.BackColor = _settings.BackColor;
+                traffic.MatchColors.Add("ERR", Color.LightPink);
+                traffic.MatchColors.Add("WRN", Color.Plum);
                 traffic.MatchColors.Add(" SND ", Color.Purple);
                 traffic.MatchColors.Add(" RCV ", Color.Green);
                 traffic.Font = new("Cascadia Mono", 9);
                 traffic.Prompt = "";
+                traffic.WordWrap = _settings.WordWrap;
                 #endregion
 
                 // OK so far. Assemble the engine.
                 _logger.Debug($"MainForm.OnLoad() 1");
-
-                _core = new Core(configFn);
+                _core = new Core();
                 _logger.Debug($"MainForm.OnLoad() 2");
                 _core.RunScript(_scriptFn);
                 _logger.Debug($"MainForm.OnLoad() 3");
@@ -174,8 +165,7 @@ namespace Nebulua.UiApp
 
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
             }
-            // Anything that throws is fatal.
-            catch (Exception ex)
+            catch (Exception ex) // Anything that throws is fatal.
             {
                 State.Instance.ExecState = ExecState.Dead;
                 var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex.Message}";
@@ -186,10 +176,41 @@ namespace Nebulua.UiApp
             _logger.Debug($"MainForm.OnLoad() 4");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnShown(EventArgs e)
         {
             _logger.Debug($"MainForm.OnShown()");
             base.OnShown(e);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            State.Instance.ExecState = ExecState.Idle;
+
+            // Just in case.
+            State.Instance.ExecState = ExecState.Kill;
+
+            LogManager.Stop();
+
+            // Save user settings.
+            _settings.FormGeometry = new()
+            {
+                X = Location.X,
+                Y = Location.Y,
+                Width = Width,
+                Height = Height
+            };
+            _settings.WordWrap = traffic.WordWrap;
+            _settings.Save();
+
+            base.OnFormClosing(e);
         }
 
         /// <summary>
@@ -301,6 +322,37 @@ namespace Nebulua.UiApp
                     State.Instance.ExecState = ExecState.Dead;
                 }
             });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Settings_Click(object? sender, EventArgs e)
+        {
+            var changes = SettingsEditor.Edit(_settings, "User Settings", 500);
+
+            // Detect changes of interest.
+            bool restart = false;
+
+            foreach (var (name, cat) in changes)
+            {
+                switch (name)
+                {
+                    case "ControlColor":
+                    case "SelectedColor":
+                    case "BackColor":
+                    case "IconColor":
+                        restart = true;
+                        break;
+                }
+            }
+
+            if (restart)
+            {
+                MessageBox.Show("Restart required for device changes to take effect");
+            }
         }
 
         /// <summary>

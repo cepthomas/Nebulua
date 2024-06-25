@@ -204,7 +204,7 @@ namespace Nebulua.Common
         #endregion
 
         #region Drum names
-        /// <summary>The GM midi drum definitions.</summary>
+        /// <summary>The GM midi drum definitions. TODO get from lua script.</summary>
         static readonly Dictionary<int, string> _drums = new()
         {
             { 035, "AcousticBassDrum" }, { 036, "BassDrum1" }, { 037, "SideStick" }, { 038, "AcousticSnare" }, { 039, "HandClap" },

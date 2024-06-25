@@ -25,8 +25,10 @@ namespace Nebulua.Common
         /// <summary>Client supplied context for LUA_PATH.</summary>
         readonly List<string> _luaPath = [];
 
-        /// <summary>The config contents.</summary>
-        readonly Config _config;
+        ///// <summary>The config contents.</summary>
+        //readonly Config _config;
+        ///// <summary>App settings.</summary>
+        //readonly UserSettings _settings;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -52,18 +54,19 @@ namespace Nebulua.Common
         /// Constructor inits stuff. Can throw on main thread.
         /// </summary>
         /// <param name="configFn">Config to use.</param>
-        public Core(string? configFn)
+        public Core()//UserSettings settings)//string? configFn)
         {
-            _config = new(configFn);
+            //_config = new(configFn);
+            //_settings = settings;
 
-            _logger.Debug($"Core.Core() this={this.GetHashCode()}");
+            _logger.Debug($"Core.Core() this={GetHashCode()}");
 
-            // Init logging.
-            LogManager.MinLevelFile = _config.FileLevel;
-            LogManager.MinLevelNotif = _config.NotifLevel;
-            var f = File.OpenWrite(_config.LogFilename); // ensure file exists
-            f?.Close();
-            LogManager.Run(_config.LogFilename, 100000);
+            //// Init logging.
+            //LogManager.MinLevelFile = _settings.FileLevel;
+            //LogManager.MinLevelNotif = _settings.NotifLevel;
+            //var f = File.OpenWrite(_settings.LogFilename); // ensure file exists
+            //f?.Close();
+            //LogManager.Run(_settings.LogFilename, 100000);
 
             // Set up runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives

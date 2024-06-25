@@ -36,6 +36,7 @@ namespace Nebulua.UiApp
             timeBar = new TimeBar();
             lblState = new Label();
             lblInfo = new Label();
+            btnSettings = new Button();
             SuspendLayout();
             // 
             // chkPlay
@@ -104,7 +105,7 @@ namespace Nebulua.UiApp
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
             traffic.Prompt = "";
-            traffic.Size = new Size(789, 368);
+            traffic.Size = new Size(835, 396);
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
@@ -112,7 +113,7 @@ namespace Nebulua.UiApp
             // 
             btnAbout.FlatStyle = FlatStyle.Flat;
             btnAbout.Image = (Image)resources.GetObject("btnAbout.Image");
-            btnAbout.Location = new Point(596, 10);
+            btnAbout.Location = new Point(642, 10);
             btnAbout.Name = "btnAbout";
             btnAbout.Size = new Size(40, 40);
             btnAbout.TabIndex = 44;
@@ -179,6 +180,7 @@ namespace Nebulua.UiApp
             // 
             // timeBar
             // 
+            timeBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             timeBar.BorderStyle = BorderStyle.FixedSingle;
             timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -186,7 +188,7 @@ namespace Nebulua.UiApp
             timeBar.MarkerColor = Color.Black;
             timeBar.Name = "timeBar";
             timeBar.ProgressColor = Color.White;
-            timeBar.Size = new Size(789, 51);
+            timeBar.Size = new Size(835, 51);
             timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 52;
             // 
@@ -194,7 +196,7 @@ namespace Nebulua.UiApp
             // 
             lblState.AutoSize = true;
             lblState.BorderStyle = BorderStyle.FixedSingle;
-            lblState.Location = new Point(656, 10);
+            lblState.Location = new Point(717, 10);
             lblState.MinimumSize = new Size(120, 22);
             lblState.Name = "lblState";
             lblState.Size = new Size(120, 22);
@@ -204,17 +206,29 @@ namespace Nebulua.UiApp
             // 
             lblInfo.AutoSize = true;
             lblInfo.BorderStyle = BorderStyle.FixedSingle;
-            lblInfo.Location = new Point(656, 38);
+            lblInfo.Location = new Point(717, 38);
             lblInfo.MinimumSize = new Size(120, 22);
             lblInfo.Name = "lblInfo";
             lblInfo.Size = new Size(120, 22);
             lblInfo.TabIndex = 54;
             // 
+            // btnSettings
+            // 
+            btnSettings.FlatStyle = FlatStyle.Flat;
+            btnSettings.Image = Properties.Resources.glyphicons_137_cogwheel;
+            btnSettings.Location = new Point(596, 10);
+            btnSettings.Name = "btnSettings";
+            btnSettings.Size = new Size(40, 40);
+            btnSettings.TabIndex = 55;
+            toolTip.SetToolTip(btnSettings, "Edit settings");
+            btnSettings.UseVisualStyleBackColor = false;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(819, 547);
+            ClientSize = new Size(865, 547);
+            Controls.Add(btnSettings);
             Controls.Add(lblInfo);
             Controls.Add(lblState);
             Controls.Add(timeBar);
@@ -252,5 +266,6 @@ namespace Nebulua.UiApp
         private TimeBar timeBar;
         private Label lblState;
         private Label lblInfo;
+        private Button btnSettings;
     }
 }

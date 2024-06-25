@@ -76,8 +76,8 @@
     <ProjectReference Include="..\interop\Interop.vcxproj" />
   </ItemGroup>
 
-  <ItemGroup>
+<!--   <ItemGroup>
     <Folder Include="docs\" />
   </ItemGroup>
-
+ -->
 </Project>

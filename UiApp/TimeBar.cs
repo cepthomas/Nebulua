@@ -51,10 +51,10 @@ namespace Nebulua.UiApp
         public SnapType Snap { get; set; }
         #endregion
 
-        #region Events
-        /// <summary>Value changed by user.</summary>
-        public event EventHandler? CurrentTimeChanged;
-        #endregion
+        //#region Events
+        ///// <summary>Value changed by user.</summary>
+        //public event EventHandler? CurrentTimeChanged;
+        //#endregion
 
         #region Lifecycle
         /// <summary>
