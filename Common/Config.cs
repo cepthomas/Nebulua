@@ -50,7 +50,7 @@ namespace Nebulua.Common
         /// <summary>
         /// Constructor inits stuff. Throws exceptions for invalid entries.
         /// </summary>
-        public Config(string? configFn) //TODO1 UserSettings?
+        public Config(string? configFn) //TODO UserSettings?
         {
             if (configFn is not null)
             {

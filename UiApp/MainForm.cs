@@ -15,6 +15,7 @@ using Nebulua.Common;
 
 // Curious - slow startup when running from VS/debugger but not from .exe.
 
+// TODO migrate CliApp to UI, maybe nbot.
 
 namespace Nebulua.UiApp
 {

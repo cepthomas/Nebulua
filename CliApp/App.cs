@@ -12,7 +12,7 @@ using Nebulua.Common;
 using Nebulua.Interop;
 
 
-namespace Nebulua.CliApp // TODO migrate to UI, nbot.
+namespace Nebulua.CliApp
 {
     public class App : IDisposable
     {
