@@ -21,7 +21,7 @@ namespace Nebulua.CliApp
         readonly Logger _logger = LogManager.CreateLogger("CliApp");
 
         /// <summary>Talks to the user.</summary>
-        readonly CommandProc _cmdProc;
+        readonly CommandProc _cmdProc = new(Console.In, Console.Out);
 
         /// <summary>Current script.</summary>
         readonly string _scriptFn = "";
@@ -46,13 +46,11 @@ namespace Nebulua.CliApp
                 string logFileName = Path.Combine(appDir, "applog.txt");
                 LogManager.LogMessage += LogManager_LogMessage;
                 LogManager.Run(logFileName, 100000);
-                _logger.Debug($"CliApp.CliApp() this={this.GetHashCode()}");
+                _logger.Debug($"CliApp.CliApp() this={GetHashCode()}");
 
                 // Process cmd line args.
-                _scriptFn = null;
-
                 var args = Environment.GetCommandLineArgs();
-                if (args.Count() == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
+                if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
                 {
                     _scriptFn = args[1];
                 }
@@ -62,7 +60,6 @@ namespace Nebulua.CliApp
                 }
 
                 // OK so far. Assemble the engine.
-                _cmdProc = new(Console.In, Console.Out);
                 _cmdProc.Write("Greetings from Nebulua!");
                 _core = new Core();
                 State.Instance.ValueChangeEvent += State_ValueChangeEvent;

@@ -26,7 +26,7 @@ namespace Nebulua.UiApp
         readonly Logger _logger = LogManager.CreateLogger("UiApp");
 
         /// <summary>App settings.</summary>
-        UserSettings _settings;
+        readonly UserSettings _settings;
 
         /// <summary>Current script.</summary>
         string? _scriptFn = null;
@@ -92,7 +92,7 @@ namespace Nebulua.UiApp
                 _scriptFn = null;
 
                 var args = Environment.GetCommandLineArgs();
-                if (args.Count() == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
+                if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
                 {
                     _scriptFn = args[1];
                 }
