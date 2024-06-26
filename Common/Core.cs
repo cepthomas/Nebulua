@@ -53,20 +53,9 @@ namespace Nebulua.Common
         /// <summary>
         /// Constructor inits stuff. Can throw on main thread.
         /// </summary>
-        /// <param name="configFn">Config to use.</param>
-        public Core()//UserSettings settings)//string? configFn)
+        public Core()
         {
-            //_config = new(configFn);
-            //_settings = settings;
-
             _logger.Debug($"Core.Core() this={GetHashCode()}");
-
-            //// Init logging.
-            //LogManager.MinLevelFile = _settings.FileLevel;
-            //LogManager.MinLevelNotif = _settings.NotifLevel;
-            //var f = File.OpenWrite(_settings.LogFilename); // ensure file exists
-            //f?.Close();
-            //LogManager.Run(_settings.LogFilename, 100000);
 
             // Set up runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives

@@ -51,7 +51,7 @@ namespace Nebulua.UiApp
             LogManager.MinLevelFile = _settings.FileLogLevel;
             LogManager.MinLevelNotif = _settings.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "uilog.txt"), 100000);
-            _logger.Debug($"MainForm.MainForm() this={this}");
+            //_logger.Debug($"MainForm.MainForm() this={this}");
 
             Location = _settings.FormGeometry.Location;
             Size = _settings.FormGeometry.Size;
@@ -86,7 +86,7 @@ namespace Nebulua.UiApp
         {
             try
             {
-                _logger.Debug($"MainForm.OnLoad() this={this} _core={_core}");
+                _logger.Debug($"MainForm.OnLoad() 0");
 
                 // Process cmd line args.
                 _scriptFn = null;

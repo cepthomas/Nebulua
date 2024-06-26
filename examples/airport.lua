@@ -13,7 +13,9 @@ local bt  = require("bar_time") -- time utility
 ------------------------- Configuration -------------------------------
 
 -- Specify midi devices.
-local midi_out = "Microsoft GS Wavetable Synth"
+local midi_out = "VirtualMIDISynth #1"
+-- local midi_out = "Microsoft GS Wavetable Synth"
+-- local midi_out = "loopMIDI Port"
 
 -- Specify midi channels.
 local hout = create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)

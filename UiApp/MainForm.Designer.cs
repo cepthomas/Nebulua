@@ -19,24 +19,23 @@ namespace Nebulua.UiApp
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             chkPlay = new CheckBox();
             btnRewind = new Button();
             sldVolume = new Ephemera.NBagOfUis.Slider();
             sldTempo = new Ephemera.NBagOfUis.Slider();
             traffic = new Ephemera.NBagOfUis.TextViewer();
-            toolTip = new ToolTip(components);
             btnAbout = new Button();
             btnKill = new Button();
             chkMonRcv = new CheckBox();
             chkMonSnd = new CheckBox();
             chkLoop = new CheckBox();
             btnReload = new Button();
+            btnSettings = new Button();
             timeBar = new TimeBar();
             lblState = new Label();
             lblInfo = new Label();
-            btnSettings = new Button();
+            bingBongJr1 = new BingBongJr();
             SuspendLayout();
             // 
             // chkPlay
@@ -48,7 +47,6 @@ namespace Nebulua.UiApp
             chkPlay.Name = "chkPlay";
             chkPlay.Size = new Size(40, 40);
             chkPlay.TabIndex = 0;
-            toolTip.SetToolTip(chkPlay, "Play project");
             chkPlay.UseVisualStyleBackColor = false;
             // 
             // btnRewind
@@ -59,7 +57,6 @@ namespace Nebulua.UiApp
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(40, 40);
             btnRewind.TabIndex = 1;
-            toolTip.SetToolTip(btnRewind, "Rewind to start");
             btnRewind.UseVisualStyleBackColor = false;
             // 
             // sldVolume
@@ -76,7 +73,6 @@ namespace Nebulua.UiApp
             sldVolume.Resolution = 0.05D;
             sldVolume.Size = new Size(88, 52);
             sldVolume.TabIndex = 36;
-            toolTip.SetToolTip(sldVolume, "Master volume");
             sldVolume.Value = 0.8D;
             // 
             // sldTempo
@@ -93,7 +89,6 @@ namespace Nebulua.UiApp
             sldTempo.Resolution = 1D;
             sldTempo.Size = new Size(88, 52);
             sldTempo.TabIndex = 33;
-            toolTip.SetToolTip(sldTempo, "Speed in BPM");
             sldTempo.Value = 100D;
             // 
             // traffic
@@ -105,7 +100,7 @@ namespace Nebulua.UiApp
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
             traffic.Prompt = "";
-            traffic.Size = new Size(835, 396);
+            traffic.Size = new Size(835, 188);
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
@@ -117,7 +112,6 @@ namespace Nebulua.UiApp
             btnAbout.Name = "btnAbout";
             btnAbout.Size = new Size(40, 40);
             btnAbout.TabIndex = 44;
-            toolTip.SetToolTip(btnAbout, "Tell me about yourself");
             btnAbout.UseVisualStyleBackColor = false;
             // 
             // btnKill
@@ -128,7 +122,6 @@ namespace Nebulua.UiApp
             btnKill.Name = "btnKill";
             btnKill.Size = new Size(40, 40);
             btnKill.TabIndex = 47;
-            toolTip.SetToolTip(btnKill, "Kill all midi out");
             btnKill.UseVisualStyleBackColor = false;
             // 
             // chkMonRcv
@@ -140,7 +133,6 @@ namespace Nebulua.UiApp
             chkMonRcv.Name = "chkMonRcv";
             chkMonRcv.Size = new Size(40, 40);
             chkMonRcv.TabIndex = 48;
-            toolTip.SetToolTip(chkMonRcv, "Monitor midi rcv");
             chkMonRcv.UseVisualStyleBackColor = false;
             // 
             // chkMonSnd
@@ -152,7 +144,6 @@ namespace Nebulua.UiApp
             chkMonSnd.Name = "chkMonSnd";
             chkMonSnd.Size = new Size(40, 40);
             chkMonSnd.TabIndex = 49;
-            toolTip.SetToolTip(chkMonSnd, "Monitor midi send");
             chkMonSnd.UseVisualStyleBackColor = false;
             // 
             // chkLoop
@@ -164,7 +155,6 @@ namespace Nebulua.UiApp
             chkLoop.Name = "chkLoop";
             chkLoop.Size = new Size(40, 40);
             chkLoop.TabIndex = 50;
-            toolTip.SetToolTip(chkLoop, "Loop selection");
             chkLoop.UseVisualStyleBackColor = false;
             // 
             // btnReload
@@ -175,8 +165,17 @@ namespace Nebulua.UiApp
             btnReload.Name = "btnReload";
             btnReload.Size = new Size(40, 40);
             btnReload.TabIndex = 51;
-            toolTip.SetToolTip(btnReload, "Reload script");
             btnReload.UseVisualStyleBackColor = false;
+            // 
+            // btnSettings
+            // 
+            btnSettings.FlatStyle = FlatStyle.Flat;
+            btnSettings.Image = (Image)resources.GetObject("btnSettings.Image");
+            btnSettings.Location = new Point(596, 10);
+            btnSettings.Name = "btnSettings";
+            btnSettings.Size = new Size(40, 40);
+            btnSettings.TabIndex = 55;
+            btnSettings.UseVisualStyleBackColor = false;
             // 
             // timeBar
             // 
@@ -212,22 +211,25 @@ namespace Nebulua.UiApp
             lblInfo.Size = new Size(120, 22);
             lblInfo.TabIndex = 54;
             // 
-            // btnSettings
+            // bingBongJr1
             // 
-            btnSettings.FlatStyle = FlatStyle.Flat;
-            btnSettings.Image = Properties.Resources.glyphicons_137_cogwheel;
-            btnSettings.Location = new Point(596, 10);
-            btnSettings.Name = "btnSettings";
-            btnSettings.Size = new Size(40, 40);
-            btnSettings.TabIndex = 55;
-            toolTip.SetToolTip(btnSettings, "Edit settings");
-            btnSettings.UseVisualStyleBackColor = false;
+            bingBongJr1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            bingBongJr1.DrawNoteGrid = true;
+            bingBongJr1.Location = new Point(52, 349);
+            bingBongJr1.MaxControl = 127;
+            bingBongJr1.MaxNote = 95;
+            bingBongJr1.MinControl = 0;
+            bingBongJr1.MinNote = 24;
+            bingBongJr1.Name = "bingBongJr1";
+            bingBongJr1.Size = new Size(375, 176);
+            bingBongJr1.TabIndex = 56;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(865, 547);
+            Controls.Add(bingBongJr1);
             Controls.Add(btnSettings);
             Controls.Add(lblInfo);
             Controls.Add(lblState);
@@ -256,7 +258,6 @@ namespace Nebulua.UiApp
         private Ephemera.NBagOfUis.Slider sldVolume;
         private Ephemera.NBagOfUis.Slider sldTempo;
         private Ephemera.NBagOfUis.TextViewer traffic;
-        private ToolTip toolTip;
         private Button btnAbout;
         private Button btnKill;
         private CheckBox chkMonRcv;
@@ -267,5 +268,6 @@ namespace Nebulua.UiApp
         private Label lblState;
         private Label lblInfo;
         private Button btnSettings;
+        private BingBongJr bingBongJr1;
     }
 }
