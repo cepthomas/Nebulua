@@ -160,43 +160,15 @@ namespace Nebulua.Common
         /// <summary>
         /// Midi input from internal device.
         /// </summary>
-        public NebStatus InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
+        public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
-            NebStatus stat = NebStatus.Ok;
-
-            var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
-            if (input == null)
-            {
+            var input = _inputs.FirstOrDefault(o => o.DeviceName == devName) ??
                 throw new ScriptSyntaxException($"Invalid internal device:{devName}");
-            }
-
-            //NoteEvent noff = new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
-            //NoteOnEvent non = new NoteOnEvent(0, channel, noteNum, velocity, 0);
-
             NoteEvent nevt = velocity > 0 ?
                 new NoteOnEvent(0, channel, noteNum, velocity, 0) :
                 new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
 
             Midi_ReceiveEvent(input, nevt);
-
-            //int index = _inputs.IndexOf(input);
-            //int chan_hnd = ChannelHandle.MakeInHandle(index, channel);
-            //bool logit = true;
-
-            //stat = _api!.RcvNote(chan_hnd, noteNum, velocity == 0 ? 0 : (double)velocity / MidiDefs.MIDI_VAL_MAX);
-            ////stat = _api!.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-
-            //if (logit && State.Instance.MonRcv)
-            //{
-            //    _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
-            //}
-
-            //if (stat != NebStatus.Ok)
-            //{
-            //    CallbackError(new ApiException("Midi Receive() failed", _api!.Error));
-            //}
-
-            return stat;
         }
 
         /// <summary>
@@ -431,7 +403,7 @@ namespace Nebulua.Common
             }
             else
             {
-                CallbackError(new ScriptSyntaxException("Invalid log level: {e.LogLevel}"));
+                CallbackError(new ScriptSyntaxException($"Invalid log level: {e.LogLevel}"));
             }
         }
 

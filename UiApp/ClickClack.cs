@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-//using Nebulua.Common;
 
 
 namespace Nebulua.UiApp
 {
     /// <summary>
-    /// TODO Simplified version copied from MidiLib because I didn't want to bring in that whole lib.
+    /// Generic input control similar to BingBong from MidiLib.
     /// </summary>
     public class ClickClack : UserControl
     {
@@ -25,8 +19,8 @@ namespace Nebulua.UiApp
         /// <summary>Background image data.</summary>
         PixelBitmap? _bmp;
 
-        /// <summary>Last key down position.</summary>
-        int _lastClickX = -1;
+        /// <summary>Last key down position in client coordinates.</summary>
+        int? _lastClickX = null;
 
         /// <summary>Tool tip.</summary>
         readonly ToolTip _toolTip = new();
@@ -49,32 +43,28 @@ namespace Nebulua.UiApp
         public int MaxY { get; set; } = 100;
 
         /// <summary>Visibility.</summary>
-        public List<int> GridX { get; set; } = new();
+        public List<int> GridX { get; set; } = [];
 
         /// <summary>Visibility.</summary>
-        public List<int> GridY { get; set; } = new();
+        public List<int> GridY { get; set; } = [];
         #endregion
 
         #region Events
         /// <summary>Click/move info.</summary>
-        public event EventHandler<TriggerEventArgs>? TriggerEvent;
+        public event EventHandler<ClickClackEventArgs>? ClickClackEvent;
 
-        /// <summary>
-        /// User did something. It's up to the client to make sense of it.
-        /// Value of -1 indicates invalid or not pertinent.
-        /// </summary>
-        public class TriggerEventArgs : EventArgs
+        public class ClickClackEventArgs : EventArgs
         {
-            /// <summary>The X value.</summary>
-            public int X { get; set; } = -1;
+            /// <summary>The X value in user coordinates. null means invalid.</summary>
+            public int? X { get; set; } = null;
 
-            /// <summary>The Y value. 0 means not clicked.</summary>
-            public int Y { get; set; } = 0;
+            /// <summary>The Y value in user coordinates. -1 means unclicked. null means invalid.</summary>
+            public int? Y { get; set; } = null;
 
             /// <summary>Read me.</summary>
             public override string ToString()
             {
-                return $"X:{X} Y:{Y}";
+                return $"ClickClack X:{(X is null ? "null" : X)} Y:{(Y is null ? "null" : Y)}";
             }
         }
         #endregion
@@ -86,7 +76,7 @@ namespace Nebulua.UiApp
         public ClickClack()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            Name = "ClickClack";
+            //Name = "ClickClack";
             ClientSize = new Size(300, 300);
         }
 
@@ -114,6 +104,29 @@ namespace Nebulua.UiApp
 
         #region Event handlers
         /// <summary>
+        /// Disable control
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseLeave(EventArgs e)
+        {
+            var mp = PointToClient(MousePosition);
+            var (ux, uy) = XyToUser(mp.X, mp.Y);
+
+            // Lingerer?
+            if (_lastClickX is not null)
+            {
+                // Turn off last click.
+                ClickClackEvent?.Invoke(this, new() { X = ux, Y = 0 });
+            }
+
+            // Reset.
+            _lastClickX = null;
+            ClickClackEvent?.Invoke(this, new() { X = null, Y = null });
+
+            base.OnMouseLeave(e);
+        }
+
+        /// <summary>
         /// Paint the surface.
         /// </summary>
         /// <param name="pe"></param>
@@ -126,14 +139,9 @@ namespace Nebulua.UiApp
             }
 
             // Draw grid.
-            int RangeX = MaxX - MinX;
-            int pixelsPerX = Width / RangeX;
-            int RangeY = MaxY - MinY;
-            int pixelsPerY = Height / RangeY;
-
             foreach (var gl in GridX)
             {
-                if (gl >= MinX && gl <= MaxX)
+                if (gl >= MinX && gl <= MaxX) // sanity - throw?
                 {
                     int x = MathUtils.Map(gl, MinX, MaxX, 0, Width);
                     pe.Graphics.DrawLine(_pen, x, 0, x, Height);
@@ -148,21 +156,6 @@ namespace Nebulua.UiApp
                     pe.Graphics.DrawLine(_pen, 0, y, Width, y);
                 }
             }
-
-            //if (DrawNoteGrid)
-            //{
-            //    int RangeX = MaxX - MinX;
-            //    int pixelsPerX = Width / RangeX;
-
-            //    int numGridLines = 10;
-            //    int pixelsPerGridLineX = Width / numGridLines;
-
-            //    for (int gl = 0; gl < numGridLines; gl++)
-            //    {
-            //        int x = gl * pixelsPerGridLine;
-            //        pe.Graphics.DrawLine(_pen, x, 0, x, Height);
-            //    }
-            //}
 
             base.OnPaint(pe);
         }
@@ -181,15 +174,15 @@ namespace Nebulua.UiApp
                 // Dragging. Did it change?
                 if (_lastClickX != ux)
                 {
-                    if (_lastClickX != -1)
+                    if (_lastClickX is not null)
                     {
                         // Turn off last click.
-                        TriggerEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
+                        ClickClackEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
                     }
 
                     // Start the new click.
                     _lastClickX = ux;
-                    TriggerEvent?.Invoke(this, new() { X = ux, Y = uy });
+                    ClickClackEvent?.Invoke(this, new() { X = ux, Y = uy });
                 }
             }
 
@@ -208,7 +201,7 @@ namespace Nebulua.UiApp
             var (ux, uy) = XyToUser(mp.X, mp.Y);
             _lastClickX = ux;
 
-            TriggerEvent?.Invoke(this, new() { X = ux, Y = uy });
+            ClickClackEvent?.Invoke(this, new() { X = ux, Y = uy });
 
             base.OnMouseDown(e);
         }
@@ -219,11 +212,11 @@ namespace Nebulua.UiApp
         /// <param name="e"></param>
         protected override void OnMouseUp(MouseEventArgs e)
         {
-            if (_lastClickX >= 0)
+            if (_lastClickX is not null)
             {
-                TriggerEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
+                ClickClackEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
             }
-            _lastClickX = -1;
+            _lastClickX = null;
 
             base.OnMouseUp(e);
         }
@@ -249,7 +242,7 @@ namespace Nebulua.UiApp
             // Clean up old.
             _bmp?.Dispose();
 
-            // Draw new.
+            // Draw background.
             _bmp = new(Width, Height);
             for (var y = 0; y < Height; y++)
             {
@@ -258,15 +251,6 @@ namespace Nebulua.UiApp
                     _bmp!.SetPixel(x, y, 255, x * 256 / Width, y * 256 / Height, 150);
                 }
             }
-
-
-            // foreach (var y in Enumerable.Range(0, Height))
-            // {
-            //     foreach (var x in Enumerable.Range(0, Width))
-            //     {
-            //         _bmp!.SetPixel(x, y, 255, x * 256 / Width, y * 256 / Height, 150);
-            //     }
-            // }
         }
 
         /// <summary>

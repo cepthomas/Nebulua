@@ -33,7 +33,7 @@ namespace Nebulua.UiApp
         string? _scriptFn = null;
 
         /// <summary>Common functionality.</summary>
-        Core? _core;
+        Core _core = new();
         #endregion
 
         #region Lifecycle
@@ -163,7 +163,7 @@ namespace Nebulua.UiApp
                 ccMidiGen.MinY = 0; // min velocity == note off
                 ccMidiGen.MaxY = 127; // max velocity
                 ccMidiGen.GridY = [32, 64, 96];
-                ccMidiGen.TriggerEvent += CcMidiGen_TriggerEvent;
+                ccMidiGen.ClickClackEvent += CcMidiGen_ClickClackEvent;
                 #endregion
 
                 // OK so far. Assemble the engine.
@@ -307,10 +307,17 @@ namespace Nebulua.UiApp
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void CcMidiGen_TriggerEvent(object? sender, ClickClack.TriggerEventArgs e)
+        void CcMidiGen_ClickClackEvent(object? sender, ClickClack.ClickClackEventArgs e)
         {
+            //traffic.AppendLine(e.ToString());
 
-
+            if (e.X is not null && e.Y is not null)
+            {
+                string name = ((ClickClack)sender!).Name;
+                int x = (int)e.X;
+                int y = (int)e.Y;
+                _core.InjectReceiveEvent(name, 1, x, y < 0 ? 0 : y);
+            }
         }
 
         /// <summary>
