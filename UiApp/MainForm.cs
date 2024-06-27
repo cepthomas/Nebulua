@@ -17,6 +17,7 @@ using Nebulua.Common;
 
 // TODO migrate CliApp to UI, maybe nbot.
 
+
 namespace Nebulua.UiApp
 {
     public partial class MainForm : Form
@@ -50,8 +51,7 @@ namespace Nebulua.UiApp
             LogManager.LogMessage += LogManager_LogMessage;
             LogManager.MinLevelFile = _settings.FileLogLevel;
             LogManager.MinLevelNotif = _settings.NotifLogLevel;
-            LogManager.Run(Path.Combine(appDir, "uilog.txt"), 100000);
-            //_logger.Debug($"MainForm.MainForm() this={this}");
+            LogManager.Run(Path.Combine(appDir, "uilog.txt"), 50000);
 
             Location = _settings.FormGeometry.Location;
             Size = _settings.FormGeometry.Size;
@@ -142,7 +142,9 @@ namespace Nebulua.UiApp
 
                 sldTempo.BackColor = _settings.BackColor;
                 sldTempo.DrawColor = _settings.ControlColor;
+                #endregion
 
+                #region Complex controls
                 // Text display.
                 traffic.BackColor = _settings.BackColor;
                 traffic.MatchColors.Add("ERR", Color.LightPink);
@@ -152,6 +154,16 @@ namespace Nebulua.UiApp
                 traffic.Font = new("Cascadia Mono", 9);
                 traffic.Prompt = "";
                 traffic.WordWrap = _settings.WordWrap;
+
+                // Midi generator.
+                ccMidiGen.Name = "MidiGen";
+                ccMidiGen.MinX = 24; // C0
+                ccMidiGen.MaxX = 96; // C6
+                ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
+                ccMidiGen.MinY = 0; // min velocity == note off
+                ccMidiGen.MaxY = 127; // max velocity
+                ccMidiGen.GridY = [32, 64, 96];
+                ccMidiGen.TriggerEvent += CcMidiGen_TriggerEvent;
                 #endregion
 
                 // OK so far. Assemble the engine.
@@ -291,6 +303,17 @@ namespace Nebulua.UiApp
         }
 
         /// <summary>
+        /// Rewind
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void CcMidiGen_TriggerEvent(object? sender, ClickClack.TriggerEventArgs e)
+        {
+
+
+        }
+
+        /// <summary>
         /// Do some global key handling. Space bar is used for stop/start playing.
         /// </summary>
         /// <param name="e"></param>
@@ -375,14 +398,14 @@ namespace Nebulua.UiApp
             ls.Add($"");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-               ls.Add("- " + MidiOut.DeviceInfo(i).ProductName);
+               ls.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
             }
             ls.Add($"");
             ls.Add($"## Inputs");
             ls.Add($"");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                ls.Add("- " + MidiIn.DeviceInfo(i).ProductName);
+                ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
             Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, true);

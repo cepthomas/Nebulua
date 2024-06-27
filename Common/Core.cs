@@ -25,21 +25,16 @@ namespace Nebulua.Common
         /// <summary>Client supplied context for LUA_PATH.</summary>
         readonly List<string> _luaPath = [];
 
-        ///// <summary>The config contents.</summary>
-        //readonly Config _config;
-        ///// <summary>App settings.</summary>
-        //readonly UserSettings _settings;
-
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
 
-        ///// <summary>Diagnostics for timing measurement.</summary>
-        //readonly TimingAnalyzer? _tan = null;
+        /// <summary>Diagnostics for timing measurement.</summary>
+        readonly TimingAnalyzer? _tan = null;
 
-        /// <summary>All devices to use for send.</summary>
+        /// <summary>All midi devices to use for send.</summary>
         readonly List<MidiOutput> _outputs = [];
 
-        /// <summary>All devices to use for receive.</summary>
+        /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
         readonly List<MidiInput> _inputs = [];
 
         /// <summary>Current script.</summary>
@@ -77,7 +72,7 @@ namespace Nebulua.Common
         /// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
         protected virtual void Dispose(bool disposing)
         {
-            _logger.Debug($"Core.Dispose(bool disposing) this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
+            //_logger.Debug($"Core.Dispose(bool disposing) this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
 
             if (!_disposed)
             {
@@ -111,7 +106,7 @@ namespace Nebulua.Common
         /// </summary>
         ~Core()
         {
-            _logger.Debug($"Core.~Core() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            //_logger.Debug($"Core.~Core() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
 
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
@@ -122,7 +117,8 @@ namespace Nebulua.Common
         /// </summary>
         public void Dispose()
         {
-            _logger.Debug($"Core.Dispose() this={this.GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            //_logger.Debug($"Core.Dispose() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
@@ -159,6 +155,48 @@ namespace Nebulua.Common
             OpenScript(_scriptFn!);
 
             _logger.Debug($"Core.Reload()2 this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+        }
+
+        /// <summary>
+        /// Midi input from internal device.
+        /// </summary>
+        public NebStatus InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
+        {
+            NebStatus stat = NebStatus.Ok;
+
+            var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
+            if (input == null)
+            {
+                throw new ScriptSyntaxException($"Invalid internal device:{devName}");
+            }
+
+            //NoteEvent noff = new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
+            //NoteOnEvent non = new NoteOnEvent(0, channel, noteNum, velocity, 0);
+
+            NoteEvent nevt = velocity > 0 ?
+                new NoteOnEvent(0, channel, noteNum, velocity, 0) :
+                new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
+
+            Midi_ReceiveEvent(input, nevt);
+
+            //int index = _inputs.IndexOf(input);
+            //int chan_hnd = ChannelHandle.MakeInHandle(index, channel);
+            //bool logit = true;
+
+            //stat = _api!.RcvNote(chan_hnd, noteNum, velocity == 0 ? 0 : (double)velocity / MidiDefs.MIDI_VAL_MAX);
+            ////stat = _api!.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+
+            //if (logit && State.Instance.MonRcv)
+            //{
+            //    _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
+            //}
+
+            //if (stat != NebStatus.Ok)
+            //{
+            //    CallbackError(new ApiException("Midi Receive() failed", _api!.Error));
+            //}
+
+            return stat;
         }
 
         /// <summary>
@@ -205,6 +243,7 @@ namespace Nebulua.Common
             if (State.Instance.ExecState == ExecState.Run)
             {
                 // Do script. TODO Handle solo and/or mute like nebulator.
+
                 //_tan?.Arm();
 
                 NebStatus stat = _api!.Step(State.Instance.CurrentTick);
@@ -277,7 +316,7 @@ namespace Nebulua.Common
 
             if (logit && State.Instance.MonRcv)
             {
-                _logger.Trace($"RCV {MidiDefs.FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
+                _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
             }
 
             if (stat != NebStatus.Ok)
@@ -335,11 +374,11 @@ namespace Nebulua.Common
         }
 
         /// <summary>
-        /// Sending some midi. Can throw.
+        /// Sending some midi fro script. Can throw.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Interop_Send(object? sender, SendArgs e)
+        void Interop_Send(object? _, SendArgs e)
         {
             e.Ret = 0; // not used
 
@@ -374,7 +413,7 @@ namespace Nebulua.Common
 
             if (State.Instance.MonSnd)
             {
-                _logger.Trace($"SND {MidiDefs.FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.ChanHnd)}");
+                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.ChanHnd)}");
             }
         }
 
@@ -503,6 +542,40 @@ namespace Nebulua.Common
 
             // Client can decide what to do with this.
             _logger.Error(serr);
+        }
+
+        /// <summary>
+        /// Create string suitable for logging.
+        /// </summary>
+        /// <param name="evt">Midi event to format.</param>
+        /// <param name="tick">Current tick.</param>
+        /// <param name="chan_hnd">Channel info.</param>
+        /// <returns>Suitable string.</returns>
+        public string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
+        {
+            // Common part.
+            (int index, int chan_num) = ChannelHandle.DeconstructHandle(chan_hnd);
+            string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{index} Ch:{chan_num} ";
+
+            switch (evt)
+            {
+                case NoteEvent e:
+                    var snote = chan_num == 10 || chan_num == 16 ?
+                        $"DRUM_{e.NoteNumber}" :
+                        MusicDefinitions.NoteNumberToName(e.NoteNumber);
+                    s = $"{s} {e.NoteNumber}:{snote} Vel:{e.Velocity}";
+                    break;
+
+                case ControlChangeEvent e:
+                    var sctl = Enum.IsDefined(e.Controller) ? e.Controller.ToString() : $"CTLR_{e.Controller}";
+                    s = $"{s} {(int)e.Controller}:{sctl} Val:{e.ControllerValue}";
+                    break;
+
+                default: // Ignore others for now.
+                    break;
+            }
+
+            return s;
         }
         #endregion
     }

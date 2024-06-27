@@ -113,7 +113,7 @@ function M.gen_md()
 
     table.insert(docs, "## Drum Kits")
     table.insert(docs, "")
-    table.insert(docs, "Note that these will vary depending on your Soundfont file.")
+    table.insert(docs, "Note that these will vary depending on your synth or Soundfont.")
     table.insert(docs, "")
     table.insert(docs, "Kit  |  Number")
     table.insert(docs, "---  |  ------")

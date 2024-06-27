@@ -35,7 +35,7 @@ namespace Nebulua.UiApp
             timeBar = new TimeBar();
             lblState = new Label();
             lblInfo = new Label();
-            bingBongJr1 = new BingBongJr();
+            ccMidiGen = new ClickClack();
             SuspendLayout();
             // 
             // chkPlay
@@ -211,25 +211,19 @@ namespace Nebulua.UiApp
             lblInfo.Size = new Size(120, 22);
             lblInfo.TabIndex = 54;
             // 
-            // bingBongJr1
+            // ccMidiGen
             // 
-            bingBongJr1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            bingBongJr1.DrawNoteGrid = true;
-            bingBongJr1.Location = new Point(52, 349);
-            bingBongJr1.MaxControl = 127;
-            bingBongJr1.MaxNote = 95;
-            bingBongJr1.MinControl = 0;
-            bingBongJr1.MinNote = 24;
-            bingBongJr1.Name = "bingBongJr1";
-            bingBongJr1.Size = new Size(375, 176);
-            bingBongJr1.TabIndex = 56;
+            ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            ccMidiGen.Location = new Point(52, 349);
+            ccMidiGen.Size = new Size(375, 176);
+            ccMidiGen.TabIndex = 56;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(865, 547);
-            Controls.Add(bingBongJr1);
+            Controls.Add(ccMidiGen);
             Controls.Add(btnSettings);
             Controls.Add(lblInfo);
             Controls.Add(lblState);
@@ -268,6 +262,6 @@ namespace Nebulua.UiApp
         private Label lblState;
         private Label lblInfo;
         private Button btnSettings;
-        private BingBongJr bingBongJr1;
+        private ClickClack ccMidiGen;
     }
 }

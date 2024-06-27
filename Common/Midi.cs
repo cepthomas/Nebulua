@@ -16,7 +16,7 @@ namespace Nebulua.Common
     public class MidiInput : IDisposable
     {
         #region Fields
-        /// <summary>Low level midi input device.</summary>
+        /// <summary>Low level real midi input device.</summary>
         readonly MidiIn? _midiIn = null;
         #endregion
 
@@ -48,22 +48,32 @@ namespace Nebulua.Common
         /// <param name="deviceName">Client must supply name of device.</param>
         public MidiInput(string deviceName)
         {
+            bool valid = false;
             DeviceName = deviceName;
             Channels.ForEach(b => b = false);
 
-            // Figure out which midi input device.
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            // Figure out which midi input device. Check internals first.
+            if (deviceName == "ClickClack")
             {
-                if (deviceName == MidiIn.DeviceInfo(i).ProductName)
+                // ok, do nothing.
+                valid = true;
+            }
+            else // Real device.
+            {
+                for (int i = 0; i < MidiIn.NumberOfDevices; i++)
                 {
-                    _midiIn = new MidiIn(i);
-                    _midiIn.MessageReceived += MidiIn_MessageReceived;
-                    _midiIn.ErrorReceived += MidiIn_ErrorReceived;
-                    break;
+                    if (deviceName == MidiIn.DeviceInfo(i).ProductName)
+                    {
+                        _midiIn = new MidiIn(i);
+                        _midiIn.MessageReceived += MidiIn_MessageReceived;
+                        _midiIn.ErrorReceived += MidiIn_ErrorReceived;
+                        valid = true;
+                        break;
+                    }
                 }
             }
 
-            if (_midiIn is null)
+            if (!valid)
             {
                 List<string> devs = ["Valid midi inputs:"];
                 for (int i = 0; i < MidiIn.NumberOfDevices; i++)
@@ -90,7 +100,7 @@ namespace Nebulua.Common
 
         #region Traffic
         /// <summary>
-        /// Process input midi event. Dont throw!
+        /// Process real midi input event. Don't throw in this thread!
         /// </summary>
         void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
@@ -192,7 +202,7 @@ namespace Nebulua.Common
 
     public class MidiDefs
     {
-        #region Definitions
+        #region Definitions TODO these?
         // Midi caps.
         public const int MIDI_VAL_MIN = 0;
 
@@ -202,57 +212,5 @@ namespace Nebulua.Common
         // Midi per device.
         public const int NUM_MIDI_CHANNELS = 16;
         #endregion
-
-        // #region Drum names
-        // /// <summary>The GM midi drum definitions. TODO get from lua script.</summary>
-        // static readonly Dictionary<int, string> _drums = new()
-        // {
-        //     { 035, "AcousticBassDrum" }, { 036, "BassDrum1" }, { 037, "SideStick" }, { 038, "AcousticSnare" }, { 039, "HandClap" },
-        //     { 040, "ElectricSnare" }, { 041, "LowFloorTom" }, { 042, "ClosedHiHat" }, { 043, "HighFloorTom" }, { 044, "PedalHiHat" },
-        //     { 045, "LowTom" }, { 046, "OpenHiHat" }, { 047, "LowMidTom" }, { 048, "HiMidTom" }, { 049, "CrashCymbal1" },
-        //     { 050, "HighTom" }, { 051, "RideCymbal1" }, { 052, "ChineseCymbal" }, { 053, "RideBell" }, { 054, "Tambourine" },
-        //     { 055, "SplashCymbal" }, { 056, "Cowbell" }, { 057, "CrashCymbal2" }, { 058, "Vibraslap" }, { 059, "RideCymbal2" },
-        //     { 060, "HiBongo" }, { 061, "LowBongo" }, { 062, "MuteHiConga" }, { 063, "OpenHiConga" }, { 064, "LowConga" },
-        //     { 065, "HighTimbale" }, { 066, "LowTimbale" }, { 067, "HighAgogo" }, { 068, "LowAgogo" }, { 069, "Cabasa" },
-        //     { 070, "Maracas" }, { 071, "ShortWhistle" }, { 072, "LongWhistle" }, { 073, "ShortGuiro" }, { 074, "LongGuiro" },
-        //     { 075, "Claves" }, { 076, "HiWoodBlock" }, { 077, "LowWoodBlock" }, { 078, "MuteCuica" }, { 079, "OpenCuica" },
-        //     { 080, "MuteTriangle" }, { 081, "OpenTriangle" }
-        // };
-        // #endregion
-
-        /// <summary>
-        /// Create string suitable for logging.
-        /// </summary>
-        /// <param name="evt">Midi event to format.</param>
-        /// <param name="tick">Current tick.</param>
-        /// <param name="chan_hnd">Channel info.</param>
-        /// <returns>Suitable string.</returns>
-        public static string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
-        {
-            // Common part.
-            (int index, int chan_num) = ChannelHandle.DeconstructHandle(chan_hnd);
-            string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{index} Ch:{chan_num} ";
-
-            switch (evt)
-            {
-                case NoteEvent e:
-                    var snote = chan_num == 10 || chan_num == 16 ?
-                        $"DRUM_{e.NoteNumber}" :
-                        // _drums.ContainsKey(e.NoteNumber) ? _drums[e.NoteNumber] : $"DRUM_{e.NoteNumber}" :
-                        MusicDefinitions.NoteNumberToName(e.NoteNumber);
-                    s = $"{s} {e.NoteNumber}:{snote} Vel:{e.Velocity}";
-                    break;
-
-                case ControlChangeEvent e:
-                    var sctl = Enum.IsDefined(e.Controller) ? e.Controller.ToString() : $"CTLR_{e.Controller}";
-                    s = $"{s} {(int)e.Controller}:{sctl} Val:{e.ControllerValue}";
-                    break;
-
-                default: // Ignore others for now.
-                    break;
-            }
-
-            return s;
-        }
     }
 }

@@ -64,20 +64,20 @@ namespace Nebulua.Common
         public const int MIDI_VAL_MAX = 127;
         public const int NUM_MIDI_CHANNELS = 16;
 
-        public static string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
-        {
-            // Common part.
-            (int index, int chan_num) = ChannelHandle.DeconstructHandle(chan_hnd);
-            string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{index} Ch:{chan_num} ";
+        // public static string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
+        // {
+        //     // Common part.
+        //     (int index, int chan_num) = ChannelHandle.DeconstructHandle(chan_hnd);
+        //     string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{index} Ch:{chan_num} ";
 
-            switch (evt)
-            {
-               case NoteEvent e: s = $"{s} {e.NoteNumber} Vel:{e.Velocity}"; break;
-               case ControlChangeEvent e: s = $"{s} {(int)e.Controller} Val:{e.ControllerValue}"; break;
-               default: break; // Ignore others for now.
-            }
+        //     switch (evt)
+        //     {
+        //        case NoteEvent e: s = $"{s} {e.NoteNumber} Vel:{e.Velocity}"; break;
+        //        case ControlChangeEvent e: s = $"{s} {(int)e.Controller} Val:{e.ControllerValue}"; break;
+        //        default: break; // Ignore others for now.
+        //     }
 
-            return s;
-        }
+        //     return s;
+        // }
     }
 }

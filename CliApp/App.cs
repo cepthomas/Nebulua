@@ -45,8 +45,8 @@ namespace Nebulua.CliApp
                 string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
                 string logFileName = Path.Combine(appDir, "applog.txt");
                 LogManager.LogMessage += LogManager_LogMessage;
-                LogManager.Run(logFileName, 100000);
-                _logger.Debug($"CliApp.CliApp() this={GetHashCode()}");
+                LogManager.Run(logFileName, 50000);
+                // _logger.Debug($"CliApp.CliApp() this={GetHashCode()}");
 
                 // Process cmd line args.
                 var args = Environment.GetCommandLineArgs();
@@ -64,7 +64,7 @@ namespace Nebulua.CliApp
                 _core = new Core();
                 State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-                _logger.Debug($"CliApp.CliApp()2 this={GetHashCode()} _core={_core.GetHashCode()}");
+                // _logger.Debug($"CliApp.CliApp()2 this={GetHashCode()} _core={_core.GetHashCode()}");
 
                 // Run it.
                 var s = $"Running script file {_scriptFn}";
@@ -94,7 +94,7 @@ namespace Nebulua.CliApp
         /// </summary>
         public void Dispose()
         {
-            _logger.Debug($"CliApp.Dispose()1 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
+            // _logger.Debug($"CliApp.Dispose()1 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
 
             if (!_disposed)
             {
@@ -104,7 +104,7 @@ namespace Nebulua.CliApp
 
             GC.SuppressFinalize(this);
 
-            _logger.Debug($"CliApp.Dispose()2 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
+            // _logger.Debug($"CliApp.Dispose()2 this={this.GetHashCode()} _core={_core?.GetHashCode()}");
         }
 
         /// <summary>Gotta start somewhere.</summary>

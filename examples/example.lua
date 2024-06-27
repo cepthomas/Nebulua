@@ -22,7 +22,8 @@ neb.log_info("======== Warning: this is not actual music =========")
 ------------------------- Configuration -------------------------------
 
 -- Specify midi devices.
-local midi_in = "loopMIDI Port"
+local midi_in = "ClickClack"
+-- local midi_in = "loopMIDI Port"
 -- local midi_out = "Microsoft GS Wavetable Synth"
 local midi_out = "VirtualMIDISynth #1"
 -- local midi_out = "bad device"
@@ -34,7 +35,7 @@ local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
 local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
 
 -- Specify midi input channels.
-local hnd_inp1  = neb.create_input_channel(midi_in, 2)
+local hnd_inp1  = neb.create_input_channel(midi_in, 1)
 
 
 ------------------------- Variables -----------------------------------

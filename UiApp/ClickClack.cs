@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using Nebulua.Common;
+//using Nebulua.Common;
 
 
 namespace Nebulua.UiApp
@@ -19,52 +19,74 @@ namespace Nebulua.UiApp
     /// <summary>
     /// TODO Simplified version copied from MidiLib because I didn't want to bring in that whole lib.
     /// </summary>
-    public class BingBongJr : UserControl
+    public class ClickClack : UserControl
     {
         #region Fields
         /// <summary>Background image data.</summary>
         PixelBitmap? _bmp;
 
+        /// <summary>Last key down position.</summary>
+        int _lastClickX = -1;
+
         /// <summary>Tool tip.</summary>
         readonly ToolTip _toolTip = new();
 
-        /// <summary>Last key down.</summary>
-        int _lastNote = -1;
-
-        /// <summary>The pen.</summary>
+        /// <summary>The grid pen.</summary>
         readonly Pen _pen = new(Color.WhiteSmoke, 1);
         #endregion
 
         #region Properties
-        /// <summary>Lowest midi note of interest. Adjust to taste.</summary>
-        public int MinNote { get; set; } = 24;
+        /// <summary>Lowest X value of interest.</summary>
+        public int MinX { get; set; } = 0;
 
-        /// <summary>Highest midi note of interest. Adjust to taste.</summary>
-        public int MaxNote { get; set; } = 95;
+        /// <summary>Highest X value of interest.</summary>
+        public int MaxX { get; set; } = 100;
 
-        /// <summary>Min control value. For velocity = off.</summary>
-        public int MinControl { get; set; } = MidiDefs.MIDI_VAL_MIN;
+        /// <summary>Min Y value.</summary>
+        public int MinY { get; set; } = 0;
 
-        /// <summary>Max control value. For velocity = loudest.</summary>
-        public int MaxControl { get; set; } = MidiDefs.MIDI_VAL_MAX;
+        /// <summary>Max Y value.</summary>
+        public int MaxY { get; set; } = 100;
 
         /// <summary>Visibility.</summary>
-        public bool DrawNoteGrid { get; set; } = true;
+        public List<int> GridX { get; set; } = new();
+
+        /// <summary>Visibility.</summary>
+        public List<int> GridY { get; set; } = new();
         #endregion
 
         #region Events
-        /// <summary>Click press info.</summary>
-        public event EventHandler<MidiEventArgs>? MidiEvent;
+        /// <summary>Click/move info.</summary>
+        public event EventHandler<TriggerEventArgs>? TriggerEvent;
+
+        /// <summary>
+        /// User did something. It's up to the client to make sense of it.
+        /// Value of -1 indicates invalid or not pertinent.
+        /// </summary>
+        public class TriggerEventArgs : EventArgs
+        {
+            /// <summary>The X value.</summary>
+            public int X { get; set; } = -1;
+
+            /// <summary>The Y value. 0 means not clicked.</summary>
+            public int Y { get; set; } = 0;
+
+            /// <summary>Read me.</summary>
+            public override string ToString()
+            {
+                return $"X:{X} Y:{Y}";
+            }
+        }
         #endregion
 
         #region Lifecycle
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public BingBongJr()
+        public ClickClack()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            Name = "BingBong";
+            Name = "ClickClack";
             ClientSize = new Size(300, 300);
         }
 
@@ -103,20 +125,44 @@ namespace Nebulua.UiApp
                 pe.Graphics.DrawImage(_bmp.Bitmap, 0, 0, _bmp.Bitmap.Width, _bmp.Bitmap.Height);
             }
 
-            // Draw grid?
-            if (DrawNoteGrid)
-            {
-                int numNotes = MaxNote - MinNote;
-                int pixelsPerNote = Width / numNotes;
-                int numGridLines = 10;
-                int pixelsPerGridLine = Width / numGridLines;
+            // Draw grid.
+            int RangeX = MaxX - MinX;
+            int pixelsPerX = Width / RangeX;
+            int RangeY = MaxY - MinY;
+            int pixelsPerY = Height / RangeY;
 
-                for (int gl = 0; gl < numGridLines; gl++)
+            foreach (var gl in GridX)
+            {
+                if (gl >= MinX && gl <= MaxX)
                 {
-                    int x = gl * pixelsPerGridLine;
+                    int x = MathUtils.Map(gl, MinX, MaxX, 0, Width);
                     pe.Graphics.DrawLine(_pen, x, 0, x, Height);
                 }
             }
+
+            foreach (var gl in GridY)
+            {
+                if (gl >= MinY && gl <= MaxY)
+                {
+                    int y = MathUtils.Map(gl, MinY, MaxY, Height, 0);
+                    pe.Graphics.DrawLine(_pen, 0, y, Width, y);
+                }
+            }
+
+            //if (DrawNoteGrid)
+            //{
+            //    int RangeX = MaxX - MinX;
+            //    int pixelsPerX = Width / RangeX;
+
+            //    int numGridLines = 10;
+            //    int pixelsPerGridLineX = Width / numGridLines;
+
+            //    for (int gl = 0; gl < numGridLines; gl++)
+            //    {
+            //        int x = gl * pixelsPerGridLine;
+            //        pe.Graphics.DrawLine(_pen, x, 0, x, Height);
+            //    }
+            //}
 
             base.OnPaint(pe);
         }
@@ -128,35 +174,26 @@ namespace Nebulua.UiApp
         protected override void OnMouseMove(MouseEventArgs e)
         {
             var mp = PointToClient(MousePosition);
-            var (note, value) = XyToMidi(mp.X, mp.Y);
+            var (ux, uy) = XyToUser(mp.X, mp.Y);
 
             if (e.Button == MouseButtons.Left)
             {
                 // Dragging. Did it change?
-                if (_lastNote != note)
+                if (_lastClickX != ux)
                 {
-                    if (_lastNote != -1)
+                    if (_lastClickX != -1)
                     {
-                        // Turn off last note.
-                        MidiEvent?.Invoke(this, new() { Note = _lastNote, Velocity = 0 });
+                        // Turn off last click.
+                        TriggerEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
                     }
 
-                    // Start the new note.
-                    _lastNote = note;
-                    MidiEvent?.Invoke(this, new() { Note = note, Velocity = value });
+                    // Start the new click.
+                    _lastClickX = ux;
+                    TriggerEvent?.Invoke(this, new() { X = ux, Y = uy });
                 }
             }
 
-            //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y}");
-
-            //Color clr = _result.GetPixel(mp.X, mp.Y);
-            //toolTip1.SetToolTip(this, $"X:{mp.X} Y:{mp.Y} C:{clr}");
-
-            //var note = MidiDefs.NoteNumberToName(mp.X);
-            //toolTip1.SetToolTip(this, $"{note}({mp.Y})");
-
-            var snote = MusicDefinitions.NoteNumberToName(note);
-            _toolTip.SetToolTip(this, $"{snote} {note} {value}");
+            _toolTip.SetToolTip(this, $"ux:{ux} uy:{uy}");
 
             base.OnMouseMove(e);
         }
@@ -168,10 +205,10 @@ namespace Nebulua.UiApp
         protected override void OnMouseDown(MouseEventArgs e)
         {
             var mp = PointToClient(MousePosition);
-            var (note, value) = XyToMidi(mp.X, mp.Y);
-            _lastNote = note;
+            var (ux, uy) = XyToUser(mp.X, mp.Y);
+            _lastClickX = ux;
 
-            MidiEvent?.Invoke(this, new() { Note = note, Velocity = value });
+            TriggerEvent?.Invoke(this, new() { X = ux, Y = uy });
 
             base.OnMouseDown(e);
         }
@@ -182,11 +219,11 @@ namespace Nebulua.UiApp
         /// <param name="e"></param>
         protected override void OnMouseUp(MouseEventArgs e)
         {
-            if (_lastNote != -1)
+            if (_lastClickX >= 0)
             {
-                MidiEvent?.Invoke(this, new() { Note = _lastNote, Velocity = 0 });
+                TriggerEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
             }
-            _lastNote = -1;
+            _lastClickX = -1;
 
             base.OnMouseUp(e);
         }
@@ -212,15 +249,24 @@ namespace Nebulua.UiApp
             // Clean up old.
             _bmp?.Dispose();
 
+            // Draw new.
             _bmp = new(Width, Height);
-
-            foreach (var y in Enumerable.Range(0, Height))
+            for (var y = 0; y < Height; y++)
             {
-                foreach (var x in Enumerable.Range(0, Width))
+                for (var x = 0; x < Width; x++)
                 {
                     _bmp!.SetPixel(x, y, 255, x * 256 / Width, y * 256 / Height, 150);
                 }
             }
+
+
+            // foreach (var y in Enumerable.Range(0, Height))
+            // {
+            //     foreach (var x in Enumerable.Range(0, Width))
+            //     {
+            //         _bmp!.SetPixel(x, y, 255, x * 256 / Width, y * 256 / Height, 150);
+            //     }
+            // }
         }
 
         /// <summary>
@@ -228,33 +274,14 @@ namespace Nebulua.UiApp
         /// </summary>
         /// <param name="x">UI location.</param>
         /// <param name="y">UI location.</param>
-        /// <returns>Tuple of note num and vertical value.</returns>
-        (int note, int control) XyToMidi(int x, int y)
+        /// <returns>Tuple of x and y mapped to user coordinates.</returns>
+        (int ux, int uy) XyToUser(int x, int y)
         {
-            int note = MathUtils.Map(x, 0, Width, MinNote, MaxNote);
-            int value = MathUtils.Map(y, Height, 0, MinControl, MaxControl);
+            int ux = MathUtils.Map(x, 0, Width, MinX, MaxX);
+            int uy = MathUtils.Map(y, Height, 0, MinY, MaxY);
 
-            return (note, value);
+            return (ux, uy);
         }
         #endregion
-    }
-
-    /// <summary>
-    /// Midi (real or sim) has received something. It's up to the client to make sense of it.
-    /// Property value of -1 indicates invalid or not pertinent e.g a controller event doesn't have velocity.
-    /// </summary>
-    public class MidiEventArgs : EventArgs
-    {
-        /// <summary>The note number to play.</summary>
-        public int Note { get; set; } = -1;
-
-        /// <summary>For Note = velocity.</summary>
-        public int Velocity { get; set; } = 0;
-
-        /// <summary>Read me.</summary>
-        public override string ToString()
-        {
-            return $"Note:{Note} Velocity:{Velocity}";
-        }
     }
 }

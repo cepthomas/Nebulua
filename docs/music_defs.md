@@ -35,8 +35,8 @@ sus2    | 1 2 5             | Sometimes considered as an inverted sus4 (GCD).
 
 ## Scales
 
-Scale   | Notes             | Description       | Lower tetrachord  | Upper tetrachord
-------- | ----------------- | ----------------- | ----------------  | ----------------
+Scale                   | Notes                        | Description                              | Lower tetrachord  | Upper tetrachord
+-------                 | -----------------            | -----------------                        | ----------------  | ----------------
 Acoustic                | 1 2 3 #4 5 6 b7              | Acoustic scale                           | whole tone        | minor
 Aeolian                 | 1 2 b3 4 5 b6 b7             | Aeolian mode or natural minor scale      | minor             | Phrygian
 NaturalMinor            | 1 2 b3 4 5 b6 b7             | Aeolian mode or natural minor scale      | minor             | Phrygian

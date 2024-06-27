@@ -292,8 +292,8 @@ function M.gen_md()
 
     table.insert(docs, "## Scales")
     table.insert(docs, "")
-    table.insert(docs, "Scale   | Notes             | Description       | Lower tetrachord  | Upper tetrachord")
-    table.insert(docs, "------- | ----------------- | ----------------- | ----------------  | ----------------")
+    table.insert(docs, "Scale                   | Notes                        | Description                              | Lower tetrachord  | Upper tetrachord")
+    table.insert(docs, "-------                 | -----------------            | -----------------                        | ----------------  | ----------------")
     for _, s in ipairs(scale_defs) do
         table.insert(docs, s)
     end
