@@ -135,11 +135,6 @@ end
 function M.process_step(tick)
     _current_tick = tick
 
-
--- Note off and Note On Velocity 0 are usually interchangeable. You will want to re-code the arduino code
--- to ignore Note On messages with velocity 0.
-
-
     -- Composition steps.
     local steps_now = _steps[tick] -- now
     if steps_now ~= nil then
@@ -179,9 +174,10 @@ function M.process_step(tick)
 end
 
 -----------------------------------------------------------------------------
--- Send note now. Manages corresponding note off.
+-- Send note immediately. Manages corresponding note off if tick clock is running.
 function M.send_note(chan_hnd, note_num, volume, dur)
-    M.log_debug("send", chan_hnd, note_num, volume, dur)
+    if dur == nil then dur = 0 end
+    -- M.log_debug(string.format("Send now hnd:%d note:%d vol:%f dur:%d", chan_hnd, note_num, volume, dur))
     if volume > 0 then -- noteon
         -- adjust volume
         volume = volume * _master_vols[chan_hnd]

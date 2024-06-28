@@ -171,11 +171,11 @@ Register an input midi channel.
 ```lua
 function neb.send_note(chan_hnd, note_num, volume, dur)
 ```
-Send a note on/off immediately. Adds a note off if dur is specified.
+Send a note on/off immediately. Adds a note off if dur is specified and tick clock is running.
 - chan_hnd: The channel handle to send it on.
 - note_num: Which.
 - volume: Note volume. 0.0 -> 1.0. 0.0 means note off.
-- dur: How long it lasts in subbeats.
+- dur: How long it lasts in subbeats. Optional.
 
 
 ```lua

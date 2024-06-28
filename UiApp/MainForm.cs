@@ -11,11 +11,12 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
+using System.Runtime.CompilerServices;
 
 
 // Curious - slow startup when running from VS/debugger but not from .exe.
 
-// TODO migrate CliApp to UI, maybe nbot.
+// TODO1 migrate CliApp to UI, maybe nbot.
 
 
 namespace Nebulua.UiApp
@@ -156,7 +157,6 @@ namespace Nebulua.UiApp
                 traffic.WordWrap = _settings.WordWrap;
 
                 // Midi generator.
-                ccMidiGen.Name = "MidiGen";
                 ccMidiGen.MinX = 24; // C0
                 ccMidiGen.MaxX = 96; // C6
                 ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
@@ -167,15 +167,13 @@ namespace Nebulua.UiApp
                 #endregion
 
                 // OK so far. Assemble the engine.
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}"; // TODO1 bad version
                 _logger.Debug($"MainForm.OnLoad() 1");
-                _core = new Core();
-                _logger.Debug($"MainForm.OnLoad() 2");
                 _core.RunScript(_scriptFn);
-                _logger.Debug($"MainForm.OnLoad() 3");
+                _logger.Debug($"MainForm.OnLoad() 2");
 
                 timeBar.Invalidate();
 
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
             }
             catch (Exception ex) // Anything that throws is fatal.
             {
@@ -231,7 +229,7 @@ namespace Nebulua.UiApp
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            _logger.Debug($"MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
+            //_logger.Debug($"MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
 
             if (disposing && (components != null))
             {
@@ -344,12 +342,19 @@ namespace Nebulua.UiApp
         {
             this.InvokeIfRequired(_ =>
             {
-                traffic.AppendLine(e.Message);
-
                 if (e.Level == LogLevel.Error)
                 {
-                    traffic.AppendLine("Fatal error, you must restart");
+                    // Tidy up for UI. TODO1?
+                    //List<string> lines = StringUtils.SplitByTokens(e.Message, Environment.NewLine);
+                    //traffic.AppendLine(lines.Count > 0 ? lines[0] : "No info");
+                    //traffic.AppendLine(lines.Count > 11 ? lines[0] : "No info");
+                    traffic.AppendLine(e.Message);
+                    traffic.AppendLine("Fatal error - you must restart");
                     State.Instance.ExecState = ExecState.Dead;
+                }
+                else
+                {
+                    traffic.AppendLine(e.Message);
                 }
             });
         }

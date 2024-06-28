@@ -232,7 +232,7 @@ namespace Nebulua.UiApp
         /// <summary>
         /// Map from time to UI pixels.
         /// </summary>
-        /// <param name="val"></param>
+        /// <param name="tick"></param>
         /// <returns></returns>
         int GetClientFromTick(int tick)
         {

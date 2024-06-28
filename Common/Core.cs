@@ -28,8 +28,8 @@ namespace Nebulua.Common
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
 
-        /// <summary>Diagnostics for timing measurement.</summary>
-        readonly TimingAnalyzer? _tan = null;
+        ///// <summary>Diagnostics for timing measurement.</summary>
+        //readonly TimingAnalyzer? _tan = null;
 
         /// <summary>All midi devices to use for send.</summary>
         readonly List<MidiOutput> _outputs = [];
@@ -316,8 +316,9 @@ namespace Nebulua.Common
 
             if (e.IsOutput)
             {
+                // Locate or create the device.
                 var output = _outputs.FirstOrDefault(o => o.DeviceName == e.DevName);
-                if (output == null) 
+                if (output is null) 
                 {
                     output = new(e.DevName); // throws if invalid
                     _outputs.Add(output);
@@ -332,8 +333,9 @@ namespace Nebulua.Common
             }
             else
             {
+                // Locate or create the device.
                 var input = _inputs.FirstOrDefault(o => o.DeviceName == e.DevName);
-                if (input == null)
+                if (input is null)
                 {
                     input = new(e.DevName); // throws if invalid
                     input.ReceiveEvent += Midi_ReceiveEvent;

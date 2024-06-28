@@ -202,7 +202,7 @@ namespace Nebulua.Common
 
     public class MidiDefs
     {
-        #region Definitions TODO these?
+        #region Definitions TODO1 these?
         // Midi caps.
         public const int MIDI_VAL_MIN = 0;
 

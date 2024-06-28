@@ -76,7 +76,7 @@ namespace Nebulua.UiApp
         public ClickClack()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            //Name = "ClickClack";
+            Name = nameof(ClickClack);
             ClientSize = new Size(300, 300);
         }
 

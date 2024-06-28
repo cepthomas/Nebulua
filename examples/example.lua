@@ -35,7 +35,7 @@ local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
 local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
 
 -- Specify midi input channels.
-local hnd_inp1  = neb.create_input_channel(midi_in, 1)
+local hnd_cc_inp  = neb.create_input_channel(midi_in, 1)
 
 
 ------------------------- Variables -----------------------------------
@@ -59,8 +59,9 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
--- Forward ref.
-local function boing(note_num) end
+-- Forward refs.
+local seq_func
+
 
 --------------------- Called from main applicatio ---------------------------
 
@@ -92,7 +93,6 @@ function step(tick)
     neb.process_step(tick)
 
     -- Other work you may want to do.
-    boing(60) -- a local function that makes a noise.
 
     -- Do something every new bar.
     t = BarTime(tick)
@@ -105,15 +105,12 @@ end
 
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
-function rcv_note(chan_hnd, note_num, velocity)
-    local s = string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
-    neb.log_debug(s)
+function rcv_note(chan_hnd, note_num, volume)
+    neb.log_debug(string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
-    if chan_hnd == hnd_inp1 then
-        boing(note_num + 10)
-    else
-        -- Echo the note.
-        neb.send_note(hnd_synth, note_num - 10, velocity, 8)
+    if chan_hnd == hnd_cc_inp then
+        -- Play the note.
+        neb.send_note(hnd_synth, note_num, volume)--, 0)
     end
     return 0
 end
@@ -121,10 +118,9 @@ end
 -----------------------------------------------------------------------------
 -- Handlers for input controller events. Optional.
 function rcv_controller(chan_hnd, controller, value)
-    if chan_hnd == hnd_inp1 then
+    if chan_hnd == hnd_cc_inp then
         -- Do something.
-        local s = string.format("Script rcv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
-        neb.log_debug(s)
+        neb.log_debug(string.format("Script rcv controller:%d hnd:%d val:%d", controller, chan_hnd, value))
     end
     return 0
 end
@@ -133,22 +129,9 @@ end
 ----------------------- User lua functions ----------------------------------
 
 -- Function called from sequence.
-local function seq_func(tick)
+seq_func = function (tick)
     local note_num = math.random(0, #alg_scale)
-    neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8) --0.5)
-end
-
--- Make a noise.
-local function boing(note_num)
-    local boinged = false;
-
-    neb.log_info("boing")
-    if note_num == 0 then
-        note_num = math.random(30, 80)
-        boinged = true
-        neb.send_note(hnd_synth, note_num, 0.7, 8) --0.5)
-    end
-    return boinged
+    neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8)
 end
 
 
