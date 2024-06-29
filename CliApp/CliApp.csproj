@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
     <ApplicationIcon>..\app.ico</ApplicationIcon>
-    <StartupObject>Nebulua.CliApp.App</StartupObject>
+    <!-- <StartupObject>Nebulua.CliApp.App</StartupObject> -->
 
     <Deterministic>False</Deterministic>
     <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version>

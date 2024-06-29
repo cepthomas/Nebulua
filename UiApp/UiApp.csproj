@@ -16,7 +16,7 @@
     <RootNamespace>Nebulua.UiApp</RootNamespace>
     <Company>Ephemera Inc</Company>
     <Product>Nebulua</Product>
-    <Description>Just a toy</Description>
+    <Description>Play music with lua.</Description>
     <Copyright>MIT License</Copyright>
   </PropertyGroup>
 
