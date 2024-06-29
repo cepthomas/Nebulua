@@ -5,15 +5,23 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
+
+    <Deterministic>False</Deterministic>
+    <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <AssemblyName>Nebulua.Common</AssemblyName>
+    <RootNamespace>Nebulua.Common</RootNamespace>
+    <Company>Ephemera Inc</Company>
+    <Product>Nebulua</Product>
+    <Description>Just a toy</Description>
+    <Copyright>MIT License</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;CA1822;IDE1006</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;CA1822;IDE1006</NoWarn>
   </PropertyGroup>
 

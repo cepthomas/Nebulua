@@ -10,26 +10,25 @@
     <ApplicationIcon>..\app.ico</ApplicationIcon>
 
     <Deterministic>False</Deterministic>
-    <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version>
-    <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
+    <Version>0.9.0</Version>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <AssemblyName>Nebulua.UiApp</AssemblyName>
+    <RootNamespace>Nebulua.UiApp</RootNamespace>
+    <Company>Ephemera Inc</Company>
+    <Product>Nebulua</Product>
+    <Description>Just a toy</Description>
+    <Copyright>MIT License</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006;CS1591</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="MainForm_all_old.cs" />
-  </ItemGroup>
-
-    <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Interop\Interop.vcxproj" />
   </ItemGroup>

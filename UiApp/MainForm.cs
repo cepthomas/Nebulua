@@ -16,12 +16,12 @@ using System.Runtime.CompilerServices;
 
 // Curious - slow startup when running from VS/debugger but not from .exe.
 
-// TODO1 migrate CliApp to UI, maybe nbot.
+// TODO1 migrate CliApp to UI, maybe nbot. Update:
+// <AssemblyName>Nebulua.UiApp</AssemblyName>
+// <RootNamespace>Nebulua.UiApp</RootNamespace>
+
 // TODO1 update tests.
 // TODO1 ClickClack to nbui. Better range limit checking too.
-
-//[assembly: AssemblyVersion("3.3.3.3")]
-//https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#assemblyinfo-properties
 
 
 namespace Nebulua.UiApp
@@ -172,7 +172,7 @@ namespace Nebulua.UiApp
                 #endregion
 
                 // OK so far. Assemble the engine.
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}"; // TODO1 bad version
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
                 _logger.Debug($"MainForm.OnLoad() 1");
                 _core.RunScript(_scriptFn);
                 _logger.Debug($"MainForm.OnLoad() 2");
