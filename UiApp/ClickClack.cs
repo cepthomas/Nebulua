@@ -11,7 +11,7 @@ using Ephemera.NBagOfUis;
 namespace Nebulua.UiApp
 {
     /// <summary>
-    /// Generic input control similar to BingBong from MidiLib.
+    /// Generic input control similar to BingBong from MidiLib. TODO1 move to nbui.
     /// </summary>
     public class ClickClack : UserControl
     {
@@ -71,7 +71,7 @@ namespace Nebulua.UiApp
         }
 
         /// <summary>
-        /// 
+        /// Event raiser. Probably not needed.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -175,6 +175,7 @@ namespace Nebulua.UiApp
         protected override void OnMouseMove(MouseEventArgs e)
         {
             var (ux, uy) = MouseToUser();
+            _toolTip.SetToolTip(this, $"ux:{ux} uy:{uy}");
 
             if (e.Button == MouseButtons.Left)
             {
@@ -193,8 +194,6 @@ namespace Nebulua.UiApp
                 }
             }
 
-            _toolTip.SetToolTip(this, $"ux:{ux} uy:{uy}");
-
             base.OnMouseMove(e);
         }
 
@@ -206,7 +205,6 @@ namespace Nebulua.UiApp
         {
             var (ux, uy) = MouseToUser();
             _lastClickX = ux;
-
             RaiseUserEvent(ux, uy);
 
             base.OnMouseDown(e);

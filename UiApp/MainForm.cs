@@ -21,7 +21,6 @@ using System.Runtime.CompilerServices;
 // <RootNamespace>Nebulua.UiApp</RootNamespace>
 
 // TODO1 update tests.
-// TODO1 ClickClack to nbui. Better range limit checking too.
 
 
 namespace Nebulua.UiApp
