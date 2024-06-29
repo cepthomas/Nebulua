@@ -25,7 +25,7 @@ namespace Nebulua.Common
         public string DeviceName { get; }
 
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
 
         /// <summary>Device capture on/off.</summary>
         public bool CaptureEnable
@@ -142,7 +142,7 @@ namespace Nebulua.Common
         public string DeviceName { get; }
 
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
         #endregion
 
         #region Lifecycle
@@ -176,7 +176,7 @@ namespace Nebulua.Common
             }
         }
 
-        /// <summary> 
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         public void Dispose()
@@ -187,7 +187,9 @@ namespace Nebulua.Common
         #endregion
 
         #region Traffic
-        /// <summary>Send midi event. OK to throw in here.</summary>
+        /// <summary>
+        /// Send midi event. OK to throw in here.
+        /// </summary>
         public void Send(MidiEvent evt)
         {
             // Is it in our registered inputs?
@@ -197,20 +199,6 @@ namespace Nebulua.Common
                 _midiOut?.Send(evt.GetAsShortMessage());
             }
         }
-        #endregion
-    }
-
-    public class MidiDefs
-    {
-        #region Definitions TODO1 these?
-        // Midi caps.
-        public const int MIDI_VAL_MIN = 0;
-
-        // Midi caps.
-        public const int MIDI_VAL_MAX = 127;
-
-        // Midi per device.
-        public const int NUM_MIDI_CHANNELS = 16;
         #endregion
     }
 }

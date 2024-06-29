@@ -9,12 +9,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
+    <NoWarn>1701;1702;CA1416;CA1822;IDE1006</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <NoWarn>1701;1702;CA1416;IDE1006</NoWarn>
+    <NoWarn>1701;1702;CA1416;CA1822;IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

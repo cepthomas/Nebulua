@@ -17,6 +17,11 @@ using System.Runtime.CompilerServices;
 // Curious - slow startup when running from VS/debugger but not from .exe.
 
 // TODO1 migrate CliApp to UI, maybe nbot.
+// TODO1 update tests.
+// TODO1 ClickClack to nbui. Better range limit checking too.
+
+//[assembly: AssemblyVersion("3.3.3.3")]
+//https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#assemblyinfo-properties
 
 
 namespace Nebulua.UiApp
@@ -163,7 +168,7 @@ namespace Nebulua.UiApp
                 ccMidiGen.MinY = 0; // min velocity == note off
                 ccMidiGen.MaxY = 127; // max velocity
                 ccMidiGen.GridY = [32, 64, 96];
-                ccMidiGen.ClickClackEvent += CcMidiGen_ClickClackEvent;
+                ccMidiGen.UserEvent += CcMidiGen_UserEvent;
                 #endregion
 
                 // OK so far. Assemble the engine.
@@ -301,11 +306,11 @@ namespace Nebulua.UiApp
         }
 
         /// <summary>
-        /// Rewind
+        /// User clicked something.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void CcMidiGen_ClickClackEvent(object? sender, ClickClack.ClickClackEventArgs e)
+        void CcMidiGen_UserEvent(object? sender, ClickClack.UserEventArgs e)
         {
             //traffic.AppendLine(e.ToString());
 
@@ -344,12 +349,12 @@ namespace Nebulua.UiApp
             {
                 if (e.Level == LogLevel.Error)
                 {
-                    // Tidy up for UI. TODO1?
-                    //List<string> lines = StringUtils.SplitByTokens(e.Message, Environment.NewLine);
-                    //traffic.AppendLine(lines.Count > 0 ? lines[0] : "No info");
-                    //traffic.AppendLine(lines.Count > 11 ? lines[0] : "No info");
+// Tidy up for UI.
+//List<string> lines = StringUtils.SplitByTokens(e.Message, Environment.NewLine);
+//traffic.AppendLine(lines.Count > 0 ? lines[0] : "No info");
+//traffic.AppendLine(lines.Count > 11 ? lines[0] : "No info");
                     traffic.AppendLine(e.Message);
-                    traffic.AppendLine("Fatal error - you must restart");
+                    traffic.AppendLine("Fatal error - you must restart TODO1??");
                     State.Instance.ExecState = ExecState.Dead;
                 }
                 else

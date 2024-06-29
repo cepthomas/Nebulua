@@ -6,17 +6,21 @@ namespace Nebulua.Common
     #region Definitions
     public class Defs
     {
-        /// Only 4/4 time supported.
+        // Only 4/4 time supported.
         public const int BEATS_PER_BAR = 4;
 
-        /// Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
+        // Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
         public const int SUBS_PER_BEAT = 8;
 
-        /// Convenience.
+        // Convenience.
         public const int SUBS_PER_BAR = SUBS_PER_BEAT * BEATS_PER_BAR;
 
-        /// Arbitrary setting.
+        // Arbitrary setting.
         public const int MAX_SECTIONS = 32;
+
+        public const int MIDI_VAL_MIN = 0;
+        public const int MIDI_VAL_MAX = 127;
+        public const int NUM_MIDI_CHANNELS = 16;
     }
     #endregion
 

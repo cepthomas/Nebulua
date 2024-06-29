@@ -270,7 +270,7 @@ namespace Nebulua.Common
             switch (e)
             {
                 case NoteOnEvent evt:
-                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
+                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
                     break;
 
                 case NoteEvent evt:
@@ -309,7 +309,7 @@ namespace Nebulua.Common
             e.Ret = 0; // chan_hnd default means invalid
 
             // Check args.
-            if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > MidiDefs.NUM_MIDI_CHANNELS)
+            if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > Defs.NUM_MIDI_CHANNELS)
             {
                 throw new ScriptSyntaxException($"Script has invalid input midi device: {e.DevName}");
             }
@@ -358,12 +358,12 @@ namespace Nebulua.Common
 
             // Check args.
             var (index, chan_num) = ChannelHandle.DeconstructHandle(e.ChanHnd);
-            if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS ||
+            if (index >= _outputs.Count || chan_num < 1 || chan_num > Defs.NUM_MIDI_CHANNELS ||
                 !_outputs[index].Channels[chan_num - 1])
             {
                 throw new ScriptSyntaxException($"Script has invalid channel: {e.ChanHnd}");
             }
-            if (e.What < 0 || e.What >= MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= MidiDefs.MIDI_VAL_MAX)
+            if (e.What < 0 || e.What >= Defs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= Defs.MIDI_VAL_MAX)
             {
                 throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
             }
@@ -488,7 +488,7 @@ namespace Nebulua.Common
         {
             foreach (var o in _outputs)
             {
-                for (int i = 0; i < MidiDefs.NUM_MIDI_CHANNELS; i++)
+                for (int i = 0; i < Defs.NUM_MIDI_CHANNELS; i++)
                 {
                     ControlChangeEvent cevt = new(0, i + 1, MidiController.AllNotesOff, 0);
                     o.Send(cevt);

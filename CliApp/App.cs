@@ -30,7 +30,7 @@ namespace Nebulua.CliApp
         bool _disposed = false;
 
         /// <summary>Common functionality.</summary>
-        readonly Core? _core;
+        readonly Core _core = new();
         #endregion
 
         #region Lifecycle
@@ -61,7 +61,6 @@ namespace Nebulua.CliApp
 
                 // OK so far. Assemble the engine.
                 _cmdProc.Write("Greetings from Nebulua!");
-                _core = new Core();
                 State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
                 // _logger.Debug($"CliApp.CliApp()2 this={GetHashCode()} _core={_core.GetHashCode()}");

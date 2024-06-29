@@ -51,9 +51,9 @@ namespace Nebulua.UiApp
 
         #region Events
         /// <summary>Click/move info.</summary>
-        public event EventHandler<ClickClackEventArgs>? ClickClackEvent;
+        public event EventHandler<UserEventArgs>? UserEvent;
 
-        public class ClickClackEventArgs : EventArgs
+        public class UserEventArgs : EventArgs
         {
             /// <summary>The X value in user coordinates. null means invalid.</summary>
             public int? X { get; set; } = null;
@@ -64,8 +64,20 @@ namespace Nebulua.UiApp
             /// <summary>Read me.</summary>
             public override string ToString()
             {
-                return $"ClickClack X:{(X is null ? "null" : X)} Y:{(Y is null ? "null" : Y)}";
+                string sx = X is null ? "null" : X.ToString()!;
+                string sy = Y is null ? "null" : Y.ToString()!;
+                return $"ClickClack X:{sx} Y:{sy}";
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        void RaiseUserEvent(int? x, int? y)
+        {
+            UserEvent?.Invoke(this, new() { X = x, Y = y });
         }
         #endregion
 
@@ -109,19 +121,15 @@ namespace Nebulua.UiApp
         /// <param name="e"></param>
         protected override void OnMouseLeave(EventArgs e)
         {
-            var mp = PointToClient(MousePosition);
-            var (ux, uy) = XyToUser(mp.X, mp.Y);
-
-            // Lingerer?
+            // Turn off last click.
             if (_lastClickX is not null)
             {
-                // Turn off last click.
-                ClickClackEvent?.Invoke(this, new() { X = ux, Y = 0 });
+                RaiseUserEvent(_lastClickX, 0);
             }
 
-            // Reset.
+            // Reset and tell client.
             _lastClickX = null;
-            ClickClackEvent?.Invoke(this, new() { X = null, Y = null });
+            RaiseUserEvent(null, null);
 
             base.OnMouseLeave(e);
         }
@@ -166,8 +174,7 @@ namespace Nebulua.UiApp
         /// <param name="e"></param>
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            var mp = PointToClient(MousePosition);
-            var (ux, uy) = XyToUser(mp.X, mp.Y);
+            var (ux, uy) = MouseToUser();
 
             if (e.Button == MouseButtons.Left)
             {
@@ -177,12 +184,12 @@ namespace Nebulua.UiApp
                     if (_lastClickX is not null)
                     {
                         // Turn off last click.
-                        ClickClackEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
+                        RaiseUserEvent(_lastClickX, 0);
                     }
 
                     // Start the new click.
                     _lastClickX = ux;
-                    ClickClackEvent?.Invoke(this, new() { X = ux, Y = uy });
+                    RaiseUserEvent(ux, uy);
                 }
             }
 
@@ -197,11 +204,10 @@ namespace Nebulua.UiApp
         /// <param name="e"></param>
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            var mp = PointToClient(MousePosition);
-            var (ux, uy) = XyToUser(mp.X, mp.Y);
+            var (ux, uy) = MouseToUser();
             _lastClickX = ux;
 
-            ClickClackEvent?.Invoke(this, new() { X = ux, Y = uy });
+            RaiseUserEvent(ux, uy);
 
             base.OnMouseDown(e);
         }
@@ -214,7 +220,7 @@ namespace Nebulua.UiApp
         {
             if (_lastClickX is not null)
             {
-                ClickClackEvent?.Invoke(this, new() { X = _lastClickX, Y = 0 });
+                RaiseUserEvent(_lastClickX, 0);
             }
             _lastClickX = null;
 
@@ -254,15 +260,18 @@ namespace Nebulua.UiApp
         }
 
         /// <summary>
-        /// Map function.
+        /// Get mouse x and y mapped to user coordinates.
         /// </summary>
-        /// <param name="x">UI location.</param>
-        /// <param name="y">UI location.</param>
-        /// <returns>Tuple of x and y mapped to user coordinates.</returns>
-        (int ux, int uy) XyToUser(int x, int y)
+        /// <returns>Tuple of x and y.</returns>
+        (int? ux, int? uy) MouseToUser()
         {
-            int ux = MathUtils.Map(x, 0, Width, MinX, MaxX);
-            int uy = MathUtils.Map(y, Height, 0, MinY, MaxY);
+            var mp = PointToClient(MousePosition);
+
+            // Map and check.
+            int x = MathUtils.Map(mp.X, 0, Width, MinX, MaxX);
+            int? ux = x >= 0 && x < Width ? x : null;
+            int y = MathUtils.Map(mp.Y, Height, 0, MinY, MaxY);
+            int? uy = y >= 0 && y < Height ? y : null;
 
             return (ux, uy);
         }

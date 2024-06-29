@@ -8,14 +8,15 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Platforms>x64</Platforms>
     <ApplicationIcon>..\app.ico</ApplicationIcon>
-    <!-- <Deterministic>False</Deterministic> -->
+
+    <Deterministic>False</Deterministic>
     <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version>
     <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <NoWarn>1701;1702;CA1416;IDE1006;CS1591</NoWarn>
   </PropertyGroup>
 
