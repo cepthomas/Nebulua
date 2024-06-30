@@ -390,7 +390,8 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool KillCmd(CommandDescriptor cmd, List<string> args)
         {
-            State.Instance.ExecState = ExecState.Kill;
+            // State.Instance.ExecState = ExecState.Kill;
+            _core.KillAll();
             Write("");
 
             return true;
@@ -462,7 +463,8 @@ namespace Nebulua
             switch (args.Count)
             {
                 case 1: // no args
-                    State.Instance.ExecState = ExecState.Reload;
+                    // State.Instance.ExecState = ExecState.Reload;
+                    _core.Reload();
                     break;
 
                 default:
