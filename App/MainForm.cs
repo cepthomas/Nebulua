@@ -14,7 +14,7 @@ using Ephemera.NBagOfUis;
 
 // Curious - slow startup when running from VS/debugger but not from .exe.
 
-// TODO1 update tests.
+// TODO1 update tests. Consolidate other dirs?
 
 
 namespace Nebulua

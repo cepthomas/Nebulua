@@ -13,7 +13,7 @@ using Nebulua.Interop;
 
 namespace Nebulua
 {
-    public class Cli : IDisposable // TODO combine with UI or make a new csproj. 
+    public class Cli : IDisposable // TODO1 combine with App or make a new csproj. 
     {
         #region Fields
         /// <summary>App logger.</summary>
@@ -181,7 +181,7 @@ namespace Nebulua
 
         #region Main work
         /// <summary>
-        /// Set up command handler. TODO other stream I/O e.g. socket.
+        /// Set up command handler. Could support alternate streams e.g. socket.
         /// </summary>
         public CommandProc(TextReader @in, TextWriter @out)
         {
