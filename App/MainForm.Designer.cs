@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 
-namespace Nebulua.UiApp
+namespace Nebulua
 {
     partial class MainForm
     {
@@ -35,7 +35,7 @@ namespace Nebulua.UiApp
             timeBar = new TimeBar();
             lblState = new Label();
             lblInfo = new Label();
-            ccMidiGen = new ClickClack();
+            ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
             SuspendLayout();
             // 
             // chkPlay
@@ -262,6 +262,6 @@ namespace Nebulua.UiApp
         private Label lblState;
         private Label lblInfo;
         private Button btnSettings;
-        private ClickClack ccMidiGen;
+        private Ephemera.NBagOfUis.ClickClack ccMidiGen;
     }
 }

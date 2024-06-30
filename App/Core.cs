@@ -11,7 +11,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Nebulua.Interop;
 
 
-namespace Nebulua.Common
+namespace Nebulua
 {
     public class Core : IDisposable
     {
@@ -50,7 +50,7 @@ namespace Nebulua.Common
         /// </summary>
         public Core()
         {
-            _logger.Debug($"Core.Core() this={GetHashCode()}");
+            //_logger.Debug($"Core.Core() this={GetHashCode()}");
 
             // Set up runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives
@@ -148,13 +148,13 @@ namespace Nebulua.Common
         /// </summary>
         public void Reload()
         {
-            _logger.Debug($"Core.Reload()1 this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            //_logger.Debug($"Core.Reload()1 this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
             
             _api?.Dispose();
             _api = null;
             OpenScript(_scriptFn!);
 
-            _logger.Debug($"Core.Reload()2 this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+            //_logger.Debug($"Core.Reload()2 this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
         }
 
         /// <summary>
@@ -286,7 +286,7 @@ namespace Nebulua.Common
                     break;
             }
 
-            if (logit && State.Instance.MonRcv)
+            if (logit && UserSettings.Current.MonitorRcv)
             {
                 _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
             }
@@ -385,7 +385,7 @@ namespace Nebulua.Common
 
             output.Send(evt);
 
-            if (State.Instance.MonSnd)
+            if (UserSettings.Current.MonitorSnd)
             {
                 _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.ChanHnd)}");
             }
@@ -400,12 +400,12 @@ namespace Nebulua.Common
         {
             if (e.LogLevel >= (int)LogLevel.Trace && e.LogLevel <= (int)LogLevel.Error) 
             {
-                _logger.Log((LogLevel)e.LogLevel, $"{e.Msg}");
+                _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
                 e.Ret = 0;
             }
             else
             {
-                CallbackError(new ScriptSyntaxException($"Invalid log level: {e.LogLevel}"));
+                CallbackError(new ScriptSyntaxException($"SCRIPT Invalid log level: {e.LogLevel}"));
             }
         }
 
@@ -446,7 +446,7 @@ namespace Nebulua.Common
             // Create script api.
             _api = new(_luaPath);
 
-            _logger.Debug($"Core.OpenScript() this={GetHashCode()} _api={_api.GetHashCode()}");
+            //_logger.Debug($"Core.OpenScript() this={GetHashCode()} _api={_api.GetHashCode()}");
 
             // Load the script.
             var s = $"Loading script file {scriptFn}";

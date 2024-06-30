@@ -5,17 +5,18 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Drawing.Design;
-using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 
 
-namespace Nebulua.Common
+namespace Nebulua
 {
     [Serializable]
     public sealed class UserSettings : SettingsCore
     {
+        /// <summary>The current settings.</summary>
+        public static UserSettings Current { get; set; } = new();
+
         #region Properties - persisted editable
         [DisplayName("File Log Level")]
         [Description("Log level for file write.")]
@@ -56,16 +57,13 @@ namespace Nebulua.Common
 
         #region Properties - internal
         [Browsable(false)]
-        public bool Valid { get; set; } = false;
-
-        [Browsable(false)]
         public bool WordWrap { get; set; } = false;
 
         [Browsable(false)]
-        public bool MonitorInput { get; set; } = false;
+        public bool MonitorRcv { get; set; } = false;
 
         [Browsable(false)]
-        public bool MonitorOutput { get; set; } = false;
+        public bool MonitorSnd { get; set; } = false;
         #endregion
     }
 }

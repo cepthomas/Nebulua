@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
-using Nebulua.Common;
+// using Nebulua.Common;
 
 
-namespace Nebulua.UiApp
+namespace Nebulua
 {
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Sub }

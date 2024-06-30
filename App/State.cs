@@ -6,7 +6,7 @@ using System.Text;
 using Ephemera.NBagOfTricks;
 
 
-namespace Nebulua.Common
+namespace Nebulua
 {
     #region Enums
     /// <summary>Internal status.</summary>
@@ -138,12 +138,6 @@ namespace Nebulua.Common
 
         /// <summary>Master volume.</summary>
         public double Volume { get; set; } = 0.8;
-
-        /// <summary>Monitor midi input.</summary>
-        public bool MonRcv { get; set; } = false;
-
-        /// <summary>Monitor midi output.</summary>
-        public bool MonSnd { get; set; } = false;
         #endregion
 
         #region Events

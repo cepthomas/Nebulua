@@ -1,29 +1,38 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Platforms>x64</Platforms>
+    <ApplicationIcon>..\app.ico</ApplicationIcon>
+    <NoWarn>1701;1702;CA1416;IDE1006;CS1591</NoWarn>
 
     <Deterministic>False</Deterministic>
-    <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version>
+    <Version>0.9.0</Version>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-    <AssemblyName>Nebulua.Common</AssemblyName>
-    <RootNamespace>Nebulua.Common</RootNamespace>
+    <AssemblyName>Nebulua</AssemblyName>
+    <RootNamespace>Nebulua</RootNamespace>
     <Company>Ephemera Inc</Company>
     <Product>Nebulua</Product>
-    <Description>Just a toy</Description>
+    <Description>Play music with lua.</Description>
     <Copyright>MIT License</Copyright>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NoWarn>1701;1702;CA1416;CA1822;IDE1006</NoWarn>
-  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Interop\Interop.vcxproj" />
+  </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <NoWarn>1701;1702;CA1416;CA1822;IDE1006</NoWarn>
-  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ephemera.NBagOfTricks">
+      <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
+    </Reference>
+    <Reference Include="Ephemera.NBagOfUis">
+      <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\lua_code\bar_time.lua" Link="lua\bar_time.lua">
@@ -70,22 +79,26 @@
     </None>
   </ItemGroup>
 
+
   <ItemGroup>
-    <Reference Include="Ephemera.NBagOfTricks">
-      <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
-    </Reference>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\interop\Interop.vcxproj" />
-  </ItemGroup>
-
-<!--   <ItemGroup>
-    <Folder Include="docs\" />
-  </ItemGroup>
- -->
 </Project>

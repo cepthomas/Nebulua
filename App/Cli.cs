@@ -1,15 +1,144 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading;
-using Ephemera.NBagOfTricks;
+using System.Diagnostics;
 using NAudio.Midi;
-using Nebulua.Common;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfTricks.Slog;
+using Nebulua.Interop;
 
 
-namespace Nebulua.CliApp
+namespace Nebulua
 {
+    public class Cli : IDisposable // TODO combine with UI or make a new csproj. 
+    {
+        #region Fields
+        /// <summary>App logger.</summary>
+        readonly Logger _logger = LogManager.CreateLogger("Cli");
+
+        /// <summary>App settings.</summary>
+        readonly UserSettings _settings;
+
+        /// <summary>Talks to the user.</summary>
+        readonly CommandProc _cmdProc = new(Console.In, Console.Out);
+
+        /// <summary>Current script.</summary>
+        readonly string _scriptFn = "";
+
+        /// <summary>Resource management.</summary>
+        bool _disposed = false;
+
+        /// <summary>Common functionality.</summary>
+        readonly Core _core = new();
+        #endregion
+
+        #region Lifecycle
+        /// <summary>
+        /// Constructor inits stuff.
+        /// </summary>
+        public Cli()
+        {
+            string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
+            _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+
+            try
+            {
+                LogManager.LogMessage += LogManager_LogMessage;
+                LogManager.MinLevelFile = _settings.FileLogLevel;
+                LogManager.MinLevelNotif = _settings.NotifLogLevel;
+                LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
+
+                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+
+                // Process cmd line args.
+                var args = Environment.GetCommandLineArgs();
+                if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
+                {
+                    _scriptFn = args[1];
+                }
+                else
+                {
+                    throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
+                }
+
+                // OK so far. Run it.
+                _logger.Info($"Running script file {_scriptFn}");
+                _core.RunScript(_scriptFn);
+
+                // Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
+                while (State.Instance.ExecState != ExecState.Exit)
+                {
+                    _cmdProc.Read();
+                }
+
+                // Normal done. Wait a bit in case there are some lingering events or logging.
+                Thread.Sleep(100);
+            }
+            catch (Exception e) // Anything that throws is fatal.
+            {
+                State.Instance.ExecState = ExecState.Dead;
+                string serr = e switch
+                {
+                    ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
+                    ConfigException ex => $"Config File Error: {ex.Message}",
+                    ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
+                    ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
+                    _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
+                };
+
+                // Logging an error will cause the app to exit.
+                _logger.Error(serr);
+            }
+        }
+
+        /// <summary>Clean up.</summary>
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _core?.Dispose();
+                _disposed = true;
+            }
+        }
+        #endregion
+
+        #region Private functions
+        /// <summary>
+        /// Handler for state changes
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="name">Specific State value.</param>
+        void State_ValueChangeEvent(object? _, string name)
+        {
+            if (name == "CurrentTick")
+            {
+                // TODO display running tick/bartime somewhere in console?
+            }
+        }
+
+        /// <summary>
+        /// Capture bad events and display them to the user. If error shut down.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            if (e.Level == LogLevel.Error)
+            {
+                _cmdProc.Write($"Fatal! shutting down.{Environment.NewLine}{e.Message}");
+                State.Instance.ExecState = ExecState.Exit;
+            }
+            else
+            {
+                _cmdProc.Write(e.Message);
+            }
+        }
+        #endregion
+    }
+
     public class CommandProc
     {
         #region Fields
@@ -21,14 +150,12 @@ namespace Nebulua.CliApp
 
         /// <summary>CLI output.</summary>
         readonly TextWriter _out;
-        #endregion
 
-        #region Properties
         /// <summary>CLI prompt.</summary>
-        public string Prompt { get; set; } = ">";
+        readonly string _prompt = ">";
         #endregion
 
-        #region Infrastructure
+        #region Types
         /// <summary>Command descriptor.</summary>
         readonly record struct CommandDescriptor
         (
@@ -86,12 +213,12 @@ namespace Nebulua.CliApp
         public void Write(string s)
         {
             _out.WriteLine(s);
-            _out.Write(Prompt);
+            _out.Write(_prompt);
         }
 
         /// <summary>
         /// Process user input. Blocks until new line.
-        /// TODO Would like to .Peek() for spacebar but it's broken. .Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
+        /// TODO Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
         public bool Read()
@@ -229,18 +356,18 @@ namespace Nebulua.CliApp
                     switch (args[1])
                     {
                         case "r":
-                            State.Instance.MonRcv = !State.Instance.MonRcv;
+                            UserSettings.Current.MonitorRcv = !UserSettings.Current.MonitorRcv;
                             Write("");
                             break;
 
                         case "s":
-                            State.Instance.MonSnd = !State.Instance.MonSnd;
+                            UserSettings.Current.MonitorSnd = !UserSettings.Current.MonitorSnd;
                             Write("");
                             break;
 
                         case "o":
-                            State.Instance.MonRcv = false;
-                            State.Instance.MonSnd = false;
+                            UserSettings.Current.MonitorRcv = false;
+                            UserSettings.Current.MonitorSnd = false;
                             Write("");
                             break;
 
@@ -388,4 +515,6 @@ namespace Nebulua.CliApp
         }
         #endregion
     }
+
+    
 }

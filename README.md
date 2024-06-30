@@ -1,16 +1,18 @@
 # Nebulua
-- Two flavors of application:
-  - A comand line version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
-  - A GUI version which is a stripped down version of Nebulator.
-- While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
-- Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
-  - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
-  - If you are using a DAW for sound generation, you can use a virtual midi loopback like
-    [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to send to it.
+
+A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
+While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
+There's also a comand line version which is not fully complete yet.
 
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
 ![logo](marks.png)
+
+Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
+- Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
+- If you are using a DAW for sound generation, you can use a virtual midi loopback like
+    [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to send to it.
+
 
 ## Glossary
 

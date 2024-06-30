@@ -1,7 +1,8 @@
 using System;
 using Ephemera.NBagOfTricks;
 
-namespace Nebulua.Common
+
+namespace Nebulua
 {
     #region Definitions
     public class Defs
@@ -18,6 +19,7 @@ namespace Nebulua.Common
         // Arbitrary setting.
         public const int MAX_SECTIONS = 32;
 
+        // Midi defs.
         public const int MIDI_VAL_MIN = 0;
         public const int MIDI_VAL_MAX = 127;
         public const int NUM_MIDI_CHANNELS = 16;
@@ -47,7 +49,8 @@ namespace Nebulua.Common
     }
     #endregion
 
-    /// <summary>Manipulate the internal handle format.</summary>
+    #region Types
+    /// <summary>Internal handle format.</summary>
     public class ChannelHandle
     {
         /// <summary>Make a standard output handle.</summary>
@@ -120,4 +123,5 @@ namespace Nebulua.Common
             }
         }
     }
+    #endregion
 }
