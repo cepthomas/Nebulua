@@ -25,14 +25,11 @@ namespace Nebulua
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("App");
 
-        ///// <summary>App settings.</summary>
-        //readonly UserSettings UserSettings.Settings;
-
         /// <summary>Current script.</summary>
         string? _scriptFn = null;
 
         /// <summary>Common functionality.</summary>
-        Core _core = new();
+        readonly Core _core = new();
         #endregion
 
         #region Lifecycle
@@ -133,15 +130,15 @@ namespace Nebulua
             btnRewind.Click += Rewind_Click;
             btnAbout.Click += About_Click;
             btnSettings.Click += Settings_Click;
-            btnKill.Click += (_, __) => { State.Instance.ExecState = ExecState.Kill; };
-            btnReload.Click += (_, __) => { State.Instance.ExecState = ExecState.Reload; };
+            //btnKill.Click += (_, __) => { State.Instance.ExecState = ExecState.Kill; };
+            //btnReload.Click += (_, __) => { State.Instance.ExecState = ExecState.Reload; };
+            btnKill.Click += (_, __) => { _core.KillAll(); State.Instance.ExecState = ExecState.Idle; };
+            btnReload.Click += (_, __) => { LoadScript(); };
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
             chkMonRcv.Click += (_, __) => { UserSettings.Current.MonitorRcv = chkMonRcv.Checked; };
             chkMonSnd.Click += (_, __) => { UserSettings.Current.MonitorSnd = chkMonSnd.Checked; };
-            //chkMonRcv.Click += (_, __) => { State.Instance.MonRcv = chkMonRcv.Checked; UserSettings.Settings.MonitorRcv = chkMonRcv.Checked; };
-            //chkMonSnd.Click += (_, __) => { State.Instance.MonSnd = chkMonSnd.Checked; UserSettings.Settings.MonitorSnd = chkMonSnd.Checked; };
             #endregion
 
             // Now ready to go live.
@@ -156,7 +153,7 @@ namespace Nebulua
         {
             try
             {
-                // _logger.Debug($"MainForm.OnLoad() 0");
+                _logger.Debug($"MainForm.OnLoad()");
 
                 // Process cmd line args.
                 _scriptFn = null;
@@ -174,16 +171,28 @@ namespace Nebulua
                 // OK so far. Assemble the engine.
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
                 // _logger.Debug($"MainForm.OnLoad() 1");
-                _core.RunScript(_scriptFn);
+                LoadScript();
+                //_core.RunScript(_scriptFn);
                 // _logger.Debug($"MainForm.OnLoad() 2");
 
                 timeBar.Invalidate();
             }
             catch (Exception ex) // Anything that throws is fatal.
             {
-                State.Instance.ExecState = ExecState.Dead;
-                var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex.Message}";
-                traffic.AppendLine(serr);
+                State.Instance.ExecState = ExecState.Idle;//? Dead;
+                string serr = ex switch
+                {
+                    ApiException exx => $"Api Error: {exx.Message}:{Environment.NewLine}{exx.ApiError}",
+                    ConfigException exx => $"Config File Error: {exx.Message}",
+                    ScriptSyntaxException exx => $"Script Syntax Error: {exx.Message}",
+                    ApplicationArgumentException exx => $"Application Argument Error: {exx.Message}",
+                    _ => $"Other error: {ex}{Environment.NewLine}{ex.StackTrace}",
+                };
+
+                // TODO1 reload or restart?
+                //var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex.Message}";
+                //traffic.AppendLine(serr);
+                _logger.Error(serr);
             }
 
             base.OnLoad(e);
@@ -209,7 +218,8 @@ namespace Nebulua
             State.Instance.ExecState = ExecState.Idle;
 
             // Just in case.
-            State.Instance.ExecState = ExecState.Kill;
+            _core.KillAll();
+ //           State.Instance.ExecState = ExecState.Kill;
 
             LogManager.Stop();
 
@@ -243,6 +253,35 @@ namespace Nebulua
             base.Dispose(disposing);
         }
         #endregion
+
+
+        void LoadScript()
+        {
+            try
+            {
+                _core.RunScript(_scriptFn);
+            }
+            catch (Exception ex) // Anything that throws is fatal.
+            {
+                State.Instance.ExecState = ExecState.Idle;//? Dead;
+                string serr = ex switch
+                {
+                    ApiException exx => $"Api Error: {exx.Message}:{Environment.NewLine}{exx.ApiError}",
+                    ConfigException exx => $"Config File Error: {exx.Message}",
+                    ScriptSyntaxException exx => $"Script Syntax Error: {exx.Message}",
+                    ApplicationArgumentException exx => $"Application Argument Error: {exx.Message}",
+                    _ => $"Other error: {ex}{Environment.NewLine}{ex.StackTrace}",
+                };
+
+                // TODO1 reload or restart?
+                //var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex.Message}";
+                //traffic.AppendLine(serr);
+                _logger.Error(serr);
+            }
+        }
+
+
+
 
         #region Event handlers
         /// <summary>
