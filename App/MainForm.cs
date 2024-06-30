@@ -177,22 +177,20 @@ namespace Nebulua
 
                 timeBar.Invalidate();
             }
-            catch (Exception ex) // Anything that throws is fatal.
+            catch (Exception ex)
             {
                 State.Instance.ExecState = ExecState.Idle;//? Dead;
                 string serr = ex switch
                 {
                     ApiException exx => $"Api Error: {exx.Message}:{Environment.NewLine}{exx.ApiError}",
-                    ConfigException exx => $"Config File Error: {exx.Message}",
                     ScriptSyntaxException exx => $"Script Syntax Error: {exx.Message}",
                     ApplicationArgumentException exx => $"Application Argument Error: {exx.Message}",
                     _ => $"Other error: {ex}{Environment.NewLine}{ex.StackTrace}",
                 };
 
-                // TODO1 reload or restart?
-                //var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex.Message}";
-                //traffic.AppendLine(serr);
-                _logger.Error(serr);
+                // Client can decide what to do with this. They may be recoverable so use warn.
+                _logger.Warn(serr);
+                // _logger.Error(serr);
             }
 
             base.OnLoad(e);
@@ -219,7 +217,6 @@ namespace Nebulua
 
             // Just in case.
             _core.KillAll();
- //           State.Instance.ExecState = ExecState.Kill;
 
             LogManager.Stop();
 
@@ -254,34 +251,32 @@ namespace Nebulua
         }
         #endregion
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         void LoadScript()
         {
             try
             {
                 _core.RunScript(_scriptFn);
             }
-            catch (Exception ex) // Anything that throws is fatal.
+            catch (Exception ex)
             {
                 State.Instance.ExecState = ExecState.Idle;//? Dead;
                 string serr = ex switch
                 {
                     ApiException exx => $"Api Error: {exx.Message}:{Environment.NewLine}{exx.ApiError}",
-                    ConfigException exx => $"Config File Error: {exx.Message}",
                     ScriptSyntaxException exx => $"Script Syntax Error: {exx.Message}",
                     ApplicationArgumentException exx => $"Application Argument Error: {exx.Message}",
                     _ => $"Other error: {ex}{Environment.NewLine}{ex.StackTrace}",
                 };
 
-                // TODO1 reload or restart?
-                //var serr = $"Fatal error in {_scriptFn} - please restart application.{Environment.NewLine}{ex.Message}";
-                //traffic.AppendLine(serr);
-                _logger.Error(serr);
+                // Logging an error will cause the app to exit. TODO1 reloading script doesn't reload nebulua.lua.
+                // Try to reload maybe.
+                //_logger.Error(serr);
+                _logger.Warn(serr);
             }
         }
-
-
-
 
         #region Event handlers
         /// <summary>
@@ -388,7 +383,7 @@ namespace Nebulua
                 if (e.Level == LogLevel.Error)
                 {
                     traffic.AppendLine(e.Message);
-                    traffic.AppendLine("Fatal error - you must restart TODO1??");
+                    traffic.AppendLine("Fatal error - you must restart");
                     State.Instance.ExecState = ExecState.Dead;
                 }
                 else

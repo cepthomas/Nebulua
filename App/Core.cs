@@ -172,6 +172,24 @@ namespace Nebulua
         }
 
         /// <summary>
+        /// Stop all midi.
+        /// </summary>
+        public void KillAll()
+        {
+            foreach (var o in _outputs)
+            {
+                for (int i = 0; i < Defs.NUM_MIDI_CHANNELS; i++)
+                {
+                    ControlChangeEvent cevt = new(0, i + 1, MidiController.AllNotesOff, 0);
+                    o.Send(cevt);
+                }
+            }
+
+            // Hard reset.
+            State.Instance.ExecState = ExecState.Idle;
+        }
+
+        /// <summary>
         /// Handler for state changes of interest. Doesn't throw.
         /// Responsible for core stuff like tempo, kill.
         /// </summary>
@@ -188,20 +206,18 @@ namespace Nebulua
                     SetTimer(State.Instance.Tempo);
                     break;
 
-                case "ExecState":
-                    switch (State.Instance.ExecState)
-                    {
-                        case ExecState.Kill:
-                            KillAll();
-                            State.Instance.ExecState = ExecState.Idle;
-                            break;
+                //case "ExecState":
+                //    switch (State.Instance.ExecState)
+                //    {
+                //        case ExecState.Kill:
+                //            KillAll();
+                //            break;
 
-                        case ExecState.Reload:
-                            Reload();
-                            State.Instance.ExecState = ExecState.Idle;
-                            break;
-                    }
-                    break;
+                //        case ExecState.Reload:
+                //            Reload();
+                //            break;
+                //    }
+                //    break;
             }
         }
 
@@ -458,8 +474,10 @@ namespace Nebulua
                 throw new ApiException("OpenScript() failed", _api.Error);
             }
 
-            // Fix the section info.
+            // Convert api version into internal format.
             State.Instance.InitSectionInfo(_api.SectionInfo);
+
+            State.Instance.ExecState = ExecState.Idle;
         }
 
         /// <summary>
@@ -482,25 +500,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Stop all midi.
-        /// </summary>
-        void KillAll()
-        {
-            foreach (var o in _outputs)
-            {
-                for (int i = 0; i < Defs.NUM_MIDI_CHANNELS; i++)
-                {
-                    ControlChangeEvent cevt = new(0, i + 1, MidiController.AllNotesOff, 0);
-                    o.Send(cevt);
-                }
-            }
-
-            // Hard reset.
-            State.Instance.ExecState = ExecState.Idle;
-        }
-
-        /// <summary>
-        /// General purpose handler for errors in callback functions ecause they can't throw exceptions.
+        /// General purpose handler for errors in callback functions because they can't throw exceptions.
         /// </summary>
         /// <param name="ex">The exception</param>
         void CallbackError(Exception e)
@@ -508,14 +508,14 @@ namespace Nebulua
             string serr = e switch
             {
                 ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
-                ConfigException ex => $"Config File Error: {ex.Message}",
                 ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
                 ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
                 _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
             };
 
-            // Client can decide what to do with this.
-            _logger.Error(serr);
+            // Client can decide what to do with this. They may be recoverable so use warn.
+            _logger.Warn(serr);
+            // _logger.Error(serr);
         }
 
         /// <summary>

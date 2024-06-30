@@ -42,11 +42,6 @@ namespace Nebulua
     public class ApplicationArgumentException(string message) : Exception(message)
     {
     }
-
-    /// <summary>Config file error.</summary>
-    public class ConfigException(string message) : Exception(message)
-    {
-    }
     #endregion
 
     #region Types

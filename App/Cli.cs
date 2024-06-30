@@ -23,7 +23,7 @@ namespace Nebulua
         readonly UserSettings _settings;
 
         /// <summary>Talks to the user.</summary>
-        readonly CommandProc _cmdProc = new(Console.In, Console.Out);
+        readonly CommandProc _cmdProc;
 
         /// <summary>Current script.</summary>
         readonly string _scriptFn = "";
@@ -43,6 +43,7 @@ namespace Nebulua
         {
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
             _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            _cmdProc = new(Console.In, Console.Out, _core);
 
             try
             {
@@ -77,20 +78,21 @@ namespace Nebulua
                 // Normal done. Wait a bit in case there are some lingering events or logging.
                 Thread.Sleep(100);
             }
-            catch (Exception e) // Anything that throws is fatal.
+            catch (Exception e)
             {
                 State.Instance.ExecState = ExecState.Dead;
                 string serr = e switch
                 {
                     ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
-                    ConfigException ex => $"Config File Error: {ex.Message}",
                     ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
                     ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
                     _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
                 };
 
                 // Logging an error will cause the app to exit.
-                _logger.Error(serr);
+                // Try to reload maybe.
+                //_logger.Error(serr);
+                _logger.Warn(serr);
             }
         }
 
@@ -151,6 +153,9 @@ namespace Nebulua
         /// <summary>CLI output.</summary>
         readonly TextWriter _out;
 
+        /// <summary>Common functionality.</summary>
+        readonly Core _core = new();
+
         /// <summary>CLI prompt.</summary>
         readonly string _prompt = ">";
         #endregion
@@ -183,10 +188,11 @@ namespace Nebulua
         /// <summary>
         /// Set up command handler. Could support alternate streams e.g. socket.
         /// </summary>
-        public CommandProc(TextReader @in, TextWriter @out)
+        public CommandProc(TextReader @in, TextWriter @out, Core core)
         {
             _in = @in;
             _out = @out;
+            _core = core;
 
             _commands =
             [

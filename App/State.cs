@@ -10,10 +10,11 @@ namespace Nebulua
 {
     #region Enums
     /// <summary>Internal status.</summary>
-    public enum ExecState { Idle, Run, Kill, Exit, Dead, Reload }
+    public enum ExecState { Idle, Run, Exit, Dead }
+    //public enum ExecState { Idle, Run, Kill, Exit, Dead, Reload }
     #endregion
 
-    /// <summary>System globals. Some notify clients.</summary>
+    /// <summary>System dynamic values for access by all other components. Some notify clients.</summary>
     public class State
     {
         #region Backing fields
@@ -76,6 +77,8 @@ namespace Nebulua
         }
         #endregion
 
+
+
         #region Properties that don't notify
         /// <summary>Parts of the composition plus total length.</summary>
         public List<(int tick, string name)> SectionInfo
@@ -114,7 +117,6 @@ namespace Nebulua
             {
                 _loopStart = value;
                 ValidateTimes();
-                //NotifyStateChanged();
             }
         }
 
@@ -129,7 +131,6 @@ namespace Nebulua
             {
                 _loopEnd = value;
                 ValidateTimes();
-                //NotifyStateChanged();
             }
         }
 
