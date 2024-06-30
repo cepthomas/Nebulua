@@ -21,7 +21,6 @@
   <ItemGroup>
     <Compile Include="..\..\Common\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\Common\Core.cs" Link="Core.cs" />
-    <Compile Include="..\..\Common\Config.cs" Link="Config.cs" />
     <Compile Include="..\..\Common\State.cs" Link="State.cs" />
     <Compile Include="..\common\MockInterop.cs" Link="MockInterop.cs" />
     <Compile Include="..\common\MockNAudio.cs" Link="MockNAudio.cs" />

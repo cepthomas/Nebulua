@@ -106,7 +106,7 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, volume)
-    neb.log_debug(string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
+    -- neb.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
     if chan_hnd == hnd_cc_inp then
         -- Play the note.
@@ -120,7 +120,7 @@ end
 function rcv_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_cc_inp then
         -- Do something.
-        neb.log_debug(string.format("Script rcv controller:%d hnd:%d val:%d", controller, chan_hnd, value))
+        -- neb.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
     end
     return 0
 end

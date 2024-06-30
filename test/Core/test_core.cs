@@ -20,7 +20,7 @@ namespace Nebulua.Test
             var scriptFn = Path.Join(TestUtils.GetProjectSourceDir(), "test", "script_happy.lua");
 
             // Load the script.
-            Core core = new(configFn);
+            Core core = new();
             UT_NOT_NULL(core);
             stat = core.RunScript(scriptFn);
             UT_EQUAL(stat, NebStatus.Ok);

@@ -11,14 +11,9 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 using Nebulua.Common;
-using System.Runtime.CompilerServices;
 
 
 // Curious - slow startup when running from VS/debugger but not from .exe.
-
-// TODO1 migrate CliApp to UI, maybe nbot. Update:
-// <AssemblyName>Nebulua.UiApp</AssemblyName>
-// <RootNamespace>Nebulua.UiApp</RootNamespace>
 
 // TODO1 update tests.
 
@@ -38,7 +33,7 @@ namespace Nebulua.UiApp
         string? _scriptFn = null;
 
         /// <summary>Common functionality.</summary>
-        Core _core = new();
+        readonly Core _core = new();
         #endregion
 
         #region Lifecycle
