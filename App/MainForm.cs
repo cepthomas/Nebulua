@@ -54,7 +54,7 @@ namespace Nebulua
             Size = UserSettings.Current.FormGeometry.Size;
             WindowState = FormWindowState.Normal;
             BackColor = UserSettings.Current.BackColor;
-            // Gets the icon associated with the currently executing assembly.
+            // Get the icon associated with the currently executing assembly.
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
 
             // Misc settings.
@@ -115,14 +115,15 @@ namespace Nebulua
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
 
-            // Midi generator. TODO1 I should provide tooltip.
+            // Midi generator.
             ccMidiGen.MinX = 24; // C0
             ccMidiGen.MaxX = 96; // C6
             ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
             ccMidiGen.MinY = 0; // min velocity == note off
             ccMidiGen.MaxY = 127; // max velocity
             ccMidiGen.GridY = [32, 64, 96];
-            ccMidiGen.UserEvent += CcMidiGen_UserEvent;
+            ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
+            ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
             #endregion
 
             #region Control events
@@ -151,8 +152,6 @@ namespace Nebulua
         {
             try
             {
-                _logger.Debug($"MainForm.OnLoad()");
-
                 // Process cmd line args.
                 _scriptFn = null;
 
@@ -170,7 +169,6 @@ namespace Nebulua
                 _logger.Info($"Loading script file {_scriptFn}");
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
 
-                //LoadScript();
                 _core.LoadScript(_scriptFn);
 
                 timeBar.Invalidate();
@@ -228,8 +226,6 @@ namespace Nebulua
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            //_logger.Debug($"MainForm.Dispose() this={this} _core={_core} disposing={disposing}");
-
             if (disposing && (components != null))
             {
                 components.Dispose();
@@ -238,6 +234,7 @@ namespace Nebulua
             base.Dispose(disposing);
         }
         #endregion
+
         #region Event handlers
         /// <summary>
         /// Handler for state changes for ui display.
@@ -303,10 +300,8 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void CcMidiGen_UserEvent(object? sender, ClickClack.UserEventArgs e)
+        void CcMidiGen_MouseClickEvent(object? sender, ClickClack.UserEventArgs e)
         {
-            //traffic.AppendLine(e.ToString());
-
             if (e.X is not null && e.Y is not null)
             {
                 string name = ((ClickClack)sender!).Name;
@@ -314,6 +309,17 @@ namespace Nebulua
                 int y = (int)e.Y;
                 _core.InjectReceiveEvent(name, 1, x, y < 0 ? 0 : y);
             }
+        }
+
+        /// <summary>
+        /// Provide tool tip text.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        void CcMidiGen_MouseMoveEvent(object? sender, ClickClack.UserEventArgs e)
+        {
+            e.Text = $"{MusicDefinitions.NoteNumberToName((int)e.X!)} V:{e.Y}";
         }
 
         /// <summary>

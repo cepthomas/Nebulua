@@ -11,7 +11,6 @@ namespace Nebulua
     #region Enums
     /// <summary>Internal status.</summary>
     public enum ExecState { Idle, Run, Exit, Dead }
-    //public enum ExecState { Idle, Run, Kill, Exit, Dead, Reload }
     #endregion
 
     /// <summary>System dynamic values for access by all other components. Some notify clients.</summary>
@@ -76,8 +75,6 @@ namespace Nebulua
             }
         }
         #endregion
-
-
 
         #region Properties that don't notify
         /// <summary>Parts of the composition plus total length.</summary>
@@ -213,12 +210,9 @@ namespace Nebulua
             // Fix loop points.
             int lstart = _loopStart < 0 ? 0 : _loopStart;
             int lend = _loopEnd < 0 ? _length : _loopEnd;
-            lstart = Math.Min(lstart, _loopEnd);
-            lend = Math.Min(lend, _length);
-            _loopStart = lstart;
-            _loopEnd = lend;
+            _loopStart = Math.Min(lstart, _loopEnd);
+            _loopEnd = Math.Min(lend, _length);
             _currentTick = MathUtils.Constrain(_currentTick, _loopStart, _loopEnd);
-            //_currentTick = MathUtils.Constrain(_currentTick, lstart, lend);
         }
         #endregion
     }

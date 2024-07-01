@@ -8,7 +8,6 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using Nebulua.Interop;
 
 
 namespace Nebulua
@@ -19,14 +18,14 @@ namespace Nebulua
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("Cli");
 
-        /// <summary>App settings.</summary>
-        readonly UserSettings _settings;
+        /// <summary>Common functionality.</summary>
+        readonly Core _core = new();
+
+        /// <summary>Current script.</summary>
+        readonly string? _scriptFn = null;
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
-
-        /// <summary>Common functionality.</summary>
-        readonly Core _core = new();
 
         /// <summary>All the commands.</summary>
         readonly CommandDescriptor[] _commands;
@@ -47,16 +46,12 @@ namespace Nebulua
         (
             /// <summary>If you like to type.</summary>
             string LongName,
-
             /// <summary>If you don't.</summary>
             char ShortName,
-
             /// <summary>Free text for command description.</summary>
             string Info,
-
             /// <summary>Free text for args description.</summary>
             string Args,
-
             /// <summary>The runtime handler.</summary>
             CommandHandler Handler
         );
@@ -72,10 +67,10 @@ namespace Nebulua
         public Cli()
         {
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.MinLevelFile = _settings.FileLogLevel;
-            LogManager.MinLevelNotif = _settings.NotifLogLevel;
+            LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
+            LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
@@ -96,16 +91,11 @@ namespace Nebulua
 
             try
             {
-                _logger.Debug($"Cli()");
-
-                // Process cmd line args.
-                string? scriptFn = null;
-
                 // Process cmd line args.
                 var args = Environment.GetCommandLineArgs();
                 if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
                 {
-                    scriptFn = args[1];
+                    _scriptFn = args[1];
                 }
                 else
                 {
@@ -113,13 +103,13 @@ namespace Nebulua
                 }
 
                 // OK so far.
-                _logger.Info($"Loading script file {scriptFn}");
-                _core.LoadScript(scriptFn);
+                _logger.Info($"Loading script file {_scriptFn}");
+                _core.LoadScript(_scriptFn);
 
                 // Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
                 while (State.Instance.ExecState != ExecState.Exit)
                 {
-                    Read();
+                    DoCommand();
                 }
 
                 // Normal done. Wait a bit in case there are some lingering events or logging.
@@ -193,7 +183,7 @@ namespace Nebulua
         /// TODO Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
-        public bool Read()
+        public bool DoCommand()
         {
             bool ret = true;
 
@@ -217,7 +207,6 @@ namespace Nebulua
                             valid = true;
 
                             ret = cmd.Handler(cmd, args);
-                            // ok = _EvalStatus(stat, "handler failed: %s", cmd->desc.long_name);
                             break;
                         }
                     }

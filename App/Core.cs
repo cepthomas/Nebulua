@@ -50,8 +50,6 @@ namespace Nebulua
         /// </summary>
         public Core()
         {
-            //_logger.Debug($"Core.Core() this={GetHashCode()}");
-
             // Set up runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives
             _luaPath.Add($@"{exePath}\lua_code"); // app lua files
@@ -102,7 +100,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        /// TODO1 Override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         /// </summary>
         ~Core()
         {
@@ -242,7 +240,6 @@ namespace Nebulua
                 // Read stopwatch and diff/stats.
                 //string? s = _tan?.Dump();
 
-                // Update state.
                 // Bump time and check state.
                 int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
                 int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
@@ -258,7 +255,6 @@ namespace Nebulua
                     else
                     {
                         // Stop and rewind.
-                        // _cmdProc.Write("done"); // custom handle with state change
                         State.Instance.ExecState = ExecState.Idle;
                         State.Instance.CurrentTick = start;
 
