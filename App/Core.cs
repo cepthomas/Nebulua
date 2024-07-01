@@ -38,7 +38,7 @@ namespace Nebulua
         readonly List<MidiInput> _inputs = [];
 
         /// <summary>Current script.</summary>
-        string? _scriptFn = null;
+        string? _currentScriptFn = null;
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -129,12 +129,38 @@ namespace Nebulua
         /// <summary>
         /// Load and execute script. Can throw on main thread.
         /// </summary>
-        public NebStatus RunScript(string scriptFn)
+        /// <param name="scriptFn">The script file or null to reload current.</param>
+        /// <returns></returns>
+        public NebStatus LoadScript(string? scriptFn = null)
         {
             NebStatus stat = NebStatus.Ok;
-            _scriptFn = scriptFn;
 
-            OpenScript(_scriptFn);
+            if (scriptFn is not null)
+            {
+                // New file.
+                _currentScriptFn = scriptFn;
+            }
+            else if (_currentScriptFn is null)
+            {
+                throw new InvalidOperationException("Can't reload, no current file");
+            }
+
+            // Create script api. Clean up old first.
+            _api?.Dispose();
+            _api = new(_luaPath);
+
+            _logger.Info($"Loading script file {_currentScriptFn}");
+
+            stat = _api.OpenScript(_currentScriptFn);
+            if (stat != NebStatus.Ok)
+            {
+                throw new ApiException("Api open script failed", _api.Error);
+            }
+
+            // Get info about the script.
+            State.Instance.InitSectionInfo(_api.SectionInfo);
+
+            State.Instance.ExecState = ExecState.Idle;
 
             // Start timer.
             SetTimer(State.Instance.Tempo);
@@ -144,21 +170,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Reload the externally modified script.
-        /// </summary>
-        public void Reload()
-        {
-            //_logger.Debug($"Core.Reload()1 this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
-            
-            _api?.Dispose();
-            _api = null;
-            OpenScript(_scriptFn!);
-
-            //_logger.Debug($"Core.Reload()2 this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
-        }
-
-        /// <summary>
-        /// Midi input from internal device.
+        /// Input from internal non-midi device.
         /// </summary>
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
@@ -205,19 +217,6 @@ namespace Nebulua
                 case "Tempo":
                     SetTimer(State.Instance.Tempo);
                     break;
-
-                //case "ExecState":
-                //    switch (State.Instance.ExecState)
-                //    {
-                //        case ExecState.Kill:
-                //            KillAll();
-                //            break;
-
-                //        case ExecState.Reload:
-                //            Reload();
-                //            break;
-                //    }
-                //    break;
             }
         }
 
@@ -452,34 +451,6 @@ namespace Nebulua
         #endregion
 
         #region Private functions
-        /// <summary>
-        /// Open the specified script.
-        /// </summary>
-        /// <param name="scriptFn"></param>
-        /// <exception cref="ApiException"></exception>
-        void OpenScript(string scriptFn)
-        {
-            // Create script api.
-            _api = new(_luaPath);
-
-            //_logger.Debug($"Core.OpenScript() this={GetHashCode()} _api={_api.GetHashCode()}");
-
-            // Load the script.
-            var s = $"Loading script file {scriptFn}";
-            _logger.Info(s);
-
-            NebStatus stat = _api.OpenScript(scriptFn);
-            if (stat != NebStatus.Ok)
-            {
-                throw new ApiException("OpenScript() failed", _api.Error);
-            }
-
-            // Convert api version into internal format.
-            State.Instance.InitSectionInfo(_api.SectionInfo);
-
-            State.Instance.ExecState = ExecState.Idle;
-        }
-
         /// <summary>
         /// Set timer for this tempo.
         /// </summary>

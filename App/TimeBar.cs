@@ -51,11 +51,6 @@ namespace Nebulua
         public SnapType Snap { get; set; }
         #endregion
 
-        //#region Events
-        ///// <summary>Value changed by user.</summary>
-        //public event EventHandler? CurrentTimeChanged;
-        //#endregion
-
         #region Lifecycle
         /// <summary>
         /// Normal constructor.
@@ -94,12 +89,6 @@ namespace Nebulua
             // Draw the bar.
             int dcurrent = GetClientFromTick(State.Instance.CurrentTick);
             pe.Graphics.FillRectangle(_brush, dcurrent - 1, 0, 2, Height);
-
-            //int dstart = GetClientFromTick(State.Instance.LoopStart);
-            //int dend = State.Instance.CurrentTick > State.Instance.LoopEnd ?
-            //    GetClientFromTick(State.Instance.LoopEnd) :
-            //    GetClientFromTick(State.Instance.CurrentTick);
-            //pe.Graphics.FillRectangle(_brush, dstart, 0, dend - dstart, Height);
 
             // Draw start/end markers.
             int mstart = GetClientFromTick(State.Instance.LoopStart);

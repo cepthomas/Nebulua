@@ -115,7 +115,7 @@ namespace Nebulua
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
 
-            // Midi generator.
+            // Midi generator. TODO1 I should provide tooltip.
             ccMidiGen.MinX = 24; // C0
             ccMidiGen.MaxX = 96; // C6
             ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
@@ -130,10 +130,8 @@ namespace Nebulua
             btnRewind.Click += Rewind_Click;
             btnAbout.Click += About_Click;
             btnSettings.Click += Settings_Click;
-            //btnKill.Click += (_, __) => { State.Instance.ExecState = ExecState.Kill; };
-            //btnReload.Click += (_, __) => { State.Instance.ExecState = ExecState.Reload; };
             btnKill.Click += (_, __) => { _core.KillAll(); State.Instance.ExecState = ExecState.Idle; };
-            btnReload.Click += (_, __) => { LoadScript(); };
+            btnReload.Click += (_, __) => { _core.LoadScript(); };
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
@@ -168,12 +166,12 @@ namespace Nebulua
                     throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
                 }
 
-                // OK so far. Assemble the engine.
+                // OK so far.
+                _logger.Info($"Loading script file {_scriptFn}");
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                // _logger.Debug($"MainForm.OnLoad() 1");
-                LoadScript();
-                //_core.RunScript(_scriptFn);
-                // _logger.Debug($"MainForm.OnLoad() 2");
+
+                //LoadScript();
+                _core.LoadScript(_scriptFn);
 
                 timeBar.Invalidate();
             }
@@ -188,23 +186,13 @@ namespace Nebulua
                     _ => $"Other error: {ex}{Environment.NewLine}{ex.StackTrace}",
                 };
 
-                // Client can decide what to do with this. They may be recoverable so use warn.
+                // User can decide what to do with this. They may be recoverable so use warn.
                 _logger.Warn(serr);
                 // _logger.Error(serr);
             }
 
             base.OnLoad(e);
             // _logger.Debug($"MainForm.OnLoad() 4");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnShown(EventArgs e)
-        {
-            // _logger.Debug($"MainForm.OnShown()");
-            base.OnShown(e);
         }
 
         /// <summary>
@@ -250,34 +238,6 @@ namespace Nebulua
             base.Dispose(disposing);
         }
         #endregion
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void LoadScript()
-        {
-            try
-            {
-                _core.RunScript(_scriptFn);
-            }
-            catch (Exception ex)
-            {
-                State.Instance.ExecState = ExecState.Idle;//? Dead;
-                string serr = ex switch
-                {
-                    ApiException exx => $"Api Error: {exx.Message}:{Environment.NewLine}{exx.ApiError}",
-                    ScriptSyntaxException exx => $"Script Syntax Error: {exx.Message}",
-                    ApplicationArgumentException exx => $"Application Argument Error: {exx.Message}",
-                    _ => $"Other error: {ex}{Environment.NewLine}{ex.StackTrace}",
-                };
-
-                // Logging an error will cause the app to exit. TODO1 reloading script doesn't reload nebulua.lua.
-                // Try to reload maybe.
-                //_logger.Error(serr);
-                _logger.Warn(serr);
-            }
-        }
-
         #region Event handlers
         /// <summary>
         /// Handler for state changes for ui display.

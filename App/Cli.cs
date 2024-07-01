@@ -22,139 +22,20 @@ namespace Nebulua
         /// <summary>App settings.</summary>
         readonly UserSettings _settings;
 
-        /// <summary>Talks to the user.</summary>
-        readonly CommandProc _cmdProc;
-
-        /// <summary>Current script.</summary>
-        readonly string _scriptFn = "";
-
         /// <summary>Resource management.</summary>
         bool _disposed = false;
 
         /// <summary>Common functionality.</summary>
         readonly Core _core = new();
-        #endregion
 
-        #region Lifecycle
-        /// <summary>
-        /// Constructor inits stuff.
-        /// </summary>
-        public Cli()
-        {
-            string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
-            _cmdProc = new(Console.In, Console.Out, _core);
-
-            try
-            {
-                LogManager.LogMessage += LogManager_LogMessage;
-                LogManager.MinLevelFile = _settings.FileLogLevel;
-                LogManager.MinLevelNotif = _settings.NotifLogLevel;
-                LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
-
-                State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-
-                // Process cmd line args.
-                var args = Environment.GetCommandLineArgs();
-                if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
-                {
-                    _scriptFn = args[1];
-                }
-                else
-                {
-                    throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
-                }
-
-                // OK so far. Run it.
-                _logger.Info($"Running script file {_scriptFn}");
-                _core.RunScript(_scriptFn);
-
-                // Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
-                while (State.Instance.ExecState != ExecState.Exit)
-                {
-                    _cmdProc.Read();
-                }
-
-                // Normal done. Wait a bit in case there are some lingering events or logging.
-                Thread.Sleep(100);
-            }
-            catch (Exception e)
-            {
-                State.Instance.ExecState = ExecState.Dead;
-                string serr = e switch
-                {
-                    ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
-                    ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
-                    ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
-                    _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
-                };
-
-                // Logging an error will cause the app to exit.
-                // Try to reload maybe.
-                //_logger.Error(serr);
-                _logger.Warn(serr);
-            }
-        }
-
-        /// <summary>Clean up.</summary>
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _core?.Dispose();
-                _disposed = true;
-            }
-        }
-        #endregion
-
-        #region Private functions
-        /// <summary>
-        /// Handler for state changes
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="name">Specific State value.</param>
-        void State_ValueChangeEvent(object? _, string name)
-        {
-            if (name == "CurrentTick")
-            {
-                // TODO display running tick/bartime somewhere in console?
-            }
-        }
-
-        /// <summary>
-        /// Capture bad events and display them to the user. If error shut down.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        {
-            if (e.Level == LogLevel.Error)
-            {
-                _cmdProc.Write($"Fatal! shutting down.{Environment.NewLine}{e.Message}");
-                State.Instance.ExecState = ExecState.Exit;
-            }
-            else
-            {
-                _cmdProc.Write(e.Message);
-            }
-        }
-        #endregion
-    }
-
-    public class CommandProc
-    {
-        #region Fields
         /// <summary>All the commands.</summary>
-        readonly CommandDescriptor[]? _commands;
+        readonly CommandDescriptor[] _commands;
 
         /// <summary>CLI input.</summary>
-        readonly TextReader _in;
+        readonly TextReader _in = Console.In;
 
         /// <summary>CLI output.</summary>
-        readonly TextWriter _out;
-
-        /// <summary>Common functionality.</summary>
-        readonly Core _core = new();
+        readonly TextWriter _out = Console.Out;
 
         /// <summary>CLI prompt.</summary>
         readonly string _prompt = ">";
@@ -175,7 +56,7 @@ namespace Nebulua
 
             /// <summary>Free text for args description.</summary>
             string Args,
-            
+
             /// <summary>The runtime handler.</summary>
             CommandHandler Handler
         );
@@ -184,16 +65,21 @@ namespace Nebulua
         delegate bool CommandHandler(CommandDescriptor cmd, List<string> args);
         #endregion
 
-        #region Main work
+        #region Lifecycle
         /// <summary>
-        /// Set up command handler. Could support alternate streams e.g. socket.
+        /// Constructor inits stuff.
         /// </summary>
-        public CommandProc(TextReader @in, TextWriter @out, Core core)
+        public Cli()
         {
-            _in = @in;
-            _out = @out;
-            _core = core;
+            string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
+            _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            LogManager.LogMessage += LogManager_LogMessage;
+            LogManager.MinLevelFile = _settings.FileLogLevel;
+            LogManager.MinLevelNotif = _settings.NotifLogLevel;
+            LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
+            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+            
             _commands =
             [
                 new("help",     '?',    "available commands",               "",                         UsageCmd),
@@ -208,20 +94,100 @@ namespace Nebulua
                 new("reload",   's',    "reload current script",            "",                         ReloadCmd)
             ];
 
-            // Show info now.
-            // InfoCmd(new(), []);
+            try
+            {
+                _logger.Debug($"Cli()");
+
+                // Process cmd line args.
+                string? scriptFn = null;
+
+                // Process cmd line args.
+                var args = Environment.GetCommandLineArgs();
+                if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
+                {
+                    scriptFn = args[1];
+                }
+                else
+                {
+                    throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
+                }
+
+                // OK so far.
+                _logger.Info($"Loading script file {scriptFn}");
+                _core.LoadScript(scriptFn);
+
+                // Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
+                while (State.Instance.ExecState != ExecState.Exit)
+                {
+                    Read();
+                }
+
+                // Normal done. Wait a bit in case there are some lingering events or logging.
+                Thread.Sleep(100);
+            }
+            catch (Exception e)
+            {
+                State.Instance.ExecState = ExecState.Dead;
+                string serr = e switch
+                {
+                    ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
+                    ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
+                    ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
+                    _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
+                };
+
+                // Logging an error will cause the app to exit.
+                //_logger.Error(serr);
+                // Allow user to try to reload.
+                _logger.Warn(serr);
+            }
+        }
+
+        /// <summary>Clean up.</summary>
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _core?.Dispose();
+                _disposed = true;
+            }
+        }
+        #endregion
+
+        #region Event handlers
+        /// <summary>
+        /// Handler for state changes
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="name">Specific State value.</param>
+        void State_ValueChangeEvent(object? _, string name)
+        {
+            if (name == "CurrentTick")
+            {
+                // TODO display running tick/bartime somewhere in console?
+            }
         }
 
         /// <summary>
-        /// Takes care of prompt.
+        /// Log events. If error shut down.
         /// </summary>
-        /// <param name="s"></param>
-        public void Write(string s)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
         {
-            _out.WriteLine(s);
-            _out.Write(_prompt);
+            if (e.Level == LogLevel.Error)
+            {
+                Write($"Fatal! shutting down.{Environment.NewLine}{e.Message}");
+                State.Instance.ExecState = ExecState.Exit;
+            }
+            else
+            {
+                Write(e.Message);
+            }
         }
+        #endregion
 
+        #region Command processing
         /// <summary>
         /// Process user input. Blocks until new line.
         /// TODO Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
@@ -269,6 +235,16 @@ namespace Nebulua
             }
 
             return ret;
+        }
+
+        /// <summary>
+        /// Write to user. Takes care of prompt.
+        /// </summary>
+        /// <param name="s"></param>
+        public void Write(string s)
+        {
+            _out.WriteLine(s);
+            _out.Write(_prompt);
         }
         #endregion
 
@@ -470,7 +446,7 @@ namespace Nebulua
             {
                 case 1: // no args
                     // State.Instance.ExecState = ExecState.Reload;
-                    _core.Reload();
+                    _core.LoadScript();
                     break;
 
                 default:
@@ -523,6 +499,4 @@ namespace Nebulua
         }
         #endregion
     }
-
-    
 }
