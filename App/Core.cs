@@ -50,6 +50,8 @@ namespace Nebulua
         /// </summary>
         public Core()
         {
+            //Debug.WriteLine($"Core.Core() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+
             // Set up runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives
             _luaPath.Add($@"{exePath}\lua_code"); // app lua files
@@ -65,31 +67,25 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Clean up.
+        /// Cleanup. Note that I am taking chharge of explicit disposal of resources.
         /// </summary>
-        /// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
-            //_logger.Debug($"Core.Dispose(bool disposing) this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
+            //Debug.WriteLine($"Core.Dispose() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
 
             if (!_disposed)
             {
-                if (disposing)
-                {
-                    // Called via myClass.Dispose(). 
-                    // OK to use any private object references.
-                    // Dispose managed state (managed objects).
-                    _mmTimer.Stop();
-                    _mmTimer.Dispose();
+                // Dispose managed state (managed objects).
+                _mmTimer.Stop();
+                _mmTimer.Dispose();
 
-                    LogManager.Stop();
+                LogManager.Stop();
 
-                    // Destroy devices
-                    _inputs.ForEach(d => d.Dispose());
-                    _inputs.Clear();
-                    _outputs.ForEach(d => d.Dispose());
-                    _outputs.Clear();
-                }
+                // Destroy devices
+                _inputs.ForEach(d => d.Dispose());
+                _inputs.Clear();
+                _outputs.ForEach(d => d.Dispose());
+                _outputs.Clear();
 
                 // Release unmanaged resources. https://stackoverflow.com/a/4935448
                 // Set large fields to null.
@@ -99,28 +95,63 @@ namespace Nebulua
             }
         }
 
-        /// <summary>
-        /// TODO1 Override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        /// </summary>
-        ~Core()
-        {
-            //_logger.Debug($"Core.~Core() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+        ///// <summary>
+        ///// Clean up.
+        ///// </summary>
+        ///// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
+        //protected virtual void Dispose(bool disposing)
+        //{
+        //    //Debug.WriteLine($"Core.Dispose(bool disposing) this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
 
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: false);
-        }
+        //    if (!_disposed)
+        //    {
+        //        if (disposing)
+        //        {
+        //            // Called via myClass.Dispose(). 
+        //            // OK to use any private object references.
+        //            // Dispose managed state (managed objects).
+        //            _mmTimer.Stop();
+        //            _mmTimer.Dispose();
 
-        /// <summary>
-        /// Cleanup.
-        /// </summary>
-        public void Dispose()
-        {
-            //_logger.Debug($"Core.Dispose() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+        //            LogManager.Stop();
 
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
+        //            // Destroy devices
+        //            _inputs.ForEach(d => d.Dispose());
+        //            _inputs.Clear();
+        //            _outputs.ForEach(d => d.Dispose());
+        //            _outputs.Clear();
+        //        }
+
+        //        // Release unmanaged resources. https://stackoverflow.com/a/4935448
+        //        // Set large fields to null.
+        //        _api?.Dispose();
+
+        //        _disposed = true;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// TODO1 Override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        ///// </summary>
+        //~Core()
+        //{
+        //    //Debug.WriteLine($"Core.~Core() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+
+        //    // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //    Dispose(disposing: false);
+        //}
+
+        ///// <summary>
+        ///// Cleanup.
+        ///// </summary>
+        //public void Dispose()
+        //{
+        //    //Debug.WriteLine($"Core.Dispose() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
+
+        //    // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //    Dispose(disposing: true);
+        //    GC.SuppressFinalize(this);
+        //}
         #endregion
 
         #region Primary workers
@@ -317,6 +348,8 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_CreateChannel(object? sender, CreateChannelArgs e)
         {
+            //Debug.WriteLine($"Core.Interop_CreateChannel() this={GetHashCode()} _api={_api?.GetHashCode()} sender={sender?.GetHashCode()} _disposed={_disposed}");
+
             e.Ret = 0; // chan_hnd default means invalid
 
             // Check args.
