@@ -115,21 +115,21 @@ namespace Nebulua
                 // Normal done. Wait a bit in case there are some lingering events or logging.
                 Thread.Sleep(100);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                State.Instance.ExecState = ExecState.Dead;
-                string serr = e switch
+                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                if (fatal)
                 {
-                    ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
-                    ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
-                    ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
-                    _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
-                };
-
-                // Logging an error will cause the app to exit.
-                //_logger.Error(serr);
-                // Allow user to try to reload.
-                _logger.Warn(serr);
+                    State.Instance.ExecState = ExecState.Dead;
+                    // Logging an error will cause the app to exit.
+                    _logger.Error(msg);
+                }
+                else
+                {
+                    // User can decide what to do with this. They may be recoverable so use warn.
+                    State.Instance.ExecState = ExecState.Dead;
+                    _logger.Warn(msg);
+                }
             }
         }
 

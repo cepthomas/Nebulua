@@ -3,14 +3,13 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
-using Nebulua.CliApp;
-using Nebulua.Common;
+using Nebulua;
 
 
 namespace Nebulua.Test
 {
     /// <summary>Test the simpler functions.</summary>
-    public class CMDPROC_BASIC : TestSuite
+    public class CLI_BASIC : TestSuite
     {
         public override void RunSuite()
         {
@@ -22,39 +21,41 @@ namespace Nebulua.Test
 
             MockIn min = new();
             MockOut mout = new();
-            var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
+            var cli = new Cli();
+            //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
+            string prompt = ">";
 
             ///// Fat fingers.
             mout.Clear();
             min.NextLine = "bbbbb";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"Invalid command");
-            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[1], prompt);
 
             mout.Clear();
             min.NextLine = "z";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"Invalid command");
-            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[1], prompt);
 
             ///// These next two confirm proper full/short name handling.
             mout.Clear();
             min.NextLine = "help";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 15);
             UT_EQUAL(mout.Capture[0], "help|?: available commands");
             UT_EQUAL(mout.Capture[1], "info|i: system information");
             UT_EQUAL(mout.Capture[13], "reload|s: reload current script");
-            UT_EQUAL(mout.Capture[14], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[14], prompt);
 
             mout.Clear();
             min.NextLine = "?";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 15);
             UT_EQUAL(mout.Capture[0], "help|?: available commands");
@@ -62,7 +63,7 @@ namespace Nebulua.Test
             ///// The rest of the commands.
             mout.Clear();
             min.NextLine = "exit";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"goodbye!");
@@ -70,7 +71,7 @@ namespace Nebulua.Test
             st.ExecState = ExecState.Idle; // reset
             mout.Clear();
             min.NextLine = "run";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"running");
@@ -78,63 +79,63 @@ namespace Nebulua.Test
             st.ExecState = ExecState.Idle; // reset
             mout.Clear();
             min.NextLine = "reload";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[0], prompt);
 
             mout.Clear();
             min.NextLine = "tempo";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], "100");
 
             mout.Clear();
             min.NextLine = "tempo 182";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[0], prompt);
 
             mout.Clear();
             min.NextLine = "tempo 242";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], "invalid tempo: 242");
 
             mout.Clear();
             min.NextLine = "tempo 39";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], "invalid tempo: 39");
 
             mout.Clear();
             min.NextLine = "monitor r";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[0], prompt);
 
             mout.Clear();
             min.NextLine = "monitor s";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[0], prompt);
 
             mout.Clear();
             min.NextLine = "monitor o";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[0], prompt);
 
             mout.Clear();
             min.NextLine = "monitor junk";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], "invalid option: junk");
@@ -145,7 +146,7 @@ namespace Nebulua.Test
     }
 
     /// <summary>Test functions that interact with running script.</summary>
-    public class CMDPROC_CONTEXT : TestSuite
+    public class CLI_CONTEXT : TestSuite
     {
         public override void RunSuite()
         {
@@ -157,7 +158,9 @@ namespace Nebulua.Test
 
             MockIn min = new();
             MockOut mout = new();
-            var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
+            var cli = new Cli();
+            //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
+            string prompt = ">";
 
             ///// Fake valid loaded script.
             Dictionary<int, string> sectionInfo = new() { [0] = "start", [200] = "middle", [300] = "end", [400] = "LENGTH" };
@@ -167,51 +170,51 @@ namespace Nebulua.Test
             ///// Position commands.
             mout.Clear();
             min.NextLine = "position";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"0:0:0");
-            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[1], prompt);
 
             mout.Clear();
             min.NextLine = "position 10:2:6";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"10:2:6");
-            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[1], prompt);
 
             mout.Clear();
             min.NextLine = "position 203:2:6"; // too late
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], "invalid requested position: 203:2:6");
-            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[1], prompt);
 
             mout.Clear();
             min.NextLine = "position";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"10:2:6");
-            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[1], prompt);
 
             mout.Clear();
             min.NextLine = "position 111:9:6";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
             UT_EQUAL(mout.Capture[0], $"invalid requested position: 111:9:6");
-            UT_EQUAL(mout.Capture[1], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[1], prompt);
 
             ///// Misc commands.
             mout.Clear();
             min.NextLine = "kill";
-            bret = cmdProc.Read();
+            bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], cmdProc.Prompt);
+            UT_EQUAL(mout.Capture[0], prompt);
 
             // Wait for logger to stop.
             Thread.Sleep(100);

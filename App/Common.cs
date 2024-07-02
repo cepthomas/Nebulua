@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
+using Nebulua;
 
 
 namespace Nebulua
@@ -41,6 +43,41 @@ namespace Nebulua
     /// <summary>App command line error.</summary>
     public class ApplicationArgumentException(string message) : Exception(message)
     {
+    }
+
+    public class ExceptionUtils
+    {
+        /// <summary>Generic exception processor.</summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public static (bool fatal, string msg) ProcessException(Exception e)
+        {
+            bool fatal = false;
+            string msg;
+
+            switch (e)
+            {
+                case ApiException ex:
+                    msg = $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}";
+                    break;
+
+                case ScriptSyntaxException ex:
+                    msg = $"Script Syntax Error: {ex.Message}";
+                    break;
+
+                case ApplicationArgumentException ex:
+                    msg = $"Application Argument Error: {ex.Message}";
+                    fatal = true;
+                    break;
+
+                default: // other
+                    msg = $"{e.GetType()}: {e.Message}{Environment.NewLine}{e.StackTrace}";
+                    fatal = true;
+                    break;
+            }
+
+            return (fatal, msg);
+        }
     }
     #endregion
 

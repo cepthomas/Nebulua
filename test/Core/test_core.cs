@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using Ephemera.NBagOfTricks.PNUT;
-using Nebulua.Common;
+using Nebulua;
 using Nebulua.Interop;
 
 
@@ -22,7 +22,7 @@ namespace Nebulua.Test
             // Load the script.
             Core core = new();
             UT_NOT_NULL(core);
-            stat = core.RunScript(scriptFn);
+            stat = core.LoadScript(scriptFn);
             UT_EQUAL(stat, NebStatus.Ok);
 
             // Look inside private stuff:
@@ -38,7 +38,7 @@ namespace Nebulua.Test
             //void State_ValueChangeEvent(object? sender, string name)
 
             // Reload. Need real interop to test this.
-            core.Reload();
+            core.LoadScript();
 
             // Clean up.
             core.Dispose();

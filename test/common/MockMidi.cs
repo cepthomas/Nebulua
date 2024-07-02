@@ -7,7 +7,7 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
-namespace Nebulua.Common
+namespace Nebulua
 {
     /// <summary>Mock for entities in Midi.cs. See real class for doc.</summary>
     public class MidiInput

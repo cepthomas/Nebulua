@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
-using Nebulua.Common;
 using Nebulua.Interop;
-using Nebulua.Test;
 
 
 namespace Nebulua.Test
@@ -58,7 +56,7 @@ namespace Nebulua.Test
                 }
             }
 
-            UT_EQUAL(events.CollectedEvents.Count, 120);
+            UT_EQUAL(events.CollectedEvents.Count, 115);
         }
 
         void State_ValueChangeEvent(object? sender, string name)

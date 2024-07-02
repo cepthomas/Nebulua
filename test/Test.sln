@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCommandProc", "CommandProc\TestCommandProc.csproj", "{44DFD7B4-BA38-49AF-91BE-64B1E80D73A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestCli", "Cli\TestCli.csproj", "{44DFD7B4-BA38-49AF-91BE-64B1E80D73A5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestInterop", "Interop\TestInterop.csproj", "{EDB9DCD7-9FA6-4CFA-A3BB-7DEAEF41DF09}"
 EndProject

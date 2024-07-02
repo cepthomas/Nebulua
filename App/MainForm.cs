@@ -12,9 +12,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// Curious - slow startup when running from VS/debugger but not from .exe.
-
-// TODO1 update tests. Consolidate other dirs?
+// TODO slow startup when running from VS/debugger but not from .exe.
 
 
 namespace Nebulua
@@ -25,11 +23,11 @@ namespace Nebulua
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("App");
 
-        /// <summary>Current script.</summary>
-        string? _scriptFn = null;
-
         /// <summary>Common functionality.</summary>
         readonly Core _core = new();
+
+        /// <summary>Current script.</summary>
+        string? _scriptFn = null;
         #endregion
 
         #region Lifecycle
@@ -175,18 +173,19 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                State.Instance.ExecState = ExecState.Idle;//? Dead;
-                string serr = ex switch
+                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                if (fatal)
                 {
-                    ApiException exx => $"Api Error: {exx.Message}:{Environment.NewLine}{exx.ApiError}",
-                    ScriptSyntaxException exx => $"Script Syntax Error: {exx.Message}",
-                    ApplicationArgumentException exx => $"Application Argument Error: {exx.Message}",
-                    _ => $"Other error: {ex}{Environment.NewLine}{ex.StackTrace}",
-                };
-
-                // User can decide what to do with this. They may be recoverable so use warn.
-                _logger.Warn(serr);
-                // _logger.Error(serr);
+                    State.Instance.ExecState = ExecState.Dead;
+                    // Logging an error will cause the app to exit.
+                    _logger.Error(msg);
+                }
+                else
+                {
+                    // User can decide what to do with this. They may be recoverable so use warn.
+                    State.Instance.ExecState = ExecState.Dead;
+                    _logger.Warn(msg);
+                }
             }
 
             base.OnLoad(e);
@@ -194,7 +193,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// 
+        /// Goodbye.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -226,9 +225,9 @@ namespace Nebulua
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                components?.Dispose();
                 _core?.Dispose();
             }
             base.Dispose(disposing);
@@ -316,7 +315,6 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        /// <exception cref="NotImplementedException"></exception>
         void CcMidiGen_MouseMoveEvent(object? sender, ClickClack.UserEventArgs e)
         {
             e.Text = $"{MusicDefinitions.NoteNumberToName((int)e.X!)} V:{e.Y}";

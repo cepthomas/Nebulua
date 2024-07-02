@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-      <!-- <TargetFramework>net8.0</TargetFramework> -->
       <TargetFramework>net8.0-windows</TargetFramework>
       <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -19,9 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Common\Common.cs" Link="Common.cs" />
-    <Compile Include="..\..\Common\Core.cs" Link="Core.cs" />
-    <Compile Include="..\..\Common\State.cs" Link="State.cs" />
+    <Compile Include="..\..\App\Common.cs" Link="Common.cs" />
+    <Compile Include="..\..\App\Core.cs" Link="Core.cs" />
+    <Compile Include="..\..\App\State.cs" Link="State.cs" />
+    <Compile Include="..\..\App\UserSettings.cs" Link="UserSettings.cs" />
     <Compile Include="..\common\MockInterop.cs" Link="MockInterop.cs" />
     <Compile Include="..\common\MockNAudio.cs" Link="MockNAudio.cs" />
     <Compile Include="..\common\MockMidi.cs" Link="MockMidi.cs" />

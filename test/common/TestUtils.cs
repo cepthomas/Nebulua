@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using Ephemera.NBagOfTricks;
-using Nebulua.Common;
+using Nebulua;
 
 
 namespace Nebulua.Test

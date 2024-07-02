@@ -94,64 +94,6 @@ namespace Nebulua
                 _disposed = true;
             }
         }
-
-        ///// <summary>
-        ///// Clean up.
-        ///// </summary>
-        ///// <param name="disposing">True if managed resources should be disposed; otherwise, false.</param>
-        //protected virtual void Dispose(bool disposing)
-        //{
-        //    //Debug.WriteLine($"Core.Dispose(bool disposing) this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed} disposing={disposing}");
-
-        //    if (!_disposed)
-        //    {
-        //        if (disposing)
-        //        {
-        //            // Called via myClass.Dispose(). 
-        //            // OK to use any private object references.
-        //            // Dispose managed state (managed objects).
-        //            _mmTimer.Stop();
-        //            _mmTimer.Dispose();
-
-        //            LogManager.Stop();
-
-        //            // Destroy devices
-        //            _inputs.ForEach(d => d.Dispose());
-        //            _inputs.Clear();
-        //            _outputs.ForEach(d => d.Dispose());
-        //            _outputs.Clear();
-        //        }
-
-        //        // Release unmanaged resources. https://stackoverflow.com/a/4935448
-        //        // Set large fields to null.
-        //        _api?.Dispose();
-
-        //        _disposed = true;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// TODO1 Override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        ///// </summary>
-        //~Core()
-        //{
-        //    //Debug.WriteLine($"Core.~Core() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
-
-        //    // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //    Dispose(disposing: false);
-        //}
-
-        ///// <summary>
-        ///// Cleanup.
-        ///// </summary>
-        //public void Dispose()
-        //{
-        //    //Debug.WriteLine($"Core.Dispose() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
-
-        //    // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //    Dispose(disposing: true);
-        //    GC.SuppressFinalize(this);
-        //}
         #endregion
 
         #region Primary workers
@@ -394,7 +336,7 @@ namespace Nebulua
         /// <summary>
         /// Sending some midi fro script. Can throw.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="_"></param>
         /// <param name="e"></param>
         void Interop_Send(object? _, SendArgs e)
         {
@@ -503,19 +445,21 @@ namespace Nebulua
         /// General purpose handler for errors in callback functions because they can't throw exceptions.
         /// </summary>
         /// <param name="ex">The exception</param>
-        void CallbackError(Exception e)
+        void CallbackError(Exception ex)
         {
-            string serr = e switch
+            var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+            if (fatal)
             {
-                ApiException ex => $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}",
-                ScriptSyntaxException ex => $"Script Syntax Error: {ex.Message}",
-                ApplicationArgumentException ex => $"Application Argument Error: {ex.Message}",
-                _ => $"Other error: {e}{Environment.NewLine}{e.StackTrace}",
-            };
-
-            // Client can decide what to do with this. They may be recoverable so use warn.
-            _logger.Warn(serr);
-            // _logger.Error(serr);
+                State.Instance.ExecState = ExecState.Dead;
+                // Logging an error will cause the app to exit.
+                _logger.Error(msg);
+            }
+            else
+            {
+                // User can decide what to do with this. They may be recoverable so use warn.
+                State.Instance.ExecState = ExecState.Dead;
+                _logger.Warn(msg);
+            }
         }
 
         /// <summary>

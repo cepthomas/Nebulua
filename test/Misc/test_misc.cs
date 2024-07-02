@@ -3,7 +3,9 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
-using Nebulua.Common;
+using Nebulua;
+using System.Runtime.CompilerServices;
+using System.Data;
 
 
 namespace Nebulua.Test
@@ -35,6 +37,66 @@ namespace Nebulua.Test
             //UT_STR_EQUAL(smidi, "MidiStatus:90909");
         }
     }
+
+    /// <summary>Odds and ends that have no other home.</summary>
+    public class MISC_EXCEPTIONS : TestSuite
+    {
+        public override void RunSuite()
+        {
+            {
+                var ex = new ApiException("message111", "Bad API");
+                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                UT_FALSE(fatal);
+                UT_STRING_CONTAINS(msg, "message111");
+                UT_STRING_CONTAINS(msg, "Bad API");
+            }
+
+            {
+                var ex = new ScriptSyntaxException("message222");
+                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                UT_FALSE(fatal);
+                UT_STRING_CONTAINS(msg, "Script Syntax Error: message222");
+            }
+
+            {
+                var ex = new ApplicationArgumentException("message333");
+                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                UT_TRUE(fatal);
+                UT_STRING_CONTAINS(msg, "Application Argument Error: message333");
+            }
+
+            {
+                var ex = new DuplicateNameException("message444");
+                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                UT_TRUE(fatal);
+                UT_STRING_CONTAINS(msg, "System.Data.DuplicateNameException: message444");
+            }
+        }
+    }
+
+
+    public class Verify
+    {
+        //https://andrewlock.net/exploring-dotnet-6-part-11-callerargumentexpression-and-throw-helpers/
+        public static void IsTrue(bool value, [CallerArgumentExpression("value")] string expression = "")
+        {
+            if (!value)
+            {
+                Throw(expression);
+            }
+        }
+
+        private static void Throw(string expression) => throw new ArgumentException($"{expression} must be True, but was False");
+    }
+
+    public class CallerStuff
+    {
+        public static void DoThis([CallerFilePath] string file = "", [CallerLineNumber] int line = 0, [CallerMemberName] string member = "")
+        {
+        }
+    }
+
+
 
     /// <summary>Test entry.</summary>
     static class Program

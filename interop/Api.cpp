@@ -44,7 +44,7 @@ Api::Api(List<String^>^ lpath)
     // Init lua.
     _l = luaL_newstate();
 
-    // Debug::WriteLine("*** Api::Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
+     //Debug::WriteLine(">>> Api::Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -86,7 +86,7 @@ Api::Api(List<String^>^ lpath)
 //--------------------------------------------------------//
 Api::~Api()
 {
-    // Debug::WriteLine("*** Api::~Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
+    //Debug::WriteLine(">>> Api::~Api() this = {0} _l = {1}", this->GetHashCode(), MAKE_ID(_l));
 
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
@@ -124,7 +124,7 @@ NebStatus Api::OpenScript(String^ fn)
         nstat = EvalLuaStatus(lstat, "Load script file failed.");
     }
 
-    // Execute the script to initialize it. This catches runtime syntax errors.
+    // Execute the script to initialize it. This reports runtime syntax errors.
     if (nstat == NebStatus::Ok)
     {
         lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
