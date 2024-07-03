@@ -18,13 +18,18 @@ namespace Nebulua
         public static UserSettings Current { get; set; } = new();
 
         #region Properties - persisted editable
+        [DisplayName("Open Last File")]
+        [Description("Open last file on start.")]
+        [Browsable(true)]
+        public bool OpenLastFile { get; set; } = true;
+
         [DisplayName("File Log Level")]
         [Description("Log level for file write.")]
         [Browsable(true)]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LogLevel FileLogLevel { get; set; } = LogLevel.Trace;
 
-        [DisplayName("File Log Level")]
+        [DisplayName("Notification Log Level")]
         [Description("Log level for UI notification.")]
         [Browsable(true)]
         [JsonConverter(typeof(JsonStringEnumConverter))]

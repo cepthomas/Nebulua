@@ -135,8 +135,16 @@ namespace Nebulua
             chkMonSnd.Click += (_, __) => { UserSettings.Current.MonitorSnd = chkMonSnd.Checked; };
             #endregion
 
+            ddbtnFile.Options = ["111", "", "222", "333"];
+            ddbtnFile.Selected += File_Selected;
+            ddbtnFile.Enabled = true;
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+        }
+
+        private void File_Selected(object? sender, int e)
+        {
+            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -147,13 +155,13 @@ namespace Nebulua
         {
             try
             {
-                // Process cmd line args. Validity checked in LoadScript().
-                var args = Environment.GetCommandLineArgs();
-                var scriptFn = args.Length > 1 ? args[1] : null;
-                _logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
+                //// Process cmd line args. Validity checked in LoadScript().
+                //var args = Environment.GetCommandLineArgs();
+                //var scriptFn = args.Length > 1 ? args[1] : null;
+                //_logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
 
-                _core.LoadScript(scriptFn);
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
+                //_core.LoadScript(scriptFn);
+                //Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
 
                 timeBar.Invalidate();
             }

@@ -19,6 +19,7 @@ namespace Nebulua
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             chkPlay = new CheckBox();
             btnRewind = new Button();
@@ -34,8 +35,8 @@ namespace Nebulua
             btnSettings = new Button();
             timeBar = new TimeBar();
             lblState = new Label();
-            lblInfo = new Label();
             ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
+            ddbtnFile = new DropDownButton();
             SuspendLayout();
             // 
             // chkPlay
@@ -71,7 +72,7 @@ namespace Nebulua
             sldVolume.Name = "sldVolume";
             sldVolume.Orientation = Orientation.Horizontal;
             sldVolume.Resolution = 0.05D;
-            sldVolume.Size = new Size(88, 52);
+            sldVolume.Size = new Size(88, 42);
             sldVolume.TabIndex = 36;
             sldVolume.Value = 0.8D;
             // 
@@ -87,7 +88,7 @@ namespace Nebulua
             sldTempo.Name = "sldTempo";
             sldTempo.Orientation = Orientation.Horizontal;
             sldTempo.Resolution = 1D;
-            sldTempo.Size = new Size(88, 52);
+            sldTempo.Size = new Size(88, 42);
             sldTempo.TabIndex = 33;
             sldTempo.Value = 100D;
             // 
@@ -201,31 +202,37 @@ namespace Nebulua
             lblState.Size = new Size(120, 22);
             lblState.TabIndex = 53;
             // 
-            // lblInfo
-            // 
-            lblInfo.AutoSize = true;
-            lblInfo.BorderStyle = BorderStyle.FixedSingle;
-            lblInfo.Location = new Point(717, 38);
-            lblInfo.MinimumSize = new Size(120, 22);
-            lblInfo.Name = "lblInfo";
-            lblInfo.Size = new Size(120, 22);
-            lblInfo.TabIndex = 54;
-            // 
             // ccMidiGen
             // 
             ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            ccMidiGen.GridX = (System.Collections.Generic.List<int>)resources.GetObject("ccMidiGen.GridX");
+            ccMidiGen.GridY = (System.Collections.Generic.List<int>)resources.GetObject("ccMidiGen.GridY");
             ccMidiGen.Location = new Point(52, 349);
+            ccMidiGen.MaxX = 100;
+            ccMidiGen.MaxY = 100;
+            ccMidiGen.MinX = 0;
+            ccMidiGen.MinY = 0;
+            ccMidiGen.Name = "ccMidiGen";
             ccMidiGen.Size = new Size(375, 176);
             ccMidiGen.TabIndex = 56;
+            // 
+            // ddbtnFile
+            // 
+            ddbtnFile.Location = new Point(717, 35);
+            ddbtnFile.Name = "ddbtnFile";
+            ddbtnFile.Size = new Size(121, 29);
+            ddbtnFile.TabIndex = 57;
+            ddbtnFile.Text = "ddbtnFile";
+            ddbtnFile.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(865, 547);
+            Controls.Add(ddbtnFile);
             Controls.Add(ccMidiGen);
             Controls.Add(btnSettings);
-            Controls.Add(lblInfo);
             Controls.Add(lblState);
             Controls.Add(timeBar);
             Controls.Add(btnReload);
@@ -260,8 +267,8 @@ namespace Nebulua
         private Button btnReload;
         private TimeBar timeBar;
         private Label lblState;
-        private Label lblInfo;
         private Button btnSettings;
         private Ephemera.NBagOfUis.ClickClack ccMidiGen;
+        private DropDownButton ddbtnFile;
     }
 }

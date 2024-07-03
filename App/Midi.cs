@@ -10,8 +10,6 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
-
-
     public class MidiDefs
     {
         // Midi defs.

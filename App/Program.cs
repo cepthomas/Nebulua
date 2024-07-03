@@ -18,18 +18,20 @@ namespace Nebulua
         [STAThread]
         static void Main()
         {
-            var args = Environment.GetCommandLineArgs();
+            ApplicationConfiguration.Initialize();
+            Application.Run(new MainForm());
 
-            if (args.Count() > 1)
-            {
-               using var cli = new Cli(); 
-            }
-            else
-            {
-                FreeConsole();
-                ApplicationConfiguration.Initialize();
-                Application.Run(new MainForm());
-            }
+            //var args = Environment.GetCommandLineArgs();
+            //if (args.Count() > 1)
+            //{
+            //   using var cli = new Cli(); 
+            //}
+            //else
+            //{
+            //    FreeConsole();
+            //    ApplicationConfiguration.Initialize();
+            //    Application.Run(new MainForm());
+            //}
         }
     }
 }

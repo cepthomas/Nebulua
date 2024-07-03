@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Nebulua.App.Properties {
+namespace Nebulua.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Nebulua.App.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Nebulua.App.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Nebulua.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -206,6 +206,16 @@ namespace Nebulua.App.Properties {
         internal static System.Drawing.Bitmap glyphicons_366_restart {
             get {
                 object obj = ResourceManager.GetObject("glyphicons-366-restart", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap glyphicons_37_file {
+            get {
+                object obj = ResourceManager.GetObject("glyphicons-37-file", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
