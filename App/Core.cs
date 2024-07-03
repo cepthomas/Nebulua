@@ -22,7 +22,7 @@ namespace Nebulua
         /// <summary>The interop API.</summary>
         Api? _api;
 
-        /// <summary>Client supplied context for LUA_PATH.</summary>
+        /// <summary>Context for LUA_PATH.</summary>
         readonly List<string> _luaPath = [];
 
         /// <summary>Fast timer.</summary>
@@ -37,11 +37,13 @@ namespace Nebulua
         /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
         readonly List<MidiInput> _inputs = [];
 
-        /// <summary>Current script.</summary>
-        string? _currentScriptFn = null;
-
         /// <summary>Resource management.</summary>
         bool _disposed = false;
+        #endregion
+
+        #region Proerties
+        /// <summary>Current script.</summary>
+        public string? CurrentScriptFn { get; private set; }
         #endregion
 
         #region Lifecycle
@@ -50,11 +52,9 @@ namespace Nebulua
         /// </summary>
         public Core()
         {
-            //Debug.WriteLine($"Core.Core() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
-
             // Set up runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives
-            _luaPath.Add($@"{exePath}\lua_code"); // app lua files
+            _luaPath.Add(Path.Join(exePath, "lua")); // app lua files
 
             // Hook script callbacks.
             Api.CreateChannel += Interop_CreateChannel;
@@ -67,12 +67,10 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Cleanup. Note that I am taking chharge of explicit disposal of resources.
+        /// Cleanup. Note that I am taking charge of explicit disposal of resources.
         /// </summary>
         public void Dispose()
         {
-            //Debug.WriteLine($"Core.Dispose() this={GetHashCode()} _api={_api?.GetHashCode()} _disposed={_disposed}");
-
             if (!_disposed)
             {
                 // Dispose managed state (managed objects).
@@ -104,14 +102,19 @@ namespace Nebulua
         /// <returns></returns>
         public NebStatus LoadScript(string? scriptFn = null)
         {
-            NebStatus stat = NebStatus.Ok;
-
+            // Check file arg.
             if (scriptFn is not null)
             {
-                // New file.
-                _currentScriptFn = scriptFn;
+                if (scriptFn.EndsWith(".lua") && Path.Exists(scriptFn))
+                {
+                    CurrentScriptFn = scriptFn;
+                }
+                else
+                {
+                    throw new ApplicationArgumentException($"Invalid script file: {scriptFn}");
+                }
             }
-            else if (_currentScriptFn is null)
+            else if (CurrentScriptFn is null)
             {
                 throw new InvalidOperationException("Can't reload, no current file");
             }
@@ -120,9 +123,9 @@ namespace Nebulua
             _api?.Dispose();
             _api = new(_luaPath);
 
-            _logger.Info($"Loading script file {_currentScriptFn}");
+            _logger.Info($"Loading script file {CurrentScriptFn}");
 
-            stat = _api.OpenScript(_currentScriptFn);
+            NebStatus stat = _api.OpenScript(CurrentScriptFn);
             if (stat != NebStatus.Ok)
             {
                 throw new ApiException("Api open script failed", _api.Error);
@@ -161,7 +164,7 @@ namespace Nebulua
         {
             foreach (var o in _outputs)
             {
-                for (int i = 0; i < Defs.NUM_MIDI_CHANNELS; i++)
+                for (int i = 0; i < MidiDefs.NUM_MIDI_CHANNELS; i++)
                 {
                     ControlChangeEvent cevt = new(0, i + 1, MidiController.AllNotesOff, 0);
                     o.Send(cevt);
@@ -248,13 +251,13 @@ namespace Nebulua
             NebStatus stat = NebStatus.Ok;
 
             int index = _inputs.IndexOf((MidiInput)sender!);
-            int chan_hnd = ChannelHandle.MakeInHandle(index, e.Channel);
+            int chan_hnd = MakeInHandle(index, e.Channel);
             bool logit = true;
 
             switch (e)
             {
                 case NoteOnEvent evt:
-                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / Defs.MIDI_VAL_MAX);
+                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
                     break;
 
                 case NoteEvent evt:
@@ -295,7 +298,7 @@ namespace Nebulua
             e.Ret = 0; // chan_hnd default means invalid
 
             // Check args.
-            if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > Defs.NUM_MIDI_CHANNELS)
+            if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > MidiDefs.NUM_MIDI_CHANNELS)
             {
                 throw new ScriptSyntaxException($"Script has invalid input midi device: {e.DevName}");
             }
@@ -311,7 +314,7 @@ namespace Nebulua
                 }
 
                 output.Channels[e.ChanNum - 1] = true;
-                e.Ret = ChannelHandle.MakeOutHandle(_outputs.Count - 1, e.ChanNum);
+                e.Ret = MakeOutHandle(_outputs.Count - 1, e.ChanNum);
 
                 // Send the patch now.
                 PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
@@ -329,7 +332,7 @@ namespace Nebulua
                 }
 
                 input.Channels[e.ChanNum - 1] = true;
-                e.Ret = ChannelHandle.MakeInHandle(_inputs.Count - 1, e.ChanNum);
+                e.Ret = MakeInHandle(_inputs.Count - 1, e.ChanNum);
             }
         }
 
@@ -343,13 +346,13 @@ namespace Nebulua
             e.Ret = 0; // not used
 
             // Check args.
-            var (index, chan_num) = ChannelHandle.DeconstructHandle(e.ChanHnd);
-            if (index >= _outputs.Count || chan_num < 1 || chan_num > Defs.NUM_MIDI_CHANNELS ||
+            var (index, chan_num) = DeconstructHandle(e.ChanHnd);
+            if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS ||
                 !_outputs[index].Channels[chan_num - 1])
             {
                 throw new ScriptSyntaxException($"Script has invalid channel: {e.ChanHnd}");
             }
-            if (e.What < 0 || e.What >= Defs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= Defs.MIDI_VAL_MAX)
+            if (e.What < 0 || e.What >= MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= MidiDefs.MIDI_VAL_MAX)
             {
                 throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
             }
@@ -431,7 +434,7 @@ namespace Nebulua
             if (tempo > 0)
             {
                 double sec_per_beat = 60.0 / tempo;
-                double msec_per_sub = 1000 * sec_per_beat / Defs.SUBS_PER_BEAT;
+                double msec_per_sub = 1000 * sec_per_beat / MusicTime.SUBS_PER_BEAT;
                 double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
                 _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimer_Callback);
             }
@@ -447,7 +450,7 @@ namespace Nebulua
         /// <param name="ex">The exception</param>
         void CallbackError(Exception ex)
         {
-            var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+            var (fatal, msg) = Utils.ProcessException(ex);
             if (fatal)
             {
                 State.Instance.ExecState = ExecState.Dead;
@@ -472,7 +475,7 @@ namespace Nebulua
         public string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
         {
             // Common part.
-            (int index, int chan_num) = ChannelHandle.DeconstructHandle(chan_hnd);
+            (int index, int chan_num) = DeconstructHandle(chan_hnd);
             string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{index} Ch:{chan_num} ";
 
             switch (evt)
@@ -495,6 +498,25 @@ namespace Nebulua
 
             return s;
         }
+
+        /// <summary>Make a standard output handle.</summary>
+        public int MakeOutHandle(int index, int chan_num)
+        {
+            return (index << 8) | chan_num | 0x8000;
+        }
+
+        /// <summary>Make a standard input handle.</summary>
+        public int MakeInHandle(int index, int chan_num)
+        {
+            return (index << 8) | chan_num;
+        }
+
+        /// <summary>Take apart a standard in/out handle.</summary>
+        public (int index, int chan_num) DeconstructHandle(int chan_hnd)
+        {
+            return (((chan_hnd & ~0x8000) >> 8) & 0xFF, (chan_hnd & ~0x8000) & 0xFF);
+        }
+
         #endregion
     }
 }

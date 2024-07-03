@@ -70,7 +70,7 @@ namespace Nebulua
         {
             // // Set up runtime lua environment.
             // var exePath = Environment.CurrentDirectory; // where exe lives
-            // _luaPath.Add($@"{exePath}\lua_code"); // app lua files
+            // _luaPath.Add($@"{exePath}\lua  _code"); // app lua files
 
             // // Hook script callbacks.
             // Api.CreateChannel += Interop_CreateChannel;

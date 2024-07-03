@@ -1,12 +1,16 @@
 using System;
+using System.Configuration;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
+
 
 namespace Nebulua
 {
     internal static class Program
     {
-        static bool _cli = false;
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        private static extern bool FreeConsole();
 
         /// <summary>
         ///  The main entry point for the application.
@@ -14,23 +18,17 @@ namespace Nebulua
         [STAThread]
         static void Main()
         {
-            if (_cli)
-            {
-                using var cli = new Cli();
+            var args = Environment.GetCommandLineArgs();
 
-                // <OutputType>Exe</OutputType>
-                // <TargetFramework>net8.0-windows</TargetFramework>
+            if (args.Count() > 1)
+            {
+               using var cli = new Cli(); 
             }
             else
             {
-                // To customize application configuration such as set high DPI settings or default font,
-                // see https://aka.ms/applicationconfiguration.
+                FreeConsole();
                 ApplicationConfiguration.Initialize();
                 Application.Run(new MainForm());
-
-                // <OutputType>WinExe</OutputType>
-                // <TargetFramework>net8.0-windows</TargetFramework>
-                // <UseWindowsForms>true</UseWindowsForms>
             }
         }
     }

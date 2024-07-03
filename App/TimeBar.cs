@@ -239,7 +239,7 @@ namespace Nebulua
             if (tick > 0 && snapType != SnapType.Sub)
             {
                 // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
-                int res = snapType == SnapType.Bar ? Defs.SUBS_PER_BAR : Defs.SUBS_PER_BEAT;
+                int res = snapType == SnapType.Bar ? MusicTime.SUBS_PER_BAR : MusicTime.SUBS_PER_BEAT;
 
                 double dtick = Math.Floor((double)tick);
                 int floor = (int)(dtick / res) * res;

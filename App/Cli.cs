@@ -12,7 +12,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
-    public class Cli : IDisposable // TODO1 combine with App or make a new csproj. 
+    public class Cli : IDisposable
     {
         #region Fields
         /// <summary>App logger.</summary>
@@ -20,9 +20,6 @@ namespace Nebulua
 
         /// <summary>Common functionality.</summary>
         readonly Core _core = new();
-
-        /// <summary>Current script.</summary>
-        readonly string? _scriptFn = null;
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -91,20 +88,23 @@ namespace Nebulua
 
             try
             {
-                // Process cmd line args.
+                // Process cmd line args. Script file validity checked in LoadScript().
                 var args = Environment.GetCommandLineArgs();
-                if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
+                string? scriptFn;
+                if (args.Length == 2)
                 {
-                    _scriptFn = args[1];
+                    scriptFn = args[1];
                 }
                 else
                 {
-                    throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
+                    Write("Invalid command line");
+                    ShowUsage();
+                    throw new ApplicationArgumentException($"Invalid command line");
                 }
 
                 // OK so far.
-                _logger.Info($"Loading script file {_scriptFn}");
-                _core.LoadScript(_scriptFn);
+                _logger.Info($"Loading script file {scriptFn}");
+                _core.LoadScript(scriptFn);
 
                 // Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
                 while (State.Instance.ExecState != ExecState.Exit)
@@ -117,17 +117,15 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
                 if (fatal)
                 {
-                    State.Instance.ExecState = ExecState.Dead;
-                    // Logging an error will cause the app to exit.
                     _logger.Error(msg);
                 }
                 else
                 {
                     // User can decide what to do with this. They may be recoverable so use warn.
-                    State.Instance.ExecState = ExecState.Dead;
+                    State.Instance.ExecState = ExecState.Idle;
                     _logger.Warn(msg);
                 }
             }
@@ -177,13 +175,13 @@ namespace Nebulua
         }
         #endregion
 
-        #region Command processing
+        #region Private functions
         /// <summary>
         /// Process user input. Blocks until new line.
         /// TODO Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
-        public bool DoCommand()
+        bool DoCommand()
         {
             bool ret = true;
 
@@ -226,11 +224,29 @@ namespace Nebulua
             return ret;
         }
 
+        void ShowUsage()
+        {
+            foreach (var cmd in _commands!)
+            {
+                _out.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
+                if (cmd.Args.Length > 0)
+                {
+                    // Maybe multiline args.
+                    var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
+                    foreach (var arg in parts)
+                    {
+                        _out.WriteLine($"    {arg}");
+                    }
+                }
+            }
+            Write("");
+        }
+
         /// <summary>
         /// Write to user. Takes care of prompt.
         /// </summary>
         /// <param name="s"></param>
-        public void Write(string s)
+        void Write(string s)
         {
             _out.WriteLine(s);
             _out.Write(_prompt);
@@ -469,21 +485,7 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool UsageCmd(CommandDescriptor _, List<string> __)
         {
-            foreach (var cmd in _commands!)
-            {
-                _out.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
-                if (cmd.Args.Length > 0)
-                {
-                    // Maybe multiline args.
-                    var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
-                    foreach (var arg in parts)
-                    {
-                        _out.WriteLine($"    {arg}");
-                    }
-                }
-            }
-            Write("");
-
+            ShowUsage();
             return true;
         }
         #endregion

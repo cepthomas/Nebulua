@@ -12,7 +12,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO slow startup when running from VS/debugger but not from .exe.
+// TODO1 slow startup when running from VS/debugger but not from .exe.
 
 
 namespace Nebulua
@@ -25,9 +25,6 @@ namespace Nebulua
 
         /// <summary>Common functionality.</summary>
         readonly Core _core = new();
-
-        /// <summary>Current script.</summary>
-        string? _scriptFn = null;
         #endregion
 
         #region Lifecycle
@@ -150,46 +147,33 @@ namespace Nebulua
         {
             try
             {
-                // Process cmd line args.
-                _scriptFn = null;
-
+                // Process cmd line args. Validity checked in LoadScript().
                 var args = Environment.GetCommandLineArgs();
-                if (args.Length == 2 && args[1].EndsWith(".lua") && Path.Exists(args[1]))
-                {
-                    _scriptFn = args[1];
-                }
-                else
-                {
-                    throw new ApplicationArgumentException($"Invalid nebulua script file: {args[1]}");
-                }
+                var scriptFn = args.Length > 1 ? args[1] : null;
+                _logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
 
-                // OK so far.
-                _logger.Info($"Loading script file {_scriptFn}");
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-
-                _core.LoadScript(_scriptFn);
+                _core.LoadScript(scriptFn);
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
 
                 timeBar.Invalidate();
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
                 if (fatal)
                 {
-                    State.Instance.ExecState = ExecState.Dead;
                     // Logging an error will cause the app to exit.
                     _logger.Error(msg);
                 }
                 else
                 {
                     // User can decide what to do with this. They may be recoverable so use warn.
-                    State.Instance.ExecState = ExecState.Dead;
+                    State.Instance.ExecState = ExecState.Idle;
                     _logger.Warn(msg);
                 }
             }
 
             base.OnLoad(e);
-            // _logger.Debug($"MainForm.OnLoad() 4");
         }
 
         /// <summary>
@@ -344,15 +328,11 @@ namespace Nebulua
         {
             this.InvokeIfRequired(_ =>
             {
+                traffic.AppendLine(e.Message);
                 if (e.Level == LogLevel.Error)
                 {
-                    traffic.AppendLine(e.Message);
-                    traffic.AppendLine("Fatal error - you must restart");
+                    traffic.AppendLine("Fatal error - restart");
                     State.Instance.ExecState = ExecState.Dead;
-                }
-                else
-                {
-                    traffic.AppendLine($"{e.Message}");
                 }
             });
         }

@@ -10,6 +10,16 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
+
+
+    public class MidiDefs
+    {
+        // Midi defs.
+        public const int MIDI_VAL_MIN = 0;
+        public const int MIDI_VAL_MAX = 127;
+        public const int NUM_MIDI_CHANNELS = 16;
+    }
+
     /// <summary>
     /// A midi input device.
     /// </summary>
@@ -25,7 +35,7 @@ namespace Nebulua
         public string DeviceName { get; }
 
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
 
         /// <summary>Device capture on/off.</summary>
         public bool CaptureEnable
@@ -142,7 +152,7 @@ namespace Nebulua
         public string DeviceName { get; }
 
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
         #endregion
 
         #region Lifecycle

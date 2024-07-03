@@ -45,7 +45,7 @@ namespace Nebulua.Test
         {
             {
                 var ex = new ApiException("message111", "Bad API");
-                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                var (fatal, msg) = Utils.Utils(ex);
                 UT_FALSE(fatal);
                 UT_STRING_CONTAINS(msg, "message111");
                 UT_STRING_CONTAINS(msg, "Bad API");
@@ -53,21 +53,21 @@ namespace Nebulua.Test
 
             {
                 var ex = new ScriptSyntaxException("message222");
-                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                var (fatal, msg) = Utils.Utils(ex);
                 UT_FALSE(fatal);
                 UT_STRING_CONTAINS(msg, "Script Syntax Error: message222");
             }
 
             {
                 var ex = new ApplicationArgumentException("message333");
-                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                var (fatal, msg) = Utils.Utils(ex);
                 UT_TRUE(fatal);
                 UT_STRING_CONTAINS(msg, "Application Argument Error: message333");
             }
 
             {
                 var ex = new DuplicateNameException("message444");
-                var (fatal, msg) = ExceptionUtils.ProcessException(ex);
+                var (fatal, msg) = Utils.Utils(ex);
                 UT_TRUE(fatal);
                 UT_STRING_CONTAINS(msg, "System.Data.DuplicateNameException: message444");
             }
