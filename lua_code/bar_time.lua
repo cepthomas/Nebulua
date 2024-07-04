@@ -30,7 +30,7 @@ function BarTime(arg1, arg2, arg3)
         if e == nil then
             d.tick = arg1
         else
-            err = string.format("Bad constructor: %s", e)
+            err = string.format("Bad constructor 1: %s", e)
         end
     elseif ut.is_integer(arg1) and ut.is_integer(arg2) and ut.is_integer(arg3) then
         -- From bar/beat/sub.
@@ -40,7 +40,7 @@ function BarTime(arg1, arg2, arg3)
         if e == nil then
             d.tick = (arg1 * com.SUBS_PER_BAR) + (arg2 * com.SUBS_PER_BEAT) + (arg3)
         else
-            err = string.format("Bad constructor: %s", e)
+            err = string.format("Bad constructor 2: %s", e)
         end
     elseif ut.is_string(arg1) and arg2 == nil and arg3 == nil then
         -- Parse from string.
@@ -69,7 +69,7 @@ function BarTime(arg1, arg2, arg3)
             err = string.format("Invalid time: %s", tostring(arg1))
         end
     else
-        err = string.format("Bad constructor: %s, %s, %s", tostring(arg1), tostring(arg2), tostring(arg3))
+        err = string.format("Bad constructor 3: %s, %s, %s", tostring(arg1), tostring(arg2), tostring(arg3))
     end
 
     ----------------------------------------

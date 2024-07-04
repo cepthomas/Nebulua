@@ -31,7 +31,6 @@ namespace Nebulua
             chkMonRcv = new CheckBox();
             chkMonSnd = new CheckBox();
             chkLoop = new CheckBox();
-            btnReload = new Button();
             btnSettings = new Button();
             timeBar = new TimeBar();
             lblState = new Label();
@@ -166,16 +165,6 @@ namespace Nebulua
             toolTip1.SetToolTip(chkLoop, "Enable looping");
             chkLoop.UseVisualStyleBackColor = false;
             // 
-            // btnReload
-            // 
-            btnReload.FlatStyle = FlatStyle.Flat;
-            btnReload.Image = (Image)resources.GetObject("btnReload.Image");
-            btnReload.Location = new Point(124, 8);
-            btnReload.Name = "btnReload";
-            btnReload.Size = new Size(40, 40);
-            btnReload.TabIndex = 51;
-            btnReload.UseVisualStyleBackColor = false;
-            // 
             // btnSettings
             // 
             btnSettings.FlatStyle = FlatStyle.Flat;
@@ -227,16 +216,14 @@ namespace Nebulua
             // 
             // ddbtnFile
             // 
-            ddbtnFile.DropDownEnabled = true;
             ddbtnFile.FlatStyle = FlatStyle.Flat;
             ddbtnFile.Image = Properties.Resources.glyphicons_37_file;
-            ddbtnFile.Location = new Point(717, 35);
+            ddbtnFile.Location = new Point(124, 8);
             ddbtnFile.Name = "ddbtnFile";
-            ddbtnFile.Options = (System.Collections.Generic.List<string>)resources.GetObject("ddbtnFile.Options");
-            ddbtnFile.Size = new Size(56, 51);
+            ddbtnFile.Size = new Size(40, 40);
             ddbtnFile.TabIndex = 57;
             toolTip1.SetToolTip(ddbtnFile, "Open new or recent script");
-            ddbtnFile.UseVisualStyleBackColor = true;
+            ddbtnFile.UseVisualStyleBackColor = false;
             // 
             // MainForm
             // 
@@ -248,7 +235,6 @@ namespace Nebulua
             Controls.Add(btnSettings);
             Controls.Add(lblState);
             Controls.Add(timeBar);
-            Controls.Add(btnReload);
             Controls.Add(chkLoop);
             Controls.Add(chkMonSnd);
             Controls.Add(chkMonRcv);
@@ -277,7 +263,6 @@ namespace Nebulua
         private CheckBox chkMonRcv;
         private CheckBox chkMonSnd;
         private CheckBox chkLoop;
-        private Button btnReload;
         private TimeBar timeBar;
         private Label lblState;
         private Button btnSettings;

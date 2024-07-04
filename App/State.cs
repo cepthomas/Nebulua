@@ -77,7 +77,7 @@ namespace Nebulua
         #endregion
 
         #region Properties that don't notify
-        /// <summary>Parts of the composition plus total length.</summary>
+        /// <summary>Parts of the composition plus total length. If empty, notes are generated dynamically.</summary>
         public List<(int tick, string name)> SectionInfo
         {
             get
@@ -173,25 +173,26 @@ namespace Nebulua
         /// <param name="apiSectionInfo"></param>
         public void InitSectionInfo(Dictionary<int, string> apiSectionInfo)
         {
+            _sectionInfo.Clear();
+            _length = 0;
+            _loopStart = -1;
+            _loopEnd = -1;
+            _currentTick = 0;
+
             if (apiSectionInfo.Count > 0)
             {
-                _sectionInfo.Clear();
                 List<(int tick, string name)> sinfo = [];
                 var spos = apiSectionInfo.Keys.OrderBy(k => k).ToList();
                 spos.ForEach(sp => _sectionInfo.Add((sp, apiSectionInfo[sp])));
 
                 // Also reset position stuff.
                 _length = _sectionInfo.Last().tick;
-                _loopStart = -1;
-                _loopEnd = -1;
-                _currentTick = 0;
-
                 ValidateTimes();
             }
-            else
-            {
-                throw new ScriptSyntaxException("InitSectionInfo() script has no sections");
-            }
+            //else
+            //{
+            //    throw new ScriptSyntaxException("InitSectionInfo() script has no sections");
+            //}
         }
         #endregion
 

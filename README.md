@@ -69,11 +69,13 @@ inst.SideStick    | Drum name from the definitions                           |
 
 Use your favorite external text editor, preferably with lua syntax highlighting and autocomplete.
 
-Refer to this [example script](examples/example.lua) showing example of static sequence and loop definitions, and creating notes by script functions.
+Refer to this [composition](examples/example.lua) showing example of static sequence and loop definitions, 
+and creating notes by script functions.
 
-Scripts can also be [dynamic](examples/airport.lua), a take on Eno's Music for Airports.
+Scripts can also be [dynamic](examples/airport.lua), a take on Eno's Music for Airports. These have no canned sequences.
 
-Almost all errors are considered fatal as they are usually things the user needs to fix before continuing such as script syntax errors. They are logged, written to the CLI, and then the application exits.
+Almost all errors are considered fatal as they are usually things the user needs to fix before continuing such as
+script syntax errors. They are logged, written to the CLI, and then the application exits.
 
 ## Composition
 A composition is comprised of one or more sections, each of which has one or more sequences of notes.

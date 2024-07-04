@@ -10,20 +10,22 @@ namespace Nebulua
 {
     // Based on https://stackoverflow.com/a/27173509
 
-    public class DropDownButton : Button
+    public class DropDownButton : Button // TODO1 put in nbui
     {
-        int _splitWidth = 20;
-
         #region Events
         /// <summary>Drop down selection event.</summary>
         public event EventHandler<string>? Selected;
         #endregion
 
+        #region Properties
         /// <summary>Drop down options. Empty line inserts a separator.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public List<string> Options { get; set; } = [];
+        #endregion
 
-        public bool DropDownEnabled { get; set; } = true;
-
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public DropDownButton()
         {
             ContextMenuStrip = new();
@@ -47,26 +49,14 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            ContextMenuStrip.Items.Clear();
+            ContextMenuStrip!.Items.Clear();
 
             // Populate menu with options.
             foreach(var o in Options)
             {
                 ContextMenuStrip.Items.Add(o == "" ? new ToolStripSeparator() : new ToolStripMenuItem(o, null, Menu_Click));
             }
-            
-            // Show it.
-            var splitRect = new Rectangle(Width - _splitWidth, 0, _splitWidth, Height);
-
-            // Figure out if the button click was on the button itself or the menu split.
-            if (e.Button == MouseButtons.Left && splitRect.Contains(e.Location))
-            {
-                ContextMenuStrip.Show(this, 0, Height);
-            }
-            else // default click
-            {
-                base.OnMouseDown(e);
-            }
+            ContextMenuStrip.Show(this, 0, Height);
         }
 
         /// <summary>
@@ -77,22 +67,13 @@ namespace Nebulua
         {
             base.OnPaint(e);
 
-            // Draw the arrow glyph on the right side of the button
-            int x = ClientRectangle.Width - 14;
-            int y = ClientRectangle.Height / 2 - 1;
+            // Draw the arrow.
+            int x = ClientRectangle.Width - 12;
+            int y = ClientRectangle.Height - 12;
 
-            var arrowBrush = Enabled && DropDownEnabled ? SystemBrushes.ControlText : SystemBrushes.ButtonShadow;
-            Point[] arrows = [new Point(x, y), new Point(x + 7, y), new Point(x + 3, y + 4)];
-            e.Graphics.FillPolygon(arrowBrush, arrows);
-
-            // Draw a dashed separator on the left of the arrow
-            int lineX = ClientRectangle.Width - _splitWidth;
-            int lineYFrom = y - 4;
-            int lineYTo = y + 8;
-            using (var separatorPen = new Pen(Brushes.DarkGray) { DashStyle = DashStyle.Dot })
-            {
-                e.Graphics.DrawLine(separatorPen, lineX, lineYFrom, lineX, lineYTo);
-            }
+            using var br = new SolidBrush(Color.Gray);
+            Point[] arrows = [new Point(x, y), new Point(x + 10, y), new Point(x + 5, y + 10)];
+            e.Graphics.FillPolygon(br, arrows);
         }
     }
 }

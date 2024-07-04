@@ -6,8 +6,9 @@
 -- Import modules we need.
 local neb = require("nebulua") -- lua api
 local mus = require("music_defs")
-local mid  = require("midi_defs") -- GM midi instrument definitions
+local mid = require("midi_defs") -- GM midi instrument definitions
 local bt  = require("bar_time") -- time utility
+local com = require('neb_common')
 
 
 ------------------------- Configuration -------------------------------
@@ -18,7 +19,7 @@ local midi_out = "VirtualMIDISynth #1"
 -- local midi_out = "loopMIDI Port"
 
 -- Specify midi channels.
-local hout = create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
+local hout = neb.create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
 
 
 ------------------------- Variables -----------------------------------
@@ -52,13 +53,15 @@ local function add_loop(snote, duration, delay)
     end
 end
 
---- Convert to BarTime.
+--- Convert beat/sub to tick.
 --   beat: which beat
 --   sub: which subbeat
---   return: a BarTime
+--   return: tick
 local function tot(beat, sub)
-    bt = BarTime(beat, sub)
-    return bt.get_tick()
+    tick = beat * com.SUBS_PER_BEAT + sub
+    return tick
+    -- bt = BarTime(0, beat, sub)
+    -- return bt.get_tick()
 end
 
 
@@ -66,6 +69,8 @@ end
 -- Called once to initialize your script stuff. This is a required function!
 function setup()
     -- Set up all the loop notes. Key is Ab.
+    xxx = tot(1,2)
+
     add_loop("Ab4", tot(17,3),  tot(8,1))
     add_loop("Ab5", tot(17,2),  tot(3,1))
     -- 3rd
@@ -82,6 +87,7 @@ function setup()
     neb.set_tempo(70)
 
     return 0
+end
 
 
 -----------------------------------------------------------------------------

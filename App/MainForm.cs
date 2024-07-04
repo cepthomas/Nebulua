@@ -14,6 +14,7 @@ using Ephemera.NBagOfUis;
 
 // TODO1 slow startup when running from VS/debugger but not from .exe.
 // TODO1 lua require() file edits don't reload?
+// TODO1 support scripts without sequences.
 
 
 namespace Nebulua
@@ -27,14 +28,16 @@ namespace Nebulua
         /// <summary>Common functionality.</summary>
         readonly Core _core = new();
 
+        /// <summary>Detect external edits to current script.</summary>
+        readonly FileSystemWatcher _watcher = new();
 
-        FileSystemWatcher _watcher = new();
-
+        /// <summary>Current script has been edited.</summary>
+        bool _dirty = false;
         #endregion
 
         #region Lifecycle
         /// <summary>
-        /// Inits control behavior.
+        /// Constructor inits most of the UI.
         /// </summary>
         public MainForm()
         {
@@ -101,10 +104,6 @@ namespace Nebulua
             btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.IconColor);
             btnKill.Click += (_, __) => { _core.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
-            btnReload.BackColor = UserSettings.Current.BackColor;
-            btnReload.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnReload.Image!, UserSettings.Current.IconColor);
-            btnReload.Click += (_, __) => { _core.LoadScript(); };
-
             btnSettings.BackColor = UserSettings.Current.BackColor;
             btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.IconColor);
             btnSettings.Click += Settings_Click;
@@ -141,7 +140,6 @@ namespace Nebulua
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
             ddbtnFile.Selected += File_Selected;
-            ddbtnFile.Click += File_Reload;
             #endregion
 
             // Now ready to go live.
@@ -236,10 +234,6 @@ namespace Nebulua
 
 
         #region File handling
-
-        // >>>>>> TODO1 combine reload and file button - disable reload until dirty
-
-
         /// <summary>
         /// Create the menu with the recently used files.
         /// </summary>
@@ -247,74 +241,56 @@ namespace Nebulua
         {
             List<string> options = [];
             options.Add("Open...");
-            options.Add("");
-            UserSettings.Current.RecentFiles.ForEach(f => options.Add(f));
+            if (_core.CurrentScriptFn is not null)
+            {
+                options.Add("Reload");
+            }
+            if (UserSettings.Current.RecentFiles.Count > 0)
+            {
+                options.Add("");
+                UserSettings.Current.RecentFiles.ForEach(f => options.Add(f));
+            }
             ddbtnFile.Options = options;
         }
 
-        // /// <summary>
-        // /// Update the mru with the user selection.
-        // /// </summary>
-        // /// <param name="fn">The selected file.</param>
-        // void AddToRecentDefs(string fn)
-        // {
-        //     if (File.Exists(fn))
-        //     {
-        //         _settings.UpdateMru(fn);
-        //         PopulateFileMenu();
-        //     }
-        // }
-
-
-        void File_Selected(object? sender, string sel)
+        /// <summary>
+        /// Selection from user.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="fsel"></param>
+        void File_Selected(object? sender, string fsel)
         {
-            if (sel == "Open...") // navigate to
+            switch (fsel)
             {
-                string dir = "";
-                if (UserSettings.Current.ScriptPath != "")
-                {
-                    if (Directory.Exists(UserSettings.Current.ScriptPath))
+                case "Open...":
                     {
-                        dir = UserSettings.Current.ScriptPath;
+                        using OpenFileDialog openDlg = new()
+                        {
+                            Filter = "Nebulua files | *.lua",
+                            Title = "Select a Nebulua file",
+                            InitialDirectory = UserSettings.Current.ScriptPath,
+                        };
+
+                        if (openDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            OpenScriptFile(openDlg.FileName);
+                        }
+
                     }
-                    else
-                    {
-                        _logger.Warn("Your script path is invalid, edit your settings");
-                    }
-                }
+                    break;
 
-                using OpenFileDialog openDlg = new()
-                {
-                    Filter = "Nebulua files | *.lua",
-                    Title = "Select a Nebulua file",
-                    InitialDirectory = dir,
-                };
+                case "Reload":
+                    OpenScriptFile();
+                    break;
 
-                if (openDlg.ShowDialog() == DialogResult.OK)
-                {
-                    OpenScriptFile(openDlg.FileName);
-                }
+                default: // specific file
+                    OpenScriptFile(fsel);
+                    break;
             }
-            else // specific file
-            {
-                OpenScriptFile(sel);
-            }
-        }
-
-
-        void File_Reload(object? sender, EventArgs e)
-        {
-            OpenScriptFile();
-        }
-
-
-        void Watcher_Changed(object sender, FileSystemEventArgs e)
-        {
-            // Do something - indicate??
         }
 
         /// <summary>
-        /// Common script file opener.
+        /// Common script file opener or reloader.
         /// </summary>
         /// <param name="scriptFn">The script file to open.</param>
         void OpenScriptFile(string? scriptFn = null)
@@ -330,7 +306,7 @@ namespace Nebulua
                 {
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
                     _watcher.Filter = Path.GetFileName(scriptFn);
-                    _watcher.Path = scriptFn;
+                    _watcher.Path = Path.GetDirectoryName(scriptFn)!;
                     _watcher.EnableRaisingEvents = true;
                     // AddToRecentDefs(scriptFn);
                     UserSettings.Current.UpdateMru(scriptFn);
@@ -341,11 +317,12 @@ namespace Nebulua
 
                 }
 
-                timeBar.Invalidate();
+                timeBar.Invalidate(); // force update
+                _dirty = false;
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = Utils.ProcessException(ex); // >>>>>>>> thread???
+                var (fatal, msg) = Utils.ProcessException(ex);
                 if (fatal)
                 {
                     // Logging an error will cause the app to exit.
@@ -358,6 +335,17 @@ namespace Nebulua
                     _logger.Warn(msg);
                 }
             }
+        }
+
+        /// <summary>
+        /// Script edited externally.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Watcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            // Do something - indicate??
+            _dirty = true;
         }
         #endregion
 
