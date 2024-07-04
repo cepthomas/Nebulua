@@ -37,6 +37,7 @@ namespace Nebulua
             lblState = new Label();
             ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
             ddbtnFile = new DropDownButton();
+            toolTip1 = new ToolTip(components);
             SuspendLayout();
             // 
             // chkPlay
@@ -48,6 +49,7 @@ namespace Nebulua
             chkPlay.Name = "chkPlay";
             chkPlay.Size = new Size(40, 40);
             chkPlay.TabIndex = 0;
+            toolTip1.SetToolTip(chkPlay, "Play toggle");
             chkPlay.UseVisualStyleBackColor = false;
             // 
             // btnRewind
@@ -58,6 +60,7 @@ namespace Nebulua
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(40, 40);
             btnRewind.TabIndex = 1;
+            toolTip1.SetToolTip(btnRewind, "Rewind");
             btnRewind.UseVisualStyleBackColor = false;
             // 
             // sldVolume
@@ -113,6 +116,7 @@ namespace Nebulua
             btnAbout.Name = "btnAbout";
             btnAbout.Size = new Size(40, 40);
             btnAbout.TabIndex = 44;
+            toolTip1.SetToolTip(btnAbout, "About");
             btnAbout.UseVisualStyleBackColor = false;
             // 
             // btnKill
@@ -123,6 +127,7 @@ namespace Nebulua
             btnKill.Name = "btnKill";
             btnKill.Size = new Size(40, 40);
             btnKill.TabIndex = 47;
+            toolTip1.SetToolTip(btnKill, "Kill all outputs");
             btnKill.UseVisualStyleBackColor = false;
             // 
             // chkMonRcv
@@ -134,6 +139,7 @@ namespace Nebulua
             chkMonRcv.Name = "chkMonRcv";
             chkMonRcv.Size = new Size(40, 40);
             chkMonRcv.TabIndex = 48;
+            toolTip1.SetToolTip(chkMonRcv, "Monitor receive events");
             chkMonRcv.UseVisualStyleBackColor = false;
             // 
             // chkMonSnd
@@ -145,6 +151,7 @@ namespace Nebulua
             chkMonSnd.Name = "chkMonSnd";
             chkMonSnd.Size = new Size(40, 40);
             chkMonSnd.TabIndex = 49;
+            toolTip1.SetToolTip(chkMonSnd, "Monitor send events");
             chkMonSnd.UseVisualStyleBackColor = false;
             // 
             // chkLoop
@@ -156,6 +163,7 @@ namespace Nebulua
             chkLoop.Name = "chkLoop";
             chkLoop.Size = new Size(40, 40);
             chkLoop.TabIndex = 50;
+            toolTip1.SetToolTip(chkLoop, "Enable looping");
             chkLoop.UseVisualStyleBackColor = false;
             // 
             // btnReload
@@ -176,6 +184,7 @@ namespace Nebulua
             btnSettings.Name = "btnSettings";
             btnSettings.Size = new Size(40, 40);
             btnSettings.TabIndex = 55;
+            toolTip1.SetToolTip(btnSettings, "User settings");
             btnSettings.UseVisualStyleBackColor = false;
             // 
             // timeBar
@@ -218,11 +227,15 @@ namespace Nebulua
             // 
             // ddbtnFile
             // 
+            ddbtnFile.DropDownEnabled = true;
+            ddbtnFile.FlatStyle = FlatStyle.Flat;
+            ddbtnFile.Image = Properties.Resources.glyphicons_37_file;
             ddbtnFile.Location = new Point(717, 35);
             ddbtnFile.Name = "ddbtnFile";
-            ddbtnFile.Size = new Size(121, 29);
+            ddbtnFile.Options = (System.Collections.Generic.List<string>)resources.GetObject("ddbtnFile.Options");
+            ddbtnFile.Size = new Size(56, 51);
             ddbtnFile.TabIndex = 57;
-            ddbtnFile.Text = "ddbtnFile";
+            toolTip1.SetToolTip(ddbtnFile, "Open new or recent script");
             ddbtnFile.UseVisualStyleBackColor = true;
             // 
             // MainForm
@@ -270,5 +283,6 @@ namespace Nebulua
         private Button btnSettings;
         private Ephemera.NBagOfUis.ClickClack ccMidiGen;
         private DropDownButton ddbtnFile;
+        private ToolTip toolTip1;
     }
 }

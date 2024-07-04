@@ -13,6 +13,7 @@ using Ephemera.NBagOfUis;
 
 
 // TODO1 slow startup when running from VS/debugger but not from .exe.
+// TODO1 lua require() file edits don't reload?
 
 
 namespace Nebulua
@@ -25,6 +26,10 @@ namespace Nebulua
 
         /// <summary>Common functionality.</summary>
         readonly Core _core = new();
+
+
+        FileSystemWatcher _watcher = new();
+
         #endregion
 
         #region Lifecycle
@@ -52,11 +57,12 @@ namespace Nebulua
             // Get the icon associated with the currently executing assembly.
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
 
-            // Misc settings.
-            chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
-            chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
+            PopulateFileMenu();
 
-            #region Cosmetics
+            _watcher.NotifyFilter = NotifyFilters.LastWrite;
+            _watcher.Changed += Watcher_Changed;
+
+            #region Init the controls
             timeBar.BackColor = UserSettings.Current.BackColor;
             timeBar.ProgressColor = UserSettings.Current.ControlColor;
             timeBar.MarkerColor = Color.Black;
@@ -64,53 +70,63 @@ namespace Nebulua
             chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.IconColor);
             chkPlay.BackColor = UserSettings.Current.BackColor;
             chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkPlay.Click += Play_Click;
 
             chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.IconColor);
             chkLoop.BackColor = UserSettings.Current.BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = UserSettings.Current.BackColor;
             chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.IconColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
+            chkMonRcv.Click += (_, __) => { UserSettings.Current.MonitorRcv = chkMonRcv.Checked; };
 
             chkMonSnd.BackColor = UserSettings.Current.BackColor;
             chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.IconColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
+            chkMonSnd.Click += (_, __) => { UserSettings.Current.MonitorSnd = chkMonSnd.Checked; };
 
             btnRewind.BackColor = UserSettings.Current.BackColor;
             btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.IconColor);
+            btnRewind.Click += Rewind_Click;
 
             btnAbout.BackColor = UserSettings.Current.BackColor;
             btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.IconColor);
+            btnAbout.Click += About_Click;
 
             btnKill.BackColor = UserSettings.Current.BackColor;
             btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.IconColor);
+            btnKill.Click += (_, __) => { _core.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
             btnReload.BackColor = UserSettings.Current.BackColor;
             btnReload.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnReload.Image!, UserSettings.Current.IconColor);
+            btnReload.Click += (_, __) => { _core.LoadScript(); };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
             btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.IconColor);
+            btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = UserSettings.Current.BackColor;
             sldVolume.DrawColor = UserSettings.Current.ControlColor;
+            sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
 
             sldTempo.BackColor = UserSettings.Current.BackColor;
             sldTempo.DrawColor = UserSettings.Current.ControlColor;
-            #endregion
+            sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
-            #region Complex controls
-            // Text display.
             traffic.BackColor = UserSettings.Current.BackColor;
             traffic.MatchColors.Add("ERR", Color.LightPink);
             traffic.MatchColors.Add("WRN", Color.Plum);
-            traffic.MatchColors.Add(" SND ", Color.Purple);
-            traffic.MatchColors.Add(" RCV ", Color.Green);
+            traffic.MatchColors.Add("SND", Color.Purple);
+            traffic.MatchColors.Add("RCV", Color.Green);
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
+            //traffic.Clear();
 
-            // Midi generator.
             ccMidiGen.MinX = 24; // C0
             ccMidiGen.MaxX = 96; // C6
             ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
@@ -119,32 +135,17 @@ namespace Nebulua
             ccMidiGen.GridY = [32, 64, 96];
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
-            #endregion
 
-            #region Control events
-            chkPlay.Click += Play_Click;
-            btnRewind.Click += Rewind_Click;
-            btnAbout.Click += About_Click;
-            btnSettings.Click += Settings_Click;
-            btnKill.Click += (_, __) => { _core.KillAll(); State.Instance.ExecState = ExecState.Idle; };
-            btnReload.Click += (_, __) => { _core.LoadScript(); };
-            chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
-            sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
-            sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
-            chkMonRcv.Click += (_, __) => { UserSettings.Current.MonitorRcv = chkMonRcv.Checked; };
-            chkMonSnd.Click += (_, __) => { UserSettings.Current.MonitorSnd = chkMonSnd.Checked; };
-            #endregion
-
-            ddbtnFile.Options = ["111", "", "222", "333"];
-            ddbtnFile.Selected += File_Selected;
+            ddbtnFile.Image = GraphicsUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.IconColor);
+            ddbtnFile.BackColor = UserSettings.Current.BackColor;
+            ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
+            ddbtnFile.Selected += File_Selected;
+            ddbtnFile.Click += File_Reload;
+            #endregion
+
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-        }
-
-        private void File_Selected(object? sender, int e)
-        {
-            //throw new NotImplementedException();
         }
 
         /// <summary>
@@ -153,33 +154,39 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            try
+            if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
             {
-                //// Process cmd line args. Validity checked in LoadScript().
-                //var args = Environment.GetCommandLineArgs();
-                //var scriptFn = args.Length > 1 ? args[1] : null;
-                //_logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
-
-                //_core.LoadScript(scriptFn);
-                //Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
-
-                timeBar.Invalidate();
+                OpenScriptFile(UserSettings.Current.RecentFiles[0]);
             }
-            catch (Exception ex)
-            {
-                var (fatal, msg) = Utils.ProcessException(ex);
-                if (fatal)
-                {
-                    // Logging an error will cause the app to exit.
-                    _logger.Error(msg);
-                }
-                else
-                {
-                    // User can decide what to do with this. They may be recoverable so use warn.
-                    State.Instance.ExecState = ExecState.Idle;
-                    _logger.Warn(msg);
-                }
-            }
+
+
+            // try
+            // {
+            //     // Process cmd line args. Validity checked in LoadScript().
+            //     var args = Environment.GetCommandLineArgs();
+            //     var scriptFn = args.Length > 1 ? args[1] : null;
+            //     _logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
+
+            //     _core.LoadScript(scriptFn);
+            //     Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
+
+            //     timeBar.Invalidate();
+            // }
+            // catch (Exception ex)
+            // {
+            //     var (fatal, msg) = Utils.ProcessException(ex);
+            //     if (fatal)
+            //     {
+            //         // Logging an error will cause the app to exit.
+            //         _logger.Error(msg);
+            //     }
+            //     else
+            //     {
+            //         // User can decide what to do with this. They may be recoverable so use warn.
+            //         State.Instance.ExecState = ExecState.Idle;
+            //         _logger.Warn(msg);
+            //     }
+            // }
 
             base.OnLoad(e);
         }
@@ -220,9 +227,137 @@ namespace Nebulua
             if (disposing)
             {
                 components?.Dispose();
-                _core?.Dispose();
+                _core.Dispose();
+                _watcher.Dispose();
             }
             base.Dispose(disposing);
+        }
+        #endregion
+
+
+        #region File handling
+
+        // >>>>>> TODO1 combine reload and file button - disable reload until dirty
+
+
+        /// <summary>
+        /// Create the menu with the recently used files.
+        /// </summary>
+        void PopulateFileMenu()
+        {
+            List<string> options = [];
+            options.Add("Open...");
+            options.Add("");
+            UserSettings.Current.RecentFiles.ForEach(f => options.Add(f));
+            ddbtnFile.Options = options;
+        }
+
+        // /// <summary>
+        // /// Update the mru with the user selection.
+        // /// </summary>
+        // /// <param name="fn">The selected file.</param>
+        // void AddToRecentDefs(string fn)
+        // {
+        //     if (File.Exists(fn))
+        //     {
+        //         _settings.UpdateMru(fn);
+        //         PopulateFileMenu();
+        //     }
+        // }
+
+
+        void File_Selected(object? sender, string sel)
+        {
+            if (sel == "Open...") // navigate to
+            {
+                string dir = "";
+                if (UserSettings.Current.ScriptPath != "")
+                {
+                    if (Directory.Exists(UserSettings.Current.ScriptPath))
+                    {
+                        dir = UserSettings.Current.ScriptPath;
+                    }
+                    else
+                    {
+                        _logger.Warn("Your script path is invalid, edit your settings");
+                    }
+                }
+
+                using OpenFileDialog openDlg = new()
+                {
+                    Filter = "Nebulua files | *.lua",
+                    Title = "Select a Nebulua file",
+                    InitialDirectory = dir,
+                };
+
+                if (openDlg.ShowDialog() == DialogResult.OK)
+                {
+                    OpenScriptFile(openDlg.FileName);
+                }
+            }
+            else // specific file
+            {
+                OpenScriptFile(sel);
+            }
+        }
+
+
+        void File_Reload(object? sender, EventArgs e)
+        {
+            OpenScriptFile();
+        }
+
+
+        void Watcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            // Do something - indicate??
+        }
+
+        /// <summary>
+        /// Common script file opener.
+        /// </summary>
+        /// <param name="scriptFn">The script file to open.</param>
+        void OpenScriptFile(string? scriptFn = null)
+        {
+            try
+            {
+                _logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
+
+                _core.LoadScript(scriptFn);
+
+                // Everything ok.
+                if (scriptFn is not null) // new file
+                {
+                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
+                    _watcher.Filter = Path.GetFileName(scriptFn);
+                    _watcher.Path = scriptFn;
+                    _watcher.EnableRaisingEvents = true;
+                    // AddToRecentDefs(scriptFn);
+                    UserSettings.Current.UpdateMru(scriptFn);
+                    PopulateFileMenu();
+                }
+                else // reload
+                {
+
+                }
+
+                timeBar.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                var (fatal, msg) = Utils.ProcessException(ex); // >>>>>>>> thread???
+                if (fatal)
+                {
+                    // Logging an error will cause the app to exit.
+                    _logger.Error(msg);
+                }
+                else
+                {
+                    // User can decide what to do with this. They may be recoverable so use warn.
+                    State.Instance.ExecState = ExecState.Idle;
+                    _logger.Warn(msg);
+                }
+            }
         }
         #endregion
 
@@ -404,7 +539,7 @@ namespace Nebulua
             ls.Add($"");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-               ls.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
+                ls.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
             }
             ls.Add($"");
             ls.Add($"## Inputs");
