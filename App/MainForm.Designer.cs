@@ -35,7 +35,7 @@ namespace Nebulua
             timeBar = new TimeBar();
             lblState = new Label();
             ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
-            ddbtnFile = new DropDownButton();
+            ddbtnFile = new Ephemera.NBagOfUis.DropDownButton();
             toolTip1 = new ToolTip(components);
             SuspendLayout();
             // 
@@ -267,7 +267,7 @@ namespace Nebulua
         private Label lblState;
         private Button btnSettings;
         private Ephemera.NBagOfUis.ClickClack ccMidiGen;
-        private DropDownButton ddbtnFile;
+        private Ephemera.NBagOfUis.DropDownButton ddbtnFile;
         private ToolTip toolTip1;
     }
 }

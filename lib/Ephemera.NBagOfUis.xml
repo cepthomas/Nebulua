@@ -394,6 +394,45 @@
             Defer init as they are slow processes.
             </summary>
         </member>
+        <member name="T:Ephemera.NBagOfUis.DropDownButton">
+            <summary>Button with builtin Drop down selector.</summary>
+        </member>
+        <member name="E:Ephemera.NBagOfUis.DropDownButton.Selected">
+            <summary>Drop down selection event.</summary>
+        </member>
+        <member name="F:Ephemera.NBagOfUis.DropDownButton._menu">
+            <summary>The menu.</summary>
+        </member>
+        <member name="M:Ephemera.NBagOfUis.DropDownButton.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:Ephemera.NBagOfUis.DropDownButton.SetOptions(System.Collections.Generic.List{System.String})">
+            <summary>
+            Populate menu with options.
+            </summary>
+            <param name="options"></param>
+        </member>
+        <member name="M:Ephemera.NBagOfUis.DropDownButton.Menu_Click(System.Object,System.EventArgs)">
+            <summary>
+            Handle drop down selection.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:Ephemera.NBagOfUis.DropDownButton.OnMouseDown(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            Handle mouse down.
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:Ephemera.NBagOfUis.DropDownButton.OnPaint(System.Windows.Forms.PaintEventArgs)">
+            <summary>
+            Draw everything including a little arrow.
+            </summary>
+            <param name="e"></param>
+        </member>
         <member name="T:Ephemera.NBagOfUis.FilTree">
             <summary>
             Tree control with file type filters.

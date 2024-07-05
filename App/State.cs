@@ -95,7 +95,7 @@ namespace Nebulua
         }
 
         /// <summary>Total length of the composition.</summary>
-        public int Length
+        public int LengthX
         {
             get
             {
@@ -136,6 +136,9 @@ namespace Nebulua
 
         /// <summary>Master volume.</summary>
         public double Volume { get; set; } = 0.8;
+
+        /// <summary>Convenience for readability.</summary>
+        public bool IsComposition { get { return _length > 0; } }
         #endregion
 
         #region Events
@@ -202,18 +205,21 @@ namespace Nebulua
         /// </summary>
         void ValidateTimes()
         {
-            // Must have this.
-            if (_length <= 0)
+            if (IsComposition)
             {
-                throw new ScriptSyntaxException("Length not set");
+                // Fix loop points.
+                int lstart = _loopStart < 0 ? 0 : _loopStart;
+                int lend = _loopEnd < 0 ? _length : _loopEnd;
+                _loopStart = Math.Min(lstart, _loopEnd);
+                _loopEnd = Math.Min(lend, _length);
+                _currentTick = MathUtils.Constrain(_currentTick, _loopStart, _loopEnd);
             }
-
-            // Fix loop points.
-            int lstart = _loopStart < 0 ? 0 : _loopStart;
-            int lend = _loopEnd < 0 ? _length : _loopEnd;
-            _loopStart = Math.Min(lstart, _loopEnd);
-            _loopEnd = Math.Min(lend, _length);
-            _currentTick = MathUtils.Constrain(_currentTick, _loopStart, _loopEnd);
+            else // dynamic script
+            {
+                _loopStart = 0;
+                _loopEnd = 0;
+                //_currentTick = 0;
+            }
         }
         #endregion
     }

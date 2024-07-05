@@ -2,7 +2,7 @@
 
 A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
-There's also a comand line version which is not fully complete yet.
+There's also a simple comand line version.
 
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 

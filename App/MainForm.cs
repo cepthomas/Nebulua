@@ -15,6 +15,7 @@ using Ephemera.NBagOfUis;
 // TODO1 slow startup when running from VS/debugger but not from .exe.
 // TODO1 lua require() file edits don't reload?
 // TODO1 support scripts without sequences.
+// TODO embed lua debugger.
 
 
 namespace Nebulua
@@ -70,42 +71,42 @@ namespace Nebulua
             timeBar.ProgressColor = UserSettings.Current.ControlColor;
             timeBar.MarkerColor = Color.Black;
 
-            chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.IconColor);
+            chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.ForeColor);
             chkPlay.BackColor = UserSettings.Current.BackColor;
             chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.IconColor);
+            chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.ForeColor);
             chkLoop.BackColor = UserSettings.Current.BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.IconColor);
+            chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
             chkMonRcv.Click += (_, __) => { UserSettings.Current.MonitorRcv = chkMonRcv.Checked; };
 
             chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.IconColor);
+            chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
             chkMonSnd.Click += (_, __) => { UserSettings.Current.MonitorSnd = chkMonSnd.Checked; };
 
             btnRewind.BackColor = UserSettings.Current.BackColor;
-            btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.IconColor);
+            btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
             btnRewind.Click += Rewind_Click;
 
             btnAbout.BackColor = UserSettings.Current.BackColor;
-            btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.IconColor);
+            btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.ForeColor);
             btnAbout.Click += About_Click;
 
             btnKill.BackColor = UserSettings.Current.BackColor;
-            btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.IconColor);
+            btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
             btnKill.Click += (_, __) => { _core.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
-            btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.IconColor);
+            btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
             btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = UserSettings.Current.BackColor;
@@ -135,7 +136,7 @@ namespace Nebulua
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
 
-            ddbtnFile.Image = GraphicsUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.IconColor);
+            ddbtnFile.Image = GraphicsUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.ForeColor);
             ddbtnFile.BackColor = UserSettings.Current.BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
@@ -156,35 +157,6 @@ namespace Nebulua
             {
                 OpenScriptFile(UserSettings.Current.RecentFiles[0]);
             }
-
-
-            // try
-            // {
-            //     // Process cmd line args. Validity checked in LoadScript().
-            //     var args = Environment.GetCommandLineArgs();
-            //     var scriptFn = args.Length > 1 ? args[1] : null;
-            //     _logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
-
-            //     _core.LoadScript(scriptFn);
-            //     Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
-
-            //     timeBar.Invalidate();
-            // }
-            // catch (Exception ex)
-            // {
-            //     var (fatal, msg) = Utils.ProcessException(ex);
-            //     if (fatal)
-            //     {
-            //         // Logging an error will cause the app to exit.
-            //         _logger.Error(msg);
-            //     }
-            //     else
-            //     {
-            //         // User can decide what to do with this. They may be recoverable so use warn.
-            //         State.Instance.ExecState = ExecState.Idle;
-            //         _logger.Warn(msg);
-            //     }
-            // }
 
             base.OnLoad(e);
         }
@@ -232,7 +204,6 @@ namespace Nebulua
         }
         #endregion
 
-
         #region File handling
         /// <summary>
         /// Create the menu with the recently used files.
@@ -248,9 +219,9 @@ namespace Nebulua
             if (UserSettings.Current.RecentFiles.Count > 0)
             {
                 options.Add("");
-                UserSettings.Current.RecentFiles.ForEach(f => options.Add(f));
+                UserSettings.Current.RecentFiles.ForEach(options.Add);
             }
-            ddbtnFile.Options = options;
+            ddbtnFile.SetOptions(options);
         }
 
         /// <summary>
@@ -344,7 +315,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            // Do something - indicate??
+            //traffic.AppendLine("Script file changed");
             _dirty = true;
         }
         #endregion
@@ -487,7 +458,7 @@ namespace Nebulua
                     case "ControlColor":
                     case "SelectedColor":
                     case "BackColor":
-                    case "IconColor":
+                    case "ForeColor":
                         restart = true;
                         break;
 

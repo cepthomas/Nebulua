@@ -216,27 +216,34 @@ namespace Nebulua
                 // Read stopwatch and diff/stats.
                 //string? s = _tan?.Dump();
 
-                // Bump time and check state.
-                int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-                int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
-
-                if (++State.Instance.CurrentTick >= end) // done
+                if (State.Instance.IsComposition)
                 {
-                    // Keep going? else stop/rewind.
-                    if (State.Instance.DoLoop)
-                    {
-                        // Keep going.
-                        State.Instance.CurrentTick = start;
-                    }
-                    else
-                    {
-                        // Stop and rewind.
-                        State.Instance.ExecState = ExecState.Idle;
-                        State.Instance.CurrentTick = start;
+                    // Bump time and check state.
+                    int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+                    int end = State.Instance.LoopEnd == -1 ? State.Instance.LengthX : State.Instance.LoopEnd;
 
-                        // just in case
-                        KillAll();
+                    if (++State.Instance.CurrentTick >= end) // done
+                    {
+                        // Keep going? else stop/rewind.
+                        if (State.Instance.DoLoop)
+                        {
+                            // Keep going.
+                            State.Instance.CurrentTick = start;
+                        }
+                        else
+                        {
+                            // Stop and rewind.
+                            State.Instance.ExecState = ExecState.Idle;
+                            State.Instance.CurrentTick = start;
+
+                            // just in case
+                            KillAll();
+                        }
                     }
+                }
+                else // dynamic script
+                {
+                    ++State.Instance.CurrentTick;
                 }
             }
         }

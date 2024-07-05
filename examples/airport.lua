@@ -26,7 +26,7 @@ local hout = neb.create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
 
 -- Misc vars.
 local volume = 0.8
-local valid = false
+local valid = true
 
 -- All the loops.
 local loops = {}
@@ -40,18 +40,28 @@ local loops = {}
 --   delay: wait before start in BarTime
 local function add_loop(snote, duration, delay)
     notes, err = mus.get_notes_from_string(snote)
-    dur = duration
-    del = delay
-    next_start = del
 
-    -- Check values.
-    if notes == nil or notes == nil or notes == nil then
+    -- Check args.
+    if notes == nil then
+        neb.log_error("Invalid note name: "..snote)
         valid = false
-    else
-        table.insert(loops, { snote=snote, dur=dur, del=del, notes=notes, next_start=del })
-        valid = valid and true
+    end
+
+    if duration == nil then
+        neb.log_error("Invalid duration")
+        valid = false
+    end
+
+    if delay == nil then
+        neb.log_error("Invalid delay")
+        valid = false
+    end
+
+    if valid then
+        table.insert(loops, { snote=snote, duration=duration, delay=delay, notes=notes, next_start=delay })
     end
 end
+
 
 --- Convert beat/sub to tick.
 --   beat: which beat
@@ -60,8 +70,6 @@ end
 local function tot(beat, sub)
     tick = beat * com.SUBS_PER_BEAT + sub
     return tick
-    -- bt = BarTime(0, beat, sub)
-    -- return bt.get_tick()
 end
 
 
@@ -69,8 +77,6 @@ end
 -- Called once to initialize your script stuff. This is a required function!
 function setup()
     -- Set up all the loop notes. Key is Ab.
-    xxx = tot(1,2)
-
     add_loop("Ab4", tot(17,3),  tot(8,1))
     add_loop("Ab5", tot(17,2),  tot(3,1))
     -- 3rd
@@ -84,7 +90,9 @@ function setup()
     add_loop("F5",  tot(20,0),  tot(14,1))
 
     -- How fast?
-    neb.set_tempo(70)
+    neb.set_tempo(61)
+
+    -- neb.log_info(string.format('setup %s', tostring(valid )))
 
     return 0
 end

@@ -86,15 +86,18 @@ namespace Nebulua
             // Setup.
             pe.Graphics.Clear(BackColor);
 
-            // Draw the bar.
-            int dcurrent = GetClientFromTick(State.Instance.CurrentTick);
-            pe.Graphics.FillRectangle(_brush, dcurrent - 1, 0, 2, Height);
+            if (State.Instance.IsComposition)
+            {
+                // Draw the progress bar.
+                int dcurrent = GetClientFromTick(State.Instance.CurrentTick);
+                pe.Graphics.FillRectangle(_brush, dcurrent - 1, 0, 2, Height);
 
-            // Draw start/end markers.
-            int mstart = GetClientFromTick(State.Instance.LoopStart);
-            int mend = GetClientFromTick(State.Instance.LoopEnd);
-            pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
-            pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
+                // Draw start/end markers.
+                int mstart = GetClientFromTick(State.Instance.LoopStart);
+                int mend = GetClientFromTick(State.Instance.LoopEnd);
+                pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
+                pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
+            }
 
             // Text.
             _format.Alignment = StringAlignment.Center;
@@ -113,7 +116,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if(e.KeyData == Keys.Escape)
+            if (State.Instance.IsComposition && e.KeyData == Keys.Escape)
             {
                 // Reset.
                 State.Instance.LoopStart = -1;
@@ -128,16 +131,19 @@ namespace Nebulua
         /// </summary>
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            var sub = GetTickFromClient(e.X);
-            var bs = GetRounded(sub, Snap);
-            var sdef = GetTimeDefString(bs);
+            if (State.Instance.IsComposition)
+            {
+                var sub = GetTickFromClient(e.X);
+                var bs = GetRounded(sub, Snap);
+                var sdef = GetTimeDefString(bs);
 
-            _toolTip.SetToolTip(this, $"{MusicTime.Format(bs)} {sdef}");
-            //_toolTip.SetToolTip(this, $"{State.Instance.CurrentTick}: 0 {State.Instance.LoopStart} {State.Instance.LoopEnd} {State.Instance.Length} ");
+                _toolTip.SetToolTip(this, $"{MusicTime.Format(bs)} {sdef}");
+                //_toolTip.SetToolTip(this, $"{State.Instance.CurrentTick}: 0 {State.Instance.LoopStart} {State.Instance.LoopEnd} {State.Instance.Length} ");
 
-            _lastXPos = e.X;
+                _lastXPos = e.X;
 
-            Invalidate();
+                Invalidate();
+            }
             base.OnMouseMove(e);
         }
 
@@ -146,32 +152,35 @@ namespace Nebulua
         /// </summary>
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            int lstart = State.Instance.LoopStart;
-            int lend = State.Instance.LoopEnd;
-            int newval = GetRounded(GetTickFromClient(e.X), Snap);
+            if (State.Instance.IsComposition)
+            {
+                int lstart = State.Instance.LoopStart;
+                int lend = State.Instance.LoopEnd;
+                int newval = GetRounded(GetTickFromClient(e.X), Snap);
 
-            if (ModifierKeys.HasFlag(Keys.Control))
-            {
-                if (newval < lend)
+                if (ModifierKeys.HasFlag(Keys.Control))
                 {
-                    State.Instance.LoopStart = newval;
+                    if (newval < lend)
+                    {
+                        State.Instance.LoopStart = newval;
+                    }
+                    // else beeeeeep?
                 }
-                // else beeeeeep?
-            }
-            else if (ModifierKeys.HasFlag(Keys.Alt))
-            {
-                if (newval > lstart)
+                else if (ModifierKeys.HasFlag(Keys.Alt))
                 {
-                    State.Instance.LoopEnd = newval;
+                    if (newval > lstart)
+                    {
+                        State.Instance.LoopEnd = newval;
+                    }
+                    // else beeeeeep?
                 }
-                // else beeeeeep?
-            }
-            else
-            {
-                State.Instance.CurrentTick = newval;
-            }
+                else
+                {
+                    State.Instance.CurrentTick = newval;
+                }
 
-            Invalidate();
+                Invalidate();
+            }
             base.OnMouseDown(e);
         }
         #endregion
@@ -209,10 +218,10 @@ namespace Nebulua
         {
             int tick = 0;
 
-            if (State.Instance.CurrentTick < State.Instance.Length)
+            if (State.Instance.CurrentTick < State.Instance.LengthX)
             {
-                tick = x * State.Instance.Length / Width;
-                tick = MathUtils.Constrain(tick, 0, State.Instance.Length);
+                tick = x * State.Instance.LengthX / Width;
+                tick = MathUtils.Constrain(tick, 0, State.Instance.LengthX);
             }
 
             return tick;
@@ -225,7 +234,7 @@ namespace Nebulua
         /// <returns></returns>
         int GetClientFromTick(int tick)
         {
-            return State.Instance.Length > 0 ? tick * Width / State.Instance.Length : 0;
+            return State.Instance.LengthX > 0 ? tick * Width / State.Instance.LengthX : 0;
         }
 
         /// <summary>
@@ -238,21 +247,13 @@ namespace Nebulua
         {
             if (tick > 0 && snapType != SnapType.Sub)
             {
-                // res:32 in:27 floor=(in%aim)*aim  ceiling=floor+aim
                 int res = snapType == SnapType.Bar ? MusicTime.SUBS_PER_BAR : MusicTime.SUBS_PER_BEAT;
 
                 double dtick = Math.Floor((double)tick);
                 int floor = (int)(dtick / res) * res;
                 int ceiling = floor + res;
 
-                if (up || (ceiling - tick) < res / 2)
-                {
-                    tick = ceiling;
-                }
-                else
-                {
-                    tick = floor;
-                }
+                tick = (up || (ceiling - tick) < res / 2) ? ceiling : floor;
             }
 
             return tick;
