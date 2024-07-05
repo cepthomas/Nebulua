@@ -3,6 +3,8 @@
 x64/
 bin/
 obj/
+bincli/
+objcli/
 temp/
 *.vcxproj.user
 *.csproj.user

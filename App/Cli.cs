@@ -140,6 +140,14 @@ namespace Nebulua
                 _disposed = true;
             }
         }
+
+        /// <summary>
+        /// Entry point.
+        /// </summary>
+        static void Main()
+        {
+            using var cli = new Cli();
+        }
         #endregion
 
         #region Event handlers

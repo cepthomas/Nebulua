@@ -14,8 +14,6 @@ using Ephemera.NBagOfUis;
 
 // TODO1 slow startup when running from VS/debugger but not from .exe.
 // TODO1 lua require() file edits don't reload?
-// TODO1 support scripts without sequences.
-// TODO embed lua debugger.
 
 
 namespace Nebulua
@@ -201,6 +199,16 @@ namespace Nebulua
                 _watcher.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        /// <summary>
+        ///  The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            ApplicationConfiguration.Initialize();
+            Application.Run(new MainForm());
         }
         #endregion
 

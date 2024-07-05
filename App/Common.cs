@@ -5,14 +5,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
-    #region Definitions
-    //public class Defs
-    //{
-    //    // Arbitrary setting.
-    //    public const int MAX_SECTIONS = 32;
-    //}
-    #endregion
-
     #region Exceptions
     /// <summary>Lua script syntax error.</summary>
     public class ScriptSyntaxException(string message) : Exception(message) { }

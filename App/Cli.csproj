@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- TODO1 set to Exe to use debugger -->
-    <!-- <OutputType>WinExe</OutputType> -->
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWindowsForms>false</UseWindowsForms>
     <ImplicitUsings>disable</ImplicitUsings>
     <Platforms>x64</Platforms>
     <ApplicationIcon>..\app.ico</ApplicationIcon>
@@ -14,25 +12,40 @@
     <Deterministic>False</Deterministic>
     <Version>0.9.0</Version>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-    <AssemblyName>Nebulua</AssemblyName>
-    <RootNamespace>Nebulua</RootNamespace>
+    <AssemblyName>NebuluaCli</AssemblyName>
+    <RootNamespace>NebuluaCli</RootNamespace>
     <Company>Ephemera Inc</Company>
-    <Product>Nebulua</Product>
-    <Description>Play music with lua.</Description>
+    <Product>Nebulua Cli</Product>
+    <Description>Play music with lua from command line.</Description>
     <Copyright>MIT License</Copyright>
+    <BaseOutputPath>bincli\</BaseOutputPath>
+    <IntermediateOutputPath>objcli\</IntermediateOutputPath>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="cliobj\**" />
-    <EmbeddedResource Remove="cliobj\**" />
-    <None Remove="cliobj\**" />
+    <Compile Remove="bin\**" />
+    <Compile Remove="Properties\**" />
+    <Compile Remove="Resources\**" />
+    <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <EmbeddedResource Remove="Resources\**" />
+    <None Remove="bin\**" />
+    <None Remove="Properties\**" />
+    <None Remove="Resources\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Cli.cs" />
+    <Compile Remove="MainForm.cs" />
+    <Compile Remove="MainForm.Designer.cs" />
+    <Compile Remove="Program.cs" />
+    <Compile Remove="TimeBar.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="MainForm.resx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,9 +55,6 @@
   <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
       <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
-    </Reference>
-    <Reference Include="Ephemera.NBagOfUis">
-      <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -94,21 +104,6 @@
     <None Include="..\README.md" Link="docs\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

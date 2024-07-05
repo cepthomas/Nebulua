@@ -5,8 +5,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Windows.Forms.Design;
-using System.Drawing.Design;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 
@@ -20,11 +18,10 @@ namespace Nebulua
         public static UserSettings Current { get; set; } = new();
 
         #region Properties - persisted editable
-
         [DisplayName("Script Path")]
         [Description("Default location for user scripts.")]
         [Browsable(true)]
-        [Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
+        //[Editor(typeof(FolderNameEditor), typeof(UITypeEditor))]
         public string ScriptPath { get; set; } = "";
 
         [DisplayName("Open Last File")]
