@@ -306,6 +306,7 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 - Lua functions defined in C do not call `luaL_error()`. Only call `luaL_error()` in code that is called from
   the lua side. C side needs to handle function returns manually via status codes, error msgs, etc.
 
+
 ## Files
 
 ```

@@ -10,6 +10,7 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
+using System.Runtime.InteropServices;
 
 
 // TODO1 slow startup when running from VS/debugger but not from .exe.
@@ -141,6 +142,7 @@ namespace Nebulua
             ddbtnFile.Selected += File_Selected;
             #endregion
 
+
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
         }
@@ -200,9 +202,10 @@ namespace Nebulua
             }
             base.Dispose(disposing);
         }
+        #endregion
 
         /// <summary>
-        ///  The main entry point for the application.
+        ///  The entry point for the application.
         /// </summary>
         [STAThread]
         static void Main()
@@ -210,7 +213,6 @@ namespace Nebulua
             ApplicationConfiguration.Initialize();
             Application.Run(new MainForm());
         }
-        #endregion
 
         #region File handling
         /// <summary>

@@ -10,9 +10,6 @@ local mid = require("midi_defs") -- GM midi instrument definitions
 local bt  = require("bar_time") -- time utility
 local com = require('neb_common')
 
-local ut = require('utils')
-ut.config_debug(false)
-dbg()
 
 ------------------------- Configuration -------------------------------
 
