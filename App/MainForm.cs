@@ -13,13 +13,9 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO1 slow startup when running from VS/debugger but not from .exe.
-// TODO1 lua require() file edits don't reload?
+// TODO slow startup when running from VS/debugger but not from .exe.
 
-// TODO1 manage debugging:
-//   csproj: set to Exe to use debugger
-//   lua: see setup in example.lua
-//   maybe: an easy way to toggle this? and/or insert/delete breakpoints from ST.
+// TODO1 lua require() file edits don't reload?
 
 
 namespace Nebulua
@@ -45,11 +41,14 @@ namespace Nebulua
         private static extern bool FreeConsole();
 
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
-        //[return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DetachConsole();
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();
 
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
-        //[return: MarshalAs(UnmanagedType.Bool)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AttachConsole(uint dwProcessId);
 
 
@@ -171,9 +170,9 @@ namespace Nebulua
 
         void BtnGo_Click(object? sender, EventArgs e)
         {
-            Console.WriteLine("FreeConsole() >>>>>");
-            FreeConsole();
-
+            Console.WriteLine("<<<<<<  >>>>>");
+            //Console.WriteLine("FreeConsole() >>>>>");
+            //FreeConsole();
         }
 
         /// <summary>
@@ -214,6 +213,8 @@ namespace Nebulua
             UserSettings.Current.WordWrap = traffic.WordWrap;
             UserSettings.Current.Save();
 
+            //ConsoleWindow.UnredirectConsole();
+
             base.OnFormClosing(e);
         }
 
@@ -240,6 +241,7 @@ namespace Nebulua
         static void Main()
         {
             ApplicationConfiguration.Initialize();
+
             Application.Run(new MainForm());
         }
 

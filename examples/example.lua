@@ -9,11 +9,9 @@ local mid = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("utils")
 
--- Setup for debug.
-local ut = require('utils')
+-- Setup for debug. Place dbg() statements for breakpoints.
 ut.config_debug(true)
 -- dbg()
-
 
 -- Aliases for imports - easier typing.
 local inst = mid.instruments
