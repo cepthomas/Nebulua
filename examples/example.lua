@@ -9,9 +9,9 @@ local mid = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("utils")
 
--- Debug stuff
--- local ut = require('utils')
--- ut.config_debug(true)
+-- Setup for debug.
+local ut = require('utils')
+ut.config_debug(true)
 -- dbg()
 
 

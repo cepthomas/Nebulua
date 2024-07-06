@@ -37,6 +37,7 @@ namespace Nebulua
             ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
             ddbtnFile = new Ephemera.NBagOfUis.DropDownButton();
             toolTip1 = new ToolTip(components);
+            btnGo = new Button();
             SuspendLayout();
             // 
             // chkPlay
@@ -192,19 +193,16 @@ namespace Nebulua
             // 
             // lblState
             // 
-            lblState.AutoSize = true;
             lblState.BorderStyle = BorderStyle.FixedSingle;
             lblState.Location = new Point(717, 10);
-            lblState.MinimumSize = new Size(120, 22);
+            lblState.MinimumSize = new Size(20, 20);
             lblState.Name = "lblState";
-            lblState.Size = new Size(120, 22);
+            lblState.Size = new Size(80, 22);
             lblState.TabIndex = 53;
             // 
             // ccMidiGen
             // 
             ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            ccMidiGen.GridX = (System.Collections.Generic.List<int>)resources.GetObject("ccMidiGen.GridX");
-            ccMidiGen.GridY = (System.Collections.Generic.List<int>)resources.GetObject("ccMidiGen.GridY");
             ccMidiGen.Location = new Point(52, 349);
             ccMidiGen.MaxX = 100;
             ccMidiGen.MaxY = 100;
@@ -225,11 +223,21 @@ namespace Nebulua
             toolTip1.SetToolTip(ddbtnFile, "Open new or recent script");
             ddbtnFile.UseVisualStyleBackColor = false;
             // 
+            // btnGo
+            // 
+            btnGo.Location = new Point(806, 8);
+            btnGo.Name = "btnGo";
+            btnGo.Size = new Size(47, 29);
+            btnGo.TabIndex = 58;
+            btnGo.Text = "Go!";
+            btnGo.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(865, 547);
+            Controls.Add(btnGo);
             Controls.Add(ddbtnFile);
             Controls.Add(ccMidiGen);
             Controls.Add(btnSettings);
@@ -248,7 +256,6 @@ namespace Nebulua
             Name = "MainForm";
             Text = "Form1";
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
@@ -269,5 +276,6 @@ namespace Nebulua
         private Ephemera.NBagOfUis.ClickClack ccMidiGen;
         private Ephemera.NBagOfUis.DropDownButton ddbtnFile;
         private ToolTip toolTip1;
+        private Button btnGo;
     }
 }

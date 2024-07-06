@@ -127,7 +127,9 @@ NebStatus Api::OpenScript(String^ fn)
     // Execute the script to initialize it. This reports runtime syntax errors.
     if (nstat == NebStatus::Ok)
     {
-        lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
+        // Do the protected call. Use extended version which adds a stacktrace.
+        lstat = luaex_docall(_l, 0, 0);
+        //without: lstat = lua_pcall(_l, 0, LUA_MULTRET, 0);
         nstat = EvalLuaStatus(lstat, "Execute script failed.");
     }
 

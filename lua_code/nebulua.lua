@@ -82,17 +82,7 @@ M.set_tempo = api.set_tempo
 M.send_controller = api.send_controller
 
 -----------------------------------------------------------------------------
---- Create an output channel.
--- @param dev_name system name
--- @param chan_num channel number
--- @return the new chan_hnd or 0 if invalid
-function M.create_input_channel(dev_name, chan_num)
-    chan_hnd = api.create_input_channel(dev_name, chan_num)
-    return chan_hnd
-end
-
------------------------------------------------------------------------------
---- Create an output channel.
+--- Create an input channel.
 -- @param dev_name system name
 -- @param chan_num channel number
 -- @return the new chan_hnd or 0 if invalid

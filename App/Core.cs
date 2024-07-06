@@ -148,13 +148,21 @@ namespace Nebulua
         /// </summary>
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
-            var input = _inputs.FirstOrDefault(o => o.DeviceName == devName) ??
-                throw new ScriptSyntaxException($"Invalid internal device:{devName}");
-            NoteEvent nevt = velocity > 0 ?
-                new NoteOnEvent(0, channel, noteNum, velocity, 0) :
-                new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
+            var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
+            
+            if (input is not null)
+            {
+                NoteEvent nevt = velocity > 0 ?
+                    new NoteOnEvent(0, channel, noteNum, velocity, 0) :
+                    new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
 
-            Midi_ReceiveEvent(input, nevt);
+                Midi_ReceiveEvent(input, nevt);
+            }
+            else
+            {
+                //throw new ScriptSyntaxException($"Invalid internal device:{devName}");
+                CallbackError(new ScriptSyntaxException($"Invalid internal device:{devName}"));
+            }
         }
 
         /// <summary>
@@ -344,7 +352,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Sending some midi fro script. Can throw.
+        /// Sending some midi from script. Can throw.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -452,7 +460,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// General purpose handler for errors in callback functions because they can't throw exceptions.
+        /// General purpose handler for errors in callback functions/threads that can't throw exceptions.
         /// </summary>
         /// <param name="ex">The exception</param>
         void CallbackError(Exception ex)

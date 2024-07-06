@@ -6,15 +6,20 @@ using System.Reflection;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
-using System.Runtime.InteropServices;
 
 
 // TODO1 slow startup when running from VS/debugger but not from .exe.
 // TODO1 lua require() file edits don't reload?
+
+// TODO1 manage debugging:
+//   csproj: set to Exe to use debugger
+//   lua: see setup in example.lua
+//   maybe: an easy way to toggle this? and/or insert/delete breakpoints from ST.
 
 
 namespace Nebulua
@@ -34,6 +39,19 @@ namespace Nebulua
         /// <summary>Current script has been edited.</summary>
         bool _dirty = false;
         #endregion
+
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
+        private static extern bool FreeConsole();
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool AllocConsole();
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
+        //[return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool AttachConsole(uint dwProcessId);
+
 
         #region Lifecycle
         /// <summary>
@@ -59,6 +77,7 @@ namespace Nebulua
             BackColor = UserSettings.Current.BackColor;
             // Get the icon associated with the currently executing assembly.
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+            Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             PopulateFileMenu();
 
@@ -84,13 +103,13 @@ namespace Nebulua
             chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
-            chkMonRcv.Click += (_, __) => { UserSettings.Current.MonitorRcv = chkMonRcv.Checked; };
+            chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
 
             chkMonSnd.BackColor = UserSettings.Current.BackColor;
             chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
-            chkMonSnd.Click += (_, __) => { UserSettings.Current.MonitorSnd = chkMonSnd.Checked; };
+            chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
 
             btnRewind.BackColor = UserSettings.Current.BackColor;
             btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
@@ -126,6 +145,7 @@ namespace Nebulua
             traffic.WordWrap = UserSettings.Current.WordWrap;
             //traffic.Clear();
 
+            ccMidiGen.Name = "ClickClack";
             ccMidiGen.MinX = 24; // C0
             ccMidiGen.MaxX = 96; // C6
             ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
@@ -142,9 +162,18 @@ namespace Nebulua
             ddbtnFile.Selected += File_Selected;
             #endregion
 
+            btnGo.Click += BtnGo_Click;
+
 
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+        }
+
+        void BtnGo_Click(object? sender, EventArgs e)
+        {
+            Console.WriteLine("FreeConsole() >>>>>");
+            FreeConsole();
+
         }
 
         /// <summary>
@@ -495,12 +524,6 @@ namespace Nebulua
         {
             // Consolidate docs.
             List<string> ls = [];
-            ls.AddRange(File.ReadAllLines("docs\\README.md"));
-            ls.Add($"");
-            ls.AddRange(File.ReadAllLines("docs\\midi_defs.md"));
-            ls.Add($"");
-            ls.AddRange(File.ReadAllLines("docs\\music_defs.md"));
-            ls.Add($"");
 
             ls.Add($"# Your Midi Devices");
             ls.Add($"");
@@ -517,6 +540,13 @@ namespace Nebulua
             {
                 ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
+
+            ls.AddRange(File.ReadAllLines("docs\\README.md"));
+            ls.Add($"");
+            ls.AddRange(File.ReadAllLines("docs\\midi_defs.md"));
+            ls.Add($"");
+            ls.AddRange(File.ReadAllLines("docs\\music_defs.md"));
+            ls.Add($"");
 
             Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, true);
         }

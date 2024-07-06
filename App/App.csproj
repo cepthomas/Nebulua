@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- TODO1 needs to be easier: set to Exe to use debugger and see setup in example.lua -->
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
+    <!-- <OutputType>WinExe</OutputType> -->
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -25,9 +25,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="cliobj\**" />
-    <EmbeddedResource Remove="cliobj\**" />
-    <None Remove="cliobj\**" />
+    <Compile Remove="bincli\**" />
+    <Compile Remove="objcli\**" />
+    <EmbeddedResource Remove="bincli\**" />
+    <EmbeddedResource Remove="objcli\**" />
+    <None Remove="bincli\**" />
+    <None Remove="objcli\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- <ProjectReference Include="..\..\..\Libs\NBagOfUis\NBagOfUis.csproj" /> -->
     <ProjectReference Include="..\Interop\Interop.vcxproj" />
   </ItemGroup>
 
