@@ -36,22 +36,6 @@ namespace Nebulua
         bool _dirty = false;
         #endregion
 
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
-        private static extern bool FreeConsole();
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
-        private static extern bool DetachConsole();
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool AllocConsole();
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool AttachConsole(uint dwProcessId);
-
-
         #region Lifecycle
         /// <summary>
         /// Constructor inits most of the UI.
@@ -348,7 +332,9 @@ namespace Nebulua
                 }
             }
         }
+        #endregion
 
+        #region Event handlers
         /// <summary>
         /// Script edited externally.
         /// </summary>
@@ -356,12 +342,13 @@ namespace Nebulua
         /// <param name="e"></param>
         void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            //traffic.AppendLine("Script file changed");
-            _dirty = true;
+            if (!_dirty)
+            {
+                traffic.AppendLine("Script file changed - reload");
+                _dirty = true;
+            }
         }
-        #endregion
 
-        #region Event handlers
         /// <summary>
         /// Handler for state changes for ui display.
         /// </summary>
