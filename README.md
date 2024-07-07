@@ -4,6 +4,13 @@ A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) 
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
 There's also a simple comand line version.
 
+If you pass it a script file name on the command line it runs as a command line application otherwise the UI
+is started.
+
+Scripts can be debugged in the windows terminal using 
+[Lua debugger](https://github.com/slembcke/debugger.lua/blob/master/README.md).
+
+
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
 ![logo](marks.png)
@@ -16,7 +23,7 @@ Since the built-in Windows GM player sounds terrible, there are a couple of opti
 
 ## Glossary
 
-- Since this is code, everything is 0-based, not 1-based like music.
+- Since this is code, everything is 0-based, not 1-based like standard music notation.
 - Nebulua doesn't care about measures, that's up to you.
 
 Name       | Type   | Description                                     |
@@ -288,8 +295,6 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 
 # Tech Notes
 
-- Consists of two .NET applications (Command line and WinForms) and a C++/CLI interop component that interfaces to the
-  lua library.
 - The interop API translate between internal LUA_XXX status and user-facing enum NebStatus. API doesn't throw
   anything.
 - Windows 64 bit only. Build it with VS2022 and .NET8.
@@ -318,7 +323,8 @@ Nebulua - C# project main app
 |       luainterop.c/h - generated wrapper code
 |       luainteropwork.cpp - glue
 +---lua_code - lua modules for application
-+---lib - C# utilities and lua include
++---lib - .NET utilities
++---lbot - submodule of https://github.com/cepthomas/LuaBagOfTricks.git
 +---examples
 |       airport.lua
 |       example.lua
@@ -328,4 +334,5 @@ Nebulua - C# project main app
 # External Components
 
 This application uses these FOSS components:
-- [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
+- [NAudio](https://github.com/naudio/NAudio).
+- [Lua debugger](https://github.com/slembcke/debugger.lua/blob/master/README.md).

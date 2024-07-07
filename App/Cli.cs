@@ -59,9 +59,9 @@ namespace Nebulua
 
         #region Lifecycle
         /// <summary>
-        /// Constructor inits stuff.
+        /// Constructor inits stuff. Cli version requires cl script name.
         /// </summary>
-        public Cli()
+        public Cli(string scriptFn)
         {
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
             UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
@@ -88,21 +88,7 @@ namespace Nebulua
 
             try
             {
-                // Process cmd line args. Script file validity checked in LoadScript().
-                var args = Environment.GetCommandLineArgs();
-                string? scriptFn;
-                if (args.Length == 2)
-                {
-                    scriptFn = args[1];
-                }
-                else
-                {
-                    Write("Invalid command line");
-                    ShowUsage();
-                    throw new ApplicationArgumentException($"Invalid command line");
-                }
-
-                // OK so far.
+                // Script file validity checked in LoadScript().
                 _logger.Info($"Loading script file {scriptFn}");
                 _core.LoadScript(scriptFn);
 
@@ -112,7 +98,7 @@ namespace Nebulua
                     DoCommand();
                 }
 
-                // Normal done. Wait a bit in case there are some lingering events or logging.
+                // Done. Wait a bit in case there are some lingering events or logging.
                 Thread.Sleep(100);
             }
             catch (Exception ex)
@@ -139,14 +125,6 @@ namespace Nebulua
                 _core?.Dispose();
                 _disposed = true;
             }
-        }
-
-        /// <summary>
-        /// Entry point.
-        /// </summary>
-        static void Main()
-        {
-            using var cli = new Cli();
         }
         #endregion
 

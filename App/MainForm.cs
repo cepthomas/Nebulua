@@ -147,7 +147,6 @@ namespace Nebulua
 
             btnGo.Click += BtnGo_Click;
 
-
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
         }
@@ -155,8 +154,6 @@ namespace Nebulua
         void BtnGo_Click(object? sender, EventArgs e)
         {
             Console.WriteLine("<<<<<<  >>>>>");
-            //Console.WriteLine("FreeConsole() >>>>>");
-            //FreeConsole();
         }
 
         /// <summary>
@@ -217,17 +214,6 @@ namespace Nebulua
             base.Dispose(disposing);
         }
         #endregion
-
-        /// <summary>
-        ///  The entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            ApplicationConfiguration.Initialize();
-
-            Application.Run(new MainForm());
-        }
 
         #region File handling
         /// <summary>
