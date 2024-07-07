@@ -3,10 +3,10 @@
   <ItemGroup>
     <ClInclude Include="Api.h" />
     <ClInclude Include="luainterop.h" />
-    <ClInclude Include="..\lbot\source_code\luaex.h">
+    <ClInclude Include="..\lbot\c_code\luaex.h">
       <Filter>lbot</Filter>
     </ClInclude>
-    <ClInclude Include="..\lbot\source_code\luautils.h">
+    <ClInclude Include="..\lbot\c_code\luautils.h">
       <Filter>lbot</Filter>
     </ClInclude>
   </ItemGroup>
@@ -14,10 +14,10 @@
     <ClCompile Include="Api.cpp" />
     <ClCompile Include="luainterop.c" />
     <ClCompile Include="luainteropwork.cpp" />
-    <ClCompile Include="..\lbot\source_code\luaex.c">
+    <ClCompile Include="..\lbot\c_code\luaex.c">
       <Filter>lbot</Filter>
     </ClCompile>
-    <ClCompile Include="..\lbot\source_code\luautils.c">
+    <ClCompile Include="..\lbot\c_code\luautils.c">
       <Filter>lbot</Filter>
     </ClCompile>
   </ItemGroup>
