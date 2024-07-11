@@ -3,7 +3,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-// This is crude but should be ok for nw.
+// This is crude but should be ok for now.
 #define MAKE_ID(l)  ((int)((long long)l & 0X00000000FFFFFFFF))
 
 
@@ -105,6 +105,9 @@ namespace Nebulua { namespace Interop
     private:
         /// <summary>Checks lua status and converts to neb status. Stores an error message if it failed.</summary>
         NebStatus EvalLuaStatus(int stat, String^ msg);
+
+        /// <summary> Log from here.</summary>
+        void LogDebug(String^ msg);
     #pragma endregion
     };
 

@@ -20,7 +20,7 @@ local kit  = mid.drum_kits
 local ctrl = mid.controllers
 
 -- Log something to the application log.
-neb.log_info("======== Warning: this is not actual music =========")
+neb.log_info('### loading example.lua ###')
 
 
 ------------------------- Configuration -------------------------------

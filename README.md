@@ -5,11 +5,9 @@ While the primary intent is to generate music-by-code, runtime interaction is al
 There's also a simple comand line version.
 
 If you pass it a script file name on the command line it runs as a command line application otherwise the UI
-is started.
-
-Scripts can be debugged in the windows terminal using 
+is started. If UI there will be a terminal also which can be used for debugging scripts using
 [Lua debugger](https://github.com/slembcke/debugger.lua/blob/master/README.md).
-
+See [example](examples/example.lua) for how-to.
 
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
@@ -315,9 +313,11 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 ## Files
 
 ```
-Nebulua - C# project main app
-|   *.cs
+Nebulua
 |   gen_interop.cmd, interop_spec.lua - generates interop wrapper code
++---App - standard C# project for the main app
+|       *.cs
+|       etc...
 +---interop - C++/CLI project to embed lua
 |       Api.cpp/h
 |       luainterop.c/h - generated wrapper code

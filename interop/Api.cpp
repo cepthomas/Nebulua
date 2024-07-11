@@ -44,7 +44,8 @@ Api::Api(List<String^>^ lpath)
     // Init lua.
     _l = luaL_newstate();
 
-     //Debug::WriteLine(">>> Api::Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
+    //Debug::WriteLine(">>> Api::Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
+    LogDebug("construct");
 
     // Load std libraries.
     luaL_openlibs(_l);
@@ -87,6 +88,7 @@ Api::Api(List<String^>^ lpath)
 Api::~Api()
 {
     //Debug::WriteLine(">>> Api::~Api() this = {0} _l = {1}", this->GetHashCode(), MAKE_ID(_l));
+    LogDebug("destruct");
 
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
@@ -258,6 +260,15 @@ NebStatus Api::EvalLuaStatus(int lstat, String^ info)
     return nstat;
 }
 
+//--------------------------------------------------------//
+void Api::LogDebug(String^ msg)
+{
+    LogArgs^ args = gcnew LogArgs();
+    args->Sender = Id; // MAKE_ID(this);
+    args->LogLevel = 1; // debug
+    args->Msg = gcnew String("API ")  + msg;
+    NotifyLog(args);
+}
 
 //--------------------------------------------------------//
 int _ToCString(char* buff, size_t bufflen, String^ input)
