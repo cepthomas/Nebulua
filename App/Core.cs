@@ -54,7 +54,7 @@ namespace Nebulua
         {
             // Set up runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives
-            _luaPath.Add(Path.Join(exePath, "lua")); // app lua files
+            _luaPath.Add(Path.Join(exePath, "lua")); // where app lua files live
 
             // Hook script callbacks.
             Api.CreateChannel += Interop_CreateChannel;
@@ -86,7 +86,6 @@ namespace Nebulua
                 _outputs.Clear();
 
                 // Release unmanaged resources. https://stackoverflow.com/a/4935448
-                // Set large fields to null.
                 _api?.Dispose();
 
                 _disposed = true;

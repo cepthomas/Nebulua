@@ -3,11 +3,18 @@
 
 
 -- Import modules we need.
+
+local ut  = require("utils")
+
+-- print(ut.dump_table_string(package.loaded, false, "package.loaded.1"))
+
+
 local neb = require("nebulua")
 local mus = require("music_defs")
 local mid = require("midi_defs")
 local bt  = require("bar_time")
-local ut  = require("utils")
+
+-- print(ut.dump_table_string(package.loaded, false, "package.loaded.2"))
 
 -- Setup for debug. Place dbg() statements for breakpoints.
 ut.config_debug(true)

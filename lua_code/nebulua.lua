@@ -9,8 +9,10 @@ local st  = require("step_types")
 local mid = require("midi_defs")
 local mus = require("music_defs")
 local com = require("neb_common")
-
 local os = require("os")
+
+-- print(ut.dump_table_string(package.loaded, false, "package.loaded.nebulua"))
+
 
 -- TODO stress test and bulletproof this.
 
@@ -68,7 +70,8 @@ function M.log_info(msg)  api.log(2, msg) end
 function M.log_debug(msg) api.log(1, msg) end
 function M.log_trace(msg) api.log(0, msg) end
 
-M.log_info('### loading nebulua.lua ### '..os.time() % 100)
+-- print('### loading nebulua.lua 2### '..os.time() % 100)
+M.log_info('### loading nebulua.lua ### ')
 
 -----------------------------------------------------------------------------
 --- Set system tempo. This goes straight through to the host.

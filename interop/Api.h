@@ -34,7 +34,7 @@ namespace Nebulua { namespace Interop
         lua_State* _l = nullptr;
 
         // The LUA_PATH parts.
-        List<String^>^ _lpath;
+        List<String^>^ _luaPath;
     #pragma endregion
 
     #pragma region Properties

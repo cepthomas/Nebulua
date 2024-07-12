@@ -14,6 +14,10 @@ using Ephemera.NBagOfUis;
 
 
 // TODO1 lua require() file edits don't reload? lua_close(_l); doesn't seem to unload required modules.
+// lua package.loaded.XXX = nil
+// lua require("XXX")
+// package.loaded A table used by require to control which modules are already loaded. When you require a 
+// module modname and package.loaded[modname] is not false, require simply returns the value stored there.
 
 // TODO slow startup when running from VS/debugger but not from .exe.
 // TODO for debugging set <OutputType> to Exe which opens a terminal. See example.lua for how-to. Would be nice to simplify this.
