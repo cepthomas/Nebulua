@@ -23,7 +23,7 @@ namespace Nebulua
         Api? _api;
 
         /// <summary>Context for LUA_PATH.</summary>
-        readonly List<string> _luaPath = [];
+        // readonly List<string> _luaPath = [];
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -52,9 +52,10 @@ namespace Nebulua
         /// </summary>
         public Core()
         {
-            // Set up runtime lua environment.
+            // Create script api with runtime lua environment.
             var exePath = Environment.CurrentDirectory; // where exe lives
-            _luaPath.Add(Path.Join(exePath, "lua")); // where app lua files live
+            List<string> luaPath = [ Path.Join(exePath, "lua") ]; // where app lua files live
+            _api = new(luaPath);
 
             // Hook script callbacks.
             Api.CreateChannel += Interop_CreateChannel;
@@ -87,6 +88,7 @@ namespace Nebulua
 
                 // Release unmanaged resources. https://stackoverflow.com/a/4935448
                 _api?.Dispose();
+                _api = null;
 
                 _disposed = true;
             }
@@ -118,9 +120,13 @@ namespace Nebulua
                 throw new InvalidOperationException("Can't reload, no current file");
             }
 
-            // Create script api. Clean up old first.
-            _api?.Dispose();
-            _api = new(_luaPath);
+            // // Create script api. Clean up old first.
+            // _api?.Dispose();
+            // _api = new(_luaPath);
+            // // Set up runtime lua environment.
+            // var exePath = Environment.CurrentDirectory; // where exe lives
+            // _luaPath.Add(Path.Join(exePath, "lua")); // where app lua files live
+
 
             _logger.Info($"Loading script file {CurrentScriptFn}");
 

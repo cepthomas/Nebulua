@@ -34,7 +34,7 @@ static String^ _ToManagedString(const char* input);
 //--------------------------------------------------------//
 Api::Api(List<String^>^ lpath)
 {
-    _lpath = lpath;
+    _luaPath = lpath;
     Error = gcnew String("");
     SectionInfo = gcnew Dictionary<int, String^>();
     InitializeCriticalSection(&_critsect);
@@ -51,7 +51,7 @@ Api::Api(List<String^>^ lpath)
     luaL_openlibs(_l);
 
     // Fix lua path.
-    if (_lpath->Count > 0)
+    if (_luaPath->Count > 0)
     {
         // https://stackoverflow.com/a/4156038
         lua_getglobal(_l, "package");
@@ -60,7 +60,7 @@ Api::Api(List<String^>^ lpath)
 
         StringBuilder^ sb = gcnew StringBuilder(currentPath);
         sb->Append(";"); // default lua path doesn't have this.
-        for each (String^ lp in _lpath) // add app specific.
+        for each (String^ lp in _luaPath) // add app specific.
         {
             sb->Append(String::Format("{0}\\?.lua;", lp));
         }
@@ -116,7 +116,7 @@ NebStatus Api::OpenScript(String^ fn)
         nstat = NebStatus::ApiError;
     }
 
-    // Load the script.
+    // Load the script into memory.
     if (nstat == NebStatus::Ok)
     {
         char fnx[MAX_PATH];

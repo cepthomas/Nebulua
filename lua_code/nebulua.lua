@@ -3,15 +3,23 @@
 -- Impedance matching between C and Lua. Hides or translates the raw C api.
 -- Manages note collections as described by the composition.
 
+print('>>> loading nebulua.lua ')
+
 local ut  = require("utils")
 local api = require("host_api")
 local st  = require("step_types")
 local mid = require("midi_defs")
 local mus = require("music_defs")
 local com = require("neb_common")
-local os = require("os")
 
 -- print(ut.dump_table_string(package.loaded, false, "package.loaded.nebulua"))
+-- bar_time.lua
+-- gen_md.lua
+-- midi_defs.lua
+-- music_defs.lua
+-- nebulua.lua
+-- neb_common.lua
+-- step_types.lua
 
 
 -- TODO stress test and bulletproof this.
@@ -70,7 +78,6 @@ function M.log_info(msg)  api.log(2, msg) end
 function M.log_debug(msg) api.log(1, msg) end
 function M.log_trace(msg) api.log(0, msg) end
 
--- print('### loading nebulua.lua 2### '..os.time() % 100)
 M.log_info('### loading nebulua.lua ### ')
 
 -----------------------------------------------------------------------------

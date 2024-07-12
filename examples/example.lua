@@ -1,22 +1,39 @@
 
 -- An example Nebulua composition file. 
-
-
--- Import modules we need.
-
 local ut  = require("utils")
 
--- print(ut.dump_table_string(package.loaded, false, "package.loaded.1"))
+function reset()
+    print('>>> reset()')
+    print(ut.dump_table_string(package.loaded, false, "package.loaded.1"))
 
+    package.loaded.bar_time = nil
+    package.loaded.midi_defs = nil
+    package.loaded.music_defs = nil
+    package.loaded.nebulua = nil
+    package.loaded['nebulua'] = nil
+    package.loaded.neb_common = nil
+    package.loaded.step_types = nil
+    package.loaded.debugger = nil
+    package.loaded.stringex = nil
+    package.loaded.utils = nil
+    package.loaded.validators = nil
+    -- package.loaded.host_api = nil
 
+    print(ut.dump_table_string(package.loaded, false, "package.loaded.2"))
+end
+
+reset()
+
+-- Import modules we need.
+local ut  = require("utils")
 local neb = require("nebulua")
 local mus = require("music_defs")
 local mid = require("midi_defs")
 local bt  = require("bar_time")
 
--- print(ut.dump_table_string(package.loaded, false, "package.loaded.2"))
+print(ut.dump_table_string(package.loaded, false, "package.loaded.3"))
 
--- Setup for debug. Place dbg() statements for breakpoints.
+-- Setup for debug. Manually place dbg() statements for breakpoints.
 ut.config_debug(true)
 -- dbg()
 
@@ -26,8 +43,10 @@ local drum = mid.drums
 local kit  = mid.drum_kits
 local ctrl = mid.controllers
 
--- Log something to the application log.
+-- Say hello.
 neb.log_info('### loading example.lua ###')
+
+
 
 
 ------------------------- Configuration -------------------------------
