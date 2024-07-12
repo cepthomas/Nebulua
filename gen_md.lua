@@ -1,5 +1,5 @@
 
--- Makes markdown from defintion files.
+-- Makes markdown from definition files.
 
 package.path = 'lbot/?.lua;'..package.path
 

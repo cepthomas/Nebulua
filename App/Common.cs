@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
 
@@ -50,6 +51,16 @@ namespace Nebulua
             }
 
             return (fatal, msg);
+        }
+
+        /// <summary>
+        /// Get the directory name where the application lives. TODO Needs mod for installer.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetAppRoot()
+        {
+            var rootDir = Directory.GetParent(MiscUtils.GetSourcePath())!.FullName;
+            return rootDir;
         }
     }
     #endregion

@@ -53,9 +53,17 @@ namespace Nebulua
         public Core()
         {
             // Create script api with runtime lua environment.
-            var exePath = Environment.CurrentDirectory; // where exe lives
-            List<string> luaPath = [ Path.Join(exePath, "lua") ]; // where app lua files live
+            var rootDir = Utils.GetAppRoot();
+            List<string> luaPath = [ Path.Join(rootDir, "lua_code"), Path.Join(rootDir, "lbot")]; // where app lua files live
             _api = new(luaPath);
+
+
+//NebStatus stat = _api.OpenScript(Path.Combine(Utils.GetAppRoot(), "lua_code", "internal.lua"));
+//if (stat != NebStatus.Ok)
+//{
+//    throw new ApiException("Api open script failed", _api.Error);
+//}
+
 
             // Hook script callbacks.
             Api.CreateChannel += Interop_CreateChannel;
@@ -119,14 +127,6 @@ namespace Nebulua
             {
                 throw new InvalidOperationException("Can't reload, no current file");
             }
-
-            // // Create script api. Clean up old first.
-            // _api?.Dispose();
-            // _api = new(_luaPath);
-            // // Set up runtime lua environment.
-            // var exePath = Environment.CurrentDirectory; // where exe lives
-            // _luaPath.Add(Path.Join(exePath, "lua")); // where app lua files live
-
 
             _logger.Info($"Loading script file {CurrentScriptFn}");
 

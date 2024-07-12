@@ -11,11 +11,13 @@ local bt  = require("bar_time") -- time utility
 local com = require('neb_common')
 local ut  = require('utils')
 
-neb.log_info('### loading airport.lua ###')
-
 -- Setup for debug.
 ut.config_debug(true)
 -- dbg()
+
+-- Say hello.
+neb.log_info('### loading airport.lua ###')
+
 
 ------------------------- Configuration -------------------------------
 

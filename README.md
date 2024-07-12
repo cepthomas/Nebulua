@@ -11,7 +11,7 @@ See [example](examples/example.lua) for how-to.
 
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
-![logo](marks.png)
+![logo](docs/marks.png)
 
 Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
 - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.

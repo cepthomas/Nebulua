@@ -13,15 +13,6 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO1 lua require() file edits don't reload? lua_close(_l); doesn't seem to unload required modules.
-// lua package.loaded.XXX = nil
-// lua require("XXX")
-// package.loaded A table used by require to control which modules are already loaded. When you require a 
-// module modname and package.loaded[modname] is not false, require simply returns the value stored there.
-
-
-// -- print(ut.dump_table_string(package.loaded, false, "package.loaded.2"))
-
 // TODO slow startup when running from VS/debugger but not from .exe.
 // TODO for debugging set <OutputType> to Exe which opens a terminal. See example.lua for how-to. Would be nice to simplify this.
 
@@ -66,8 +57,6 @@ namespace Nebulua
             Size = UserSettings.Current.FormGeometry.Size;
             WindowState = FormWindowState.Normal;
             BackColor = UserSettings.Current.BackColor;
-            // Get the icon associated with the currently executing assembly.
-            Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             PopulateFileMenu();
@@ -153,15 +142,10 @@ namespace Nebulua
             ddbtnFile.Selected += File_Selected;
             #endregion
 
-            btnGo.Click += BtnGo_Click;
+            btnGo.Click += (_, __) => Console.WriteLine("<<<<<<  >>>>>");
 
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-        }
-
-        void BtnGo_Click(object? sender, EventArgs e)
-        {
-            Console.WriteLine("<<<<<<  >>>>>");
         }
 
         /// <summary>
@@ -201,8 +185,6 @@ namespace Nebulua
             };
             UserSettings.Current.WordWrap = traffic.WordWrap;
             UserSettings.Current.Save();
-
-            //ConsoleWindow.UnredirectConsole();
 
             base.OnFormClosing(e);
         }
@@ -524,11 +506,12 @@ namespace Nebulua
                 ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
-            ls.AddRange(File.ReadAllLines("docs\\README.md"));
+            var rootDir = Utils.GetAppRoot();
+            ls.AddRange(File.ReadAllLines(Path.Join(rootDir, "README.md")));
             ls.Add($"");
-            ls.AddRange(File.ReadAllLines("docs\\midi_defs.md"));
+            ls.AddRange(File.ReadAllLines(Path.Join(rootDir, "docs", "midi_defs.md")));
             ls.Add($"");
-            ls.AddRange(File.ReadAllLines("docs\\music_defs.md"));
+            ls.AddRange(File.ReadAllLines(Path.Join(rootDir, "docs", "music_defs.md")));
             ls.Add($"");
 
             Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, true);

@@ -253,6 +253,7 @@ namespace Nebulua
             Controls.Add(sldVolume);
             Controls.Add(sldTempo);
             Controls.Add(traffic);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             Text = "Form1";
             ResumeLayout(false);
