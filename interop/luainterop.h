@@ -44,6 +44,13 @@ int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume);
 /// @return int Unused
 int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int value);
 
+/// Host call lua: Internal use only.
+/// @param[in] l Internal lua state.
+/// @param[in] cmd Specific command
+/// @param[in] arg Optional argument
+/// @return int Script return code
+int luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg);
+
 
 //---------------- Work functions for lua call host -------------//
 

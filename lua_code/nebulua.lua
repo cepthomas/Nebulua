@@ -11,7 +11,7 @@ local mus = require("music_defs")
 local com = require("neb_common")
 
 -- TODO stress test and bulletproof this.
-print('1111')
+
 local M = {}
 
 -----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ local M = {}
 -----------------------------------------------------------------------------
 
 -- Key is section name, value is start tick. Total length is the last element.
-_section_info = {}
+section_info = {}
 
 
 -----------------------------------------------------------------------------
@@ -189,7 +189,7 @@ function M.process_comp()
     -- Hard reset.
     _steps = {}
     _transients = {}
-    _section_info = {}
+    section_info = {}
     -- Total length of composition.
     local length = 0
 
@@ -205,14 +205,14 @@ function M.process_comp()
         M.parse_section(section, length)
 
         -- Save info about section.
-        _section_info[section.name] = section.start
+        section_info[section.name] = section.start
 
         -- Keep track of overall time.
         length = length + section.length
     end
 
     -- All done. Tack on the total.
-    _section_info["_LENGTH"] = length
+    section_info["_LENGTH"] = length
 end
 
 

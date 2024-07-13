@@ -27,6 +27,9 @@ static CRITICAL_SECTION _critsect;
 // Convert managed string to unmanaged. Returns actual length or <0 if error TODO handle.
 static int _ToCString(char* buff, size_t bufflen, String^ input);
 
+static char* _ToCString2(String^ input);
+
+
 // Convert unmanaged string to managed.
 static String^ _ToManagedString(const char* input);
 
@@ -34,12 +37,13 @@ static String^ _ToManagedString(const char* input);
 //--------------------------------------------------------//
 Api::Api(List<String^>^ lpath)
 {
+    InitializeCriticalSection(&_critsect);
+
     _luaPath = lpath;
     Error = gcnew String("");
     SectionInfo = gcnew Dictionary<int, String^>();
-    InitializeCriticalSection(&_critsect);
-
-    NebStatus stat = NebStatus::Ok;
+    NebStatus nstat = NebStatus::Ok;
+    int lstat = LUA_OK;
 
     // Init lua.
     _l = luaL_newstate();
@@ -66,10 +70,13 @@ Api::Api(List<String^>^ lpath)
         }
         String^ newPath = sb->ToString();
 
-        // Create a big enough C buffer and convert.
-        int newLen = newPath->Length + 50;
-        char* spath = (char*)malloc(newLen);
-        int ret = _ToCString(spath, newLen, newPath);
+        //// Create a big enough C buffer and convert.
+        //int newLen = newPath->Length + 50;
+        //char* spath = (char*)malloc(newLen);
+        //int ret = _ToCString(spath, newLen, newPath);
+
+        char* spath = _ToCString2(newPath);
+
         lua_pop(_l, 1);
         lua_pushstring(_l, spath);
         lua_setfield(_l, -2, "path");
@@ -77,7 +84,29 @@ Api::Api(List<String^>^ lpath)
         free(spath);
     }
 
-    // Load host funcs into lua space. This table gets pushed on the stack and into globals.
+
+    //NebStatus stat = _api.OpenScript(Path.Combine(Utils.GetAppRoot(), "lua_code", "internal.lua"));
+    //if (stat != NebStatus.Ok)
+    //{
+    //    throw new ApiException("Api open script failed", _api.Error);
+    //}
+
+
+    // Load the helper script into memory.
+    if (nstat == NebStatus::Ok)
+    {
+        lstat = luaL_loadfile(_l, "C:\\Dev\\repos\\Apps\\Nebulua\\lua_code\\internal.lua");
+        nstat = EvalLuaStatus(lstat, "Load helper failed.");
+    }
+
+    // Execute it. This reports runtime syntax errors.
+    if (nstat == NebStatus::Ok)
+    {
+        lstat = luaex_docall(_l, 0, 0);
+        nstat = EvalLuaStatus(lstat, "Execute helper failed.");
+    }
+
+    // Load C host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);
 
     // Pop the table off the stack as it interferes with calling the module functions.
@@ -92,12 +121,14 @@ Api::~Api()
 
     // Finished. Clean up resources and go home.
     DeleteCriticalSection(&_critsect);
+
     if (_l != nullptr)
     {
         lua_close(_l);
         _l = nullptr;
     }
 }
+
 
 //--------------------------------------------------------//
 NebStatus Api::OpenScript(String^ fn)
@@ -119,10 +150,15 @@ NebStatus Api::OpenScript(String^ fn)
     // Load the script into memory.
     if (nstat == NebStatus::Ok)
     {
-        char fnx[MAX_PATH];
-        int ret = _ToCString(fnx, MAX_PATH, fn);
+        //char fnx[MAX_PATH];
+        //int ret = _ToCString(fnx, MAX_PATH, fn);
+
+        char* fnx = _ToCString2(fn);
+
+
         // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
+        free(fnx);
         nstat = EvalLuaStatus(lstat, "Load script file failed.");
     }
 
@@ -145,11 +181,11 @@ NebStatus Api::OpenScript(String^ fn)
         }
     }
 
-    // Get length and script info.
+    // Get script info.
     if (nstat == NebStatus::Ok)
     {
         // Get section info.
-        int ltype = lua_getglobal(_l, "_section_info");
+        int ltype = lua_getglobal(_l, "section_info");
         lua_pushnil(_l);
         while (lua_next(_l, -2) != 0) // && lstat ==_lUA_OK)
         {
@@ -218,6 +254,25 @@ NebStatus Api::RcvController(int chan_hnd, int controller, int value)
     return ret;
 }
 
+//--------------------------------------------------------//
+int Api::NebCommand(String^ cmd, String^ arg)
+{
+    Error = gcnew String("");
+
+    char* scmd = _ToCString2(cmd);
+    char* sarg = _ToCString2(arg);
+
+    int ret = luainterop_NebCommand(_l, scmd, sarg);
+    free(scmd);
+    free(sarg);
+
+    if (luainterop_Error() != NULL)
+    {
+        Error = gcnew String(luainterop_Error());
+    }
+
+    return ret;
+}
 
 //------------------- Privates ---------------------------//
 
@@ -302,6 +357,29 @@ int _ToCString(char* buff, size_t bufflen, String^ input)
     }
 
     return ret;
+}
+
+
+//--------------------------------------------------------//
+char* _ToCString2(String^ input)
+{
+    //char* ret = 0; // default
+
+    int inlen = input->Length;
+    char* buff = (char*)malloc(inlen + 1);
+
+    // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
+    // not! const char* str4 = context->marshal_as<const char*>(input);
+    interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
+    int i = 0;
+    for (; *ppchar != L'\0' && i < inlen; ++ppchar, i++)
+    {
+        int c = wctob(*ppchar);
+        buff[i] = c != -1 ? c : '?';
+    }
+    buff[i] = 0; // terminate
+
+    return buff;
 }
 
 //--------------------------------------------------------//

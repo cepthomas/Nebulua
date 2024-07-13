@@ -13,8 +13,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO slow startup when running from VS/debugger but not from .exe.
-// TODO for debugging set <OutputType> to Exe which opens a terminal. See example.lua for how-to. Would be nice to simplify this.
+// TODO slow startup when running from VS/debugger but not from .exe. Shutdown too when closing term,
 
 
 namespace Nebulua

@@ -54,6 +54,7 @@ namespace Nebulua
         /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
+        /// <exception cref="ScriptSyntaxException"></exception>
         public MidiInput(string deviceName)
         {
             bool valid = false;
@@ -158,6 +159,7 @@ namespace Nebulua
         /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
+        /// <exception cref="ScriptSyntaxException"></exception>
         public MidiOutput(string deviceName)
         {
             DeviceName = deviceName;

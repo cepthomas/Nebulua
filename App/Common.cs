@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
 
 
@@ -18,10 +17,11 @@ namespace Nebulua
 
     /// <summary>App command line error.</summary>
     public class ApplicationArgumentException(string message) : Exception(message) { }
+    #endregion
 
     public class Utils
     {
-        /// <summary>Generic exception processor.</summary>
+        /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
         public static (bool fatal, string msg) ProcessException(Exception e)
@@ -44,7 +44,7 @@ namespace Nebulua
                     fatal = true;
                     break;
 
-                default: // other
+                default: // other, probably fatal
                     msg = $"{e.GetType()}: {e.Message}{Environment.NewLine}{e.StackTrace}";
                     fatal = true;
                     break;
@@ -63,5 +63,4 @@ namespace Nebulua
             return rootDir;
         }
     }
-    #endregion
 }

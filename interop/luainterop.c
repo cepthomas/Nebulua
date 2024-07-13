@@ -152,6 +152,42 @@ int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int val
     return ret;
 }
 
+//--------------------------------------------------------//
+int luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg)
+{
+    _error = NULL;
+    int stat = LUA_OK;
+    int num_args = 0;
+    int num_ret = 1;
+    int ret = 0;
+
+    // Get function.
+    int ltype = lua_getglobal(l, "neb_command");
+    if (ltype != LUA_TFUNCTION)
+    {
+        if (false) { _error = "Bad function name: neb_command()"; }
+        return ret;
+    }
+
+    // Push arguments. No error checking required.
+    lua_pushstring(l, cmd);
+    num_args++;
+    lua_pushstring(l, arg);
+    num_args++;
+
+    // Do the protected call.
+    stat = luaex_docall(l, num_args, num_ret);
+    if (stat == LUA_OK)
+    {
+        // Get the results from the stack.
+        if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
+        else { _error = "Bad return type for neb_command(): should be integer"; }
+    }
+    else { _error = lua_tostring(l, -1); }
+    lua_pop(l, num_ret); // Clean up results.
+    return ret;
+}
+
 
 //---------------- Call host functions from Lua -------------//
 

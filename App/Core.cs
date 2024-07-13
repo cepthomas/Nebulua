@@ -20,10 +20,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("Core");
 
         /// <summary>The interop API.</summary>
-        Api? _api;
-
-        /// <summary>Context for LUA_PATH.</summary>
-        // readonly List<string> _luaPath = [];
+        readonly Api _api;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -52,18 +49,10 @@ namespace Nebulua
         /// </summary>
         public Core()
         {
-            // Create script api with runtime lua environment.
+            // Set up runtime lua environment.
             var rootDir = Utils.GetAppRoot();
             List<string> luaPath = [ Path.Join(rootDir, "lua_code"), Path.Join(rootDir, "lbot")]; // where app lua files live
             _api = new(luaPath);
-
-
-//NebStatus stat = _api.OpenScript(Path.Combine(Utils.GetAppRoot(), "lua_code", "internal.lua"));
-//if (stat != NebStatus.Ok)
-//{
-//    throw new ApiException("Api open script failed", _api.Error);
-//}
-
 
             // Hook script callbacks.
             Api.CreateChannel += Interop_CreateChannel;
@@ -95,8 +84,7 @@ namespace Nebulua
                 _outputs.Clear();
 
                 // Release unmanaged resources. https://stackoverflow.com/a/4935448
-                _api?.Dispose();
-                _api = null;
+                _api.Dispose();
 
                 _disposed = true;
             }
@@ -105,10 +93,13 @@ namespace Nebulua
 
         #region Primary workers
         /// <summary>
-        /// Load and execute script. Can throw on main thread.
+        /// Load and execute script. Can throw.
         /// </summary>
         /// <param name="scriptFn">The script file or null to reload current.</param>
         /// <returns></returns>
+        /// <exception cref="ApplicationArgumentException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="ApiException"></exception>
         public NebStatus LoadScript(string? scriptFn = null)
         {
             // Check file arg.
@@ -126,6 +117,13 @@ namespace Nebulua
             else if (CurrentScriptFn is null)
             {
                 throw new InvalidOperationException("Can't reload, no current file");
+            }
+
+            // Unload current modules so reload will be minty fresh.
+            int ret = _api.NebCommand("unload_all", "no arg");
+            if (_api.Error != "")
+            {
+                throw new ApiException("NebCommand failed", _api.Error);
             }
 
             _logger.Info($"Loading script file {CurrentScriptFn}");
@@ -149,7 +147,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Input from internal non-midi device.
+        /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
@@ -165,7 +163,7 @@ namespace Nebulua
             }
             else
             {
-                //throw new ScriptSyntaxException($"Invalid internal device:{devName}");
+/// <exception cref="TODO_Exception"></exception>
                 CallbackError(new ScriptSyntaxException($"Invalid internal device:{devName}"));
             }
         }
@@ -224,6 +222,7 @@ namespace Nebulua
                 if (stat != NebStatus.Ok)
                 {
                    CallbackError(new ApiException("Step() failed", _api.Error));
+/// <exception cref="TODO_Exception"></exception>
                 }
 
                 // Read stopwatch and diff/stats.
@@ -301,6 +300,7 @@ namespace Nebulua
             if (stat != NebStatus.Ok)
             {
                CallbackError(new ApiException("Midi Receive() failed", _api!.Error));
+/// <exception cref="TODO_Exception"></exception>
             }
         }
         #endregion
@@ -311,6 +311,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        /// <exception cref="ScriptSyntaxException"></exception>
         void Interop_CreateChannel(object? sender, CreateChannelArgs e)
         {
             //Debug.WriteLine($"Core.Interop_CreateChannel() this={GetHashCode()} _api={_api?.GetHashCode()} sender={sender?.GetHashCode()} _disposed={_disposed}");
@@ -361,6 +362,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
+        /// <exception cref="ScriptSyntaxException"></exception>
         void Interop_Send(object? _, SendArgs e)
         {
             e.Ret = 0; // not used
@@ -415,6 +417,7 @@ namespace Nebulua
             else
             {
                 CallbackError(new ScriptSyntaxException($"SCRIPT Invalid log level: {e.LogLevel}"));
+/// <exception cref="TODO_Exception"></exception>
             }
         }
 
@@ -423,6 +426,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        /// <exception cref="ScriptSyntaxException"></exception>
         void Interop_PropertyChange(object? sender, PropertyArgs e)
         {
             if (e.Bpm >= 30 && e.Bpm <= 240)

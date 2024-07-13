@@ -192,10 +192,6 @@ namespace Nebulua
                 _length = _sectionInfo.Last().tick;
                 ValidateTimes();
             }
-            //else
-            //{
-            //    throw new ScriptSyntaxException("InitSectionInfo() script has no sections");
-            //}
         }
         #endregion
 

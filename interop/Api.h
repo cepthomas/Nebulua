@@ -84,6 +84,12 @@ namespace Nebulua { namespace Interop
         /// <param name="value">Payload 0 => 127</param>
         /// <returns>Neb Status</returns>
         NebStatus RcvController(int chan_hnd, int controller, int value);
+
+        /// <summary>Execute internal command.</summary>
+        /// <param name="cmd">The command</param>
+        /// <param name="arg">Maybe arg</param>
+        /// <returns>Whatever the script said</returns>
+        int NebCommand(String^ cmd, String^ arg);
     #pragma endregion
 
     #pragma region Event hooks

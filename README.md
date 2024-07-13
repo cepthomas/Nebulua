@@ -145,6 +145,8 @@ Supports standard comparison operators and tostring().
 
 ## Imports
 
+Scripts need this section.
+
 ```lua
 local neb = require("nebulua") -- lua api
 local mid = require("midi_defs") -- GM midi instrument definitions
@@ -220,6 +222,7 @@ function neb.set_tempo(bpm)
 Change the play tempo.
 - bpm: New tempo.
 
+
 ```lua
 function neb.process_comp(sections)
 ```
@@ -236,7 +239,7 @@ If it's a static composition call this in step(tick);
 
 ## Script Callbacks
 
-These are called by the system for overriding in the user script.
+These are called by the system for overriding in the script.
 
 ```lua
 function setup()
@@ -304,13 +307,47 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
     - timer periodic events callback
 - The shared resource that requires synchronization is a singleton `Api`. It is protected by a 
   `CRITICAL_SECTION`. Thread access to the UI is protected by `InvokeIfRequired()`.
-- Almost all errors are considered fatal as they are usually things the user needs to fix before continuing
-  such as script syntax errors. They are logged, written to the CLI, and then the application exits.
 - Lua functions defined in C do not call `luaL_error()`. Only call `luaL_error()` in code that is called from
   the lua side. C side needs to handle function returns manually via status codes, error msgs, etc.
 
 
-## Files
+TODO discuss what's in lua module and what's global, and why.
+- script public functions are in `_G` mainly to keep it simpler for the user (no need for Ms).
+
+
+## Error model - see lippert doc
+
+- Almost all errors are considered fatal as they are usually things the user needs to fix before continuing
+  such as script syntax errors. They are logged, written to the CLI, and then the application exits.
+
+// To answer some of Andrew's concerns (from the comments), there are three types of exceptions: Ones you don't know about, ones you know about and can't do anything about, and ones you know about and can do something about.
+// The ones you don't know about you want to let go. Its the principal of failing fast--better your app to crash than enter a state where you might end up corrupting your data. The crash will tell you about what happened and why, which may help move that exception out of the "ones you don't know about" list.
+// The ones you know about and can't do anything about are exceptions like OutOfMemoryExceptions. In extreme cases you might want to handle exceptions like this, but unless you have some pretty remarkable requirements you treat them like the first category--let 'em go. Do you have to document these exceptions? You'd look pretty foolish documenting OOMs on every single method that new-s up an object.
+// The ones you know about and can do something about are the ones you should be documenting and wrapping.
+//         /// <exception cref="TODO_Exception"></exception>
+
+//log error causes exit - not warn
+
+/// <summary>Lua script syntax error.</summary>
+public class ScriptSyntaxException(string message) : Exception(message) { }
+
+/// <summary>Api error.</summary>
+public class ApiException(string message, string apiError) : Exception(message)
+{
+    public string ApiError { get; init; } = apiError;
+}
+
+/// <summary>App command line error.</summary>
+public class ApplicationArgumentException(string message) : Exception(message) { }
+
+>>>>> threads
+/// <summary>Generic exception processor.</summary>
+/// <param name="e"></param>
+/// <returns>(bool fatal, string msg)</returns>
+public static (bool fatal, string msg) ProcessException(Exception e)
+
+
+## Files - update per notes.ntr
 
 ```
 Nebulua
@@ -331,7 +368,7 @@ Nebulua
 \---test - various test code projects
 ```
 
-# External Components
+## External Components
 
 This application uses these FOSS components:
 - [NAudio](https://github.com/naudio/NAudio).

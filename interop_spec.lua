@@ -58,12 +58,23 @@ M.script_funcs =
         ret = { type = "I", description = "Unused" }
     },
 
+    {
+        lua_func_name = "neb_command",
+        host_func_name = "NebCommand",
+        required = "false",
+        description = "Internal use only.",
+        args =
+        {
+            { name = "cmd", type = "S", description = "Specific command" },
+            { name = "arg", type = "S", description = "Optional argument" },
+        },
+        ret = { type = "I", description = "Script return code" }
+    },
 }
 
 -- Script calls host.
 M.host_funcs =
 {
-
     {
         lua_func_name = "create_output_channel",
         host_func_name = "CreateOutputChannel",
