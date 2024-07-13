@@ -1,4 +1,4 @@
-# Builtin Music Definitions
+# Builtin Chords and Scales
 
 ## Chords
 

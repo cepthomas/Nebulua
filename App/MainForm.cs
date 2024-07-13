@@ -482,13 +482,30 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// The meaning of life.
+        /// The meaning of life. TODO fights with github flavor a bit.
         /// </summary>
         void About_Click(object? sender, EventArgs e)
         {
             // Consolidate docs.
-            List<string> ls = [];
+            var rootDir = Utils.GetAppRoot();
+            var files = new List<string>()
+            {
+                Path.Join(rootDir, "README.md"),
+                Path.Join(rootDir, "docs", "definitions.md"),
+                Path.Join(rootDir, "docs", "writing_scripts.md"),
+                Path.Join(rootDir, "docs", "midi_defs.md"),
+                Path.Join(rootDir, "docs", "music_defs.md"),
+                Path.Join(rootDir, "docs", "tech_notes.md"),
+            };
 
+            List<string> ls = [];
+            foreach (var f in files)
+            {
+                ls.AddRange(File.ReadAllLines(f));
+                ls.Add($"");
+            }
+
+            // Show them what they have.
             ls.Add($"# Your Midi Devices");
             ls.Add($"");
             ls.Add($"## Outputs");
@@ -497,6 +514,7 @@ namespace Nebulua
             {
                 ls.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
             }
+
             ls.Add($"");
             ls.Add($"## Inputs");
             ls.Add($"");
@@ -505,15 +523,10 @@ namespace Nebulua
                 ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
-            var rootDir = Utils.GetAppRoot();
-            ls.AddRange(File.ReadAllLines(Path.Join(rootDir, "README.md")));
-            ls.Add($"");
-            ls.AddRange(File.ReadAllLines(Path.Join(rootDir, "docs", "midi_defs.md")));
-            ls.Add($"");
-            ls.AddRange(File.ReadAllLines(Path.Join(rootDir, "docs", "music_defs.md")));
-            ls.Add($"");
-
-            Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, true);
+            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
+            var docfn = Path.Join(rootDir, "doc.html");
+            File.WriteAllText(docfn, html);
+            new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
         }
         #endregion
     }

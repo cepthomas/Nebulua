@@ -163,7 +163,6 @@ namespace Nebulua
             }
             else
             {
-/// <exception cref="TODO_Exception"></exception>
                 CallbackError(new ScriptSyntaxException($"Invalid internal device:{devName}"));
             }
         }
@@ -222,7 +221,6 @@ namespace Nebulua
                 if (stat != NebStatus.Ok)
                 {
                    CallbackError(new ApiException("Step() failed", _api.Error));
-/// <exception cref="TODO_Exception"></exception>
                 }
 
                 // Read stopwatch and diff/stats.
@@ -300,7 +298,6 @@ namespace Nebulua
             if (stat != NebStatus.Ok)
             {
                CallbackError(new ApiException("Midi Receive() failed", _api!.Error));
-/// <exception cref="TODO_Exception"></exception>
             }
         }
         #endregion
@@ -417,7 +414,6 @@ namespace Nebulua
             else
             {
                 CallbackError(new ScriptSyntaxException($"SCRIPT Invalid log level: {e.LogLevel}"));
-/// <exception cref="TODO_Exception"></exception>
             }
         }
 

@@ -8,3 +8,4 @@ objcli/
 temp/
 *.vcxproj.user
 *.csproj.user
+/doc.html
