@@ -21,7 +21,7 @@ namespace Nebulua.Test
 
             MockIn min = new();
             MockOut mout = new();
-            var cli = new Cli();
+            var cli = new Cli("none");
             //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
             string prompt = ">";
 
@@ -158,7 +158,7 @@ namespace Nebulua.Test
 
             MockIn min = new();
             MockOut mout = new();
-            var cli = new Cli();
+            var cli = new Cli("none");
             //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
             string prompt = ">";
 

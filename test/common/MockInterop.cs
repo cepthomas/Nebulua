@@ -51,6 +51,11 @@ namespace Nebulua.Interop
             return NebStatus.Ok;
         }
 
+        public int NebCommand(string cmd, string arg)
+        {
+            return 0;
+        }
+
         public static event EventHandler<CreateChannelArgs>? CreateChannel;
         public static void NotifyCreateChannel(CreateChannelArgs args) { CreateChannel?.Invoke(null, args); }
 

@@ -28,9 +28,11 @@
 
 ## Files
 
+Source dir:
 ```
 Nebulua
 |   gen_interop.cmd, interop_spec.lua - generates interop wrapper code
+|   README.md
 +---App - standard C# project for the main app
 |       *.cs
 |       etc...
@@ -39,11 +41,43 @@ Nebulua
 |       luainterop.c/h - generated wrapper code
 |       luainteropwork.cpp - glue
 +---lua_code - lua modules for application
-+---lib - .NET utilities
-+---lbot - submodule of https://github.com/cepthomas/LuaBagOfTricks.git
+|       bar_time.lua
+|       midi_defs.lua
+|       music_defs.lua
+|       nebulua.lua
+|       neb_common.lua
+|       step_types.lua
++---lbot - parts of https://github.com/cepthomas/LuaBagOfTricks
+|       *.lua
+|       *.c/h
++---lib
+|       *.dll\xml - .NET dependencies
+|       lua54 - lua binaries
++---test - various test code projects
+|
++---App\bin\x64\Debug\net8.0-windows - build products
+|       Nebulua.exe
+|       *.dll
+|       etc...
 +---examples
 |       airport.lua
 |       example.lua
-+---docs - doc files
-\---test - various test code projects
+\---docs
+        *.md
+```
+
+
+Install/runtime:
+```
+Nebulua
+|   README.md
++---bin
+|       Nebulua.exe
+|       *.dll
+|       etc...
++---lib - same as Source
++---lbot - same as Source
++---lua_code - same as Source
++---examples - same as Source
+\---docs - same as Source
 ```

@@ -167,7 +167,7 @@ namespace Nebulua
         /// TODO Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
-        bool DoCommand()
+        public bool DoCommand() // TODO public for test only.
         {
             bool ret = true;
 

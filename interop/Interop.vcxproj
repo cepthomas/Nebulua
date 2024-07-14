@@ -84,10 +84,10 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\lbot\c_code;..\lbot\lua_lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lbot;..\lib\lua54\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>..\lbot\lua_lib\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\lib\lua54\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -125,16 +125,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\lbot\c_code\luaex.h" />
-    <ClInclude Include="..\lbot\c_code\luautils.h" />
+    <ClInclude Include="..\lbot\luaex.h" />
+    <ClInclude Include="..\lbot\luautils.h" />
     <ClInclude Include="Api.h" />
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\lbot\c_code\luaex.c">
+    <ClCompile Include="..\lbot\luaex.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
-    <ClCompile Include="..\lbot\c_code\luautils.c">
+    <ClCompile Include="..\lbot\luautils.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="Api.cpp" />

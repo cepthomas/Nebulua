@@ -22,6 +22,7 @@
     <Compile Include="..\..\App\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\App\State.cs" Link="State.cs" />
     <Compile Include="..\..\App\UserSettings.cs" Link="UserSettings.cs" />
+    <Compile Include="..\..\App\MusicTime.cs" Link="MusicTime.cs" />
     <Compile Include="..\common\MockCore.cs" Link="MockCore.cs" />
     <Compile Include="..\common\MockIO.cs" Link="MockIO.cs" />
     <Compile Include="..\common\MockNAudio.cs" Link="MockNAudio.cs" />

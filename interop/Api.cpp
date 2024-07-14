@@ -25,10 +25,7 @@ struct lua_State {};
 static CRITICAL_SECTION _critsect;
 
 // Convert managed string to unmanaged. Returns actual length or <0 if error TODO handle.
-static int _ToCString(char* buff, size_t bufflen, String^ input);
-
-static char* _ToCString2(String^ input);
-
+static char* _ToCString(String^ input);
 
 // Convert unmanaged string to managed.
 static String^ _ToManagedString(const char* input);
@@ -48,7 +45,6 @@ Api::Api(List<String^>^ lpath)
     // Init lua.
     _l = luaL_newstate();
 
-    //Debug::WriteLine(">>> Api::Api() this={0} _l={1}", this->GetHashCode(), MAKE_ID(_l));
     LogDebug("construct");
 
     // Load std libraries.
@@ -69,13 +65,7 @@ Api::Api(List<String^>^ lpath)
             sb->Append(String::Format("{0}\\?.lua;", lp));
         }
         String^ newPath = sb->ToString();
-
-        //// Create a big enough C buffer and convert.
-        //int newLen = newPath->Length + 50;
-        //char* spath = (char*)malloc(newLen);
-        //int ret = _ToCString(spath, newLen, newPath);
-
-        char* spath = _ToCString2(newPath);
+        char* spath = _ToCString(newPath);
 
         lua_pop(_l, 1);
         lua_pushstring(_l, spath);
@@ -84,18 +74,10 @@ Api::Api(List<String^>^ lpath)
         free(spath);
     }
 
-
-    //NebStatus stat = _api.OpenScript(Path.Combine(Utils.GetAppRoot(), "lua_code", "internal.lua"));
-    //if (stat != NebStatus.Ok)
-    //{
-    //    throw new ApiException("Api open script failed", _api.Error);
-    //}
-
-
     // Load the helper script into memory.
     if (nstat == NebStatus::Ok)
     {
-        lstat = luaL_loadfile(_l, "C:\\Dev\\repos\\Apps\\Nebulua\\lua_code\\internal.lua");
+        lstat = luaL_loadfile(_l, "C:\\Dev\\repos\\Apps\\Nebulua\\lua_code\\internal.lua");//TODO1 hard path!
         nstat = EvalLuaStatus(lstat, "Load helper failed.");
     }
 
@@ -116,7 +98,6 @@ Api::Api(List<String^>^ lpath)
 //--------------------------------------------------------//
 Api::~Api()
 {
-    //Debug::WriteLine(">>> Api::~Api() this = {0} _l = {1}", this->GetHashCode(), MAKE_ID(_l));
     LogDebug("destruct");
 
     // Finished. Clean up resources and go home.
@@ -150,11 +131,7 @@ NebStatus Api::OpenScript(String^ fn)
     // Load the script into memory.
     if (nstat == NebStatus::Ok)
     {
-        //char fnx[MAX_PATH];
-        //int ret = _ToCString(fnx, MAX_PATH, fn);
-
-        char* fnx = _ToCString2(fn);
-
+        char* fnx = _ToCString(fn);
 
         // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
@@ -259,8 +236,8 @@ int Api::NebCommand(String^ cmd, String^ arg)
 {
     Error = gcnew String("");
 
-    char* scmd = _ToCString2(cmd);
-    char* sarg = _ToCString2(arg);
+    char* scmd = _ToCString(cmd);
+    char* sarg = _ToCString(arg);
 
     int ret = luainterop_NebCommand(_l, scmd, sarg);
     free(scmd);
@@ -324,44 +301,9 @@ void Api::LogDebug(String^ msg)
     NotifyLog(args);
 }
 
-//--------------------------------------------------------//
-int _ToCString(char* buff, size_t bufflen, String^ input)
-{
-    int ret = 0;
-    int inlen = input->Length;
-
-    if (inlen < bufflen - 1)
-    {
-        // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
-        // not! const char* str4 = context->marshal_as<const char*>(input);
-        interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
-        int i = 0;
-        for (; *ppchar != L'\0' && i < inlen && ret >= 0; ++ppchar, i++)
-        {
-            int c = wctob(*ppchar);
-            if (c != -1)
-            {
-                buff[i] = c;
-            }
-            else
-            {
-                ret = -2; // invalid char
-                buff[i] = '?';
-            }
-        }
-        buff[i] = 0; // terminate
-    }
-    else
-    {
-        ret = -1; // not enough room.
-    }
-
-    return ret;
-}
-
 
 //--------------------------------------------------------//
-char* _ToCString2(String^ input)
+char* _ToCString(String^ input)
 {
     //char* ret = 0; // default
 

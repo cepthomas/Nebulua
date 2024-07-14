@@ -20,6 +20,9 @@
   <ItemGroup>
     <Compile Include="..\..\App\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\App\State.cs" Link="State.cs" />
+    <Compile Include="..\..\App\MusicTime.cs" Link="MusicTime.cs" />
+    <Compile Include="..\common\MockMidi.cs" Link="MockMidi.cs" />
+    <Compile Include="..\common\MockNAudio.cs" Link="MockNAudio.cs" />
   </ItemGroup>
 
   <ItemGroup>
