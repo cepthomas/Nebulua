@@ -28,7 +28,7 @@ namespace Nebulua.Test
             NebStatus stat = interop.OpenScript(scrfn);
             UT_EQUAL(interop.Error, "");
             UT_EQUAL(stat, NebStatus.Ok);
-            UT_EQUAL(events.CollectedEvents.Count, 6);
+            UT_EQUAL(events.CollectedEvents.Count, 7);
 
             // Have a look inside.
             UT_EQUAL(interop.SectionInfo.Count, 4);

@@ -28,7 +28,7 @@ namespace Nebulua
                 case 1:
                     {
                         var scriptFn = args[0];
-                        using var cli = new Cli(scriptFn);
+                        using var cli = new Cli(scriptFn, Console.In, Console.Out);
                     }
                     break;
 

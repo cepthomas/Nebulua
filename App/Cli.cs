@@ -28,10 +28,10 @@ namespace Nebulua
         readonly CommandDescriptor[] _commands;
 
         /// <summary>CLI input.</summary>
-        readonly TextReader _in = Console.In;
+        readonly TextReader _tin;
 
         /// <summary>CLI output.</summary>
-        readonly TextWriter _out = Console.Out;
+        readonly TextWriter _tout;
 
         /// <summary>CLI prompt.</summary>
         readonly string _prompt = ">";
@@ -59,10 +59,16 @@ namespace Nebulua
 
         #region Lifecycle
         /// <summary>
-        /// Constructor inits stuff. Cli version requires cl script name.
+        /// Constructor inits stuff.
         /// </summary>
-        public Cli(string scriptFn)
+        /// <param name="scriptFn">Cli version requires cl script name.</param>
+        /// <param name="tin">Stream in</param>
+        /// <param name="tout">Stream out</param>
+        public Cli(string scriptFn, TextReader tin, TextWriter tout)
         {
+            _tin = tin;
+            _tout = tout;            
+
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
             UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
@@ -172,7 +178,7 @@ namespace Nebulua
             bool ret = true;
 
             // Listen.
-            string? res = _in.ReadLine();
+            string? res = _tin.ReadLine();
 
             if (res != null)
             {
@@ -214,14 +220,14 @@ namespace Nebulua
         {
             foreach (var cmd in _commands!)
             {
-                _out.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
+                _tout.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
                 if (cmd.Args.Length > 0)
                 {
                     // Maybe multiline args.
                     var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
                     foreach (var arg in parts)
                     {
-                        _out.WriteLine($"    {arg}");
+                        _tout.WriteLine($"    {arg}");
                     }
                 }
             }
@@ -234,8 +240,8 @@ namespace Nebulua
         /// <param name="s"></param>
         void Write(string s)
         {
-            _out.WriteLine(s);
-            _out.Write(_prompt);
+            _tout.WriteLine(s);
+            _tout.Write(_prompt);
         }
         #endregion
 
@@ -452,16 +458,16 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool InfoCmd(CommandDescriptor _, List<string> __)
         {
-            _out.WriteLine($"Midi output devices:");
+            _tout.WriteLine($"Midi output devices:");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                _out.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
+                _tout.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
             }
 
-            _out.WriteLine($"Midi input devices:");
+            _tout.WriteLine($"Midi input devices:");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                _out.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
+                _tout.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
             }
             Write("");
 

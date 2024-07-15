@@ -1,8 +1,8 @@
 
 echo off
 
-pushd "CommandProc\bin\x64\Debug\net8.0-windows"
-TestCommandProc.exe
+pushd "Cli\bin\x64\Debug\net8.0-windows"
+TestCli.exe
 popd
 
 pushd "Core\bin\x64\Debug\net8.0-windows"

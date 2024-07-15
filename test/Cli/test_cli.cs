@@ -21,7 +21,7 @@ namespace Nebulua.Test
 
             MockIn min = new();
             MockOut mout = new();
-            var cli = new Cli("none");
+            var cli = new Cli("none", min, mout);
             //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
             string prompt = ">";
 
@@ -66,7 +66,7 @@ namespace Nebulua.Test
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"goodbye!");
+            UT_EQUAL(mout.Capture[0], $"Exit - goodbye!");
 
             st.ExecState = ExecState.Idle; // reset
             mout.Clear();
@@ -158,7 +158,7 @@ namespace Nebulua.Test
 
             MockIn min = new();
             MockOut mout = new();
-            var cli = new Cli("none");
+            var cli = new Cli("none", min, mout);
             //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
             string prompt = ">";
 
@@ -228,7 +228,7 @@ namespace Nebulua.Test
         static void Main(string[] _)
         {
             TestRunner runner = new(OutputFormat.Readable);
-            var cases = new[] { "CMDPROC" };
+            var cases = new[] { "CLI" };
             runner.RunSuites(cases);
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
