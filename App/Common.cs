@@ -54,13 +54,23 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Get the directory name where the application lives. TODO Needs mod for installer.
+        /// Get the directory name where the application lives.
         /// </summary>
         /// <returns></returns>
         public static string GetAppRoot()
         {
-            var rootDir = Directory.GetParent(MiscUtils.GetSourcePath())!.FullName;
-            return rootDir;
+            if (_rootDir is null)
+            {
+                DirectoryInfo dinfo = new(MiscUtils.GetSourcePath());
+                while (dinfo.Name! != "Nebulua")
+                {
+                    dinfo = dinfo.Parent!;
+                }
+                _rootDir = dinfo.FullName;
+            }
+
+            return _rootDir!;
         }
+        static string? _rootDir = null; // cache
     }
 }

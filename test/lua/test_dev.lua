@@ -30,10 +30,8 @@ function M.suite_1(pn)
     -- Process the data.
     neb.process_comp(sections)
 
-
-    dumpfn = 'C:\\Dev\\repos\\Lua\\Nebulua\\_dump.txt', 'w+'
+    dumpfn = '_dump.txt', 'w+'
     neb.dump_steps(dumpfn) -- diagnostic
-
 
     pn.UT_EQUAL(ut.table_count(section_info), 4)
     pn.UT_EQUAL(section_info['_LENGTH'], 768)

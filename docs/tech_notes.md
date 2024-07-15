@@ -54,16 +54,15 @@ Nebulua
 |       *.dll\xml - .NET dependencies
 |       lua54 - lua binaries
 +---test - various test code projects
-|
-+---App\bin\x64\Debug\net8.0-windows - build products
-|       Nebulua.exe
-|       *.dll
-|       etc...
 +---examples
 |       airport.lua
 |       example.lua
-\---docs
-        *.md
++---docs
+|       *.md
+\---App\bin\x64\Debug\net8.0-windows - build products
+        Nebulua.exe
+        *.dll
+        etc...
 ```
 
 

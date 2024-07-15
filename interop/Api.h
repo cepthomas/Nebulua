@@ -30,11 +30,14 @@ namespace Nebulua { namespace Interop
     {
     #pragma region Fields
     private:
-        // The lua thread.
+        /// <summary>The lua thread.</summary>
         lua_State* _l = nullptr;
 
-        // The LUA_PATH parts.
+        /// <summary>The LUA_PATH parts.</summary>
         List<String^>^ _luaPath;
+
+        /// <summary>Used to find resources at run time.</summary>
+        String^ _rootdir;
     #pragma endregion
 
     #pragma region Properties
@@ -110,10 +113,10 @@ namespace Nebulua { namespace Interop
     #pragma region Private functions
     private:
         /// <summary>Checks lua status and converts to neb status. Stores an error message if it failed.</summary>
-        NebStatus EvalLuaStatus(int stat, String^ msg);
+        NebStatus _EvalLuaStatus(int stat, String^ msg);
 
         /// <summary> Log from here.</summary>
-        void LogDebug(String^ msg);
+        void _LogDebug(String^ msg);
     #pragma endregion
     };
 
