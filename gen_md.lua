@@ -1,7 +1,7 @@
 
 -- Makes markdown from definition files.
 
-package.path = 'lbot/?.lua;'..package.path
+package.path = 'lua/?.lua;'..package.path
 
 mus = require("music_defs")
 mid = require("midi_defs")
