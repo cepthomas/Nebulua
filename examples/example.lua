@@ -66,7 +66,7 @@ local mtom = drum.HiMidTom
 local seq_func
 
 
---------------------- Called from main applicatio ---------------------------
+--------------------- Called from main application ---------------------------
 
 -----------------------------------------------------------------------------
 -- Called once to initialize your script stuff. This is a required function!
@@ -84,7 +84,7 @@ function setup()
     neb.set_volume(hnd_drums, 0.9)
 
     -- This file uses static composition so you must call this!
-    neb.process_comp(sections)
+    neb.process_comp()
     
     return 0
 end
@@ -98,7 +98,7 @@ function step(tick)
     -- Other work you may want to do.
 
     -- Do something every new bar.
-    t = BarTime(tick)
+    local t = BarTime(tick)
     if t.get_beat() == 0 and t.get_sub() == 0 then
         neb.send_controller(hnd_synth, ctrl.Pan, 90)
     end
@@ -123,7 +123,7 @@ end
 function rcv_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_cc_inp then
         -- Do something.
-        -- neb.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
+        neb.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
     end
     return 0
 end

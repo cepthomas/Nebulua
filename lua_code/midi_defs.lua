@@ -58,7 +58,7 @@ M.controllers =
     PortamentoControl = 084, AllSoundOff = 120, ResetAllControllers = 121, LocalKeyboard = 122, AllNotesOff = 123,
 }
 
-ut = require("utils")
+local ut = require("utils")
 
 
 -----------------------------------------------------------------------------

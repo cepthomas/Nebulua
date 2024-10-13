@@ -28,7 +28,7 @@ function M.suite_1(pn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
     -- Process the data.
-    neb.process_comp(sections)
+    neb.process_comp()
 
     dumpfn = '_dump.txt', 'w+'
     neb.dump_steps(dumpfn) -- diagnostic

@@ -47,7 +47,7 @@ local loops = {}
 --   duration: how long to play in BarTime
 --   delay: wait before start in BarTime
 local function add_loop(snote, duration, delay)
-    notes, err = mus.get_notes_from_string(snote)
+    local notes, err = mus.get_notes_from_string(snote)
 
     -- Check args.
     if notes == nil then
@@ -76,7 +76,7 @@ end
 --   sub: which subbeat
 --   return: tick
 local function tot(beat, sub)
-    tick = beat * com.SUBS_PER_BEAT + sub
+    local tick = beat * com.SUBS_PER_BEAT + sub
     return tick
 end
 
