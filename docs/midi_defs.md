@@ -224,7 +224,7 @@ AllNotesOff | 123
 
 ## Drum Kits
 
-Note that these will vary depending on your Soundfont file.
+Note that these will vary depending on your synth or Soundfont.
 
 Kit  |  Number
 ---  |  ------

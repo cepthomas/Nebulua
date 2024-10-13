@@ -40,16 +40,15 @@ Nebulua
 |       Api.cpp/h
 |       luainterop.c/h - generated wrapper code
 |       luainteropwork.cpp - glue
-+---lua_code - lua modules for application
+|       *.c/h - parts of https://github.com/cepthomas/LuaBagOfTricks
++---lua - lua modules for application
 |       bar_time.lua
 |       midi_defs.lua
 |       music_defs.lua
 |       nebulua.lua
 |       neb_common.lua
 |       step_types.lua
-+---lbot - parts of https://github.com/cepthomas/LuaBagOfTricks
-|       *.lua
-|       *.c/h
+|       *.lua - parts of https://github.com/cepthomas/LuaBagOfTricks
 +---lib
 |       *.dll\xml - .NET dependencies
 |       lua54 - lua binaries
@@ -75,8 +74,7 @@ Nebulua
 |       *.dll
 |       etc...
 +---lib - same as Source
-+---lbot - same as Source
-+---lua_code - same as Source
++---lua - same as Source
 +---examples - same as Source
 \---docs - same as Source
 ```
