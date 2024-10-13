@@ -51,7 +51,7 @@ namespace Nebulua
         {
             // Set up runtime lua environment.
             var rootDir = Utils.GetAppRoot();
-            List<string> luaPath = [ Path.Join(rootDir, "lua_code"), Path.Join(rootDir, "lbot")]; // where app lua files live
+            List<string> luaPath = [ Path.Join(rootDir, "lua")]; // where app lua files live
             _api = new(luaPath);
 
             // Hook script callbacks.

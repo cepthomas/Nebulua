@@ -26,7 +26,7 @@ function BarTime(arg1, arg2, arg3)
     -- Determine flavor.
     if ut.is_integer(arg1) and arg2 == nil and arg3 == nil then
         -- From ticks.
-        e = val.val_integer(arg1, 0, com.MAX_TICK, 'tick')
+        local e = val.val_integer(arg1, 0, com.MAX_TICK, 'tick')
         if e == nil then
             d.tick = arg1
         else
@@ -34,7 +34,7 @@ function BarTime(arg1, arg2, arg3)
         end
     elseif ut.is_integer(arg1) and ut.is_integer(arg2) and ut.is_integer(arg3) then
         -- From bar/beat/sub.
-        e = val.val_integer(arg1, 0, com.MAX_BAR, 'bar')
+        local e = val.val_integer(arg1, 0, com.MAX_BAR, 'bar')
         e = e or val.val_integer(arg2, 0, com.BEATS_PER_BAR, 'beat')
         e = e or val.val_integer(arg3, 0, com.SUBS_PER_BEAT, 'sub')
         if e == nil then
@@ -109,8 +109,8 @@ end
 -----------------------------------------------------------------------------
 -- Sanity check the metamethod args and return two ints.
 local normalize_operands = function(a, b, op)
-    asan = nil
-    bsan = nil
+    local asan = nil
+    local bsan = nil
     -- local ERR_LEVEL = 4
 
     if a == nil then
@@ -149,15 +149,15 @@ mt =
         end,
 
     __add = function(a, b)
-        sana, sanb = normalize_operands(a, b, 'add')
-            ret = nil
+        local sana, sanb = normalize_operands(a, b, 'add')
+            local ret = nil
             if sana ~= nil and sanb ~= nil then ret = BarTime(sana + sanb) end
             return ret
         end,
 
     __sub = function(a, b)
-            ret = nil
-            sana, sanb = normalize_operands(a, b, 'sub')
+            local ret = nil
+            local sana, sanb = normalize_operands(a, b, 'sub')
             if sana ~= nil and sanb ~= nil and sana >= sanb then
                 ret = BarTime(sana - sanb)
             else
@@ -167,8 +167,8 @@ mt =
         end,
 
     __lt = function(a, b)
-            ret = nil
-            sana, sanb = normalize_operands(a, b, 'lt')
+            local ret = nil
+            local sana, sanb = normalize_operands(a, b, 'lt')
             if sana ~= nil and sanb ~= nil
                 then ret = sana < sanb
             else
@@ -178,8 +178,8 @@ mt =
         end,
 
     __le = function(a, b)
-            ret = nil
-            sana, sanb = normalize_operands(a, b, 'le')
+            local ret = nil
+            local sana, sanb = normalize_operands(a, b, 'le')
             if sana ~= nil and sanb ~= nil
                 then ret = sana <= sanb
             else
