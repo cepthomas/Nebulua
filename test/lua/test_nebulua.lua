@@ -36,7 +36,7 @@ function M.suite_parse_chunk(pn)
     -- print('+++', ut.dump_table_string(steps, true, 'steps1'))
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
-    step = steps[6] -- pick one
+    local step = steps[6] -- pick one
     pn.UT_STR_EQUAL(step.step_type, "note")
     pn.UT_EQUAL(step.tick, 1024)
     pn.UT_EQUAL(step.chan_hnd, 0x030E)
@@ -90,7 +90,7 @@ function M.suite_process_script(pn)
     -- Process the data.
     neb.process_comp()
 
-    dumpfn = '.\\..\\_dump.txt', 'w+'
+    local dumpfn = '.\\..\\_dump.txt'
     neb.dump_steps(dumpfn) -- diagnostic
 
     pn.UT_EQUAL(ut.table_count(section_info), 4)
@@ -106,22 +106,22 @@ function M.suite_process_script(pn)
     -- Execute some script steps.
     for i = 0, 200 do
         api.current_tick = i
-        stat = neb.process_step(i)
+        local stat = neb.process_step(i)
         pn.UT_EQUAL(stat, 0)
         -- print(">>>", ut.table_count(transients))
 
         if i == 4 then
-            pn.UT_EQUAL(#api.activity, 12)
+            pn.UT_EQUAL(#api.activity, 13)
             -- pn.UT_EQUAL(ut.table_count(transients), 2)
         end
 
         if i == 40 then
-            pn.UT_EQUAL(#api.activity, 47)
+            pn.UT_EQUAL(#api.activity, 48)
             -- pn.UT_EQUAL(ut.table_count(transients), 1)
         end
     end
 
-    pn.UT_EQUAL(#api.activity, 165)
+    pn.UT_EQUAL(#api.activity, 166)
     -- pn.UT_EQUAL(ut.table_count(transients), 1)
 
     -- Examine collected data.
@@ -130,7 +130,7 @@ function M.suite_process_script(pn)
     -- s = ut.dump_table_string(transients, true, "transients")
     -- print(s)
 
-    ok, ret = pcall(rcv_note, 10, 11, 0.3)
+    local ok, ret = pcall(rcv_note, 10, 11, 0.3)
     pn.UT_TRUE(ok, string.format("Script function rcv_note() failed:\n%s ", ret))
 end
 

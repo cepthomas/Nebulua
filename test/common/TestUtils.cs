@@ -27,7 +27,7 @@ namespace Nebulua.Test
         {
             // Set up lua environment.
             var projDir = GetProjectSourceDir();
-            return [$@"{projDir}\lua_code", $@"{projDir}\lbot", $@"{projDir}\test\lua"];
+            return [$@"{projDir}\lua", $@"{projDir}\test\lua"];
         }
     }
 }

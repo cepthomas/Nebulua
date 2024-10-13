@@ -30,7 +30,7 @@ function M.suite_1(pn)
     -- Process the data.
     neb.process_comp()
 
-    dumpfn = '_dump.txt', 'w+'
+    local dumpfn = '_dump.txt'
     neb.dump_steps(dumpfn) -- diagnostic
 
     pn.UT_EQUAL(ut.table_count(section_info), 4)
@@ -68,7 +68,7 @@ function M.suite_1(pn)
     -- -- print(s)
 
 
-    ok, ret = pcall(rcv_note, 10, 11, 0.3)
+    local ok, ret = pcall(rcv_note, 10, 11, 0.3)
     pn.UT_TRUE(ok, string.format("Script function rcv_note() failed:\n%s ", ret))
 
 end

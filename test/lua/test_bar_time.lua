@@ -64,7 +64,7 @@ function M.suite_bar_time_create(pn)
     pn.UT_STR_EQUAL(tostring(bt), "0:1:4")
 
     -- Bad input in many ways. Need to use pcall().
-    ok, bt = pcall(BarTime, 5.78)
+    local ok, bt = pcall(BarTime, 5.78)
     pn.UT_FALSE(ok)
     pn.UT_STR_CONTAINS(bt, "Bad constructor: 5.78, nil, nil")
 
@@ -107,14 +107,14 @@ function M.suite_bar_time_meta(pn)
     -- Test metamethods: + - == < <="
 
     -- Test objects.
-    bt1 = BarTime(1109)
+    local bt1 = BarTime(1109)
     pn.UT_NOT_NIL(bt1)
 
-    bt2 = BarTime(472)
+    local bt2 = BarTime(472)
     pn.UT_NOT_NIL(bt2)
 
     -- add
-    bt3 = bt1 + bt2
+    local bt3 = bt1 + bt2
     pn.UT_NOT_NIL(bt3)
     pn.UT_EQUAL(bt3.get_tick(), 1581)
     pn.UT_EQUAL(bt1.get_tick(), 1109)
@@ -129,7 +129,7 @@ function M.suite_bar_time_meta(pn)
     pn.UT_EQUAL(bt3.get_tick(), 522)
 
     -- Add incompatible types.
-    ok, bt = pcall(function() return bt2 + 'p' end)
+    local ok, bt = pcall(function() return bt2 + 'p' end)
     pn.UT_FALSE(ok)
     pn.UT_STR_EQUAL(bt, "Invalid datatype for operator add")
 

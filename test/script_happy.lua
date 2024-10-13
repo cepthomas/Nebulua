@@ -53,7 +53,7 @@ function step(tick)
     neb.process_step(tick) -- required if using composition
 
     -- Selective work.
-    t = BarTime(tick)
+    local t = BarTime(tick)
     if t.beat == 0 and t.sub == 0 then
         neb.send_controller(hnd_synth, 50, 51)
     end
@@ -118,8 +118,6 @@ end
 ------------------------- Composition ---------------------------------------
 
 -- Sequences --
-
-local quiet = { {"|        |        |        |        |        |        |        |        |", 0 } }
 
 local piano_verse =
 {
