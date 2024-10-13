@@ -105,8 +105,9 @@ function M.suite_music_defs(pn)
     pn.UT_NIL(tres, serr)
 
     ----- gen_md().
-    local sres = md.gen_md()
-    pn.UT_EQUAL(#sres, 83)
+    tres = md.gen_md()
+    -- print(ut.dump_table_string(tres, false, 'ddd'))
+    pn.UT_EQUAL(#tres, 87)
 
 end
 
