@@ -87,7 +87,7 @@ Api::Api(List<String^>^ lpath)
     // Load the helper script into memory.
     if (nstat == NebStatus::Ok)
     {
-        String^ fn = Path::Join(_rootdir, "lua_code", "internal.lua");
+        String^ fn = Path::Join(_rootdir, "lua", "internal.lua");
 
         char* cfn = _ToCString(fn);
         lstat = luaL_loadfile(_l, cfn);
