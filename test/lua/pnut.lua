@@ -68,6 +68,17 @@ function M.start_suite(desc)
 end
 
 -----------------------------------------------------------------------------
+-- Reset everything.
+function M.reset()
+    M.num_suites_run = 0
+    M.num_suites_failed = 0
+    M.num_cases_run = 0
+    M.num_cases_failed = 0
+    M.result_text = {}
+    curr_suite_pass = true
+end
+
+-----------------------------------------------------------------------------
 -- Add a general comment line to the report.
 -- @param info free text.
 function M.UT_INFO(info)
