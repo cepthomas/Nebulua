@@ -297,6 +297,7 @@ namespace Nebulua
                         case ExecState.Run:
                             State.Instance.ExecState = ExecState.Idle;
                             Write("stopped");
+                            _core.KillAll();
                             break;
 
                         default:

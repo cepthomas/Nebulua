@@ -13,7 +13,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO1 slow startup when running from VS/debugger but not from .exe. Shutdown too when closing term,
+// TODO2 slow startup when running from VS/debugger but not from .exe. Shutdown too when closing term.
 
 
 namespace Nebulua
@@ -363,7 +363,16 @@ namespace Nebulua
         {
             if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
             {
-                State.Instance.ExecState = chkPlay.Checked ? ExecState.Run : ExecState.Idle;
+                if (chkPlay.Checked)
+                {
+                    State.Instance.ExecState = ExecState.Run;
+                }
+                else
+                {
+                    State.Instance.ExecState = ExecState.Idle;
+                    _core.KillAll();
+
+                }
             }
             else // something wrong
             {
