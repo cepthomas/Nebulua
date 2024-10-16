@@ -13,7 +13,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO slow startup when running from VS/debugger but not from .exe. Shutdown too when closing term,
+// TODO1 slow startup when running from VS/debugger but not from .exe. Shutdown too when closing term,
 
 
 namespace Nebulua
@@ -482,7 +482,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// The meaning of life. TODO fights with github flavor a bit.
+        /// The meaning of life. TODOF fights with github flavor a bit.
         /// </summary>
         void About_Click(object? sender, EventArgs e)
         {

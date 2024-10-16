@@ -23,6 +23,47 @@
     TODOF from original:
     * Print short function arguments as part of stack location.
     * Properly handle being reentrant due to coroutines.
+
+    -- Commands
+    [return] - re-run last command
+    c(ontinue) - contiue execution
+    s(tep) - step forward by one line (into functions)
+    n(ext) - step forward by one line (skipping over functions)
+    p(rint) [expression] - execute the expression and print the result
+    f(inish) - step forward until exiting the current function
+    u(p) - move up the stack by one frame
+    d(own) - move down the stack by one frame
+    w(here) [line count] - print source code around the current line
+    t(race) - print the stack trace
+    l(ocals) - print the function arguments, locals and upvalues.
+    h(elp) - print this message
+    q(uit) - halt execution
+
+    -- API
+    There are several overloadable functions you can use to customize debugger.lua.
+    * `dbg.read(prompt)` - Show the prompt and block for user input. (Defaults to read from stdin)
+    * `dbg.write(str)` - Write a string to the output. (Defaults to write to stdout)
+    * `dbg.shorten_path(path)` - Return a shortened version of a path. (Defaults to simply return `path`)
+    * `dbg.exit(err)` - Stop debugging. (Defaults to `os.exit(err)`)
+    * `dbg.pretty(obj)' - Output a pretty print string for an object.
+
+    There are also some goodies you can use to make debugging easier.
+    * `dbg.writeln(format, ...)` - Basically the same as `dbg.write(string.format(format.."\n", ...))`
+    * `dbg.pretty_depth = int` - Set how deep `dbg.pretty()` formats tables.
+    * `dbg.pretty(obj)` - Will return a pretty print string of an object.
+    * `dbg.pp(obj)` - Basically the same as `dbg.writeln(dbg.pretty(obj))`
+    * `dbg.auto_where = int_or_false` - Set the where command to run automatically when the active line changes. The value is the number of context lines.
+    * `dbg.error(error, [level])` - Drop in replacement for `error()` that breaks in the debugger.
+    * `dbg.assert(error, [message])` - Drop in replacement for `assert()` that breaks in the debugger.
+    * `dbg.call(f, ...)` - Drop in replacement for `pcall()` that breaks in the debugger.
+
+    -- Implement
+    local l = require("debugger")
+    or
+    local available, dbg = pcall(require, "debugger")
+    if not available then
+        print("You are not using debugger module!")
+    end
 ]]
 
 local dbg

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- OutputType is Exe which opens a terminal used for cl flavor and script debugging. TODO would be nice to simplify this. -->
+    <!-- OutputType is Exe which opens a terminal used for cl flavor and script debugging. TODO1 would be nice to simplify this. -->
     <OutputType>Exe</OutputType>
     <!-- <OutputType>WinExe</OutputType> -->
 

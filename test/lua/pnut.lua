@@ -5,7 +5,7 @@ Has all the assert functions - UT_XXX(info).
     - Each returns a bool pass status.
 ]]
 
-local ut = require("utils")
+local ut = require('utils')
 
 local M = {}
 
@@ -31,7 +31,7 @@ end
 -- Error msg output to file and log.
 -- @param msg The info to write.
 local function write_error(msg)
-    write_line("! "..msg)
+    write_line('! '..msg)
 end
 
 -----------------------------------------------------------------------------
@@ -49,16 +49,16 @@ local function case_failed(msg, info)
 
     -- Print failure information.
     local filename, linenumber = ut.get_caller_info(4)
-    info = info or ""
-    write_error(filename..":"..linenumber.." "..msg..". "..info)
+    info = info or ''
+    write_error(filename..':'..linenumber..' '..msg..'. '..info)
 end
 
 -----------------------------------------------------------------------------
 -- Start a new suite.
 -- @param desc Free text.
 function M.start_suite(desc)
-    write_line("\nRunning Suite: "..desc)
-    write_line("-----------------------------------------------------------")
+    write_line('\nRunning Suite: '..desc)
+    write_line('-----------------------------------------------------------')
 
     -- Reset the current p/f states.
     curr_suite_pass = true
@@ -102,7 +102,7 @@ function M.UT_TRUE(expr, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if expr == false then
-        case_failed("Expression is not true", info)
+        case_failed('Expression is not true', info)
         pass = false
     end
     return pass
@@ -116,7 +116,7 @@ function M.UT_FALSE(expr, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if expr == true then
-        case_failed("Expression is not false", info)
+        case_failed('Expression is not false', info)
         pass = false
     end
     return pass
@@ -130,7 +130,7 @@ function M.UT_NOT_NIL(expr, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if expr == nil then
-        case_failed("Expression is nil", info)
+        case_failed('Expression is nil', info)
         pass = false
     end
     return pass
@@ -144,7 +144,7 @@ function M.UT_NIL(expr, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if expr ~= nil then
-        case_failed("Expression is not nil", info)
+        case_failed('Expression is not nil', info)
         pass = false
     end
     return pass
@@ -159,16 +159,16 @@ function M.UT_STR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
 
-    if type(val1) ~= "string" then
-        local msg = string.format("[%s] is not a string", tostring(val1))
+    if type(val1) ~= 'string' then
+        local msg = string.format('[%s] is not a string', tostring(val1))
         case_failed(msg, info)
         pass = false
-    elseif type(val2) ~= "string" then
-        local msg = string.format("[%s] is not a string", tostring(val2))
+    elseif type(val2) ~= 'string' then
+        local msg = string.format('[%s] is not a string', tostring(val2))
         case_failed(msg, info)
         pass = false
     elseif val1 ~= val2 then
-        local msg = string.format("[%s] is not equal to [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is not equal to [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -185,16 +185,16 @@ function M.UT_STR_NOT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
 
-    if type(val1) ~= "string" then
-        local msg = string.format("[%s] is not a string", tostring(val1))
+    if type(val1) ~= 'string' then
+        local msg = string.format('[%s] is not a string', tostring(val1))
         case_failed(msg, info)
         pass = false
-    elseif type(val2) ~= "string" then
-        local msg = string.format("[%s] is not a string", tostring(val2))
+    elseif type(val2) ~= 'string' then
+        local msg = string.format('[%s] is not a string', tostring(val2))
         case_failed(msg, info)
         pass = false
     elseif val1 == val2 then
-        local msg = string.format("[%s] is equal to [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is equal to [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -211,16 +211,16 @@ function M.UT_STR_CONTAINS(val, phrase, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
 
-    if type(val) ~= "string" then
-        local msg = string.format("[%s] is not a string", tostring(val))
+    if type(val) ~= 'string' then
+        local msg = string.format('[%s] is not a string', tostring(val))
         case_failed(msg, info)
         pass = false
-    elseif type(phrase) ~= "string" then
-        local msg = string.format("[%s] is not a string", tostring(phrase))
+    elseif type(phrase) ~= 'string' then
+        local msg = string.format('[%s] is not a string', tostring(phrase))
         case_failed(msg, info)
         pass = false
     elseif val:find(phrase, 1, true) == nil then
-        local msg = string.format("[%s] does not contain [%s]", tostring(val), tostring(phase))
+        local msg = string.format('[%s] does not contain [%s]', tostring(val), tostring(phase))
         case_failed(msg, info)
         pass = false
     end
@@ -237,7 +237,7 @@ function M.UT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if val1 ~= val2 then
-        local msg = string.format("[%s] is not equal to [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is not equal to [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -253,7 +253,7 @@ function M.UT_NOT_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if val1 == val2 then
-        local msg = string.format("[%s] is equal to [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is equal to [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -269,7 +269,7 @@ function M.UT_LESS(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 < val2) then
-        local msg = string.format("[%s] is not less than [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is not less than [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -285,7 +285,7 @@ function M.UT_LESS_OR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 <= val2) then
-        local msg = string.format("[%s] is not less than or equal to [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is not less than or equal to [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -301,7 +301,7 @@ function M.UT_GREATER(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 > val2) then
-        local msg = string.format("[%s] is not greater than [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is not greater than [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -317,7 +317,7 @@ function M.UT_GREATER_OR_EQUAL(val1, val2, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if not(val1 >= val2) then
-        local msg = string.format("[%s] is not greater than or equal to [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is not greater than or equal to [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end
@@ -334,7 +334,7 @@ function M.UT_CLOSE(val1, val2, tol, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
     if math.abs(val1 - val2) > tol then
-        local msg = string.format("[%s] is not close to [%s]", tostring(val1), tostring(val2))
+        local msg = string.format('[%s] is not close to [%s]', tostring(val1), tostring(val2))
         case_failed(msg, info)
         pass = false
     end

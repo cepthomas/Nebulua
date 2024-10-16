@@ -144,7 +144,7 @@ namespace Nebulua
         {
             if (name == "CurrentTick")
             {
-                // TODO display running tick/bartime somewhere in console?
+                // TODOF display running tick/bartime somewhere in console?
             }
         }
 
@@ -170,10 +170,10 @@ namespace Nebulua
         #region Private functions
         /// <summary>
         /// Process user input. Blocks until new line.
-        /// TODO Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
+        /// TODOF Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
-        public bool DoCommand() // TODO public for test only.
+        public bool DoCommand() // public only for test
         {
             bool ret = true;
 
@@ -423,7 +423,7 @@ namespace Nebulua
         }
 
         //--------------------------------------------------------//
-        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODO loops
+        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODOF loops
         {
             bool ret = true;
 

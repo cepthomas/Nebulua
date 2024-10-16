@@ -10,7 +10,7 @@ local mid = require("midi_defs")
 local mus = require("music_defs")
 local com = require("neb_common")
 
--- TODO stress test and bulletproof this.
+-- TODOF stress test and bulletproof this.
 
 local M = {}
 
@@ -41,7 +41,7 @@ local _transients = {}
 -- Where we be.
 local _current_tick = 0
 
--- Map the 0-9 script volume range to internal double. TODO make user configurable per channel or enum map_curve = LIN, SQR, ....
+-- Map the 0-9 script volume range to internal double. TODOF make user configurable per channel or enum map_curve = LIN, SQR, ....
 local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
 -- linear local _vol_map = { 0.0, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.0 }
 -- original local _vol_map = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 }

@@ -2,7 +2,7 @@
 Used to build and test all parts of this system.
 --]]
 
--- print(res) TODO in all of these parse for 'Error' or something. Maybe colorize like debugger.py.
+-- print(res) TODOF in all of these parse for 'Error' or something. Maybe colorize like debugger.py.
 
 -- Fix up the lua path first.
 package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
@@ -12,7 +12,7 @@ local sx = require('stringex')
 
 local opt = arg[1]
 local ret_code = 0
-local res = ''
+local res = {}
 
 if opt == nil then
 
@@ -30,7 +30,7 @@ elseif opt == 'build_app' then
     print('Building app...')
     cmd = sx.strjoin(' ', { bld, vrb, 'Nebulua.sln' } )
     res = ut.execute_and_capture(cmd)
-    print(res) -- TODO in all of theseparse for 'Error' or something. Maybe colorize like debugger.py.
+    print(res)
 
     print('Building app tests...')
     cmd = sx.strjoin(' ', { bld, vrb, 'test/Test.sln' } )
@@ -90,9 +90,9 @@ elseif opt == 'gen_interop' then
 
     print('Gen interop files...')
     -- Not generally useful or interesting to other than me.
-    -- Needs lua path set up first.
 
-    -- cmd was:
+    -- gen_interop.cmd:
+    -- Needs lua path set up first!
     -- set spec_fn=%~dp0%interop_spec.lua
     -- set out_path=%~dp0%interop
     -- pushd "..\..\Libs\LuaBagOfTricks"
@@ -108,4 +108,3 @@ else
 end
 
 return ret_code
-

@@ -1,6 +1,6 @@
 --[[
 Performs test run discovery, management, report generation.
-Can be run from the cmd line or require pnut_runner in another script/module.
+Can be run from the cmd line or require pnut_runner from another script/module.
 Future opts maybe: write to file, junit/xml format.
 --]]
 
@@ -33,10 +33,7 @@ end
 
 -----------------------------------------------------------------------------
 function M.do_tests(...)
-    -- Process one script.
-
     local func_arg = {...}
-
     pn.reset()
 
     local start_time = os.clock()
@@ -118,32 +115,9 @@ function M.do_tests(...)
     pn.result_text = ''
 end
 
-
------------------------------------------------------------------------------
--- ::done::
-
--- local function finish()
-
---     -- Close the report file
---     -- if rf ~= nil then
---     --     rf:close()
---     -- end
--- end
-
-
------------------------------------------------------------------------------
------ start here ------
-
+--------------------- start here ----------------------------------------
 -- Get script args.
 scrarg = {...}
-
----- require from go.lua
--- >>> pn scr   2       pnut_runner  ./test/lua/pnut_runner.lua
----- call from cmd line w/func1
--- >>> pn scr   1        func1
----- call from cmd line w/func1  func2 ...
--- >>> pn scr   2+       func1   func2 ...
-
 
 if #scrarg >= 1 then
     if scrarg[1] == 'pnut_runner' then
@@ -152,16 +126,11 @@ if #scrarg >= 1 then
     else
         -- From command line. Process all.
         M.do_tests(...)
-        -- for i = 1, #arg do
-        --     local scrfn = arg[i]
-        --     M.do_tests(scrfn)
-        -- end
     end
 else
     -- From cmd line with No arg.
     error('Missing required argument')
 end
-
 
 -- Return the module.
 return M
