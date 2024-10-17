@@ -230,7 +230,7 @@ namespace Nebulua
                 {
                     // Bump time and check state.
                     int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-                    int end = State.Instance.LoopEnd == -1 ? State.Instance.LengthX : State.Instance.LoopEnd;
+                    int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
 
                     if (++State.Instance.CurrentTick >= end) // done
                     {

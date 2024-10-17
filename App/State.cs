@@ -95,40 +95,23 @@ namespace Nebulua
         }
 
         /// <summary>Total length of the composition.</summary>
-        public int LengthX
+        public int Length
         {
-            get
-            {
-                return _length;
-            }
+            get { return _length; }
         }
 
         /// <summary>Start of loop region.</summary>
         public int LoopStart
         {
-            get
-            {
-                return _loopStart < 0 ? 0 : _loopStart;
-            }
-            set
-            {
-                _loopStart = value;
-                ValidateTimes();
-            }
+            get { return _loopStart < 0 ? 0 : _loopStart; }
+            set { _loopStart = value; ValidateTimes(); }
         }
 
         /// <summary>End of loop region.</summary>
         public int LoopEnd
         {
-            get
-            {
-                return _loopEnd < 0 ? _length : _loopEnd;
-            }
-            set
-            {
-                _loopEnd = value;
-                ValidateTimes();
-            }
+            get { return _loopEnd < 0 ? _length : _loopEnd; }
+            set { _loopEnd = value; ValidateTimes(); }
         }
 
         /// <summary>Keep going at end of loop.</summary> 

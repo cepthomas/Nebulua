@@ -8,10 +8,28 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
+using System.Drawing;
 
 
 namespace Nebulua
 {
+
+    public interface IConsole
+    {
+        void Write(string text);
+        void WriteLine(string text);
+        string ReadLine();
+
+        public bool KeyAvailable { get; set; }
+        public bool CursorVisible { get; set; }
+        public string Title { get; set; }
+
+        (int left, int top) GetCursorPosition();
+
+
+        void SetCursorPosition(int left, int top);
+    }
+
     public class Cli : IDisposable
     {
         #region Fields
@@ -34,7 +52,7 @@ namespace Nebulua
         readonly TextWriter _tout;
 
         /// <summary>CLI prompt.</summary>
-        readonly string _prompt = ">";
+        readonly string _prompt = ">>>";
         #endregion
 
         #region Types
@@ -144,7 +162,18 @@ namespace Nebulua
         {
             if (name == "CurrentTick")
             {
-                // TODOF display running tick/bartime somewhere in console?
+                int tick = State.Instance.CurrentTick;
+                int sub = MusicTime.SUB(tick);
+
+                if (sub == 0)
+                {
+                    // Display time.
+                    int bar = MusicTime.BAR(tick);
+                    int beat = MusicTime.BEAT(tick);
+                    string st = $"{bar:D3}:{beat:D1}                     ";
+                    //var st = MusicTime.Format(tick);
+                    Console.Title = st;
+                }
             }
         }
 
@@ -170,10 +199,10 @@ namespace Nebulua
         #region Private functions
         /// <summary>
         /// Process user input. Blocks until new line.
-        /// TODOF Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
+        /// TODO1 Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
-        public bool DoCommand() // public only for test
+        bool DoCommand()
         {
             bool ret = true;
 
@@ -214,24 +243,6 @@ namespace Nebulua
             }
 
             return ret;
-        }
-
-        void ShowUsage()
-        {
-            foreach (var cmd in _commands!)
-            {
-                _tout.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
-                if (cmd.Args.Length > 0)
-                {
-                    // Maybe multiline args.
-                    var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
-                    foreach (var arg in parts)
-                    {
-                        _tout.WriteLine($"    {arg}");
-                    }
-                }
-            }
-            Write("");
         }
 
         /// <summary>
@@ -424,7 +435,7 @@ namespace Nebulua
         }
 
         //--------------------------------------------------------//
-        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODOF loops
+        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODO1 loops
         {
             bool ret = true;
 
@@ -478,7 +489,22 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool UsageCmd(CommandDescriptor _, List<string> __)
         {
-            ShowUsage();
+            // Talk about muself.
+            foreach (var cmd in _commands!)
+            {
+                _tout.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
+                if (cmd.Args.Length > 0)
+                {
+                    // Maybe multiline args.
+                    var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
+                    foreach (var arg in parts)
+                    {
+                        _tout.WriteLine($"    {arg}");
+                    }
+                }
+            }
+            Write("");
+
             return true;
         }
         #endregion

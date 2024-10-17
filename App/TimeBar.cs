@@ -218,10 +218,10 @@ namespace Nebulua
         {
             int tick = 0;
 
-            if (State.Instance.CurrentTick < State.Instance.LengthX)
+            if (State.Instance.CurrentTick < State.Instance.Length)
             {
-                tick = x * State.Instance.LengthX / Width;
-                tick = MathUtils.Constrain(tick, 0, State.Instance.LengthX);
+                tick = x * State.Instance.Length / Width;
+                tick = MathUtils.Constrain(tick, 0, State.Instance.Length);
             }
 
             return tick;
@@ -234,7 +234,7 @@ namespace Nebulua
         /// <returns></returns>
         int GetClientFromTick(int tick)
         {
-            return State.Instance.LengthX > 0 ? tick * Width / State.Instance.LengthX : 0;
+            return State.Instance.Length > 0 ? tick * Width / State.Instance.Length : 0;
         }
 
         /// <summary>
