@@ -28,7 +28,8 @@ namespace Nebulua
                 case 1:
                     {
                         var scriptFn = args[0];
-                        using var cli = new Cli(scriptFn, Console.In, Console.Out);
+                        RealConsole console = new();
+                        using var cli = new Cli(scriptFn, console);
                     }
                     break;
 
@@ -39,5 +40,20 @@ namespace Nebulua
                     break;
             }
         }
+    }
+
+    public class RealConsole : IConsole
+    {
+        public bool KeyAvailable { get => Console.KeyAvailable; }
+        public bool CursorVisible { get => Console.CursorVisible; set => Console.CursorVisible = value; }
+        public string Title { get => Console.Title; set => Console.Title = value; }
+
+        public string? ReadLine() { return Console.ReadLine(); }
+        public void Write(string text) { Console.Write(text); }
+        public void WriteLine(string text) { Console.WriteLine(text); }
+
+        public void SetCursorPosition(int left, int top) { Console.SetCursorPosition(left, top); }
+
+        public (int left, int top) GetCursorPosition() {  return Console.GetCursorPosition(); }
     }
 }

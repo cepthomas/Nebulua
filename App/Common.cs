@@ -19,6 +19,20 @@ namespace Nebulua
     public class ApplicationArgumentException(string message) : Exception(message) { }
     #endregion
 
+    #region Console abstraction to support testing
+    public interface IConsole
+    {
+        void Write(string text);
+        void WriteLine(string text);
+        string? ReadLine();
+        public bool KeyAvailable { get; }
+        public bool CursorVisible { get; set; }
+        public string Title { get; set; }
+        (int left, int top) GetCursorPosition();
+        void SetCursorPosition(int left, int top);
+    }
+    #endregion
+
     public class Utils
     {
         /// <summary>Generic exception processor for callback threads that throw.</summary>

@@ -19,126 +19,124 @@ namespace Nebulua.Test
             var st = State.Instance;
             st.ValueChangeEvent += (sender, e) => { };
 
-            MockIn min = new();
-            MockOut mout = new();
-            var cli = new Cli("none", min, mout);
-            //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
+            MockConsole console = new();
+            var cli = new Cli("none", console);
             string prompt = ">";
 
             ///// Fat fingers.
-            mout.Clear();
-            min.NextLine = "bbbbb";
+            console.Clear();
+            console.NextLine = "bbbbb";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"Invalid command");
-            UT_EQUAL(mout.Capture[1], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"Invalid command");
+            UT_EQUAL(console.Capture[1], prompt);
 
-            mout.Clear();
-            min.NextLine = "z";
+            console.Clear();
+            console.NextLine = "z";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"Invalid command");
-            UT_EQUAL(mout.Capture[1], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"Invalid command");
+            UT_EQUAL(console.Capture[1], prompt);
 
             ///// These next two confirm proper full/short name handling.
-            mout.Clear();
-            min.NextLine = "help";
+            console.Clear();
+            console.NextLine = "help";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 15);
-            UT_EQUAL(mout.Capture[0], "help|?: available commands");
-            UT_EQUAL(mout.Capture[1], "info|i: system information");
-            UT_EQUAL(mout.Capture[13], "reload|s: reload current script");
-            UT_EQUAL(mout.Capture[14], prompt);
+            UT_EQUAL(console.Capture.Count, 15);
+            UT_EQUAL(console.Capture[0], "help|?: available commands");
+            UT_EQUAL(console.Capture[1], "info|i: system information");
+            UT_EQUAL(console.Capture[13], "reload|s: reload current script");
+            UT_EQUAL(console.Capture[14], prompt);
 
-            mout.Clear();
-            min.NextLine = "?";
+            console.Clear();
+            console.NextLine = "?";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 15);
-            UT_EQUAL(mout.Capture[0], "help|?: available commands");
+            UT_EQUAL(console.Capture.Count, 15);
+            UT_EQUAL(console.Capture[0], "help|?: available commands");
 
             ///// The rest of the commands.
-            mout.Clear();
-            min.NextLine = "exit";
+            console.Clear();
+            console.NextLine = "exit";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"Exit - goodbye!");
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"Exit - goodbye!");
 
             st.ExecState = ExecState.Idle; // reset
-            mout.Clear();
-            min.NextLine = "run";
+            console.Clear();
+            console.NextLine = "run";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"running");
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"running");
 
             st.ExecState = ExecState.Idle; // reset
-            mout.Clear();
-            min.NextLine = "reload";
+            console.Clear();
+            console.NextLine = "reload";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 1);
+            UT_EQUAL(console.Capture[0], prompt);
 
-            mout.Clear();
-            min.NextLine = "tempo";
+            console.Clear();
+            console.NextLine = "tempo";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], "100");
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "100");
 
-            mout.Clear();
-            min.NextLine = "tempo 182";
+            console.Clear();
+            console.NextLine = "tempo 182";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 1);
+            UT_EQUAL(console.Capture[0], prompt);
 
-            mout.Clear();
-            min.NextLine = "tempo 242";
+            console.Clear();
+            console.NextLine = "tempo 242";
             bret = cli.DoCommand();
             UT_FALSE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], "invalid tempo: 242");
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "invalid tempo: 242");
 
-            mout.Clear();
-            min.NextLine = "tempo 39";
+            console.Clear();
+            console.NextLine = "tempo 39";
             bret = cli.DoCommand();
             UT_FALSE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], "invalid tempo: 39");
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "invalid tempo: 39");
 
-            mout.Clear();
-            min.NextLine = "monitor r";
+            console.Clear();
+            console.NextLine = "monitor r";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 1);
+            UT_EQUAL(console.Capture[0], prompt);
 
-            mout.Clear();
-            min.NextLine = "monitor s";
+            console.Clear();
+            console.NextLine = "monitor s";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 1);
+            UT_EQUAL(console.Capture[0], prompt);
 
-            mout.Clear();
-            min.NextLine = "monitor o";
+            console.Clear();
+            console.NextLine = "monitor o";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 1);
+            UT_EQUAL(console.Capture[0], prompt);
 
-            mout.Clear();
-            min.NextLine = "monitor junk";
+            console.Clear();
+            console.NextLine = "monitor junk";
             bret = cli.DoCommand();
             UT_FALSE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], "invalid option: junk");
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "invalid option: junk");
 
             // Wait for logger to stop.
             Thread.Sleep(100);
@@ -156,10 +154,8 @@ namespace Nebulua.Test
             var st = State.Instance;
             st.ValueChangeEvent += (sender, e) => { };
 
-            MockIn min = new();
-            MockOut mout = new();
-            var cli = new Cli("none", min, mout);
-            //var cmdProc = new CommandProc(min, mout) { Prompt = "%" };
+            MockConsole console = new();
+            var cli = new Cli("none", console);
             string prompt = ">";
 
             ///// Fake valid loaded script.
@@ -168,53 +164,53 @@ namespace Nebulua.Test
             UT_EQUAL(State.Instance.SectionInfo.Count, 4);
 
             ///// Position commands.
-            mout.Clear();
-            min.NextLine = "position";
+            console.Clear();
+            console.NextLine = "position";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"0:0:0");
-            UT_EQUAL(mout.Capture[1], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"0:0:0");
+            UT_EQUAL(console.Capture[1], prompt);
 
-            mout.Clear();
-            min.NextLine = "position 10:2:6";
+            console.Clear();
+            console.NextLine = "position 10:2:6";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"10:2:6");
-            UT_EQUAL(mout.Capture[1], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"10:2:6");
+            UT_EQUAL(console.Capture[1], prompt);
 
-            mout.Clear();
-            min.NextLine = "position 203:2:6"; // too late
+            console.Clear();
+            console.NextLine = "position 203:2:6"; // too late
             bret = cli.DoCommand();
             UT_FALSE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], "invalid requested position: 203:2:6");
-            UT_EQUAL(mout.Capture[1], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "invalid requested position: 203:2:6");
+            UT_EQUAL(console.Capture[1], prompt);
 
-            mout.Clear();
-            min.NextLine = "position";
+            console.Clear();
+            console.NextLine = "position";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"10:2:6");
-            UT_EQUAL(mout.Capture[1], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"10:2:6");
+            UT_EQUAL(console.Capture[1], prompt);
 
-            mout.Clear();
-            min.NextLine = "position 111:9:6";
+            console.Clear();
+            console.NextLine = "position 111:9:6";
             bret = cli.DoCommand();
             UT_FALSE(bret);
-            UT_EQUAL(mout.Capture.Count, 2);
-            UT_EQUAL(mout.Capture[0], $"invalid requested position: 111:9:6");
-            UT_EQUAL(mout.Capture[1], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"invalid requested position: 111:9:6");
+            UT_EQUAL(console.Capture[1], prompt);
 
             ///// Misc commands.
-            mout.Clear();
-            min.NextLine = "kill";
+            console.Clear();
+            console.NextLine = "kill";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(mout.Capture.Count, 1);
-            UT_EQUAL(mout.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 1);
+            UT_EQUAL(console.Capture[0], prompt);
 
             // Wait for logger to stop.
             Thread.Sleep(100);

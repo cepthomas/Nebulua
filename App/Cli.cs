@@ -13,23 +13,6 @@ using System.Drawing;
 
 namespace Nebulua
 {
-
-    public interface IConsole
-    {
-        void Write(string text);
-        void WriteLine(string text);
-        string ReadLine();
-
-        public bool KeyAvailable { get; set; }
-        public bool CursorVisible { get; set; }
-        public string Title { get; set; }
-
-        (int left, int top) GetCursorPosition();
-
-
-        void SetCursorPosition(int left, int top);
-    }
-
     public class Cli : IDisposable
     {
         #region Fields
@@ -45,14 +28,11 @@ namespace Nebulua
         /// <summary>All the commands.</summary>
         readonly CommandDescriptor[] _commands;
 
-        /// <summary>CLI input.</summary>
-        readonly TextReader _tin;
-
-        /// <summary>CLI output.</summary>
-        readonly TextWriter _tout;
+        /// <summary>CLI.</summary>
+        readonly IConsole _console;
 
         /// <summary>CLI prompt.</summary>
-        readonly string _prompt = ">>>";
+        readonly string _prompt = ">";
         #endregion
 
         #region Types
@@ -82,10 +62,12 @@ namespace Nebulua
         /// <param name="scriptFn">Cli version requires cl script name.</param>
         /// <param name="tin">Stream in</param>
         /// <param name="tout">Stream out</param>
-        public Cli(string scriptFn, TextReader tin, TextWriter tout)
+        public Cli(string scriptFn, IConsole console)
         {
-            _tin = tin;
-            _tout = tout;            
+            _console = console;
+
+            //_tin = tin;
+            //_tout = tout;            
 
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
             UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
@@ -199,15 +181,15 @@ namespace Nebulua
         #region Private functions
         /// <summary>
         /// Process user input. Blocks until new line.
-        /// TODO1 Would like to .Peek() for spacebar but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
+        /// TODO1 Would like to .Peek() for spacebar to toggle run but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
         /// </summary>
         /// <returns>Success</returns>
-        bool DoCommand()
+        public bool DoCommand()
         {
             bool ret = true;
 
             // Listen.
-            string? res = _tin.ReadLine();
+            string? res = _console.ReadLine();
 
             if (res != null)
             {
@@ -251,8 +233,8 @@ namespace Nebulua
         /// <param name="s"></param>
         void Write(string s)
         {
-            _tout.WriteLine(s);
-            _tout.Write(_prompt);
+            _console.WriteLine(s);
+            _console.Write(_prompt);
         }
         #endregion
 
@@ -470,16 +452,16 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool InfoCmd(CommandDescriptor _, List<string> __)
         {
-            _tout.WriteLine($"Midi output devices:");
+            _console.WriteLine($"Midi output devices:");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                _tout.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
+                _console.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
             }
 
-            _tout.WriteLine($"Midi input devices:");
+            _console.WriteLine($"Midi input devices:");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
-                _tout.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
+                _console.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
             }
             Write("");
 
@@ -492,14 +474,14 @@ namespace Nebulua
             // Talk about muself.
             foreach (var cmd in _commands!)
             {
-                _tout.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
+                _console.WriteLine($"{cmd.LongName}|{cmd.ShortName}: {cmd.Info}");
                 if (cmd.Args.Length > 0)
                 {
                     // Maybe multiline args.
                     var parts = StringUtils.SplitByToken(cmd.Args, Environment.NewLine);
                     foreach (var arg in parts)
                     {
-                        _tout.WriteLine($"    {arg}");
+                        _console.WriteLine($"    {arg}");
                     }
                 }
             }
