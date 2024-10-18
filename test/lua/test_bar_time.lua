@@ -15,12 +15,12 @@ local M = {}
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
-    -- pn.UT_INFO("setup()!!!")
+    -- pn.UT_INFO("setup()")
 end
 
 -----------------------------------------------------------------------------
 function M.teardown(pn)
-    -- pn.UT_INFO("teardown()!!!")
+    -- pn.UT_INFO("teardown()")
 end
 
 
@@ -169,7 +169,6 @@ function M.suite_bar_time_meta(pn)
     pn.UT_FALSE(bt2 >= 473)
     pn.UT_TRUE(472 >= bt2)
 end
-
 
 -----------------------------------------------------------------------------
 -- Return the test module.

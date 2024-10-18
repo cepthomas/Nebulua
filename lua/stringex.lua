@@ -97,23 +97,28 @@ function M.strtrim(s)
 end
 
 -----------------------------------------------------------------------------
+--- does s contain the phrase?
+-- @string s a string
+-- @param phrase a string
+function M.contains(s, phrase)
+    res = s:find(phrase, 1, true)
+    return res ~= nil and res >= 1
+end
+
+-----------------------------------------------------------------------------
 --- does s start with prefix or one of prefixes?
 -- @string s a string
--- @param prefix a string or an array of strings
+-- @param prefix a string
 function M.startswith(s, prefix)
     return s:find(prefix, 1, true) == 1
-    -- assert_string(1, s)
-    -- return test_affixes(s, prefix, raw_startswith)
 end
 
 -----------------------------------------------------------------------------
 --- does s end with suffix or one of suffixes?
 -- @string s a string
--- @param suffix a string or an array of strings
+-- @param suffix a string
 function M.endswith(s, suffix)
     return #s >= #suffix and s:find(suffix, #s-#suffix+1, true) and true or false
-    -- assert_string(1, s)
-    -- return test_affixes(s, suffix, raw_endswith)
 end
 
 -----------------------------------------------------------------------------

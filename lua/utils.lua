@@ -211,19 +211,6 @@ function M.constrain(val, min, max)
 end
 
 -----------------------------------------------------------------------------
--- --- Ensure integral multiple of resolution, GTE min, LTE max.
--- -- @param val
--- -- @param min
--- -- @param max
--- -- @param resolution
--- -- @return
--- function M.constrain(val, min, max, resolution)
---     rval = M.constrain(val, min, max)
---     rval = math.round(rval / resolution) * resolution
---     return rval
--- end
-
------------------------------------------------------------------------------
 --- Snap to closest neighbor.
 -- @param val what to snap
 -- @param granularity The neighbors property line.

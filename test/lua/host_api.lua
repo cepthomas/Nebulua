@@ -26,7 +26,7 @@ end
 function M.log(level, msg)
     s = string.format("log: level:%d msg:%s", level, msg)
     capture(s)
-    print(s) -- make optional?
+    -- print(s) -- make optional?
     return 0
 end
 

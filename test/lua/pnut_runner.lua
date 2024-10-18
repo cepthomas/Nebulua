@@ -11,25 +11,9 @@ local ut = require("utils")
 -- Create the namespace/module.
 local M = {}
 
+-- User can specify output file name.
+M.report_fn = nil
 
--- Optional - get from user.
-local report_fn = nil
-
------------------------------------------------------------------------------
--- Report writer.
-local function report_line(line)
-    if report_fn == nil then
-        io.write(line, '\n')
-    else
-        local fout = io.open(report_fn, "w")
-        if fout == nil then
-            error("Invalid filename: "..report_fn)
-        else
-            fout:write(line, '\n')
-            fout:close()
-        end
-    end
-end
 
 -----------------------------------------------------------------------------
 function M.do_tests(...)
@@ -95,24 +79,26 @@ function M.do_tests(...)
     end
 
     -- Report.
-    report_line("#------------------------------------------------------------------")
-    report_line("# Unit Test Report")
-    report_line("# Start Time: "..start_date)
-    report_line("# Duration: "..dur)
-    report_line("# Suites Run: "..pn.num_suites_run)
-    report_line("# Suites Failed: "..pn.num_suites_failed)
-    report_line("# Cases Run: "..pn.num_cases_run)
-    report_line("# Cases Failed: "..pn.num_cases_failed)
-    report_line("# Run Result: "..pf_run)
-    report_line("#------------------------------------------------------------------")
-    report_line("")
+    local rep = {}
+    table.insert(rep, "#------------------------------------------------------------------")
+    table.insert(rep, "# Unit Test Report")
+    table.insert(rep, "# Start Time: "..start_date)
+    table.insert(rep, "# Duration: "..dur)
+    table.insert(rep, "# Suites Run: "..pn.num_suites_run)
+    table.insert(rep, "# Suites Failed: "..pn.num_suites_failed)
+    table.insert(rep, "# Cases Run: "..pn.num_cases_run)
+    table.insert(rep, "# Cases Failed: "..pn.num_cases_failed)
+    table.insert(rep, "# Run Result: "..pf_run)
+    table.insert(rep, "#------------------------------------------------------------------")
+    table.insert(rep, "")
 
     -- Add the accumulated text.
     for _, v in ipairs(pn.result_text) do
-        report_line(v)
+        table.insert(rep, v)
     end
 
-    pn.result_text = ''
+    pn.result_text = {}
+    return rep
 end
 
 --------------------- start here ----------------------------------------
@@ -125,7 +111,10 @@ if #scrarg >= 1 then
         return M
     else
         -- From command line. Process all.
-        M.do_tests(...)
+        rep = M.do_tests(...)
+        for _, s in ipairs(rep) do
+            print(s)
+        end
     end
 else
     -- From cmd line with No arg.
