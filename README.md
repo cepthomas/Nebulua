@@ -11,7 +11,7 @@ It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulat
 
 ## Usage
 
-If you pass it a script file name on the command line it runs as a command line application. If not the UIis started.
+If you pass it a script file name on the command line it runs as a command line application. If not the UI is started.
 
 The UI does have a terminal which can be used for debugging scripts using
 [Lua debugger](https://github.com/slembcke/debugger.lua/blob/master/README.md).

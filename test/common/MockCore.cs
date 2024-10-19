@@ -6,10 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Diagnostics;
 using NAudio.Midi;
-// using NAudio.Midi;
-// using Ephemera.NBagOfTricks;
-// using Ephemera.NBagOfTricks.Slog;
- //using Nebulua.Interop;
 
 
 namespace Nebulua
@@ -29,7 +25,7 @@ namespace Nebulua
     {
         public int Sender;    // unique/opaque id or 0 for generic
         public int Ret;       // handler return value
-        public string DevName;
+        public string? DevName;
         public int ChanNum;
         public bool IsOutput; // else input
         public int Patch;     // output only
@@ -60,7 +56,7 @@ namespace Nebulua
         public int Sender;    // unique/opaque id or 0 for generic
         public int Ret;       // handler return value
         public int LogLevel;
-        public string Msg;
+        public string? Msg;
     }
     #endregion
 

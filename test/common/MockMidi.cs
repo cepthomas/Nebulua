@@ -23,6 +23,7 @@ namespace Nebulua
         public string DeviceName { get; }
         public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
         public bool CaptureEnable { get; set; } = true;
+
         public event EventHandler<MidiEvent>? ReceiveEvent;
 
         public MidiInput(string deviceName)

@@ -22,13 +22,14 @@ namespace Nebulua
     #region Console abstraction to support testing
     public interface IConsole
     {
+        bool KeyAvailable { get; }
+        bool CursorVisible { get; set; }
+        string Title { get; set; }
+        int BufferWidth { get; set; }
         void Write(string text);
         void WriteLine(string text);
         string? ReadLine();
         ConsoleKeyInfo ReadKey(bool intercept);
-        bool KeyAvailable { get; }
-        bool CursorVisible { get; set; }
-        string Title { get; set; }
         (int left, int top) GetCursorPosition();
         void SetCursorPosition(int left, int top);
     }

@@ -24,16 +24,16 @@ namespace Nebulua.Test
             string prompt = ">";
 
             ///// Fat fingers.
-            console.Clear();
-            console.NextLine = "bbbbb";
+            console.Reset();
+            console.NextReadLine = "bbbbb";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], $"Invalid command");
             UT_EQUAL(console.Capture[1], prompt);
 
-            console.Clear();
-            console.NextLine = "z";
+            console.Reset();
+            console.NextReadLine = "z";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
@@ -41,8 +41,8 @@ namespace Nebulua.Test
             UT_EQUAL(console.Capture[1], prompt);
 
             ///// These next two confirm proper full/short name handling.
-            console.Clear();
-            console.NextLine = "help";
+            console.Reset();
+            console.NextReadLine = "help";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 15);
@@ -51,97 +51,97 @@ namespace Nebulua.Test
             UT_EQUAL(console.Capture[13], "reload|s: reload current script");
             UT_EQUAL(console.Capture[14], prompt);
 
-            console.Clear();
-            console.NextLine = "?";
+            console.Reset();
+            console.NextReadLine = "?";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 15);
             UT_EQUAL(console.Capture[0], "help|?: available commands");
 
             ///// The rest of the commands.
-            console.Clear();
-            console.NextLine = "exit";
+            console.Reset();
+            console.NextReadLine = "exit";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], $"Exit - goodbye!");
 
             st.ExecState = ExecState.Idle; // reset
-            console.Clear();
-            console.NextLine = "run";
+            console.Reset();
+            console.NextReadLine = "run";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], $"running");
 
             st.ExecState = ExecState.Idle; // reset
-            console.Clear();
-            console.NextLine = "reload";
+            console.Reset();
+            console.NextReadLine = "reload";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 1);
             UT_EQUAL(console.Capture[0], prompt);
 
-            console.Clear();
-            console.NextLine = "tempo";
+            console.Reset();
+            console.NextReadLine = "tempo";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], "100");
 
-            console.Clear();
-            console.NextLine = "tempo 182";
+            console.Reset();
+            console.NextReadLine = "tempo 182";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 1);
             UT_EQUAL(console.Capture[0], prompt);
 
-            console.Clear();
-            console.NextLine = "tempo 242";
+            console.Reset();
+            console.NextReadLine = "tempo 242";
             bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], "invalid tempo: 242");
 
-            console.Clear();
-            console.NextLine = "tempo 39";
+            console.Reset();
+            console.NextReadLine = "tempo 39";
             bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], "invalid tempo: 39");
 
-            console.Clear();
-            console.NextLine = "monitor r";
+            console.Reset();
+            console.NextReadLine = "monitor r";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 1);
             UT_EQUAL(console.Capture[0], prompt);
 
-            console.Clear();
-            console.NextLine = "monitor s";
+            console.Reset();
+            console.NextReadLine = "monitor s";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 1);
             UT_EQUAL(console.Capture[0], prompt);
 
-            console.Clear();
-            console.NextLine = "monitor o";
+            console.Reset();
+            console.NextReadLine = "monitor o";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 1);
             UT_EQUAL(console.Capture[0], prompt);
 
             // Test immediate spacebar.
-            console.Clear();
+            console.Reset();
             State.Instance.ExecState = ExecState.Idle;
-            console.NextLine = " ";
+            console.NextReadLine = " ";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], $"running");
 
-            console.Clear();
-            console.NextLine = "monitor junk";
+            console.Reset();
+            console.NextReadLine = "monitor junk";
             bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(console.Capture.Count, 2);
@@ -173,40 +173,40 @@ namespace Nebulua.Test
             UT_EQUAL(State.Instance.SectionInfo.Count, 4);
 
             ///// Position commands.
-            console.Clear();
-            console.NextLine = "position";
+            console.Reset();
+            console.NextReadLine = "position";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], $"0:0:0");
             UT_EQUAL(console.Capture[1], prompt);
 
-            console.Clear();
-            console.NextLine = "position 10:2:6";
+            console.Reset();
+            console.NextReadLine = "position 10:2:6";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], $"10:2:6");
             UT_EQUAL(console.Capture[1], prompt);
 
-            console.Clear();
-            console.NextLine = "position 203:2:6"; // too late
+            console.Reset();
+            console.NextReadLine = "position 203:2:6"; // too late
             bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], "invalid requested position: 203:2:6");
             UT_EQUAL(console.Capture[1], prompt);
 
-            console.Clear();
-            console.NextLine = "position";
+            console.Reset();
+            console.NextReadLine = "position";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
             UT_EQUAL(console.Capture[0], $"10:2:6");
             UT_EQUAL(console.Capture[1], prompt);
 
-            console.Clear();
-            console.NextLine = "position 111:9:6";
+            console.Reset();
+            console.NextReadLine = "position 111:9:6";
             bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(console.Capture.Count, 2);
@@ -214,8 +214,8 @@ namespace Nebulua.Test
             UT_EQUAL(console.Capture[1], prompt);
 
             ///// Misc commands.
-            console.Clear();
-            console.NextLine = "kill";
+            console.Reset();
+            console.NextReadLine = "kill";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 1);

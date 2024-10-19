@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+
 namespace Nebulua
 {
     internal class Program
@@ -47,6 +48,7 @@ namespace Nebulua
         public bool KeyAvailable { get => Console.KeyAvailable; }
         public bool CursorVisible { get => Console.CursorVisible; set => Console.CursorVisible = value; }
         public string Title { get => Console.Title; set => Console.Title = value; }
+        public int BufferWidth { get => Console.BufferWidth; set => Console.BufferWidth = value; }
         public string? ReadLine() { return Console.ReadLine(); }
         public ConsoleKeyInfo ReadKey(bool intercept) { return Console.ReadKey(intercept); }
         public void Write(string text) { Console.Write(text); }
