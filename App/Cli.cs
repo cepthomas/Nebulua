@@ -8,7 +8,6 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using System.Drawing;
 
 
 namespace Nebulua
@@ -66,9 +65,6 @@ namespace Nebulua
         {
             _console = console;
 
-            //_tin = tin;
-            //_tout = tout;            
-
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
             UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
@@ -98,12 +94,6 @@ namespace Nebulua
                 _logger.Info($"Loading script file {scriptFn}");
                 _core.LoadScript(scriptFn);
 
-                // Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
-                while (State.Instance.ExecState != ExecState.Exit)
-                {
-                    DoCommand();
-                }
-
                 // Done. Wait a bit in case there are some lingering events or logging.
                 Thread.Sleep(100);
             }
@@ -123,7 +113,20 @@ namespace Nebulua
             }
         }
 
-        /// <summary>Clean up.</summary>
+        /// <summary>
+        /// Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
+        /// </summary>
+        public void Run()
+        {
+            while (State.Instance.ExecState != ExecState.Exit)
+            {
+                DoCommand();
+            }
+        }
+
+        /// <summary>
+        /// Clean up.
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed)
@@ -152,9 +155,22 @@ namespace Nebulua
                     // Display time.
                     int bar = MusicTime.BAR(tick);
                     int beat = MusicTime.BEAT(tick);
-                    string st = $"{bar:D3}:{beat:D1}                     ";
-                    //var st = MusicTime.Format(tick);
-                    Console.Title = st;
+                    string st = $"{bar:D3}:{beat:D1}";
+
+                    bool inTab = true;
+                    if (inTab)
+                    {
+                        _console.Title = st;
+                    }
+                    else
+                    {
+                        var (left, top) = _console.GetCursorPosition();
+                        _console.CursorVisible = false;
+                        _console.SetCursorPosition(0, 0);
+                        _console.Write(st.PadRight(_console.BufferWidth - 1));
+                        _console.SetCursorPosition(left, top);
+                        _console.CursorVisible = true;
+                    }
                 }
             }
         }
@@ -180,48 +196,65 @@ namespace Nebulua
 
         #region Private functions
         /// <summary>
-        /// Process user input. Blocks until new line.
-        /// TODO1 Would like to .Peek() for spacebar to toggle run but it's broken. Read() doesn't seem to work either. Maybe something like Console.KeyAvailable.
+        /// Process user input. Blocks until new line or spacebar.
         /// </summary>
         /// <returns>Success</returns>
         public bool DoCommand()
         {
             bool ret = true;
+            string? ucmd;
 
-            // Listen.
-            string? res = _console.ReadLine();
-
-            if (res != null)
+            // Check for something to do.
+            if (_console.KeyAvailable)
             {
-                // Process the line. Chop up the raw command line into args.
-                List<string> args = StringUtils.SplitByToken(res, " ");
+                // Console.ReadKey blocks and consumes the buffer immediately.
+                var key = _console.ReadKey(false);
 
-                // Process the command and its options.
-                bool valid = false;
-                if (args.Count > 0)
+                if (key.KeyChar == ' ')
                 {
-                    foreach (var cmd in _commands!)
-                    {
-                        if (args[0] == cmd.LongName || (args[0].Length == 1 && args[0][0] == cmd.ShortName))
-                        {
-                            // Execute the command. They handle any errors internally.
-                            valid = true;
+                    // Toggle run.
+                    ucmd = "r";
+                    _console.WriteLine("");
+                }
+                else
+                {
+                    // Get the rest.
+                    var res = _console.ReadLine();
+                    ucmd = res is null ? key.KeyChar.ToString() : key.KeyChar + res;
+                }
 
-                            ret = cmd.Handler(cmd, args);
-                            break;
+                if (ucmd is not null)
+                {
+                    // Process the line. Chop up the raw command line into args.
+                    List<string> args = StringUtils.SplitByToken(ucmd, " ");
+
+                    // Process the command and its options.
+                    bool valid = false;
+                    if (args.Count > 0)
+                    {
+                        foreach (var cmd in _commands!)
+                        {
+                            if (args[0] == cmd.LongName || (args[0].Length == 1 && args[0][0] == cmd.ShortName))
+                            {
+                                // Execute the command. They handle any errors internally.
+                                valid = true;
+
+                                ret = cmd.Handler(cmd, args);
+                                break;
+                            }
+                        }
+
+                        if (!valid)
+                        {
+                            Write("Invalid command");
                         }
                     }
-
-                    if (!valid)
-                    {
-                        Write("Invalid command");
-                    }
                 }
-            }
-            else
-            {
-                // Assume finished.
-                State.Instance.ExecState = ExecState.Exit;
+                else
+                {
+                    // Assume finished.
+                    State.Instance.ExecState = ExecState.Exit;
+                }
             }
 
             return ret;
@@ -417,7 +450,7 @@ namespace Nebulua
         }
 
         //--------------------------------------------------------//
-        bool LoopCmd(CommandDescriptor cmd, List<string> args) // TODO1 loops
+        bool LoopCmd(CommandDescriptor cmd, List<string> args)
         {
             bool ret = true;
 
@@ -428,6 +461,49 @@ namespace Nebulua
             return ret;
         }
 
+        // TODO1 loops - ("loop",     'l',    "set loop or tell current",         "(start-bt end-bt)|(r)",    LoopCmd),
+        // Core does this:
+        // if (State.Instance.IsComposition)
+        // {
+        //     // Bump time and check state.
+        //     int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+        //     int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+
+        //     if (++State.Instance.CurrentTick >= end) // done
+        //     {
+        //         // Keep going? else stop/rewind.
+        //         if (State.Instance.DoLoop)
+        //         {
+        //             // Keep going.
+        //             State.Instance.CurrentTick = start;
+        //         }
+        //         else
+        //         {
+        //             // Stop and rewind.
+        //             State.Instance.ExecState = ExecState.Idle;
+        //             State.Instance.CurrentTick = start;
+
+        //             // just in case
+        //             KillAll();
+        //         }
+        //     }
+        // }
+        // else // dynamic script
+        // {
+        //     ++State.Instance.CurrentTick;
+        // }
+
+        // C:\Dev\repos\Apps\Nebulua\App\TimeBar.cs:
+        //    95:                 int mstart = GetClientFromTick(State.Instance.LoopStart);
+        //   105:             pe.Graphics.DrawString(MusicTime.Format(State.Instance.LoopStart), FontSmall, Brushes.Black, ClientRectangle, _format);
+        //   121:                 State.Instance.LoopStart = -1;
+        //   140:                 //_toolTip.SetToolTip(this, $"{State.Instance.CurrentTick}: 0 {State.Instance.LoopStart} {State.Instance.LoopEnd} {State.Instance.Length} ");
+        //   156:                 int lstart = State.Instance.LoopStart;
+        //   164:                         State.Instance.LoopStart = newval;
+
+
+
+
         //--------------------------------------------------------//
         bool ReloadCmd(CommandDescriptor cmd, List<string> args)
         {
@@ -436,7 +512,6 @@ namespace Nebulua
             switch (args.Count)
             {
                 case 1: // no args
-                    // State.Instance.ExecState = ExecState.Reload;
                     _core.LoadScript();
                     break;
 

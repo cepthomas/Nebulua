@@ -25,9 +25,10 @@ namespace Nebulua
         void Write(string text);
         void WriteLine(string text);
         string? ReadLine();
-        public bool KeyAvailable { get; }
-        public bool CursorVisible { get; set; }
-        public string Title { get; set; }
+        ConsoleKeyInfo ReadKey(bool intercept);
+        bool KeyAvailable { get; }
+        bool CursorVisible { get; set; }
+        string Title { get; set; }
         (int left, int top) GetCursorPosition();
         void SetCursorPosition(int left, int top);
     }

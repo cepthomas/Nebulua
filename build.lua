@@ -2,7 +2,6 @@
 Used to build and test all parts of this system.
 --]]
 
--- print(res) TODO2 in all of these parse for 'Error' or something. Maybe colorize like debugger.py.
 
 -- Fix up the lua path first.
 package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
