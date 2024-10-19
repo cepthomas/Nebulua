@@ -17,11 +17,11 @@ namespace Nebulua.Test
             UT_STOP_ON_FAIL(true);
 
             // Create interop.
-            var lpath = TestUtils.GetLuaPath();
+            var lpath = Utils.GetLuaPath();
             Api interop = new(lpath);
 
             EventCollector events = new(interop);
-            string scrfn = Path.Join(TestUtils.GetProjectSourceDir(), "test", "lua", "script_happy.lua");
+            string scrfn = Path.Join(Utils.GetProjectSourceDir(), "test", "lua", "script_happy.lua");
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             // Load the script.
@@ -86,7 +86,7 @@ namespace Nebulua.Test
 
             // General syntax error during load.
             {
-                var lpath = TestUtils.GetLuaPath();
+                var lpath = Utils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -100,7 +100,7 @@ namespace Nebulua.Test
 
             // Missing required C2L api element - luainterop_Setup(_ltest, &iret);
             {
-                var lpath = TestUtils.GetLuaPath();
+                var lpath = Utils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -113,7 +113,7 @@ namespace Nebulua.Test
 
             // Bad L2C api function
             {
-                var lpath = TestUtils.GetLuaPath();
+                var lpath = Utils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -129,7 +129,7 @@ namespace Nebulua.Test
 
             // General explicit error.
             {
-                var lpath = TestUtils.GetLuaPath();
+                var lpath = Utils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,
@@ -145,7 +145,7 @@ namespace Nebulua.Test
 
             // Runtime error.
             {
-                var lpath = TestUtils.GetLuaPath();
+                var lpath = Utils.GetLuaPath();
                 Api interop = new(lpath);
 
                 File.WriteAllText(tempfn,

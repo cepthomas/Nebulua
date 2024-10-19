@@ -10,7 +10,7 @@ using Nebulua;
 namespace Nebulua.Test
 {
     /// <summary>Helpers for tests.</summary>
-    public class TestUtils
+    public class Utils
     {
         /// <summary>Get environment.</summary>
         public static string GetProjectSourceDir()

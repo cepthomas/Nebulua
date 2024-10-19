@@ -26,7 +26,7 @@
     <Compile Include="..\common\MockInterop.cs" Link="MockInterop.cs" />
     <Compile Include="..\common\MockNAudio.cs" Link="MockNAudio.cs" />
     <Compile Include="..\common\MockMidi.cs" Link="MockMidi.cs" />
-    <Compile Include="..\common\TestUtils.cs" Link="TestUtils.cs" />
+    <Compile Include="..\common\Utils.cs" Link="Utils.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -131,6 +131,19 @@ namespace Nebulua.Test
             UT_EQUAL(console.Capture.Count, 1);
             UT_EQUAL(console.Capture[0], prompt);
 
+            // Test immediate spacebar.
+            console.Clear();
+            State.Instance.ExecState = ExecState.Idle;
+            console.NextLine = " ";
+            bret = cli.DoCommand();
+
+            UT_TRUE(bret);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], $"running");
+            //UT_TRUE(bret);
+            //UT_EQUAL(console.Capture.Count, 1);
+            //UT_EQUAL(console.Capture[0], prompt);
+
             console.Clear();
             console.NextLine = "monitor junk";
             bret = cli.DoCommand();

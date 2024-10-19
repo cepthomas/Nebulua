@@ -20,7 +20,7 @@
   <ItemGroup>
     <Compile Include="..\..\App\Common.cs" Link="Common.cs" />
     <Compile Include="..\..\App\State.cs" Link="State.cs" />
-    <Compile Include="..\common\TestUtils.cs" Link="TestUtils.cs" />
+    <Compile Include="..\common\Utils.cs" Link="Utils.cs" />
   </ItemGroup>
 
   <ItemGroup>

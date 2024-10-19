@@ -15,16 +15,15 @@ namespace Nebulua.Test
         StringBuilder _capture = new();
         int _left = 0;
         int _top = 0;
-        string _title = "";
 
         public List<string> Capture { get { return StringUtils.SplitByTokens(_capture.ToString(), "\r\n"); } }
-        public bool KeyAvailable { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool KeyAvailable { get => NextLine.Length > 0; }
         public bool CursorVisible { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string Title { get => _title; set => _title = value; }
+        public string Title { get; set; } = "";
 
         public string NextLine { get; set; } = "";
 
-        public string ReadLine()
+        public string? ReadLine()
         {
             if (NextLine == "")
             {
@@ -35,6 +34,20 @@ namespace Nebulua.Test
                 var ret = NextLine;// + Environment.NewLine;
                 NextLine = "";
                 return ret;
+            }
+        }
+
+        public ConsoleKeyInfo ReadKey(bool intercept)
+        {
+            if (KeyAvailable)
+            {
+                var key = NextLine[0];
+                NextLine = NextLine.Substring(1);
+                return new ConsoleKeyInfo(key, (ConsoleKey)key, false, false, false);
+            }
+            else
+            {
+                throw new InvalidOperationException();
             }
         }
 
@@ -58,6 +71,7 @@ namespace Nebulua.Test
         {
             return (_left, _top);
         }
+
         public void Clear()
         {
             _capture.Clear();
