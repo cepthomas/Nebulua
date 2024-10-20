@@ -22,8 +22,8 @@ namespace Nebulua
         int _tempo = 100;
         int _currentTick = 0;
         int _length = 0;
-        int _loopStart = -1; // uninited
-        int _loopEnd = -1; // uninited
+        int _loopStart = -1; // unknown
+        int _loopEnd = -1; // unknown
         #endregion
 
         #region Properties that notify

@@ -45,17 +45,17 @@ namespace Nebulua.Test
             console.NextReadLine = "help";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(console.Capture.Count, 15);
+            UT_EQUAL(console.Capture.Count, 16);
             UT_EQUAL(console.Capture[0], "help|?: available commands");
             UT_EQUAL(console.Capture[1], "info|i: system information");
-            UT_EQUAL(console.Capture[13], "reload|s: reload current script");
-            UT_EQUAL(console.Capture[14], prompt);
+            UT_EQUAL(console.Capture[14], "reload|s: reload current script");
+            UT_EQUAL(console.Capture[15], prompt);
 
             console.Reset();
             console.NextReadLine = "?";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(console.Capture.Count, 15);
+            UT_EQUAL(console.Capture.Count, 16);
             UT_EQUAL(console.Capture[0], "help|?: available commands");
 
             ///// The rest of the commands.
@@ -64,7 +64,7 @@ namespace Nebulua.Test
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
-            UT_EQUAL(console.Capture[0], $"Exit - goodbye!");
+            UT_EQUAL(console.Capture[0], $"Goodbye!");
 
             st.ExecState = ExecState.Idle; // reset
             console.Reset();
@@ -160,6 +160,7 @@ namespace Nebulua.Test
             bool bret;
             UT_STOP_ON_FAIL(true);
 
+            var del = MusicTime.DELIM;
             var st = State.Instance;
             st.ValueChangeEvent += (sender, e) => { };
 
@@ -178,23 +179,23 @@ namespace Nebulua.Test
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
-            UT_EQUAL(console.Capture[0], $"0:0:0");
+            UT_EQUAL(console.Capture[0], $"0{del}0{del}0");
             UT_EQUAL(console.Capture[1], prompt);
 
             console.Reset();
-            console.NextReadLine = "position 10:2:6";
+            console.NextReadLine = $"position 10{del}2{del}6";
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
-            UT_EQUAL(console.Capture[0], $"10:2:6");
+            UT_EQUAL(console.Capture[0], $"10{del}2{del}6");
             UT_EQUAL(console.Capture[1], prompt);
 
             console.Reset();
-            console.NextReadLine = "position 203:2:6"; // too late
+            console.NextReadLine = $"position 203{del}2{del}6"; // too late
             bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(console.Capture.Count, 2);
-            UT_EQUAL(console.Capture[0], "invalid requested position: 203:2:6");
+            UT_EQUAL(console.Capture[0], $"invalid requested position 203{del}2{del}6");
             UT_EQUAL(console.Capture[1], prompt);
 
             console.Reset();
@@ -202,15 +203,15 @@ namespace Nebulua.Test
             bret = cli.DoCommand();
             UT_TRUE(bret);
             UT_EQUAL(console.Capture.Count, 2);
-            UT_EQUAL(console.Capture[0], $"10:2:6");
+            UT_EQUAL(console.Capture[0], $"10{del}2{del}6");
             UT_EQUAL(console.Capture[1], prompt);
 
             console.Reset();
-            console.NextReadLine = "position 111:9:6";
+            console.NextReadLine = $"position 111{del}9{del}6";
             bret = cli.DoCommand();
             UT_FALSE(bret);
             UT_EQUAL(console.Capture.Count, 2);
-            UT_EQUAL(console.Capture[0], $"invalid requested position: 111:9:6");
+            UT_EQUAL(console.Capture[0], $"invalid requested position 111{del}9{del}6");
             UT_EQUAL(console.Capture[1], prompt);
 
             ///// Misc commands.

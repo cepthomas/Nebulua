@@ -76,16 +76,17 @@ namespace Nebulua
             
             _commands =
             [
-                new("help",     '?',    "available commands",                   "",                     UsageCmd),
-                new("info",     'i',    "system information",                   "",                     InfoCmd),
-                new("exit",     'q',    "exit the application",                 "",                     ExitCmd),
-                new("run",      'r',    "toggle running the script",            "",                     RunCmd),
-                new("position", 'p',    "set position or tell current",         "(bt)",                 PositionCmd),
-                new("loop",     'l',    "set loop or rewind or tell current",   "(s e)|(r)",            LoopCmd),
-                new("tempo",    't',    "get or set the tempo",                 "(40-240)",             TempoCmd),
-                new("monitor",  'm',    "toggle monitor midi traffic",          "(r|s|o): rcv|snd|off", MonCmd),
-                new("kill",     'k',    "stop all midi",                        "",                     KillCmd),
-                new("reload",   's',    "reload current script",                "",                     ReloadCmd)
+                new("help",     '?',  "available commands",            "",                      UsageCmd),
+                new("info",     'i',  "system information",            "",                      InfoCmd),
+                new("exit",     'q',  "exit the application",          "",                      ExitCmd),
+                new("run",      'r',  "toggle running the script",     "",                      RunCmd),
+                new("position", 'p',  "set position or tell current",  "(pos)",                 PositionCmd),
+                new("loop",     'l',  "set loop or tell current",      "(start end)",           LoopCmd),
+                new("rewind",   'w',  "rewind loop",                   "",                      RewindCmd),
+                new("tempo",    't',  "get or set the tempo",          "(40-240)",              TempoCmd),
+                new("monitor",  'm',  "toggle monitor midi traffic",   "r=rcv|s=snd|o=off",     MonCmd),
+                new("kill",     'k',  "stop all midi",                 "",                      KillCmd),
+                new("reload",   's',  "reload current script",         "",                      ReloadCmd)
             ];
 
             try
@@ -280,7 +281,7 @@ namespace Nebulua
 
             switch (args.Count)
             {
-                case 1: // get
+                case 1: // no args - get
                     Write($"{State.Instance.Tempo}");
                     break;
 
@@ -312,7 +313,7 @@ namespace Nebulua
 
             switch (args.Count)
             {
-                case 1:  // no args
+                case 1: // no args - get
                     switch (State.Instance.ExecState)
                     {
                         case ExecState.Idle:
@@ -346,7 +347,7 @@ namespace Nebulua
         bool ExitCmd(CommandDescriptor cmd, List<string> args)
         {
             State.Instance.ExecState = ExecState.Exit;
-            Write($"Exit - goodbye!");
+            Write($"Goodbye!");
 
             return true;
         }
@@ -396,7 +397,6 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool KillCmd(CommandDescriptor cmd, List<string> args)
         {
-            // State.Instance.ExecState = ExecState.Kill;
             _core.KillAll();
             Write("");
 
@@ -410,7 +410,7 @@ namespace Nebulua
 
             switch (args.Count)
             {
-                case 1: // get
+                case 1: // no args - get
                     Write(MusicTime.Format(State.Instance.CurrentTick));
                     break;
 
@@ -419,7 +419,7 @@ namespace Nebulua
                     int reqpos = MusicTime.Parse(args[1]);
                     if (reqpos < 0)
                     {
-                        Write($"invalid requested position: {args[1]}");
+                        Write($"invalid requested position {args[1]}");
                         ret = false;
                     }
                     else
@@ -429,7 +429,7 @@ namespace Nebulua
                         int actpos = State.Instance.CurrentTick;
                         if (actpos != reqpos)
                         {
-                            Write($"invalid requested position: {args[1]}");
+                            Write($"invalid requested position {args[1]}");
                             State.Instance.CurrentTick = curpos;
                             ret = false;
                         }
@@ -454,19 +454,28 @@ namespace Nebulua
         {
             bool ret = true;
 
-            // TODO1 loops - "loop", 'l', "set loop or rewind or tell current", "(s e)|(r)", LoopCmd),
+            if (!State.Instance.IsComposition)
+            {
+                Write("loop supported only for compositions");
+                return ret;
+            }
 
             switch (args.Count)
             {
-                case 1: // get
-                    //Write(format start/end)
-                    //Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
+                case 1: // no args - get
+                    var sstart = MusicTime.Format(State.Instance.LoopStart);
+                    var send = MusicTime.Format(State.Instance.LoopEnd);
+                    Write($"loop {sstart} -> {send}");
                     break;
 
-                case 2: // rewind
-                    if (args[1] == "r")
-                    {
+                case 3: // set
+                    var start = MusicTime.Parse(args[1]);
+                    var end = MusicTime.Parse(args[2]);
 
+                    if (start >= 0 && end >= 0)
+                    {
+                        State.Instance.LoopStart = start;
+                        State.Instance.LoopEnd = end;
                     }
                     else // invalid
                     {
@@ -475,30 +484,25 @@ namespace Nebulua
                     }
                     break;
 
-                case 3: // set
-                    //int curpos = State.Instance.CurrentTick;
-                    //int reqpos = MusicTime.Parse(args[1]);
-                    //if (reqpos < 0)
-                    //{
-                    //    Write($"invalid requested position: {args[1]}");
-                    //    ret = false;
-                    //}
-                    //else
-                    //{
-                    //    // State will validate the requested position.
-                    //    State.Instance.CurrentTick = reqpos;
-                    //    int actpos = State.Instance.CurrentTick;
-                    //    if (actpos != reqpos)
-                    //    {
-                    //        Write($"invalid requested position: {args[1]}");
-                    //        State.Instance.CurrentTick = curpos;
-                    //        ret = false;
-                    //    }
-                    //    else
-                    //    {
-                    //        Write(MusicTime.Format(State.Instance.CurrentTick)); // echo
-                    //    }
-                    //}
+                default:
+                    Write("");
+                    ret = false;
+                    break;
+            }
+
+            return ret;
+        }
+
+
+        //--------------------------------------------------------//
+        bool RewindCmd(CommandDescriptor cmd, List<string> args)
+        {
+            bool ret = true;
+
+            switch (args.Count)
+            {
+                case 1: // no args
+                    State.Instance.CurrentTick = State.Instance.LoopStart;
                     break;
 
                 default:
@@ -507,37 +511,8 @@ namespace Nebulua
                     break;
             }
 
-
-            //int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-
             return ret;
         }
-
-        // App does this:
-        //int lstart = State.Instance.LoopStart;
-        //int lend = State.Instance.LoopEnd;
-        //int newval = GetRounded(GetTickFromClient(e.X), Snap);
-
-        //if (ModifierKeys.HasFlag(Keys.Control))
-        //{
-        //    if (newval < lend)
-        //    {
-        //        State.Instance.LoopStart = newval;
-        //    }
-        //    // else beeeeeep?
-        //}
-        //else if (ModifierKeys.HasFlag(Keys.Alt))
-        //{
-        //    if (newval > lstart)
-        //    {
-        //        State.Instance.LoopEnd = newval;
-        //    }
-        //    // else beeeeeep?
-        //}
-        //else
-        //{
-        //    State.Instance.CurrentTick = newval;
-        //}
 
 
         //--------------------------------------------------------//
@@ -563,13 +538,13 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool InfoCmd(CommandDescriptor _, List<string> __)
         {
-            _console.WriteLine($"Midi output devices:");
+            _console.WriteLine($"Midi output devices");
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
                 _console.WriteLine("  " + MidiOut.DeviceInfo(i).ProductName);
             }
 
-            _console.WriteLine($"Midi input devices:");
+            _console.WriteLine($"Midi input devices");
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
             {
                 _console.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);

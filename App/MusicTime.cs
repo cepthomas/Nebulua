@@ -10,13 +10,15 @@ namespace Nebulua
     /// <summary>Misc musical timing functions.</summary>
     public class MusicTime
     {
-        // Only 4/4 time supported.
+        public const string DELIM = ".";
+
+        /// <summary>Only 4/4 time supported.</summary>
         public const int BEATS_PER_BAR = 4;
 
-        // Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
+        /// <summary>GOur resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.</summary>
         public const int SUBS_PER_BEAT = 8;
 
-        // Convenience.
+        /// <summary>Convenience.</summary>
         public const int SUBS_PER_BAR = SUBS_PER_BEAT * BEATS_PER_BAR;
 
         /// <summary>Get the bar number.</summary>
@@ -31,12 +33,12 @@ namespace Nebulua
         /// <summary>
         /// Convert a string bar time to absolute position/tick.
         /// </summary>
-        /// <param name="sbt">time string can be "1:2:3" or "1:2" or "1".</param>
+        /// <param name="sbt">time string can be "1.2.3" or "1.2" or "1".</param>
         /// <returns>Ticks or -1 if invalid input</returns>
         public static int Parse(string sbt)
         {
             int tick = 0;
-            var parts = StringUtils.SplitByToken(sbt, ":");
+            var parts = StringUtils.SplitByToken(sbt, DELIM);
 
             if (tick >= 0 && parts.Count > 0)
             {
@@ -68,7 +70,7 @@ namespace Nebulua
                 int bar = BAR(tick);
                 int beat = BEAT(tick);
                 int sub = SUB(tick);
-                return $"{bar}:{beat}:{sub}";
+                return $"{bar}{DELIM}{beat}{DELIM}{sub}";
             }
             else
             {

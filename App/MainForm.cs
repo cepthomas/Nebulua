@@ -11,7 +11,7 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO2 slow startup when running from VS/debugger but not from .exe. Shutdown too when closing term.
+// ?? Slow startup when running from VS/debugger but not from .exe. Also shutdown too when closing term.
 
 
 namespace Nebulua
