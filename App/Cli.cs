@@ -163,7 +163,7 @@ namespace Nebulua
                     {
                         _console.Title = st;
                     }
-                    else
+                    else // superimpose
                     {
                         var (left, top) = _console.GetCursorPosition();
                         _console.CursorVisible = false;

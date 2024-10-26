@@ -16,7 +16,7 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             NebStatus stat;
-            var scriptFn = Path.Join(Utils.GetProjectSourceDir(), "test", "lua", "script_happy.lua");
+            var scriptFn = Path.Join(Utils.GetAppRoot(), "test", "lua", "script_happy.lua");
 
             // Load the script.
             Core core = new();

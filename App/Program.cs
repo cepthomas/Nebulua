@@ -10,7 +10,7 @@ namespace Nebulua
     internal class Program
     {
         /// <summary>
-        ///  The entry point for the application.
+        /// The entry point for the application.
         /// </summary>
         [STAThread]
         static void Main(string[] args)
@@ -19,25 +19,20 @@ namespace Nebulua
             switch (args.Length)
             {
                 case 0:
-                    {
-                        ApplicationConfiguration.Initialize();
-                        Application.Run(new MainForm());
-                    }
+                    ApplicationConfiguration.Initialize();
+                    Application.Run(new MainForm());
                     break;
 
                 case 1:
-                    {
-                        var scriptFn = args[0];
-                        RealConsole console = new();
-                        using var cli = new Cli(scriptFn, console);
-                        cli.Run();
-                    }
+                    var scriptFn = args[0];
+                    RealConsole console = new();
+                    var cli = new Cli(scriptFn, console);
+                    cli.Run();
+                    cli.Dispose();
                     break;
 
                 default:
-                    {
-                        Console.WriteLine("Invalid command line");
-                    }
+                    Console.WriteLine("Invalid command line");
                     break;
             }
         }

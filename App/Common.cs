@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks;
 
@@ -37,6 +38,8 @@ namespace Nebulua
 
     public class Utils
     {
+        static string? _rootDir = null; // cache
+
         /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
@@ -87,6 +90,14 @@ namespace Nebulua
 
             return _rootDir!;
         }
-        static string? _rootDir = null; // cache
+
+        /// <summary>Get LUA_PATH components.</summary>
+        /// <returns>List of paths if success or null if invalid.</returns>
+        public static List<string> GetLuaPath()
+        {
+            // Set up lua environment.
+            var appRoot = GetAppRoot();
+            return [$@"{appRoot}\lua", $@"{appRoot}\test\lua"];
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace Nebulua.Test
             Api interop = new(lpath);
 
             EventCollector events = new(interop);
-            string scrfn = Path.Join(Utils.GetProjectSourceDir(), "test", "lua", "script_happy.lua");
+            string scrfn = Path.Join(Utils.GetAppRoot(), "test", "lua", "script_happy.lua");
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             // Load the script.

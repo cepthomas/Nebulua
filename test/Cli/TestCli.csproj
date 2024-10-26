@@ -23,11 +23,10 @@
     <Compile Include="..\..\App\State.cs" Link="State.cs" />
     <Compile Include="..\..\App\UserSettings.cs" Link="UserSettings.cs" />
     <Compile Include="..\..\App\MusicTime.cs" Link="MusicTime.cs" />
-    <Compile Include="..\common\MockCore.cs" Link="MockCore.cs" />
-    <Compile Include="..\common\MockIO.cs" Link="MockIO.cs" />
-    <Compile Include="..\common\MockNAudio.cs" Link="MockNAudio.cs" />
-    <Compile Include="..\common\MockMidi.cs" Link="MockMidi.cs" />
-    <Compile Include="..\common\Utils.cs" Link="Utils.cs" />
+    <Compile Include="..\mock\MockCore.cs" Link="MockCore.cs" />
+    <Compile Include="..\mock\MockIO.cs" Link="MockIO.cs" />
+    <Compile Include="..\mock\MockNAudio.cs" Link="MockNAudio.cs" />
+    <Compile Include="..\mock\MockMidi.cs" Link="MockMidi.cs" />
   </ItemGroup>
 
   <ItemGroup>
