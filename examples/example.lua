@@ -73,7 +73,7 @@ local seq_func
 function setup()
     neb.log_info("example initialization")
     math.randomseed(os.time())
-    
+
     -- How fast?
     neb.set_tempo(88)
 
@@ -85,14 +85,14 @@ function setup()
 
     -- This file uses static composition so you must call this!
     neb.process_comp()
-    
+
     return 0
 end
 
 -----------------------------------------------------------------------------
 -- Main work loop called every subbeat/tick. This is a required function!
 function step(tick)
-    -- This file uses static composition so you must call this!
+
     neb.process_step(tick)
 
     -- Other work you may want to do.
@@ -133,8 +133,10 @@ end
 
 -- Function called from sequence.
 seq_func = function (tick)
-    local note_num = math.random(0, #alg_scale)
-    neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8)
+    if alg_scale ~= nil then
+        local note_num = math.random(0, #alg_scale)
+        neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8)
+    end
 end
 
 

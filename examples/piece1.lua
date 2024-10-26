@@ -1,7 +1,4 @@
 
--- This is an example of a dynamically generated algorithmic piece.
--- It's a take on Eno's Music for Airports - ported from github.com/teropa/musicforairports.js
-
 
 -- Import modules we need.
 local neb = require("nebulua") -- lua api
@@ -11,20 +8,17 @@ local bt  = require("bar_time") -- time utility
 local com = require('neb_common')
 local ut  = require('utils')
 
--- Setup for debug.
-ut.config_debug(true)
--- dbg()
 
--- Say hello.
-neb.log_info('### loading airport.lua ###')
+-- Setup for debug.
+-- ut.config_debug(true)
+-- dbg()
 
 
 ------------------------- Configuration -------------------------------
 
 -- Specify midi devices.
--- local midi_out = "VirtualMIDISynth #1"
--- local midi_out = "Microsoft GS Wavetable Synth"
-local midi_out = "loopMIDI Port"
+local midi_out = "VirtualMIDISynth #1"
+-- local midi_out = "loopMIDI Port"
 
 -- Specify midi channels.
 local hout = neb.create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
@@ -105,6 +99,7 @@ function setup()
     return 0
 end
 
+
 -----------------------------------------------------------------------------
 -- Main work loop called every subbeat/tick. This is a required function!
 function step(tick)
@@ -117,12 +112,18 @@ function step(tick)
             if tick >= loop.next_start then
                 for _, note_num in ipairs(loop.notes) do
                     -- Send any note starts now.
-                    -- print('on:'..step.note_num)
                     neb.send_note(chan_hnd, note_num, volume, loop.duration)
                 end
                 -- Calculate next time.
                 loop.next_start = tick + loop.delay + loop.duration;
             end
+        end
+
+        -- Do something every new bar.
+        local t = BarTime(tick)
+        if t.get_beat() == 0 and t.get_sub() == 0 then
+            xxx = 0
+            -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
         end
     end
     return 0

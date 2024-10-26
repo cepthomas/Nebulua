@@ -139,6 +139,7 @@ function M.process_step(tick)
                end
 
                 -- now send
+                -- print('on:'..step.note_num)
                 api.send_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == "controller" then
                 api.send_controller(step.chan_hnd, step.controller, step.value)
@@ -153,6 +154,7 @@ function M.process_step(tick)
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
+                -- print('off:'..step.note_num)
                api.send_note(step.chan_hnd, step.note_num, 0)
             end
         end

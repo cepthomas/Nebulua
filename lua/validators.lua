@@ -1,6 +1,5 @@
 -- GP utilities for validation.
 
-local sx = require("stringex")
 local ut = require('utils')
 
 local M = {}

@@ -50,7 +50,8 @@ end
 -----------------------------------------------------------------------------
 -- Main loop - called every mmtimer increment. Required function.
 function step(tick)
-    neb.process_step(tick) -- required if using composition
+
+    neb.process_step(tick)
 
     -- Selective work.
     local t = BarTime(tick)

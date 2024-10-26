@@ -160,7 +160,8 @@ If it's a static composition call this in setup();
 ```lua
 function neb.process_step(tick)
 ```
-If it's a static composition call this in step(tick);
+Call this in step(tick) to process things like note offs.
+
 - tick: current tick.
 
 

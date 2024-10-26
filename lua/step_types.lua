@@ -1,8 +1,6 @@
 -- Family of midi events.
 
-local ut  = require("utils")
 local val = require('validators')
-local md  = require('midi_defs')
 local com = require('neb_common')
 
 
@@ -53,7 +51,7 @@ function StepController(tick, chan_hnd, controller, value)
     d.chan_hnd = chan_hnd
     d.controller = controller
     d.value = value
-    
+
     -- Validate.
     d.err = d.err or val.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
     d.err = d.err or val.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
@@ -87,7 +85,7 @@ function StepFunction(tick, chan_hnd, func, volume)
     -- Validate.
     d.err = d.err or val.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
     d.err = d.err or val.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or val.val_function(d.func, 0.0, 1.0, 'func')
+    d.err = d.err or val.val_function(d.func, 'func')
     d.err = d.err or val.val_number(d.volume, 0.0, 1.0, 'volume')
 
     -- if d.err ~= nil then

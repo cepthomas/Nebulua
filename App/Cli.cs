@@ -122,6 +122,8 @@ namespace Nebulua
             while (State.Instance.ExecState != ExecState.Exit)
             {
                 DoCommand();
+                // Don't be greedy.
+                Thread.Sleep(20);
             }
         }
 
@@ -289,7 +291,7 @@ namespace Nebulua
                     if (int.TryParse(args[1], out int t) && t >= 40 && t <= 240)
                     {
                         State.Instance.Tempo = t;
-                        Write("");
+                        Write($"tempo set to {t}");
                     }
                     else
                     {
@@ -364,18 +366,18 @@ namespace Nebulua
                     {
                         case "r":
                             UserSettings.Current.MonitorRcv = !UserSettings.Current.MonitorRcv;
-                            Write("");
+                            Write("monitor rcv");
                             break;
 
                         case "s":
                             UserSettings.Current.MonitorSnd = !UserSettings.Current.MonitorSnd;
-                            Write("");
+                            Write("monitor snd");
                             break;
 
                         case "o":
                             UserSettings.Current.MonitorRcv = false;
                             UserSettings.Current.MonitorSnd = false;
-                            Write("");
+                            Write("monitor off");
                             break;
 
                         default:
@@ -398,7 +400,7 @@ namespace Nebulua
         bool KillCmd(CommandDescriptor cmd, List<string> args)
         {
             _core.KillAll();
-            Write("");
+            Write("killed all");
 
             return true;
         }
@@ -530,6 +532,7 @@ namespace Nebulua
                     ret = false;
                     break;
             }
+
             Write("");
 
             return ret;
@@ -549,6 +552,7 @@ namespace Nebulua
             {
                 _console.WriteLine("  " + MidiIn.DeviceInfo(i).ProductName);
             }
+
             Write("");
 
             return true;
@@ -571,6 +575,7 @@ namespace Nebulua
                     }
                 }
             }
+
             Write("");
 
             return true;
