@@ -118,7 +118,7 @@ function M.set_volume(chan_hnd, volume)
     return 0
 end
 
----------------------------------------------------------   --------------------
+-----------------------------------------------------------------------------
 --- Process notes due now.
 -- @param tick Current tick
 -- @return status
@@ -139,7 +139,6 @@ function M.process_step(tick)
                end
 
                 -- now send
-                -- print('on:'..step.note_num)
                 api.send_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == "controller" then
                 api.send_controller(step.chan_hnd, step.controller, step.value)
@@ -154,7 +153,6 @@ function M.process_step(tick)
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
-                -- print('off:'..step.note_num)
                api.send_note(step.chan_hnd, step.note_num, 0)
             end
         end
@@ -183,6 +181,44 @@ function M.send_note(chan_hnd, note_num, volume, dur)
     else -- send note_off now
        api.send_note(chan_hnd, note_num, 0)
    end
+end
+
+-----------------------------------------------------------------------------
+-- Process the chunks in the sequence into a list of steps and return that.
+function M.parse_sequence_steps(seq)
+
+    steps = {}
+
+    for _, seq_chunk in ipairs(seq) do
+        -- Reset position to start of sequence.
+        tick = 0
+        local seq_length, seq_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+        steps = seq_steps
+    end
+
+    return steps
+end
+
+-----------------------------------------------------------------------------
+-- Manually send a list of steps starting now.
+function M.send_sequence_steps(seq_steps)
+
+
+    if seq_steps ~= nil then
+        for _, step in ipairs(seq_steps) do
+            if step.step_type == "note" then
+               if step.volume > 0 then -- noteon - add note off chase
+                   dur = step.duration
+                   if dur == 0 then dur = 1 end -- (for drum/hit)
+                   noteon = StepNote(_current_tick + step.tick, step.chan_hnd, step.note_num, step.volume, step.duration)
+                   ut.table_add(_transients, noteon.tick, noteon)
+                   -- chase with noteoff
+                   noteoff = StepNote(_current_tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
+                   ut.table_add(_transients, noteoff.tick, noteoff)
+               end
+            end
+        end
+    end
 end
 
 -----------------------------------------------------------------------------
@@ -260,10 +296,9 @@ function M.parse_section(section, start_tick)
 
                     local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
                     if seq_length ~= 0 then -- save the steps to master table
-                        for _, st in ipairs(chunk_steps) do
-                            ut.table_add(_steps, st.tick, st)
+                        for _, step in ipairs(chunk_steps) do
+                            ut.table_add(_steps, step.tick, step)
                         end
-
                         seq_length_max = math.max(seq_length_max, seq_length)
                     else
                         error(string.format("Couldn't parse sequence %d in section '%s'", i - 1, section.name), 1)
@@ -281,7 +316,6 @@ function M.parse_section(section, start_tick)
 
     -- Finish up.
     section.length = tick - section.start
-
 end
 
 -----------------------------------------------------------------------------
@@ -291,10 +325,10 @@ end
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
 -- @param chan_hnd the channel
 -- @param start_tick absolute start time 0-based
--- @return length, list of StepXs OR 0, 'error message' if invalid.
+-- @return length, list of StepXs OR 0, list of errors if invalid.
 function M.parse_chunk(chunk, chan_hnd, start_tick)
     if chunk[1] == nil or chunk[2] == nil then
-        return 0, "Improperly formed chunk."
+        return 0, {"Improperly formed chunk."}
     end
 
     -- array of steps in this chunk
@@ -343,8 +377,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     -- Process the note descriptor first. Could be number, string, function.
     local what_to_play = chunk[2]
     local tn = type(what_to_play)
-    local notes_to_play = {}
-    local func = nil
+    local notes_to_play = nil    local func = nil
 
     if tn == "number" then
         -- use as is
@@ -353,15 +386,15 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         -- use as is
         func = what_to_play
         -- if func == nil then
-        --     return 0, string.format("Invalid func %s", chunk[2])
+        --     return 0, {string.format("Invalid func %s", chunk[2])}
         -- end
     elseif tn == "string" then
         notes_to_play = mus.get_notes_from_string(what_to_play)
         -- if notes_to_play == nil then
-        --     return 0, string.format("Invalid notes %s", chunk[2])
+        --     return 0, {string.format("Invalid notes %s", chunk[2])}
         -- end
     else
-        return 0, string.format("Invalid note descriptor '%s'", tostring(chunk[2]))
+        return 0, {string.format("Invalid note descriptor '%s'", tostring(chunk[2]))}
     end
 
     -- Process note instances.
@@ -409,14 +442,14 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
             end
         end
 
-        if seq_err ~= nil then return 0, seq_err end
+        if seq_err ~= nil then return 0, {seq_err} end
     end
 
     -- Straggler?
     if func == nil then
         if current_vol > 0 then
             local seq_err = make_note_event(seq_length - 1, notes_to_play)
-            if seq_err ~= nil then return 0, seq_err end
+            if seq_err ~= nil then return 0, {seq_err} end
         end
     end
 
@@ -470,10 +503,10 @@ function M.dump_steps(fn)
     fp, err = io.open(fn, 'w+')
     if fp == nil then error("Can't open file: "..err) end
     for tick, sts in pairs(_steps) do
-        for i, st in ipairs(sts) do
-            fp:write(string.format("%s\n", st.format()))
-            -- fp:write(string.format("%d %s\n", tick, st.format()))
-            -- fp:write(string.format("%d %s\n", tick, ut.dump_table_string(st, true, "X")))
+        for i, step in ipairs(sts) do
+            fp:write(string.format("%s\n", step.format()))
+            -- fp:write(string.format("%d %s\n", tick, step.format()))
+            -- fp:write(string.format("%d %s\n", tick, ut.dump_table_string(step, true, "X")))
         end
     end
     fp:close()

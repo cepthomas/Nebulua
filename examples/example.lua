@@ -212,16 +212,16 @@ local bass_chorus =
 
 -----------------------------------------------------------------------------
 neb.sect_start("beginning")
-neb.sect_chan(hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse)
-neb.sect_chan(hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse)
-neb.sect_chan(hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse)
+neb.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
+neb.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
+neb.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)
 
 neb.sect_start("middle")
-neb.sect_chan(hnd_keys,    keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus)
-neb.sect_chan(hnd_drums,   drums_chorus, drums_chorus, drums_chorus, drums_chorus)
-neb.sect_chan(hnd_bass,    bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus)
+neb.sect_chan(hnd_keys,  keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus)
+neb.sect_chan(hnd_drums, drums_chorus, drums_chorus, drums_chorus, drums_chorus)
+neb.sect_chan(hnd_bass,  bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus)
 
 neb.sect_start("ending")
-neb.sect_chan(hnd_keys,  keys_verse,  keys_verse,  keys_verse,  keys_verse)
-neb.sect_chan(hnd_drums, drums_verse, drums_verse, drums_verse, drums_verse)
-neb.sect_chan(hnd_bass,  bass_verse,  bass_verse,  bass_verse,  bass_verse)
+neb.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
+neb.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
+neb.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)

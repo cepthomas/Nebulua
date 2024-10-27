@@ -20,60 +20,21 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-    TODOF from original:
-    * Print short function arguments as part of stack location.
-    * Properly handle being reentrant due to coroutines.
+    ***1 -> Removed some support for older lua versions.
+    
+    TODOF l cmd gets noisy with large tables.
+    TODOF hot reload - see nebulua.
+    TODOF harmonize with sbot pdb: commands, colors, etc.
+    TODOF original: Print short function arguments as part of stack location.
+    TODOF original: Properly handle being reentrant due to coroutines.
 
-    -- Commands
-    [return] - re-run last command
-    c(ontinue) - contiue execution
-    s(tep) - step forward by one line (into functions)
-    n(ext) - step forward by one line (skipping over functions)
-    p(rint) [expression] - execute the expression and print the result
-    f(inish) - step forward until exiting the current function
-    u(p) - move up the stack by one frame
-    d(own) - move down the stack by one frame
-    w(here) [line count] - print source code around the current line
-    t(race) - print the stack trace
-    l(ocals) - print the function arguments, locals and upvalues.
-    h(elp) - print this message
-    q(uit) - halt execution
-
-    -- API
-    There are several overloadable functions you can use to customize debugger.lua.
-    * `dbg.read(prompt)` - Show the prompt and block for user input. (Defaults to read from stdin)
-    * `dbg.write(str)` - Write a string to the output. (Defaults to write to stdout)
-    * `dbg.shorten_path(path)` - Return a shortened version of a path. (Defaults to simply return `path`)
-    * `dbg.exit(err)` - Stop debugging. (Defaults to `os.exit(err)`)
-    * `dbg.pretty(obj)' - Output a pretty print string for an object.
-
-    There are also some goodies you can use to make debugging easier.
-    * `dbg.writeln(format, ...)` - Basically the same as `dbg.write(string.format(format.."\n", ...))`
-    * `dbg.pretty_depth = int` - Set how deep `dbg.pretty()` formats tables.
-    * `dbg.pretty(obj)` - Will return a pretty print string of an object.
-    * `dbg.pp(obj)` - Basically the same as `dbg.writeln(dbg.pretty(obj))`
-    * `dbg.auto_where = int_or_false` - Set the where command to run automatically when the active line changes. The value is the number of context lines.
-    * `dbg.error(error, [level])` - Drop in replacement for `error()` that breaks in the debugger.
-    * `dbg.assert(error, [message])` - Drop in replacement for `assert()` that breaks in the debugger.
-    * `dbg.call(f, ...)` - Drop in replacement for `pcall()` that breaks in the debugger.
-
-    -- Implement
-    local l = require("debugger")
-    or
-    local available, dbg = pcall(require, "debugger")
-    if not available then
-        print("You are not using debugger module!")
-    end
 ]]
 
 local dbg
 
--- My changes are marked CET. Removed some support for older lua versions.
--- TODOF l cmd gets noisy with large tables.
--- TODOF hot reload.
 
 
--- Use ANSI color codes in the prompt by default. TODOF play with these.
+-- Use ANSI color codes in the prompt by default.
 local COLOR_GRAY = ""
 local COLOR_RED = ""
 local COLOR_BLUE = ""
@@ -222,7 +183,7 @@ local function local_bindings(offset, include_globals)
 
     if include_globals then
         local env = bindings._ENV
-        -- CET In Lua 5.2, you have to get the environment table from the function's locals.
+        -- ***1 In Lua 5.2, you have to get the environment table from the function's locals.
         -- local env = (_VERSION <= "Lua 5.1" and getfenv(func) or bindings._ENV)
         return setmetatable(bindings, {__index = env or _G})
     else
@@ -267,7 +228,7 @@ local function compile_chunk(block, env)
     local chunk = nil
 
     chunk = load(block, source, "t", env)
-    -- CET if _VERSION <= "Lua 5.1" then
+    -- ***1 if _VERSION <= "Lua 5.1" then
     --     chunk = loadstring(block, source)
     --     if chunk then setfenv(chunk, env) end
     -- else
@@ -309,7 +270,7 @@ end
 
 local unpack = table.unpack
 -- Wee version differences
--- CET local unpack = unpack or table.unpack
+-- ***1 local unpack = unpack or table.unpack
 local pack = function(...) return {n = select("#", ...), ...} end
 
 local function cmd_step()
@@ -648,7 +609,7 @@ end
 
 -- Conditionally enable color support. https://stackoverflow.com/a/33206814
 function dbg.enable_color()
-    COLOR_GRAY = string.char(27) .. "[95m" --"[90m" CET
+    COLOR_GRAY = string.char(27) .. "[90m"
     COLOR_RED = string.char(27) .. "[91m"
     COLOR_BLUE = string.char(27) .. "[94m"
     COLOR_YELLOW = string.char(27) .. "[33m"
@@ -664,7 +625,7 @@ end
 
 if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
     pcall(function()
-        local linenoise = require 'linenoise' -- TODOF don't have - something else for windows? Native console?
+        local linenoise = require 'linenoise'
 
         -- Load command history from ~/.lua_history
         local hist_path = os.getenv('HOME') .. '/.lua_history'
@@ -724,7 +685,7 @@ if stdin_isatty and not os.getenv("DBG_NOREADLINE") then
     end)
 end
 
--- Detect Lua version. CET comment out dbg_writeln.
+-- Detect Lua version. ***1
 if jit then -- LuaJIT
     LUA_JIT_SETLOCAL_WORKAROUND = -1
 --  dbg_writeln(COLOR_YELLOW.."debugger.lua: "..COLOR_RESET.."Loaded for "..jit.version)
