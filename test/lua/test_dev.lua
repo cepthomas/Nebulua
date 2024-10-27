@@ -10,7 +10,7 @@ local neb = require("nebulua") -- lua api
 local com = require('neb_common')
 
 
-ut.config_debug(false)
+-- ut.config_debug(true)
 
 
 -- Create the namespace/module.

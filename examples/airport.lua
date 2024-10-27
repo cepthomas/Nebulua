@@ -12,7 +12,7 @@ local com = require('neb_common')
 local ut  = require('utils')
 
 -- Setup for debug.
-ut.config_debug(true)
+-- ut.config_debug(true)
 -- dbg()
 
 -- Say hello.
@@ -109,6 +109,7 @@ end
 -- Main work loop called every subbeat/tick. This is a required function!
 function step(tick)
 
+    -- Overhead.
     neb.process_step(tick)
 
     if valid then

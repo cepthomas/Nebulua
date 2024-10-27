@@ -14,6 +14,8 @@ local com = require("neb_common")
 
 local M = {}
 
+M.NO_PATCH = -1
+
 -----------------------------------------------------------------------------
 ----- Global vars for access by app
 -----------------------------------------------------------------------------
@@ -96,8 +98,8 @@ end
 --- Create an output channel.
 -- @param dev_name system name
 -- @param chan_num channel number
--- @param patch send this patch number
--- @return the new chan_hnd or 0 if invalid
+-- @param patch send this patch number if >= 0
+-- @return the new chan_hnd
 function M.create_output_channel(dev_name, chan_num, patch)
     chan_hnd = api.create_output_channel(dev_name, chan_num, patch)
     _master_vols[chan_hnd] = 0.8
@@ -185,10 +187,8 @@ end
 
 -----------------------------------------------------------------------------
 -- Process the chunks in the sequence into a list of steps and return that.
-function M.parse_sequence_steps(seq)
-
+function M.parse_sequence_steps(chan_hnd, seq)
     steps = {}
-
     for _, seq_chunk in ipairs(seq) do
         -- Reset position to start of sequence.
         tick = 0
@@ -202,8 +202,6 @@ end
 -----------------------------------------------------------------------------
 -- Manually send a list of steps starting now.
 function M.send_sequence_steps(seq_steps)
-
-
     if seq_steps ~= nil then
         for _, step in ipairs(seq_steps) do
             if step.step_type == "note" then
@@ -438,7 +436,8 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 current_vol = 0
             else
                 -- Invalid char.
-                seq_err = string.format("Invalid char %c in pattern string: %s", c, chunk[1])
+                -- print('>>>', c, type(c), chunk[1])
+                seq_err = string.format("Invalid char %s in pattern string: %s", c, chunk[1])
             end
         end
 
@@ -484,10 +483,11 @@ function M.sect_chan(chan_hnd, ...)
 
         for i = 1, num_args do
             seq = select(i, ...)
-            if type(seq) ~= "table" then -- should check for valid/known
-                error("Invalid sequence "..i, 2)
+            if type(seq) == "table" then -- should check for valid/known
+                table.insert(elems, seq)
+            else
+                error("Invalid sequence "..type(seq)..' '..i, 2)
             end
-            table.insert(elems, seq)
         end
 
         table.insert(_current_section, elems)

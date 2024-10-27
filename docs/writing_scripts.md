@@ -94,7 +94,7 @@ function neb.create_output_channel(dev_name, chan_num, patch)
 Register an output midi channel.
 - dev_name: The system name.
 - chan_num: Specific channel number.
-- patch: Send this patch number.
+- patch: Send this patch number if >= 0.
 - return: A channel handle to use in subsequent functions.
 
 

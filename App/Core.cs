@@ -334,9 +334,12 @@ namespace Nebulua
                 output.Channels[e.ChanNum - 1] = true;
                 e.Ret = MakeOutHandle(_outputs.Count - 1, e.ChanNum);
 
-                // Send the patch now.
-                PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
-                output.Send(pevt);
+                if (e.Patch >= 0)
+                {
+                    // Send the patch now.
+                    PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
+                    output.Send(pevt);
+                }
             }
             else
             {

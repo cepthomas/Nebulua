@@ -348,6 +348,8 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool ExitCmd(CommandDescriptor cmd, List<string> args)
         {
+            _core.KillAll();
+
             State.Instance.ExecState = ExecState.Exit;
             Write($"Goodbye!");
 

@@ -9,7 +9,7 @@ local mid = require("midi_defs")
 local bt  = require("bar_time")
 
 -- Setup for debug. Manually place dbg() statements for breakpoints.
-ut.config_debug(true)
+-- ut.config_debug(true)
 -- dbg()
 
 -- Aliases for imports - easier typing.
@@ -26,16 +26,16 @@ neb.log_info('### loading example.lua ###')
 
 -- Specify midi devices.
 local midi_in = "ClickClack"
--- local midi_in = "loopMIDI Port"
+local midi_out = "loopMIDI Port"
 -- local midi_out = "Microsoft GS Wavetable Synth"
-local midi_out = "VirtualMIDISynth #1"
+-- local midi_out = "VirtualMIDISynth #1"
 -- local midi_out = "bad device"
 
 -- Specify midi output channels.
-local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
-local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
-local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
-local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
+local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)--inst.AcousticGrandPiano)
+local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)--inst.AcousticBass)
+local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)--inst.Lead1Square)
+local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)--kit.Jazz)
 
 -- Specify midi input channels.
 local hnd_cc_inp  = neb.create_input_channel(midi_in, 1)
@@ -46,6 +46,7 @@ local hnd_cc_inp  = neb.create_input_channel(midi_in, 1)
 
 -- Get some stock chords and scales.
 local alg_scale = mus.get_notes_from_string("G3.Algerian")
+-- print(#alg_scale)
 local chord_notes = mus.get_notes_from_string("C4.o7")
 
 -- Create custom note collection.
@@ -63,7 +64,7 @@ local mtom = drum.HiMidTom
 
 
 -- Forward refs.
-local seq_func
+local algo_func
 
 
 --------------------- Called from main application ---------------------------
@@ -93,14 +94,16 @@ end
 -- Main work loop called every subbeat/tick. This is a required function!
 function step(tick)
 
+    -- Overhead.
     neb.process_step(tick)
 
     -- Other work you may want to do.
 
     -- Do something every new bar.
     local t = BarTime(tick)
-    if t.get_beat() == 0 and t.get_sub() == 0 then
-        neb.send_controller(hnd_synth, ctrl.Pan, 90)
+    if t.get_beat() == 2 and t.get_sub() == 0 then
+        -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
+        algo_func(tick)
     end
 
     return 0
@@ -132,10 +135,10 @@ end
 ----------------------- User lua functions ----------------------------------
 
 -- Function called from sequence.
-seq_func = function (tick)
+function algo_func(tick)
     if alg_scale ~= nil then
-        local note_num = math.random(0, #alg_scale)
-        neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8)
+        local note_num = math.random(1, #alg_scale)
+        neb.send_note(hnd_synth, alg_scale[note_num], 0.8, 3)
     end
 end
 
@@ -158,7 +161,6 @@ local example_seq =
     { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
-    { "|        |        |        |5---    |        |        |        |5-8---  |",  seq_func }
 }
 
 local drums_verse =
@@ -182,7 +184,7 @@ local keys_verse =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" }
+    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" },
 }
 
 local keys_chorus =
@@ -192,7 +194,6 @@ local keys_chorus =
     { "|    5-  |        |        |        |        |        |        |        |", "D#4" },
     { "|        |6-      |        |        |        |        |        |        |", "C4" },
     { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
-    -- ... 2.0: "F5", 2.4: "D#5", 3.0: "C5", 3.4: "B5.m7", 4.0: "F3", 4.4: "D#3", 5.0: "C3", 5.4: "B3.m7", 6.0: "F2", 6.4: "D#2", 7.0: "C2", 7.4: "B2.m7",
 }
 
 local bass_verse =

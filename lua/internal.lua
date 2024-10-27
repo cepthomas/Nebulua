@@ -17,8 +17,6 @@ end
 
 -- Api function
 function neb_command(cmd, arg)
-    -- print('>>> neb_command: '..cmd..' '..arg)
     if cmd == 'unload_all' then unload_all() end
-
     return 123
 end

@@ -13,16 +13,22 @@ local ut  = require('utils')
 -- ut.config_debug(true)
 -- dbg()
 
+-- Say hello.
+neb.log_info('### loading piece1.lua ###')
+
 
 ------------------------- Configuration -------------------------------
 
 -- Specify midi devices.
-local midi_out = "VirtualMIDISynth #1"
--- local midi_out = "loopMIDI Port"
+-- local midi_out = "VirtualMIDISynth #1"
+local midi_out = "loopMIDI Port"
 local midi_in = "ClickClack"
 
 -- Specify midi channels.
-local hout = neb.create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
+local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)--inst.AcousticGrandPiano)
+local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)--inst.AcousticBass)
+local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)--inst.Lead1Square)
+local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)--kit.Jazz)
 local hin  = neb.create_input_channel(midi_in, 1)
 
 
@@ -48,55 +54,8 @@ local mtom = drum.HiMidTom
 
 ------------------------- Local Functions -----------------------------
 
---- Add a new loop note.
---   snote: see README.md.Standard Note Syntax
---   duration: how long to play in BarTime
---   delay: wait before start in BarTime
--- local function add_loop(snote, duration, delay)
---     local notes, err = mus.get_notes_from_string(snote)
-
---     -- Check args.
---     if notes == nil then
---         neb.log_error("Invalid note name: "..snote)
---         valid = false
---     end
-
---     if duration == nil then
---         neb.log_error("Invalid duration")
---         valid = false
---     end
-
---     if delay == nil then
---         neb.log_error("Invalid delay")
---         valid = false
---     end
-
---     if valid then
---         table.insert(loops, { snote=snote, duration=duration, delay=delay, notes=notes, next_start=delay })
---     end
--- end
-
-
---- Convert beat/sub to tick.
---   beat: which beat
---   sub: which subbeat
---   return: tick
--- local function tot(beat, sub)
---     local tick = beat * com.SUBS_PER_BEAT + sub
---     return tick
--- end
-
 
 --------------------------------- stuff from example.lua -----------------------
-local alg_scale = mus.get_notes_from_string("G3.Algerian")
-
--- Function called from sequence.
-seq_func = function (tick)
-    if alg_scale ~= nil then
-        local note_num = math.random(0, #alg_scale)
-        neb.send_note(hout, alg_scale[note_num], 0.9, 8)
-    end
-end
 
 
 local drums_seq =
@@ -113,32 +72,54 @@ local example_seq =
     { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
-    { "|        |        |        |5---    |        |        |        |5-8---  |",  seq_func }
 }
 
--- neb.sect_start("beginning")
---     -- _current_section = {}
---     -- _current_section.name = name
---     -- table.insert(_sections, _current_section)
--- neb.sect_chan(hout,  example_seq,  example_seq,  example_seq,  example_seq)
--- neb.sect_chan(hout,  drums_seq,  drums_seq,  drums_seq,  drums_seq)
---     -- elems = {}
---     -- if type(chan_hnd) ~= "number" then -- should check for valid/known handle
---     --     error("Invalid channel", 2)
---     -- end
---     -- table.insert(elems, chan_hnd)
---     -- num_args = select('#', ...)
---     -- for i = 1, num_args do
---     --     seq = select(i, ...)
---     --     if type(seq) ~= "table" then -- should check for valid/known
---     --         error("Invalid sequence "..i, 2)
---     --     end
---     --     table.insert(elems, seq)
---     -- end
---     -- table.insert(_current_section, elems)
+local drums_seq_steps = neb.parse_sequence_steps(hnd_drums, drums_seq)
+local example_seq_steps = neb.parse_sequence_steps(hnd_keys, example_seq)
 
-local drums_seq_steps = neb.parse_sequence_steps(drums_seq)
-local example_seq_steps = neb.parse_sequence_steps(example_seq)
+local alg_scale = mus.get_notes_from_string("G3.Algerian")
+
+
+local function seq_func()-- = function ()
+    if alg_scale ~= nil then
+
+        local note_num = math.random(1, #alg_scale)
+        neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8)
+
+        local s = ut.dump_table_string(example_seq_steps, true, 'name')
+        print(s)
+        
+    -- 1(table):
+    --     chan_hnd:33025(number)
+    --     note_num:86(number)
+    --     duration:4(number)
+    --     format:function: 000001e38245d0c0(function)
+    --     tick:24(number)
+    --     volume:0.31(number)
+    --     step_type:note(string)
+    -- 2(table):
+    --     chan_hnd:33025(number)
+    --     note_num:86(number)
+    --     duration:2(number)
+    --     format:function: 000001e38245c7c0(function)
+    --     tick:56(number)
+    --     volume:0.31(number)
+    --     step_type:note(string)
+    -- 3(table):
+    --     chan_hnd:33025(number)
+    --     note_num:86(number)
+    --     duration:4(number)
+    --     format:function: 000001e38245d540(function)
+    --     tick:58(number)
+    --     volume:0.79(number)
+    --     step_type:note(string)
+
+        neb.send_sequence_steps(example_seq_steps)
+
+
+
+    end
+end
 
 -----------------------------------------------------------------------------
 -- Called once to initialize your script stuff. This is a required function!
@@ -160,11 +141,12 @@ function step(tick)
         -- Do something.
         local t = BarTime(tick)
         if t.get_bar() == 1 and t.get_beat() == 0 and t.get_sub() == 0 then
-            xxx = 0
+            seq_func()
             -- neb.send_controller(hout, ctrl.Pan, 90)
         end
     end
 
+    -- Overhead.
     neb.process_step(tick)
 
     return 0
