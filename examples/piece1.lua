@@ -1,6 +1,5 @@
 
-
--- Import modules we need.
+-- Import modules this needs.
 local neb = require("nebulua") -- lua api
 local mus = require("music_defs")
 local mid = require("midi_defs") -- GM midi instrument definitions
@@ -13,30 +12,6 @@ local ut  = require('utils')
 -- ut.config_debug(true)
 -- dbg()
 
--- Say hello.
-neb.log_info('### loading piece1.lua ###')
-
-
-------------------------- Configuration -------------------------------
-
--- Specify midi devices.
--- local midi_out = "VirtualMIDISynth #1"
-local midi_out = "loopMIDI Port"
-local midi_in = "ClickClack"
-
--- Specify midi channels.
-local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)--inst.AcousticGrandPiano)
-local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)--inst.AcousticBass)
-local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)--inst.Lead1Square)
-local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)--kit.Jazz)
-local hin  = neb.create_input_channel(midi_in, 1)
-
-
-------------------------- Variables -----------------------------------
-
--- Misc vars.
-local master_volume = 0.8
-local valid = true
 
 -- Aliases
 local inst = mid.instruments
@@ -52,11 +27,46 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
-------------------------- Local Functions -----------------------------
+-- Say hello.
+neb.log_info('### loading piece1.lua ###')
+
+local function ternary(cond, tval, fval)
+    if cond then return tval else return fval end
+end
+
+-- print(ut.dump_table_string(package.loaded, false, 'package.loaded'))
 
 
---------------------------------- stuff from example.lua -----------------------
+------------------------- Configuration -------------------------------
 
+-- Specify midi channels.
+local midi_in = "ClickClack"
+local hin  = neb.create_input_channel(midi_in, 1)
+
+-- local midi_out = "loopMIDI Port"
+-- local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)
+-- local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)
+-- local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)
+-- local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)
+
+local midi_out = "VirtualMIDISynth #1" -- or "Microsoft GS Wavetable Synth"
+local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
+local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
+local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
+local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
+
+
+------------------------- Variables -----------------------------------
+
+-- Misc vars.
+local master_volume = 0.8
+local valid = true
+
+-- Forward refs.
+local seq_func
+
+
+------------------------- Canned Sequences ---------------------------------
 
 local drums_seq =
 {
@@ -66,82 +76,43 @@ local drums_seq =
     {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
 }
 
-local example_seq =
+local keys_seq =
 {
     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
-    { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    { "|6-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
 }
 
 local drums_seq_steps = neb.parse_sequence_steps(hnd_drums, drums_seq)
-local example_seq_steps = neb.parse_sequence_steps(hnd_keys, example_seq)
+local keys_seq_steps = neb.parse_sequence_steps(hnd_keys, keys_seq)
 
-local alg_scale = mus.get_notes_from_string("G3.Algerian")
-
-
-local function seq_func()-- = function ()
-    if alg_scale ~= nil then
-
-        local note_num = math.random(1, #alg_scale)
-        neb.send_note(hnd_synth, alg_scale[note_num], 0.9, 8)
-
-        local s = ut.dump_table_string(example_seq_steps, true, 'name')
-        print(s)
-        
-    -- 1(table):
-    --     chan_hnd:33025(number)
-    --     note_num:86(number)
-    --     duration:4(number)
-    --     format:function: 000001e38245d0c0(function)
-    --     tick:24(number)
-    --     volume:0.31(number)
-    --     step_type:note(string)
-    -- 2(table):
-    --     chan_hnd:33025(number)
-    --     note_num:86(number)
-    --     duration:2(number)
-    --     format:function: 000001e38245c7c0(function)
-    --     tick:56(number)
-    --     volume:0.31(number)
-    --     step_type:note(string)
-    -- 3(table):
-    --     chan_hnd:33025(number)
-    --     note_num:86(number)
-    --     duration:4(number)
-    --     format:function: 000001e38245d540(function)
-    --     tick:58(number)
-    --     volume:0.79(number)
-    --     step_type:note(string)
-
-        neb.send_sequence_steps(example_seq_steps)
+local my_scale = mus.get_notes_from_string("G3.Algerian")
 
 
 
-    end
-end
+------------------------- System Functions ----------------------------------
 
 -----------------------------------------------------------------------------
--- Called once to initialize your script stuff. This is a required function!
+-- Called once to initialize your script stuff. Required.
 function setup()
 
-    -- How fast?
+    -- How fast you wanna go?
     neb.set_tempo(61)
-
-    -- neb.log_info(string.format('setup %s', tostring(valid )))
 
     return 0
 end
 
-
 -----------------------------------------------------------------------------
--- Main work loop called every subbeat/tick. This is a required function!
+-- Main work loop called every subbeat/tick. Required.
 function step(tick)
     if valid then
         -- Do something.
         local t = BarTime(tick)
         if t.get_bar() == 1 and t.get_beat() == 0 and t.get_sub() == 0 then
-            seq_func()
+            neb.log_info('call seq_func() '..tick)
+
+            seq_func(tick)
             -- neb.send_controller(hout, ctrl.Pan, 90)
         end
     end
@@ -159,7 +130,7 @@ function rcv_note(chan_hnd, note_num, volume)
 
     if chan_hnd == hin then
         -- Play the note.
-        neb.send_note(hout, note_num, volume)
+        neb.send_note(hnd_synth, note_num, volume)
     end
     return 0
 end
@@ -173,3 +144,19 @@ function rcv_controller(chan_hnd, controller, value)
     end
     return 0
 end
+
+
+------------------------- Local Functions -----------------------------------
+
+-----------------------------------------------------------------------------
+-- Do something.
+seq_func = function(tick)
+    local note_num = math.random(1, #my_scale)
+    neb.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
+
+    neb.send_sequence_steps(keys_seq_steps, tick)
+    -- local dumpfn = 'C:\\Dev\\repos\\Apps\\Nebulua\\_dump.txt'
+    -- neb.dump_steps(dumpfn, 't') -- diagnostic
+
+end
+

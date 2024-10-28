@@ -52,7 +52,7 @@ local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
 local _master_vols = {}
 
 -- Debug stuff.
--- function _mole() return _steps, _transients end
+-- function M._mole() return _steps, _transients end
 
 
 -----------------------------------------------------------------------------
@@ -133,8 +133,7 @@ function M.process_step(tick)
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
                if step.volume > 0 then -- noteon - add note off chase
-                   dur = step.duration
-                   if dur == 0 then dur = 1 end -- (for drum/hit)
+                   dur = math.max(step.duration, 1) -- (min for drum/hit)
                    -- chase with noteoff
                    noteoff = StepNote(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
                    ut.table_add(_transients, noteoff.tick, noteoff)
@@ -150,15 +149,15 @@ function M.process_step(tick)
         end
     end
 
-    -- Transients, mainly noteoff.
+    -- Transients, usually chase noteoff.
     steps_now = _transients[tick] -- now
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
-               api.send_note(step.chan_hnd, step.note_num, 0)
+               api.send_note(step.chan_hnd, step.note_num, step.volume)
             end
         end
-        -- Disappear it.
+        -- Disappear it from collection.
         _transients[tick] = nil
     end
 
@@ -193,7 +192,9 @@ function M.parse_sequence_steps(chan_hnd, seq)
         -- Reset position to start of sequence.
         tick = 0
         local seq_length, seq_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
-        steps = seq_steps
+        for _, step in ipairs(seq_steps) do
+            table.insert(steps, step)
+        end
     end
 
     return steps
@@ -201,20 +202,27 @@ end
 
 -----------------------------------------------------------------------------
 -- Manually send a list of steps starting now.
-function M.send_sequence_steps(seq_steps)
-    if seq_steps ~= nil then
-        for _, step in ipairs(seq_steps) do
-            if step.step_type == "note" then
-               if step.volume > 0 then -- noteon - add note off chase
-                   dur = step.duration
-                   if dur == 0 then dur = 1 end -- (for drum/hit)
-                   noteon = StepNote(_current_tick + step.tick, step.chan_hnd, step.note_num, step.volume, step.duration)
-                   ut.table_add(_transients, noteon.tick, noteon)
-                   -- chase with noteoff
-                   noteoff = StepNote(_current_tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
-                   ut.table_add(_transients, noteoff.tick, noteoff)
-               end
-            end
+function M.send_sequence_steps(seq_steps, tick)
+    if seq_steps == nil then return end
+
+    for _, step in ipairs(seq_steps) do
+        if step.step_type == "note" then
+
+           if step.volume > 0 then -- is noteon
+               dur = math.max(step.duration, 1) -- (min for drum/hit)
+
+               noteon = StepNote(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
+               ut.table_add(_transients, noteon.tick, noteon)
+
+               -- chase with noteoff
+               noteoff = StepNote(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
+               ut.table_add(_transients, noteoff.tick, noteoff)
+
+           else -- note off
+               noteoff = StepNote(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
+               ut.table_add(_transients, noteoff.tick, noteoff)
+           end
+
         end
     end
 end
@@ -340,9 +348,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         -- scale volume
         local vol = _vol_map[current_vol + 1] -- to lua index
         -- calc duration from start of note
-        local dur = offset - event_offset
-        -- must be valid duration, covers drum hits too
-        if dur <= 0 then dur = 1 end
+        local dur = math.max(offset - event_offset, 1) -- (min for drum/hit)
 
         for _, nt in ipairs(notes_to_play) do
             local si = StepNote(start_tick + event_offset, chan_hnd, nt, vol, dur)
@@ -383,14 +389,8 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     elseif tn == "function" then
         -- use as is
         func = what_to_play
-        -- if func == nil then
-        --     return 0, {string.format("Invalid func %s", chunk[2])}
-        -- end
     elseif tn == "string" then
         notes_to_play = mus.get_notes_from_string(what_to_play)
-        -- if notes_to_play == nil then
-        --     return 0, {string.format("Invalid notes %s", chunk[2])}
-        -- end
     else
         return 0, {string.format("Invalid note descriptor '%s'", tostring(chunk[2]))}
     end
@@ -436,7 +436,6 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 current_vol = 0
             else
                 -- Invalid char.
-                -- print('>>>', c, type(c), chunk[1])
                 seq_err = string.format("Invalid char %s in pattern string: %s", c, chunk[1])
             end
         end
@@ -499,14 +498,21 @@ end
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param fn file name
-function M.dump_steps(fn)
+-- @param which 's'=steps 't'=transients
+function M.dump_steps(fn, which)
+    t = nil
+    if which == 's' then
+        t = _steps
+    elseif which == 't' then
+        t = _transients
+    else
+        error('Invalid which '..which)
+    end
+
     fp, err = io.open(fn, 'w+')
-    if fp == nil then error("Can't open file: "..err) end
-    for tick, sts in pairs(_steps) do
+    for tick, sts in pairs(t) do
         for i, step in ipairs(sts) do
-            fp:write(string.format("%s\n", step.format()))
-            -- fp:write(string.format("%d %s\n", tick, step.format()))
-            -- fp:write(string.format("%d %s\n", tick, ut.dump_table_string(step, true, "X")))
+            fp:write(step.format()..'\n')
         end
     end
     fp:close()

@@ -113,10 +113,10 @@ namespace Nebulua
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             traffic.BackColor = UserSettings.Current.BackColor;
-            traffic.MatchColors.Add("ERR", Color.LightPink);
-            traffic.MatchColors.Add("WRN", Color.Plum);
-            traffic.MatchColors.Add("SND", Color.Purple);
-            traffic.MatchColors.Add("RCV", Color.Green);
+            traffic.MatchColors.Add("ERR", Color.HotPink);
+            traffic.MatchColors.Add("WRN", Color.Orange);
+            traffic.MatchColors.Add("SND", Color.PaleGreen);
+            traffic.MatchColors.Add("RCV", Color.LightBlue);
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
@@ -317,7 +317,7 @@ namespace Nebulua
         {
             if (!_dirty)
             {
-                traffic.AppendLine("Script file changed - reload");
+                _logger.Warn("Script file changed - reload");
                 _dirty = true;
             }
         }

@@ -90,7 +90,7 @@ function M.suite_process_script(pn)
     -- Process the data.
     neb.process_comp()
 
-    -- neb.dump_steps('.\\..\\_steps.txt') -- diagnostic
+    -- neb.dump_steps('.\\..\\_steps.txt', 's') -- diagnostic
 
     pn.UT_EQUAL(ut.table_count(section_info), 4)
     pn.UT_EQUAL(section_info['_LENGTH'], 768)

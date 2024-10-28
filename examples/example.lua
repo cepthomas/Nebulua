@@ -1,7 +1,7 @@
 
 -- An example Nebulua composition file. 
 
--- Import modules we need. Reset/unload first.
+-- Import modules this needs.
 local ut  = require("utils")
 local neb = require("nebulua")
 local mus = require("music_defs")
@@ -24,35 +24,35 @@ neb.log_info('### loading example.lua ###')
 
 ------------------------- Configuration -------------------------------
 
--- Specify midi devices.
+-- Specify midi channels.
 local midi_in = "ClickClack"
+local hnd_ccin  = neb.create_input_channel(midi_in, 1)
+
+-- Use DAW or VST host.
 local midi_out = "loopMIDI Port"
--- local midi_out = "Microsoft GS Wavetable Synth"
--- local midi_out = "VirtualMIDISynth #1"
--- local midi_out = "bad device"
+local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)
+local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)
+local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)
+local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)
 
--- Specify midi output channels.
-local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)--inst.AcousticGrandPiano)
-local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)--inst.AcousticBass)
-local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)--inst.Lead1Square)
-local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)--kit.Jazz)
-
--- Specify midi input channels.
-local hnd_cc_inp  = neb.create_input_channel(midi_in, 1)
+-- Use builtin GM.
+-- local midi_out = "VirtualMIDISynth #1" -- or "Microsoft GS Wavetable Synth"
+-- local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
+-- local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
+-- local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
+-- local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
 
 
 -- Get some stock chords and scales.
-local alg_scale = mus.get_notes_from_string("G3.Algerian")
--- print(#alg_scale)
-local chord_notes = mus.get_notes_from_string("C4.o7")
+-- local my_scale = mus.get_notes_from_string("G3.Algerian")
+local my_scale = mus.get_notes_from_string("C4.o7")
 
 -- Create custom note collection.
-mus.create_definition("MY_SCALE", "1 +3 4 -b7")
--- Now it can be used like stock:
-local my_scale_notes = mus.get_notes_from_string("B4.MY_SCALE")
+-- mus.create_definition("MY_SCALE", "1 +3 4 -b7")
+-- local my_scale = mus.get_notes_from_string("B4.MY_SCALE")
 
 -- Aliases for instruments - easier typing.
 local snare = drum.AcousticSnare
@@ -67,10 +67,10 @@ local mtom = drum.HiMidTom
 local algo_func
 
 
---------------------- Called from main application ---------------------------
+------------------------- System Functions -----------------------------
 
 -----------------------------------------------------------------------------
--- Called once to initialize your script stuff. This is a required function!
+-- Called once to initialize your script stuff. Required.
 function setup()
     neb.log_info("example initialization")
     math.randomseed(os.time())
@@ -91,7 +91,7 @@ function setup()
 end
 
 -----------------------------------------------------------------------------
--- Main work loop called every subbeat/tick. This is a required function!
+-- Main work loop called every subbeat/tick. Required.
 function step(tick)
 
     -- Overhead.
@@ -114,7 +114,7 @@ end
 function rcv_note(chan_hnd, note_num, volume)
     -- neb.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
-    if chan_hnd == hnd_cc_inp then
+    if chan_hnd == hnd_ccin then
         -- Play the note.
         neb.send_note(hnd_synth, note_num, volume)--, 0)
     end
@@ -124,7 +124,7 @@ end
 -----------------------------------------------------------------------------
 -- Handlers for input controller events. Optional.
 function rcv_controller(chan_hnd, controller, value)
-    if chan_hnd == hnd_cc_inp then
+    if chan_hnd == hnd_ccin then
         -- Do something.
         neb.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
     end
@@ -132,13 +132,13 @@ function rcv_controller(chan_hnd, controller, value)
 end
 
 
------------------------ User lua functions ----------------------------------
+----------------------- Local Functions ----------------------------------
 
 -- Function called from sequence.
-function algo_func(tick)
-    if alg_scale ~= nil then
-        local note_num = math.random(1, #alg_scale)
-        neb.send_note(hnd_synth, alg_scale[note_num], 0.8, 3)
+algo_func = function(tick)
+    if my_scale ~= nil then
+        local note_num = math.random(1, #my_scale)
+        neb.send_note(hnd_synth, my_scale[note_num], 0.8, 3)
     end
 end
 
@@ -146,19 +146,16 @@ end
 ------------------------- Composition ---------------------------------------
 
 -- Sequences --
--- template =
--- {
---     -- |........|........|........|........|........|........|........|........|
---     { "|        |        |        |        |        |        |        |        |", "??" },
---     { "|        |        |        |        |        |        |        |        |", "??" },
--- },
 
-local quiet = { {"|        |        |        |        |        |        |        |        |", 0 } }
+local quiet =
+{
+    { "|        |        |        |        |        |        |        |        |", 0 }
+}
 
 local example_seq =
 {
     -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
-    { "|M-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
+    { "|6-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
 }

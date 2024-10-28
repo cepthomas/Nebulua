@@ -31,7 +31,7 @@ function M.suite_1(pn)
     neb.process_comp()
 
     local dumpfn = '_dump.txt'
-    neb.dump_steps(dumpfn) -- diagnostic
+    neb.dump_steps(dumpfn, 's') -- diagnostic
 
     pn.UT_EQUAL(ut.table_count(section_info), 4)
     pn.UT_EQUAL(section_info['_LENGTH'], 768)

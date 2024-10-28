@@ -72,8 +72,8 @@ function M.dump_table(tbl, recursive, name, indent)
         sindent = sindent.."    "
         for k, v in pairs(tbl) do
             if type(v) == "table" and recursive then
-                trec = M.dump_table(v, recursive, k, indent) -- recursion!
-                for _,v in ipairs(trec) do
+                trec = M.dump_table(v, recursive, '['..k..']', indent) -- recursion!
+                for _, v in ipairs(trec) do
                     table.insert(res, v)
                 end
             else

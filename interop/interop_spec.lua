@@ -135,7 +135,7 @@ M.host_funcs =
     {
         lua_func_name = "send_note",
         host_func_name = "SendNote",
-        description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).",
+        description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).",
         args =
         {
             { name = "chan_hnd", type = "I", description = "Output channel handle" },
