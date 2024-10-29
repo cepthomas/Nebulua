@@ -28,8 +28,8 @@ namespace Nebulua
         /// <summary>Detect external edits to current script.</summary>
         readonly FileSystemWatcher _watcher = new();
 
-        /// <summary>Current script has been edited.</summary>
-        bool _dirty = false;
+        /// <summary>Sometimes watcher double triggers.</summary>
+        DateTime _watcherDebounce = DateTime.Now;
         #endregion
 
         #region Lifecycle
@@ -114,7 +114,7 @@ namespace Nebulua
 
             traffic.BackColor = UserSettings.Current.BackColor;
             traffic.MatchColors.Add("ERR", Color.HotPink);
-            traffic.MatchColors.Add("WRN", Color.Orange);
+            traffic.MatchColors.Add("WRN", Color.Coral);
             traffic.MatchColors.Add("SND", Color.PaleGreen);
             traffic.MatchColors.Add("RCV", Color.LightBlue);
             traffic.Font = new("Cascadia Mono", 9);
@@ -139,7 +139,7 @@ namespace Nebulua
             ddbtnFile.Selected += File_Selected;
             #endregion
 
-            btnGo.Click += (_, __) => Console.WriteLine("<<<<<<  >>>>>");
+            btnGo.Click += (_, __) => Console.WriteLine("<<<<<< GOGOGOGO >>>>>");
 
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
@@ -268,26 +268,18 @@ namespace Nebulua
             {
                 _logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
 
-                _core.LoadScript(scriptFn);
+                _core.LoadScript(scriptFn); // may throw
 
                 // Everything ok.
-                if (scriptFn is not null) // new file
-                {
-                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {scriptFn}";
-                    _watcher.Filter = Path.GetFileName(scriptFn);
-                    _watcher.Path = Path.GetDirectoryName(scriptFn)!;
-                    _watcher.EnableRaisingEvents = true;
-                    // AddToRecentDefs(scriptFn);
-                    UserSettings.Current.UpdateMru(scriptFn);
-                    PopulateFileMenu();
-                }
-                else // reload
-                {
-
-                }
+                var fn = _core.CurrentScriptFn!;
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {fn}";
+                _watcher.Filter = Path.GetFileName(fn);
+                _watcher.Path = Path.GetDirectoryName(fn)!;
+                _watcher.EnableRaisingEvents = true;
+                UserSettings.Current.UpdateMru(fn);
+                PopulateFileMenu();
 
                 timeBar.Invalidate(); // force update
-                _dirty = false;
             }
             catch (Exception ex)
             {
@@ -315,11 +307,19 @@ namespace Nebulua
         /// <param name="e"></param>
         void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
-            if (!_dirty)
+            if (DateTime.Now.Ticks - _watcherDebounce.Ticks > 10000)
             {
-                _logger.Warn("Script file changed - reload");
-                _dirty = true;
+                if (UserSettings.Current.AutoReload)
+                {
+                    this.InvokeIfRequired(_ => OpenScriptFile());
+                }
+                else // just tell
+                {
+                    _logger.Warn("Script file changed - reload");
+                }
             }
+
+            _watcherDebounce = DateTime.Now;
         }
 
         /// <summary>

@@ -29,6 +29,11 @@ namespace Nebulua
         [Browsable(true)]
         public bool OpenLastFile { get; set; } = true;
 
+        [DisplayName("Auto Reload")]
+        [Description("Automatically reload current file if it is changed.")]
+        [Browsable(true)]
+        public bool AutoReload { get; set; } = true;
+
         [DisplayName("File Log Level")]
         [Description("Log level for file write.")]
         [Browsable(true)]

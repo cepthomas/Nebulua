@@ -5,7 +5,7 @@ local com = require('neb_common')
 
 
 -----------------------------------------------------------------------------
-local function _FormatChanHnd(chan_hnd)
+local function format_chan_hnd(chan_hnd)
     local s = string.format("DEV:%02d CH:%02d", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
     return s
 end
@@ -34,7 +34,7 @@ function StepNote(tick, chan_hnd, note_num, volume, duration)
 
     d.format = function() return d.err or
         string.format('%05d %s %s NOTE:%d VOL:%.1f DUR:%d',
-            d.tick, tostring(BarTime(d.tick)), _FormatChanHnd(d.chan_hnd), d.note_num, d.volume, d.duration)
+            d.tick, tostring(BarTime(d.tick)), format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
     end
      -- setmetatable(d, { __tostring = function(self) self.format() end })
 
@@ -64,7 +64,7 @@ function StepController(tick, chan_hnd, controller, value)
 
     d.format = function() return d.err or
         string.format('%05d %s %s CTRL:%d VAL:%d',
-            d.tick, tostring(BarTime(d.tick)), _FormatChanHnd(d.chan_hnd), d.controller, d.value)
+            d.tick, tostring(BarTime(d.tick)), format_chan_hnd(d.chan_hnd), d.controller, d.value)
     end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 
@@ -94,7 +94,7 @@ function StepFunction(tick, chan_hnd, func, volume)
 
     d.format = function() return d.err or
         string.format('%05d %s %s FUNC:? VOL:%.1f',
-            d.tick, tostring(BarTime(d.tick)), _FormatChanHnd(d.chan_hnd), d.volume)
+            d.tick, tostring(BarTime(d.tick)), format_chan_hnd(d.chan_hnd), d.volume)
     end
     -- setmetatable(d, { __tostring = function(self) self.format() end })
 

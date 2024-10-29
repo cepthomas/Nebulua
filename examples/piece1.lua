@@ -30,11 +30,31 @@ local mtom = drum.HiMidTom
 -- Say hello.
 neb.log_info('### loading piece1.lua ###')
 
+
+-- fp, err = io.open('_glob.txt', 'w+')
+--     fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
+--     fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
+-- fp:close()
+
+
+
+-- TODO1 combine these and rename to lbot_utils
+    -- utils:table: 0000025f828a6290(table)
+    -- validators:table: 0000025f828a5a10(table)
+
+-- TODO1 make lua more fp. simple "class" model. pattern matching like F#.
+    -- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
+-- BarTime to:
+    -- function bt_to_parts(tick) return bar, beat, sub
+    -- function parts_to_bt(bar, beat, sub) return tick
+    -- function str_to_bt(str) return tick
+-- pattern matching like F#.
+-- StepNote etc are closure type --> record with formatter.
+
+-- put in utils:
 local function ternary(cond, tval, fval)
     if cond then return tval else return fval end
 end
-
--- print(ut.dump_table_string(package.loaded, false, 'package.loaded'))
 
 
 ------------------------- Configuration -------------------------------
@@ -43,23 +63,19 @@ end
 local midi_in = "ClickClack"
 local hin  = neb.create_input_channel(midi_in, 1)
 
--- local midi_out = "loopMIDI Port"
--- local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)
--- local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)
--- local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)
--- local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)
+use_host = true
 
-local midi_out = "VirtualMIDISynth #1" -- or "Microsoft GS Wavetable Synth"
-local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
-local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
-local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
-local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
+local midi_out = "loopMIDI Port"
+local hnd_keys  = neb.create_output_channel(midi_out, 1, ternary(use_host, neb.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = neb.create_output_channel(midi_out, 2, ternary(use_host, neb.NO_PATCH, inst.AcousticBass))
+local hnd_synth = neb.create_output_channel(midi_out, 3, ternary(use_host, neb.NO_PATCH, inst.VoiceOohs))
+local hnd_drums = neb.create_output_channel(midi_out, 10, ternary(use_host, neb.NO_PATCH, kit.Jazz))
+
 
 
 ------------------------- Variables -----------------------------------
 
 -- Misc vars.
-local master_volume = 0.8
 local valid = true
 
 -- Forward refs.
@@ -70,22 +86,30 @@ local seq_func
 
 local drums_seq =
 {
-    --|........|........|........|........|........|........|........|........|
-    {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
-    {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
-    {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
+    -- | beat 0 | beat 1 | beat 2 | beat 3 | beat 4 | beat 5 | beat 6 | beat 7 |,  WHAT_TO_PLAY
+    -- | beat 0 | beat 1 | beat 2 | beat 3 | beat 0 | beat 1 | beat 2 | beat 3 |,  WHAT_TO_PLAY
+    { "|8       |        |8       |        |8       |        |8       |        |", bdrum },
+    { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
+    { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
 }
 
 local keys_seq =
 {
-    -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+    -- | beat 0 | beat 1 |........|........|........|........|........|........|,  WHAT_TO_PLAY
     { "|6-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
 }
 
+local bass_seq =
+{
+    -- | beat 0 | beat 1 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+    { "|8-------|        |        |        |8-------|        |        |        |", "D3" },
+}
+
 local drums_seq_steps = neb.parse_sequence_steps(hnd_drums, drums_seq)
 local keys_seq_steps = neb.parse_sequence_steps(hnd_keys, keys_seq)
+local bass_seq_steps = neb.parse_sequence_steps(hnd_bass, bass_seq)
 
 local my_scale = mus.get_notes_from_string("G3.Algerian")
 
@@ -109,12 +133,27 @@ function step(tick)
     if valid then
         -- Do something.
         local t = BarTime(tick)
-        if t.get_bar() == 1 and t.get_beat() == 0 and t.get_sub() == 0 then
-            neb.log_info('call seq_func() '..tick)
 
-            seq_func(tick)
+        if t.get_bar() == 1 and t.get_beat() == 0 and t.get_sub() == 0 then
+            -- neb.log_info('call seq_func() '..tick)
+            local note_num = math.random(1, #my_scale)
+            -- neb.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
+
+            neb.send_sequence_steps(keys_seq_steps, tick)
+
+            -- seq_func(tick)
             -- neb.send_controller(hout, ctrl.Pan, 90)
         end
+
+        if t.get_beat() == 0 and t.get_sub() == 0 then
+            neb.send_sequence_steps(drums_seq_steps, tick)
+        end
+
+        -- Every 2 bars
+        if (t.get_bar() == 0 or t.get_bar() == 2) and t.get_beat() == 0 and t.get_sub() == 0 then
+            neb.send_sequence_steps(bass_seq_steps, tick)
+        end
+
     end
 
     -- Overhead.
@@ -153,10 +192,6 @@ end
 seq_func = function(tick)
     local note_num = math.random(1, #my_scale)
     neb.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
-
     neb.send_sequence_steps(keys_seq_steps, tick)
-    -- local dumpfn = 'C:\\Dev\\repos\\Apps\\Nebulua\\_dump.txt'
-    -- neb.dump_steps(dumpfn, 't') -- diagnostic
-
 end
 
