@@ -60,7 +60,7 @@ function step(tick)
     end
 
     if t.beat == 1 and t.sub == 4 then
-        -- neb.send_controller(hinstrument2,  60, 61)
+        neb.send_controller(hnd_synth, 60, 61)
     end
 
     return 0

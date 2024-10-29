@@ -13,7 +13,7 @@ local mt
 -- @param overloads
 --  - (tick)
 --  - (bar, beat, sub)
---  - ("1:2:3")
+--  - ("1.2.3")
 -- @param sections table user section specs
 -- @return object or nil, err if invalid
 function BarTime(arg1, arg2, arg3)
@@ -44,7 +44,7 @@ function BarTime(arg1, arg2, arg3)
     elseif ut.is_string(arg1) and arg2 == nil and arg3 == nil then
         -- Parse from string.
         local valid = true
-        local parts = sx.strsplit(arg1, ':', false)
+        local parts = sx.strsplit(arg1, '.', false)
         local bar
         local beat
         local sub
@@ -100,7 +100,7 @@ function BarTime(arg1, arg2, arg3)
         d = nil
         error(err, 3)
     end
-    
+
     return d, err
 end
 
@@ -140,7 +140,7 @@ end
 mt =
 {
     __tostring = function(self)
-            return string.format("%d:%d:%d", self.get_bar(), self.get_beat(), self.get_sub())
+            return string.format("%d.%d.%d", self.get_bar(), self.get_beat(), self.get_sub())
         end,
 
     __eq = function(a, b)

@@ -71,7 +71,7 @@ M.script_funcs =
         lua_func_name = "neb_command",
         host_func_name = "NebCommand",
         required = "false",
-        description = "Internal use only.",
+        description = "Host calls arbitrary lua function. For internal use only.",
         args =
         {
             { name = "cmd", type = "S", description = "Specific command" },

@@ -10,8 +10,6 @@ namespace Nebulua
     /// <summary>Misc musical timing functions.</summary>
     public class MusicTime
     {
-        public const string DELIM = ".";
-
         /// <summary>Only 4/4 time supported.</summary>
         public const int BEATS_PER_BAR = 4;
 
@@ -38,7 +36,7 @@ namespace Nebulua
         public static int Parse(string sbt)
         {
             int tick = 0;
-            var parts = StringUtils.SplitByToken(sbt, DELIM);
+            var parts = StringUtils.SplitByToken(sbt, ".");
 
             if (tick >= 0 && parts.Count > 0)
             {
@@ -70,7 +68,7 @@ namespace Nebulua
                 int bar = BAR(tick);
                 int beat = BEAT(tick);
                 int sub = SUB(tick);
-                return $"{bar}{DELIM}{beat}{DELIM}{sub}";
+                return $"{bar}.{beat}.{sub}";
             }
             else
             {

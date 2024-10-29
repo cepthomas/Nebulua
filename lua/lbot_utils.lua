@@ -140,6 +140,16 @@ function M.get_caller_info(level)
     return fn, ln
 end
 
+-----------------------------------------------------------------------------
+--- Emulation of C ternary operator.
+-- @param cond to test
+-- @param tval if cond is true
+-- @param fval if cond is false
+-- @return tval or fval
+function M.tern(cond, tval, fval)
+    if cond then return tval else return fval end
+end
+
 ----------------------------------------------------------------------------
 --- Test value type.
 -- @param v value to test

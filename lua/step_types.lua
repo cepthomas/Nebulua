@@ -100,4 +100,3 @@ function StepFunction(tick, chan_hnd, func, volume)
 
     return d
 end
-
