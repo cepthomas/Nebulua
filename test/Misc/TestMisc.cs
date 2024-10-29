@@ -15,20 +15,20 @@ namespace Nebulua.Test
     {
         public override void RunSuite()
         {
-            int bt = MusicTime.Parse("23:2:6");
+            int bt = MusicTime.Parse("23.2.6");
             UT_EQUAL(bt, 23 * MusicTime.SUBS_PER_BAR + 2 * MusicTime.SUBS_PER_BEAT + 6);
-            bt = MusicTime.Parse("146:1");
+            bt = MusicTime.Parse("146.1");
             UT_EQUAL(bt, 146 * MusicTime.SUBS_PER_BAR + 1 * MusicTime.SUBS_PER_BEAT);
             bt = MusicTime.Parse("71");
             UT_EQUAL(bt, 71 * MusicTime.SUBS_PER_BAR);
-            bt = MusicTime.Parse("49:55:8");
+            bt = MusicTime.Parse("49.55.8");
             UT_EQUAL(bt, -1);
-            bt = MusicTime.Parse("111:3:88");
+            bt = MusicTime.Parse("111.3.88");
             UT_EQUAL(bt, -1);
             bt = MusicTime.Parse("invalid");
             UT_EQUAL(bt, -1);
             string sbt = MusicTime.Format(12345);
-            UT_EQUAL(sbt, "385:3:1");
+            UT_EQUAL(sbt, "385.3.1");
 
             //string smidi = Utils.FormatMidiStatus(MMSYSERR_INVALFLAG);
             //UT_STR_EQUAL(smidi, "An invalid flag was passed to a system function.");
@@ -74,30 +74,6 @@ namespace Nebulua.Test
         }
     }
 
-
-    public class Verify
-    {
-        //https://andrewlock.net/exploring-dotnet-6-part-11-callerargumentexpression-and-throw-helpers/
-        public static void IsTrue(bool value, [CallerArgumentExpression("value")] string expression = "")
-        {
-            if (!value)
-            {
-                Throw(expression);
-            }
-        }
-
-        private static void Throw(string expression) => throw new ArgumentException($"{expression} must be True, but was False");
-    }
-
-    public class CallerStuff
-    {
-        public static void DoThis([CallerFilePath] string file = "", [CallerLineNumber] int line = 0, [CallerMemberName] string member = "")
-        {
-        }
-    }
-
-
-
     /// <summary>Test entry.</summary>
     static class Program
     {
@@ -107,6 +83,7 @@ namespace Nebulua.Test
             TestRunner runner = new(OutputFormat.Readable);
             var cases = new[] { "MISC" };
             runner.RunSuites(cases);
+            File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
     }

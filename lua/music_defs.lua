@@ -1,5 +1,5 @@
 
-local ut = require('utils')
+local ut = require('lbot_utils')
 local sx = require("stringex")
 
 -- Create the namespace/module.

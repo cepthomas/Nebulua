@@ -54,7 +54,7 @@ end
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param tbl What to dump.
--- @param recursive Avoid death loops.
+-- @param recursive Avoid death loops. TODO1 number depth
 -- @param name Of the tbl.
 -- @param indent Nesting.
 -- @return list table of strings
@@ -72,8 +72,8 @@ function M.dump_table(tbl, recursive, name, indent)
         sindent = sindent.."    "
         for k, v in pairs(tbl) do
             if type(v) == "table" and recursive then
-                trec = M.dump_table(v, recursive, '['..k..']', indent) -- recursion!
-                for _, v in ipairs(trec) do
+                trec = M.dump_table(v, recursive, k, indent) -- recursion!
+                for _,v in ipairs(trec) do
                     table.insert(res, v)
                 end
             else
@@ -141,23 +141,47 @@ function M.get_caller_info(level)
 end
 
 ----------------------------------------------------------------------------
--- function M.is_integer(v) return type(v) == "number" and math.ceil(v) == v end
-function M.is_integer(v) return M.to_integer(v) ~= nil end
+--- Test value type.
+-- @param v value to test
+function M.is_integer(v)
+    return M.to_integer(v) ~= nil
+    -- return type(v) == "number" and math.ceil(v) == v
+end
 
 ----------------------------------------------------------------------------
-function M.is_number(v) return v ~= nil and type(v) == 'number' end
+--- Test value type.
+-- @param v value to test
+function M.is_number(v)
+    return v ~= nil and type(v) == 'number'
+end
 
 ----------------------------------------------------------------------------
-function M.is_string(v) return v ~= nil and type(v) == 'string' end
+--- Test value type.
+-- @param v value to test
+function M.is_string(v)
+    return v ~= nil and type(v) == 'string'
+end
 
 ----------------------------------------------------------------------------
-function M.is_boolean(v) return v ~= nil and type(v) == 'boolean' end
+--- Test value type.
+-- @param v value to test
+function M.is_boolean(v)
+    return v ~= nil and type(v) == 'boolean'
+end
 
 ----------------------------------------------------------------------------
-function M.is_function(v) return v ~= nil and type(v) == 'function' end
+--- Test value type.
+-- @param v value to test
+function M.is_function(v)
+    return v ~= nil and type(v) == 'function'
+end
 
 ----------------------------------------------------------------------------
-function M.is_table(v) return v ~= nil and type(v) == 'table' end
+--- Test value type.
+-- @param v value to test
+function M.is_table(v)
+    return v ~= nil and type(v) == 'table'
+end
 
 -----------------------------------------------------------------------------
 --- Convert value to integer.
@@ -220,6 +244,87 @@ function M.clamp(val, granularity, round)
     res = (val / granularity) * granularity
     if round and (val % granularity > granularity / 2) then res = res + granularity end
     return res
+end
+
+-----------------------------------------------------------------------------
+--- Validate a value.
+-- @param v which value
+-- @param min range
+-- @param max range
+-- @param name value name
+-- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
+function M.val_number(v, min, max, name)
+    local ok = M.is_number(v)
+    ok = ok and (max ~= nil and v <= max)
+    ok = ok and (min ~= nil and v >= min)
+    if not ok then
+        return string.format("Invalid number %s: %s", name, M.tostring_cln(v))
+    end
+    return nil
+end
+
+-----------------------------------------------------------------------------
+-- @param v which value
+-- @param min range
+-- @param max range
+-- @param name value name
+-- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
+function M.val_integer(v, min, max, name)
+    local ok = M.is_integer(v)
+    ok = ok and (max ~= nil and v <= max)
+    ok = ok and (min ~= nil and v >= min)
+    if not ok then
+        return string.format("Invalid integer %s: %s", name, M.tostring_cln(v))
+    end
+    return nil
+end
+
+-----------------------------------------------------------------------------
+-- @param v which value
+-- @param name value name
+-- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
+function M.val_string(v, name)
+    local ok = M.is_string(v)
+    if not ok then
+        return string.format("Invalid string %s: %s", name, M.tostring_cln(v))
+    end
+    return nil
+end
+
+-----------------------------------------------------------------------------
+-- @param v which value
+-- @param name value name
+-- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
+function M.val_boolean(v, name)
+    local ok = M.is_boolean(v)
+    if not ok then
+        return string.format("Invalid boolean %s: %s", name, M.tostring_cln(v))
+    end
+    return nil
+end
+
+-----------------------------------------------------------------------------
+-- @param v which value
+-- @param name value name
+-- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
+function M.val_table(v, name)
+    local ok = M.is_table(v)
+    if not ok then
+        return string.format("Invalid table %s", M.tostring_cln(name))
+    end
+    return nil
+end
+
+-----------------------------------------------------------------------------
+-- @param v which value
+-- @param name value name
+-- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
+function M.val_function(v, name)
+    local ok = M.is_function(v)
+    if not ok then
+        return string.format("Invalid function %s", M.tostring_cln(name))
+    end
+    return nil
 end
 
 

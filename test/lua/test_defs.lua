@@ -2,8 +2,8 @@
 -- Unit tests for music_defs.lua.
 
 local md = require("music_defs")
-local ut = require("utils")
-local com = require('neb_common')
+local ut = require("lbot_utils")
+local com = require("neb_common")
 
 
 -- Create the namespace/module.

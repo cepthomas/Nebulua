@@ -1,10 +1,9 @@
 
 -- Unit tests for bar_time.lua.
 
-local v  = require('validators')
-local ut = require("utils")
+local ut = require("lbot_utils")
 local bt = require("bar_time")
-local com = require('neb_common')
+local com = require("neb_common")
 
 -- ut.config_debug(true)
 

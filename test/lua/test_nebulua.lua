@@ -1,8 +1,7 @@
 
 -- Unit tests for nebulua.lua.
 
--- local v  = require('validators')
-local ut  = require("utils")
+local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("bar_time")
 local api = require("host_api") -- host api mock
@@ -73,7 +72,7 @@ function M.suite_parse_chunk(pn)
     seq_length, steps = neb.parse_chunk(chunk, 0x0A07, 678 )
     -- print('+++', ut.dump_table_string(steps, true, 'steps5'))
     pn.UT_EQUAL(seq_length, 0)
-    pn.UT_STR_CONTAINS(steps, "Invalid '-' in pattern string")
+    pn.UT_STR_CONTAINS(ut.dump_table_string(steps, true, 'xxxx'), "Invalid '-' in pattern string")
 
 end
 

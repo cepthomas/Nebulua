@@ -20,13 +20,12 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 
-    ***1 -> Removed some support for older lua versions.
+    ***1 indicates -> Removed some support for older lua versions.
     
     TODOF l cmd gets noisy with large tables.
-    TODOF hot reload - see nebulua.
     TODOF harmonize with sbot pdb: commands, colors, etc.
-    TODOF original: Print short function arguments as part of stack location.
-    TODOF original: Properly handle being reentrant due to coroutines.
+    TODOF from original: Print short function arguments as part of stack location.
+    TODOF from original: Properly handle being reentrant due to coroutines.
 
 ]]
 

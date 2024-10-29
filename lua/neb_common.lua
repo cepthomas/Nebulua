@@ -1,6 +1,5 @@
-local ut = require("utils")
 
--- Flotsam and jetsam.
+-- Flotsam and jetsam. TODO1 consolidate?
 
 local M = {}
 

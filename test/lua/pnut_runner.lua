@@ -6,7 +6,7 @@ Future opts maybe: write to file, junit/xml format.
 
 
 local pn = require("pnut")
-local ut = require("utils")
+local ut = require("lbot_utils")
 
 -- Create the namespace/module.
 local M = {}

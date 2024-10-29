@@ -93,8 +93,9 @@ namespace Nebulua.Test
             console.NextReadLine = "tempo 182";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(console.Capture.Count, 1);
-            UT_EQUAL(console.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "tempo set to 182");
+            UT_EQUAL(console.Capture[1], prompt);
 
             console.Reset();
             console.NextReadLine = "tempo 242";
@@ -114,22 +115,22 @@ namespace Nebulua.Test
             console.NextReadLine = "monitor r";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(console.Capture.Count, 1);
-            UT_EQUAL(console.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "monitor rcv");
 
             console.Reset();
             console.NextReadLine = "monitor s";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(console.Capture.Count, 1);
-            UT_EQUAL(console.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "monitor snd");
 
             console.Reset();
             console.NextReadLine = "monitor o";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(console.Capture.Count, 1);
-            UT_EQUAL(console.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "monitor off");
 
             // Test immediate spacebar.
             console.Reset();
@@ -219,8 +220,9 @@ namespace Nebulua.Test
             console.NextReadLine = "kill";
             bret = cli.DoCommand();
             UT_TRUE(bret);
-            UT_EQUAL(console.Capture.Count, 1);
-            UT_EQUAL(console.Capture[0], prompt);
+            UT_EQUAL(console.Capture.Count, 2);
+            UT_EQUAL(console.Capture[0], "killed all");
+            UT_EQUAL(console.Capture[1], prompt);
 
             // Wait for logger to stop.
             Thread.Sleep(100);

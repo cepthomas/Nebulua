@@ -1,8 +1,7 @@
 
 -- Unit tests for nebulua.lua.
 
--- local v  = require('validators')
-local ut  = require("utils")
+local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("bar_time")
 local api = require("host_api") -- host api mock

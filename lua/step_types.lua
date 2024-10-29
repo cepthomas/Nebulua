@@ -1,6 +1,6 @@
 -- Family of midi events.
 
-local val = require('validators')
+local ut = require('lbot_utils')
 local com = require('neb_common')
 
 
@@ -22,11 +22,11 @@ function StepNote(tick, chan_hnd, note_num, volume, duration)
     d.duration = duration
 
     -- Validate.
-    d.err = d.err or val.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
-    d.err = d.err or val.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or val.val_integer(d.note_num, 0, com.MAX_MIDI, 'note_num')
-    d.err = d.err or val.val_number(d.volume, 0.0, 1.0, 'volume')
-    d.err = d.err or val.val_integer(d.duration, 0, com.MAX_TICK, 'duration')
+    d.err = d.err or ut.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
+    d.err = d.err or ut.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
+    d.err = d.err or ut.val_integer(d.note_num, 0, com.MAX_MIDI, 'note_num')
+    d.err = d.err or ut.val_number(d.volume, 0.0, 1.0, 'volume')
+    d.err = d.err or ut.val_integer(d.duration, 0, com.MAX_TICK, 'duration')
 
     -- if d.err ~= nil then
     --     d.err = string.format("Invalid note: %s", d.err)
@@ -53,10 +53,10 @@ function StepController(tick, chan_hnd, controller, value)
     d.value = value
 
     -- Validate.
-    d.err = d.err or val.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
-    d.err = d.err or val.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or val.val_integer(d.controller, 0, com.MAX_MIDI, 'controller')
-    d.err = d.err or val.val_integer(d.value, 0, com.MAX_MIDI, 'value')
+    d.err = d.err or ut.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
+    d.err = d.err or ut.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
+    d.err = d.err or ut.val_integer(d.controller, 0, com.MAX_MIDI, 'controller')
+    d.err = d.err or ut.val_integer(d.value, 0, com.MAX_MIDI, 'value')
 
     -- if d.err ~= nil then
     --     d.err = string.format("Invalid controller: %s", d.err)
@@ -83,10 +83,10 @@ function StepFunction(tick, chan_hnd, func, volume)
     d.volume = volume
 
     -- Validate.
-    d.err = d.err or val.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
-    d.err = d.err or val.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or val.val_function(d.func, 'func')
-    d.err = d.err or val.val_number(d.volume, 0.0, 1.0, 'volume')
+    d.err = d.err or ut.val_integer(d.tick, 0, com.MAX_TICK, 'tick')
+    d.err = d.err or ut.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
+    d.err = d.err or ut.val_function(d.func, 'func')
+    d.err = d.err or ut.val_number(d.volume, 0.0, 1.0, 'volume')
 
     -- if d.err ~= nil then
     --     d.err = string.format("Invalid function: %s", tostring(d.err))

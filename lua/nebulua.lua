@@ -3,7 +3,7 @@
 -- Impedance matching between C and Lua. Hides or translates the raw C api.
 -- Manages note collections as described by the composition.
 
-local ut  = require("utils")
+local ut  = require("lbot_utils")
 local api = require("host_api")
 local st  = require("step_types")
 local mid = require("midi_defs")

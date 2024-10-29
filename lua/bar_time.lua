@@ -1,8 +1,7 @@
 -- Musical time handling.
 
-local ut  = require("utils")
+local ut  = require("lbot_utils")
 local sx  = require("stringex")
-local val = require('validators')
 local com = require('neb_common')
 
 -- Forward refs.
@@ -26,7 +25,7 @@ function BarTime(arg1, arg2, arg3)
     -- Determine flavor.
     if ut.is_integer(arg1) and arg2 == nil and arg3 == nil then
         -- From ticks.
-        local e = val.val_integer(arg1, 0, com.MAX_TICK, 'tick')
+        local e = ut.val_integer(arg1, 0, com.MAX_TICK, 'tick')
         if e == nil then
             d.tick = arg1
         else
@@ -34,9 +33,9 @@ function BarTime(arg1, arg2, arg3)
         end
     elseif ut.is_integer(arg1) and ut.is_integer(arg2) and ut.is_integer(arg3) then
         -- From bar/beat/sub.
-        local e = val.val_integer(arg1, 0, com.MAX_BAR, 'bar')
-        e = e or val.val_integer(arg2, 0, com.BEATS_PER_BAR, 'beat')
-        e = e or val.val_integer(arg3, 0, com.SUBS_PER_BEAT, 'sub')
+        local e = ut.val_integer(arg1, 0, com.MAX_BAR, 'bar')
+        e = e or ut.val_integer(arg2, 0, com.BEATS_PER_BAR, 'beat')
+        e = e or ut.val_integer(arg3, 0, com.SUBS_PER_BEAT, 'sub')
         if e == nil then
             d.tick = (arg1 * com.SUBS_PER_BAR) + (arg2 * com.SUBS_PER_BEAT) + (arg3)
         else

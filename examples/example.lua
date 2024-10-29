@@ -2,7 +2,7 @@
 -- An example Nebulua composition file. 
 
 -- Import modules this needs.
-local ut  = require("utils")
+local ut  = require("lbot_utils")
 local neb = require("nebulua")
 local mus = require("music_defs")
 local mid = require("midi_defs")

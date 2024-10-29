@@ -5,7 +5,7 @@ Has all the assert functions - UT_XXX(info).
     - Each returns a bool pass status.
 ]]
 
-local ut = require('utils')
+local ut = require('lbot_utils')
 
 local M = {}
 

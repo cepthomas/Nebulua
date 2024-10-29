@@ -6,7 +6,7 @@ Used to build and test all parts of this system.
 -- Fix up the lua path first.
 package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
 
-local ut = require('utils')
+local ut = require('lbot_utils')
 local sx = require('stringex')
 
 local opt = arg[1]
@@ -42,12 +42,7 @@ end
 
 -------------------------------------------------------------------------
 
-if opt == nil then
-
-    output_text('Build: Error: No operation supplied')
-    ret_code = 1
-
-elseif opt == 'build_app' then
+if opt == 'build_app' then
 
     bld = '"C:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"'
     -- -r restore first
@@ -61,7 +56,7 @@ elseif opt == 'build_app' then
     output_text(res)
 
     output_text('Build: Building app tests...')
-    cmd = sx.strjoin(' ', { bld, vrb, 'test/Test.sln' } )
+    cmd = sx.strjoin(' ', { bld, vrb, 'test/NebuluaTest.sln' } )
     res = ut.execute_and_capture(cmd)
     output_text(res)
 
@@ -116,7 +111,13 @@ elseif opt == 'gen_md' then
 
 else
 
-    output_text('Build: Error: Invalid option '..opt)
+    if opt == nil then
+        output_text('Build: Error: Missing option - Select one of:')
+    else
+        output_text('Build: Error: Invalid option '..opt..' - Select one of:')
+    end
+
+    output_text('build_app  app_tests  lua_tests  gen_md')
     -- goto done
     ret_code = 1
 

@@ -11,8 +11,7 @@ local function unload_all()
     package.loaded.step_types = nil
     package.loaded.debugger = nil
     package.loaded.stringex = nil
-    package.loaded.utils = nil
-    package.loaded.validators = nil
+    package.loaded.lbot_utils = nil
 end
 
 -- Api function

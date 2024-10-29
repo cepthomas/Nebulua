@@ -80,7 +80,7 @@ local neb = require("nebulua") -- lua api
 local mid = require("midi_defs") -- GM midi instrument definitions
 local mus = require("music_defs") -- chords, scales, etc
 local bt  = require("bar_time") -- time utility
-local ut  = require("utils") -- misc utilities
+local ut  = require("lbot_utils") -- misc utilities
 ```
 
 ## Script Functions
