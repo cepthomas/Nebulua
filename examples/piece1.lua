@@ -37,15 +37,15 @@ neb.log_info('### loading piece1.lua ###')
 
 
 
--- TODO1 make lua more fp:
--- OK BarTime to functions:
+-- make lua more fp:
+-- TODO1 >> BarTime to functions:
     -- tick_to_time(tick) return bar, beat, sub
     -- time_to_tick(bar, beat, sub) return tick
     -- ?time_to_tick(tot_beat, sub) return tick
     -- strtime_to_tick(str) return tick
     -- tick_to_strtime(tick) return '1.2.3'
--- pattern matching like F#.
--- StepNote etc are closure type --> record with formatter.
+-- TODO1 >> pattern matching like F#.
+-- TODO1 >> StepNote etc are closure type --> record with formatter.
     -- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
 
 
@@ -58,10 +58,10 @@ local hin  = neb.create_input_channel(midi_in, 1)
 use_host = false
 
 local midi_out = "loopMIDI Port"
-local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, neb.NO_PATCH, inst.AcousticGrandPiano))
-local hnd_bass  = neb.create_output_channel(midi_out, 2, ut.tern(use_host, neb.NO_PATCH, inst.AcousticBass))
-local hnd_synth = neb.create_output_channel(midi_out, 3, ut.tern(use_host, neb.NO_PATCH, inst.VoiceOohs))
-local hnd_drums = neb.create_output_channel(midi_out, 10, ut.tern(use_host, neb.NO_PATCH, kit.Jazz))
+local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = neb.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
+local hnd_synth = neb.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.VoiceOohs))
+local hnd_drums = neb.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
 
 
 

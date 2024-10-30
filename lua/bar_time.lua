@@ -6,7 +6,7 @@ local sx  = require("stringex")
 
 local M = {}
 
--- TODO1 new style:
+-- TODO1 switch to new style.
 
 -------------------- Definitions - must match C code! --------------
 -- Only 4/4 time supported.

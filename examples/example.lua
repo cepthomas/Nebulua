@@ -30,10 +30,10 @@ local hnd_ccin  = neb.create_input_channel(midi_in, 1)
 
 -- Use DAW or VST host.
 local midi_out = "loopMIDI Port"
-local hnd_keys  = neb.create_output_channel(midi_out, 1, neb.NO_PATCH)
-local hnd_bass  = neb.create_output_channel(midi_out, 2, neb.NO_PATCH)
-local hnd_synth = neb.create_output_channel(midi_out, 3, neb.NO_PATCH)
-local hnd_drums = neb.create_output_channel(midi_out, 10, neb.NO_PATCH)
+local hnd_keys  = neb.create_output_channel(midi_out, 1, mid.NO_PATCH)
+local hnd_bass  = neb.create_output_channel(midi_out, 2, mid.NO_PATCH)
+local hnd_synth = neb.create_output_channel(midi_out, 3, mid.NO_PATCH)
+local hnd_drums = neb.create_output_channel(midi_out, 10, mid.NO_PATCH)
 
 -- Use builtin GM.
 -- local midi_out = "VirtualMIDISynth #1" -- or "Microsoft GS Wavetable Synth"

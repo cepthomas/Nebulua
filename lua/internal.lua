@@ -1,5 +1,5 @@
 
--- Internal housekeeping etc.
+-- Internal housekeeping etc. TODO1 elsewhere?
 
 -- Unload everything so that the script can be reloaded.
 local function unload_all()

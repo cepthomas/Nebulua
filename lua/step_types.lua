@@ -9,12 +9,8 @@ local bt = require('bar_time')
 
 local M = {}
 
------------------------------------------------------------------------------
-local function format_chan_hnd(chan_hnd)
-    local s = string.format("DEV:%02d CH:%02d", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
-    return s
-end
-
+-- Forward ref.
+local format_chan_hnd
 
 
 -----------------------------------------------------------------------------
@@ -37,7 +33,7 @@ function M.note(tick, chan_hnd, note_num, volume, duration)
 
     d._format = function() return d.err or
         string.format('%05d %s %s NOTE:%d VOL:%.1f DUR:%d',
-            d.tick, bt.tick_to_strtime(d.tick), format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
+            d.tick, bt.tick_to_str(d.tick), format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
     end
 
     setmetatable(d, { __tostring = function(self) return self._format() end })
@@ -64,7 +60,7 @@ function M.controller(tick, chan_hnd, controller, value)
 
     d._format = function() return d.err or
         string.format('%05d %s %s CTRL:%d VAL:%d',
-            d.tick, bt.tick_to_strtime(d.tick), format_chan_hnd(d.chan_hnd), d.controller, d.value)
+            d.tick, bt.tick_to_str(d.tick), format_chan_hnd(d.chan_hnd), d.controller, d.value)
     end
 
     setmetatable(d, { __tostring = function(self) return self._format() end })
@@ -91,7 +87,7 @@ function M.func(tick, chan_hnd, func, volume)
 
     d._format = function() return d.err or
         string.format('%05d %s %s FUNC:? VOL:%.1f',
-            d.tick, bt.tick_to_strtime(d.tick), format_chan_hnd(d.chan_hnd), d.volume)
+            d.tick, bt.tick_to_str(d.tick), format_chan_hnd(d.chan_hnd), d.volume)
     end
 
     setmetatable(d, { __tostring = function(self) return self._format() end })
@@ -100,16 +96,17 @@ function M.func(tick, chan_hnd, func, volume)
 end
 
 
+-----------------------------------------------------------------------------
+format_chan_hnd = function(chan_hnd)
+    local s = string.format("DEV:%02d CH:%02d", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    return s
+end
+
 
 -----------------------------------------------------------------------------
 -------------------------- OLD STYLE ----------------------------------------
 -----------------------------------------------------------------------------
 
--- -----------------------------------------------------------------------------
--- local function format_chan_hnd(chan_hnd)
---     local s = string.format("DEV:%02d CH:%02d", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
---     return s
--- end
 
 -----------------------------------------------------------------------------
 function StepNote(tick, chan_hnd, note_num, volume, duration)

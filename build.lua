@@ -84,8 +84,8 @@ elseif opt == 'lua_tests' then
     output_text('Build: Running lua tests...')
     local pr = require('pnut_runner')
 
-    rep = pr.do_tests('test_bar_time')
-    -- rep = pr.do_tests('test_defs', 'test_bar_time', 'test_nebulua')
+    -- rep = pr.do_tests('test_nebulua')
+    rep = pr.do_tests('test_defs', 'test_bar_time', 'test_nebulua')
     for _, s in ipairs(rep) do
         output_text(s)
     end

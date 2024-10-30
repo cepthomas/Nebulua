@@ -14,8 +14,6 @@ local mus = require("music_defs")
 
 local M = {}
 
--- Flag.
-M.NO_PATCH = -1
 
 -----------------------------------------------------------------------------
 ----- Global vars for access by app

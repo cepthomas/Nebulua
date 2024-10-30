@@ -6,6 +6,9 @@ local M = {}
 -- Standard midi.
 M.MAX_MIDI = 127
 
+-- Flag.
+M.NO_PATCH = -1
+
 
 -- The GM midi instrument definitions.
 M.instruments =
