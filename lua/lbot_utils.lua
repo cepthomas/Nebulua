@@ -17,7 +17,7 @@ function M.execute_and_capture(cmd)
         return s
     else
         return nil
-    end    
+    end
 end
 
 ---------------------------------------------------------------
@@ -259,10 +259,10 @@ end
 -----------------------------------------------------------------------------
 --- Validate a value.
 -- @param v which value
--- @param min range
--- @param max range
+-- @param min range inclusive
+-- @param max range inclusive
 -- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
+-- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner. TODO1 revisit this backwards.
 function M.val_number(v, min, max, name)
     local ok = M.is_number(v)
     ok = ok and (max ~= nil and v <= max)
@@ -275,8 +275,8 @@ end
 
 -----------------------------------------------------------------------------
 -- @param v which value
--- @param min range
--- @param max range
+-- @param min range inclusive
+-- @param max range inclusive
 -- @param name value name
 -- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
 function M.val_integer(v, min, max, name)

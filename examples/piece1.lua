@@ -4,7 +4,6 @@ local neb = require("nebulua") -- lua api
 local mus = require("music_defs")
 local mid = require("midi_defs") -- GM midi instrument definitions
 local bt  = require("bar_time") -- time utility
-local com = require('neb_common')
 local ut  = require('lbot_utils')
 
 
@@ -38,9 +37,8 @@ neb.log_info('### loading piece1.lua ###')
 
 
 
--- TODO1 make lua more fp. simple "class" model. pattern matching like F#.
-    -- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
--- BarTime to functions:
+-- TODO1 make lua more fp:
+-- OK BarTime to functions:
     -- tick_to_time(tick) return bar, beat, sub
     -- time_to_tick(bar, beat, sub) return tick
     -- ?time_to_tick(tot_beat, sub) return tick
@@ -48,8 +46,7 @@ neb.log_info('### loading piece1.lua ###')
     -- tick_to_strtime(tick) return '1.2.3'
 -- pattern matching like F#.
 -- StepNote etc are closure type --> record with formatter.
-
--- put in utils:
+    -- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
 
 
 ------------------------- Configuration -------------------------------
@@ -58,7 +55,7 @@ neb.log_info('### loading piece1.lua ###')
 local midi_in = "ClickClack"
 local hin  = neb.create_input_channel(midi_in, 1)
 
-use_host = true
+use_host = false
 
 local midi_out = "loopMIDI Port"
 local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, neb.NO_PATCH, inst.AcousticGrandPiano))

@@ -6,7 +6,6 @@ local st  = require("step_types")
 local bt  = require("bar_time")
 local api = require("host_api") -- host api mock
 local neb = require("nebulua") -- lua api
-local com = require('neb_common')
 
 
 -- ut.config_debug(true)

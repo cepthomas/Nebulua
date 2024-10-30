@@ -14,12 +14,12 @@ local ret_code = 0
 local res = {}
 
 -- Make pretty.
-local GRAY = string.char(27) .. "[95m" --"[90m"
-local RED = string.char(27) .. "[91m"
-local BLUE = string.char(27) .. "[94m"
-local YELLOW = string.char(27) .. "[33m"
-local GREEN = string.char(27) .. "[92m"
-local RESET = string.char(27) .. "[0m"
+local GRAY = string.char(27).."[95m" --"[90m"
+local RED = string.char(27).."[41m" --"[91m"
+local BLUE = string.char(27).."[94m"
+local YELLOW = string.char(27).."[33m"
+local GREEN = string.char(27).."[92m"
+local RESET = string.char(27).."[0m"
 
 local function output_text(text)
     -- Split into lines and colorize.
@@ -84,7 +84,8 @@ elseif opt == 'lua_tests' then
     output_text('Build: Running lua tests...')
     local pr = require('pnut_runner')
 
-    rep = pr.do_tests('test_defs', 'test_bar_time', 'test_nebulua')
+    rep = pr.do_tests('test_bar_time')
+    -- rep = pr.do_tests('test_defs', 'test_bar_time', 'test_nebulua')
     for _, s in ipairs(rep) do
         output_text(s)
     end

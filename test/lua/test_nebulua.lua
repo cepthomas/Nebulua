@@ -6,7 +6,6 @@ local st  = require("step_types")
 local bt  = require("bar_time")
 local api = require("host_api") -- host api mock
 local neb = require("nebulua") -- lua api
-local com = require('neb_common')
 
 
 -- ut.config_debug(false)
@@ -139,7 +138,7 @@ function M.suite_step_types(pn)
 
     local n = StepNote(1234, 99, 101, 0.4, 10)
     pn.UT_NIL(n.err)
-    pn.UT_STR_EQUAL(n.format(), "01234 38:2:2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")
+    pn.UT_STR_EQUAL(n.format(), "01234 38.2.2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")
 
     n = StepNote(100001, 88, 111, 0.3, 22)
     pn.UT_NOT_NIL(n.err)
@@ -147,7 +146,7 @@ function M.suite_step_types(pn)
 
     local c = StepController(344, 37, 88, 55)
     pn.UT_NIL(c.err)
-    pn.UT_STR_EQUAL(c.format(), "00344 10:3:0 DEV:00 CH:37 CTRL:88 VAL:55")
+    pn.UT_STR_EQUAL(c.format(), "00344 10.3.0 DEV:00 CH:37 CTRL:88 VAL:55")
 
     local c = StepController(455, 55, 260, 23)
     pn.UT_NOT_NIL(c.err)
@@ -157,7 +156,7 @@ function M.suite_step_types(pn)
 
     local f = StepFunction(508, 122, stub, 0.44)
     pn.UT_NIL(f.err)
-    pn.UT_STR_EQUAL(f.format(), "00508 15:3:4 DEV:00 CH:122 FUNC:? VOL:0.4")
+    pn.UT_STR_EQUAL(f.format(), "00508 15.3.4 DEV:00 CH:122 FUNC:? VOL:0.4")
 end
 
 

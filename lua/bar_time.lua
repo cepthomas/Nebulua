@@ -2,7 +2,119 @@
 
 local ut  = require("lbot_utils")
 local sx  = require("stringex")
-local com = require('neb_common')
+
+
+local M = {}
+
+-- TODO1 new style:
+
+-------------------- Definitions - must match C code! --------------
+-- Only 4/4 time supported.
+M.BEATS_PER_BAR = 4
+
+-- Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
+M.SUBS_PER_BEAT = 8
+M.SUBS_PER_BAR = M.SUBS_PER_BEAT * M.BEATS_PER_BAR
+
+M.MAX_BAR = 1000
+M.MAX_BEAT = M.MAX_BAR * M.BEATS_PER_BAR
+M.MAX_TICK = M.MAX_BAR * M.SUBS_PER_BAR
+
+
+-----------------------------------------------------------------------------
+--- Convert proper components to internal.
+function M.bt_to_tick(bar, beat, sub)
+
+    local e = ut.val_integer(bar, 0, M.MAX_BAR, 'bar')
+    if e ~= nil then error("Invalid bar", 3) end
+
+    e = ut.val_integer(beat, 0, M.BEATS_PER_BAR-1, 'beat')
+    if e ~= nil then error("Invalid beat", 3) end
+
+    e = ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1, 'sub')
+    if e ~= nil then error("Invalid sub", 3) end
+
+    tick = bar * M.SUBS_PER_BAR + beat * M.SUBS_PER_BEAT + sub
+    return tick
+end
+
+-----------------------------------------------------------------------------
+--- Convert total beats and subs to internal.
+function M.beats_to_tick(beat, sub)
+
+    e = ut.val_integer(beat, 0, M.MAX_BEAT-1, 'beat')
+    if e ~= nil then error("Invalid beat", 3) end
+
+    e = ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1, 'sub')
+    if e ~= nil then error("Invalid sub", 3) end
+
+    tick = beat * M.SUBS_PER_BEAT + sub
+    return tick
+end
+
+-----------------------------------------------------------------------------
+--- Convert string representation to internal.
+function M.str_to_tick(str)
+
+    local tick = -1
+
+    if ut.is_string(str) then
+        local parts = sx.strsplit(str, '.', false)
+
+        if #parts == 2 then
+            -- Duration form.
+            local beat = ut.to_integer(parts[1])
+            local sub = ut.to_integer(parts[2])
+            tick = M.beats_to_tick(beat, sub)
+
+        elseif #parts == 3 then
+            -- Absolute form.
+            local bar = ut.to_integer(parts[1])
+            local beat = ut.to_integer(parts[2])
+            local sub = ut.to_integer(parts[3])
+            tick = M.bt_to_tick(bar, beat, sub)
+        end
+    end
+
+    if tick < 0 then
+        error("Invalid bar time: "..tostring(str), 3)
+    end
+
+    return tick
+end
+
+-----------------------------------------------------------------------------
+--- Convert tick to bar, beat, sub.
+function M.tick_to_bt(tick)
+    e = ut.val_integer(tick, 0, M.MAX_TICK, 'tick')
+    if e ~= nil then
+        error("Invalid tick", 3)
+    else
+        bar = math.floor(tick / M.SUBS_PER_BAR)
+        beat = math.floor(tick / M.SUBS_PER_BEAT % M.BEATS_PER_BAR)
+        sub = math.floor(tick % M.SUBS_PER_BEAT)
+        return bar, beat, sub
+    end
+end
+
+-----------------------------------------------------------------------------
+--- Convert tick to string representation
+function M.tick_to_str(tick)
+    -- return like '1.2.3'
+    e = ut.val_integer(tick, 0, M.MAX_TICK, 'tick')
+    if e ~= nil then
+        error("Invalid tick", 3)
+    else
+        bar, beat, sub = M.tick_to_bt(tick)
+        return string.format("%d.%d.%d", bar, beat, sub)
+    end
+end
+
+
+
+-----------------------------------------------------------------------------
+-------------------------- OLD STYLE ----------------------------------------
+-----------------------------------------------------------------------------
 
 -- Forward refs.
 local mt
@@ -25,7 +137,7 @@ function BarTime(arg1, arg2, arg3)
     -- Determine flavor.
     if ut.is_integer(arg1) and arg2 == nil and arg3 == nil then
         -- From ticks.
-        local e = ut.val_integer(arg1, 0, com.MAX_TICK, 'tick')
+        local e = ut.val_integer(arg1, 0, M.MAX_TICK, 'tick')
         if e == nil then
             d.tick = arg1
         else
@@ -33,11 +145,11 @@ function BarTime(arg1, arg2, arg3)
         end
     elseif ut.is_integer(arg1) and ut.is_integer(arg2) and ut.is_integer(arg3) then
         -- From bar/beat/sub.
-        local e = ut.val_integer(arg1, 0, com.MAX_BAR, 'bar')
-        e = e or ut.val_integer(arg2, 0, com.BEATS_PER_BAR, 'beat')
-        e = e or ut.val_integer(arg3, 0, com.SUBS_PER_BEAT, 'sub')
+        local e = ut.val_integer(arg1, 0, M.MAX_BAR, 'bar')
+        e = e or ut.val_integer(arg2, 0, M.BEATS_PER_BAR, 'beat')
+        e = e or ut.val_integer(arg3, 0, M.SUBS_PER_BEAT, 'sub')
         if e == nil then
-            d.tick = (arg1 * com.SUBS_PER_BAR) + (arg2 * com.SUBS_PER_BEAT) + (arg3)
+            d.tick = (arg1 * M.SUBS_PER_BAR) + (arg2 * M.SUBS_PER_BEAT) + (arg3)
         else
             err = string.format("Bad constructor: %s", e)
         end
@@ -63,9 +175,9 @@ function BarTime(arg1, arg2, arg3)
 
         valid = valid and bar ~= nil and beat ~= nil and sub ~= nil
         if valid then
-            d.tick = (bar * com.SUBS_PER_BAR) + (beat * com.SUBS_PER_BEAT) + (sub)
+            d.tick = (bar * M.SUBS_PER_BAR) + (beat * M.SUBS_PER_BEAT) + (sub)
         else
-            err = string.format("Invalid time: %s", tostring(arg1))
+            err = string.format("Invalid bar time: %s", tostring(arg1))
         end
     else
         err = string.format("Bad constructor: %s, %s, %s", tostring(arg1), tostring(arg2), tostring(arg3))
@@ -80,19 +192,19 @@ function BarTime(arg1, arg2, arg3)
     ----------------------------------------
     -- Get the bar number.
     d.get_bar = function()
-        return math.floor(d.tick / com.SUBS_PER_BAR)
+        return math.floor(d.tick / M.SUBS_PER_BAR)
     end
 
     ----------------------------------------
     -- Get the beat number in the bar.
     d.get_beat = function()
-        return math.floor(d.tick / com.SUBS_PER_BEAT % com.BEATS_PER_BAR)
+        return math.floor(d.tick / M.SUBS_PER_BEAT % M.BEATS_PER_BAR)
     end
 
     ----------------------------------------
     -- Get the sub in the beat.
     d.get_sub = function()
-        return math.floor(d.tick % com.SUBS_PER_BEAT)
+        return math.floor(d.tick % M.SUBS_PER_BEAT)
     end
 
     -- Return success/fail.
@@ -126,7 +238,7 @@ local normalize_operands = function(a, b, op)
         asan = a.tick
         bsan = b.tick
     else
-        error(string.format("Invalid datatype for operator %s", op), 4)
+        error(string.format("Invalid data type for operator %s", op), 4)
     end
 
     return asan, bsan
@@ -187,3 +299,7 @@ mt =
             return ret
         end,
 }
+
+
+-- Return the module.
+return M

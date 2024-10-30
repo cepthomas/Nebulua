@@ -8,7 +8,6 @@ local neb = require("nebulua") -- lua api
 local mus = require("music_defs")
 local mid = require("midi_defs") -- GM midi instrument definitions
 local bt  = require("bar_time") -- time utility
-local com = require('neb_common')
 local ut  = require('lbot_utils')
 
 -- Setup for debug.
@@ -129,6 +128,6 @@ end
 --   sub: which subbeat
 --   return: tick
 tot = function(beat, sub)
-    local tick = beat * com.SUBS_PER_BEAT + sub
+    local tick = beat * mid.SUBS_PER_BEAT + sub
     return tick
 end

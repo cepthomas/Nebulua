@@ -46,7 +46,6 @@ Nebulua
 |       midi_defs.lua
 |       music_defs.lua
 |       nebulua.lua
-|       neb_common.lua
 |       step_types.lua
 |       *.lua - parts of https://github.com/cepthomas/LuaBagOfTricks
 +---lib

@@ -7,7 +7,6 @@ local function unload_all()
     package.loaded.midi_defs = nil
     package.loaded.music_defs = nil
     package.loaded.nebulua = nil
-    package.loaded.neb_common = nil
     package.loaded.step_types = nil
     package.loaded.debugger = nil
     package.loaded.stringex = nil

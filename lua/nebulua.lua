@@ -8,7 +8,7 @@ local api = require("host_api")
 local st  = require("step_types")
 local mid = require("midi_defs")
 local mus = require("music_defs")
-local com = require("neb_common")
+
 
 -- TODOF stress test and bulletproof this.
 

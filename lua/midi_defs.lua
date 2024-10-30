@@ -1,6 +1,11 @@
+local ut = require("lbot_utils")
 
 -- Create the namespace/module.
 local M = {}
+
+-- Standard midi.
+M.MAX_MIDI = 127
+
 
 -- The GM midi instrument definitions.
 M.instruments =
@@ -57,8 +62,6 @@ M.controllers =
     Sustain = 064, Portamento = 065, Sostenuto = 066, SoftPedal = 067, Legato = 068, Sustain2 = 069,
     PortamentoControl = 084, AllSoundOff = 120, ResetAllControllers = 121, LocalKeyboard = 122, AllNotesOff = 123,
 }
-
-local ut = require("lbot_utils")
 
 
 -----------------------------------------------------------------------------

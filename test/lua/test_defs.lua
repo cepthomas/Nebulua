@@ -3,7 +3,7 @@
 
 local md = require("music_defs")
 local ut = require("lbot_utils")
-local com = require("neb_common")
+-- local mid = require('midi_defs')
 
 
 -- Create the namespace/module.
