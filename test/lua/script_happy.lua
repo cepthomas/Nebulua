@@ -54,14 +54,25 @@ function step(tick)
     neb.process_step(tick)
 
     -- Selective work.
-    local t = BarTime(tick)
-    if t.beat == 0 and t.sub == 0 then
+
+    local bar, beat, sub = bt.tick_to_bt(tick)
+    if beat == 0 and sub == 0 then
         neb.send_controller(hnd_synth, 50, 51)
     end
 
-    if t.beat == 1 and t.sub == 4 then
+    if beat == 1 and sub == 4 then
         neb.send_controller(hnd_synth, 60, 61)
     end
+
+
+    -- local t = BarTime(tick)
+    -- if t.beat == 0 and t.sub == 0 then
+    --     neb.send_controller(hnd_synth, 50, 51)
+    -- end
+
+    -- if t.beat == 1 and t.sub == 4 then
+    --     neb.send_controller(hnd_synth, 60, 61)
+    -- end
 
     return 0
 end

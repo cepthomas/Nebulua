@@ -78,10 +78,7 @@ namespace Nebulua
                 LogManager.Stop();
 
                 // Destroy devices
-                _inputs.ForEach(d => d.Dispose());
-                _inputs.Clear();
-                _outputs.ForEach(d => d.Dispose());
-                _outputs.Clear();
+                ResetIo();
 
                 // Release unmanaged resources. https://stackoverflow.com/a/4935448
                 _api.Dispose();
@@ -102,6 +99,8 @@ namespace Nebulua
         /// <exception cref="ApiException"></exception>
         public NebStatus LoadScript(string? scriptFn = null)
         {
+            ResetIo();
+
             // Check file arg.
             if (scriptFn is not null)
             {
@@ -448,6 +447,17 @@ namespace Nebulua
         #endregion
 
         #region Private functions
+        /// <summary>
+        /// Clean up devices.
+        /// </summary>
+        void ResetIo()
+        {
+            _inputs.ForEach(d => d.Dispose());
+            _inputs.Clear();
+            _outputs.ForEach(d => d.Dispose());
+            _outputs.Clear();
+        }
+
         /// <summary>
         /// Set timer for this tempo.
         /// </summary>

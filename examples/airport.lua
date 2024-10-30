@@ -36,7 +36,7 @@ local loops = {}
 
 -- Forward refs.
 local add_loop
-local tot
+-- local tot
 
 
 ------------------------- System Functions -----------------------------
@@ -45,17 +45,17 @@ local tot
 -- Called once to initialize your script stuff. Required.
 function setup()
     -- Set up all the loop notes. Key is Ab.
-    add_loop("Ab4", tot(17,3),  tot(8,1))
-    add_loop("Ab5", tot(17,2),  tot(3,1))
+    add_loop("Ab4", bt.beats_to_tick(17,3),  bt.beats_to_tick(8,1))
+    add_loop("Ab5", bt.beats_to_tick(17,2),  bt.beats_to_tick(3,1))
     -- 3rd
-    add_loop("C5",  tot(21,1),  tot(5,3))
+    add_loop("C5",  bt.beats_to_tick(21,1),  bt.beats_to_tick(5,3))
     -- 4th
-    add_loop("Db5", tot(18,2),  tot(12,3))
+    add_loop("Db5", bt.beats_to_tick(18,2),  bt.beats_to_tick(12,3))
     -- 5th
-    add_loop("Eb5", tot(20,0),  tot(9,2))
+    add_loop("Eb5", bt.beats_to_tick(20,0),  bt.beats_to_tick(9,2))
     -- 6th
-    add_loop("F4",  tot(19,3),  tot(4,2))
-    add_loop("F5",  tot(20,0),  tot(14,1))
+    add_loop("F4",  bt.beats_to_tick(19,3),  bt.beats_to_tick(4,2))
+    add_loop("F5",  bt.beats_to_tick(20,0),  bt.beats_to_tick(14,1))
 
     -- How fast?
     neb.set_tempo(61)
@@ -95,8 +95,8 @@ end
 -----------------------------------------------------------------------------
 --- Add a new loop note.
 --   snote: see README.md.Standard Note Syntax
---   duration: how long to play in BarTime
---   delay: wait before start in BarTime
+--   duration: how long to play in ticks
+--   delay: wait before start in ticks
 add_loop = function(snote, duration, delay)
     local notes, err = mus.get_notes_from_string(snote)
 
@@ -106,15 +106,15 @@ add_loop = function(snote, duration, delay)
         valid = false
     end
 
-    if duration == nil then
-        neb.log_error("Invalid duration")
-        valid = false
-    end
+    -- if duration == nil then
+    --     neb.log_error("Invalid duration")
+    --     valid = false
+    -- end
 
-    if delay == nil then
-        neb.log_error("Invalid delay")
-        valid = false
-    end
+    -- if delay == nil then
+    --     neb.log_error("Invalid delay")
+    --     valid = false
+    -- end
 
     if valid then
         table.insert(loops, { snote=snote, duration=duration, delay=delay, notes=notes, next_start=delay })
@@ -127,7 +127,7 @@ end
 --   beat: which beat
 --   sub: which subbeat
 --   return: tick
-tot = function(beat, sub)
-    local tick = beat * mid.SUBS_PER_BEAT + sub
-    return tick
-end
+-- tot = function(beat, sub)
+--     local tick = beat * mid.SUBS_PER_BEAT + sub
+--     return tick
+-- end

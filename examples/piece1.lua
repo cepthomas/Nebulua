@@ -39,13 +39,13 @@ neb.log_info('### loading piece1.lua ###')
 
 -- make lua more fp:
 -- TODO1 >> BarTime to functions:
-    -- tick_to_time(tick) return bar, beat, sub
-    -- time_to_tick(bar, beat, sub) return tick
-    -- ?time_to_tick(tot_beat, sub) return tick
-    -- strtime_to_tick(str) return tick
-    -- tick_to_strtime(tick) return '1.2.3'
+    -- M.beats_to_tick(beat, sub) -> tick
+    -- M.bt_to_tick(bar, beat, sub) -> tick
+    -- M.str_to_tick(str) -> tick
+    -- M.tick_to_bt(tick) -> bar, beat, sub
+    -- M.tick_to_str(tick) -> ""
 -- TODO1 >> pattern matching like F#.
--- TODO1 >> StepNote etc are closure type --> record with formatter.
+-- TODO1 >> StepNote etc to bt.note
     -- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
 
 
@@ -55,9 +55,10 @@ neb.log_info('### loading piece1.lua ###')
 local midi_in = "ClickClack"
 local hin  = neb.create_input_channel(midi_in, 1)
 
+-- Use DAW or VST host.
 use_host = false
 
-local midi_out = "loopMIDI Port"
+local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
 local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
 local hnd_bass  = neb.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
 local hnd_synth = neb.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.VoiceOohs))
@@ -124,27 +125,36 @@ end
 function step(tick)
     if valid then
         -- Do something.
-        local t = BarTime(tick)
-
-        if t.get_bar() == 1 and t.get_beat() == 0 and t.get_sub() == 0 then
-            -- neb.log_info('call seq_func() '..tick)
-            local note_num = math.random(1, #my_scale)
-            -- neb.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
-
+        local bar, beat, sub = bt.tick_to_bt(tick)
+        if bar == 1 and beat == 0 and sub == 0 then
             neb.send_sequence_steps(keys_seq_steps, tick)
-
-            -- seq_func(tick)
-            -- neb.send_controller(hout, ctrl.Pan, 90)
         end
 
-        if t.get_beat() == 0 and t.get_sub() == 0 then
+        if beat == 0 and sub == 0 then
             neb.send_sequence_steps(drums_seq_steps, tick)
         end
 
         -- Every 2 bars
-        if (t.get_bar() == 0 or t.get_bar() == 2) and t.get_beat() == 0 and t.get_sub() == 0 then
+        if (bar == 0 or bar == 2) and beat == 0 and sub == 0 then
             neb.send_sequence_steps(bass_seq_steps, tick)
         end
+
+        -- local t = BarTime(tick)
+        -- if t.get_bar() == 1 and t.get_beat() == 0 and t.get_sub() == 0 then
+        --     -- neb.log_info('call seq_func() '..tick)
+        --     local note_num = math.random(1, #my_scale)
+        --     -- neb.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
+        --     neb.send_sequence_steps(keys_seq_steps, tick)
+        --     -- seq_func(tick)
+        --     -- neb.send_controller(hout, ctrl.Pan, 90)
+        -- end
+        -- if t.get_beat() == 0 and t.get_sub() == 0 then
+        --     neb.send_sequence_steps(drums_seq_steps, tick)
+        -- end
+        -- -- Every 2 bars
+        -- if (t.get_bar() == 0 or t.get_bar() == 2) and t.get_beat() == 0 and t.get_sub() == 0 then
+        --     neb.send_sequence_steps(bass_seq_steps, tick)
+        -- end
 
     end
 

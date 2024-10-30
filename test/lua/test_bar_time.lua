@@ -22,7 +22,7 @@ function M.teardown(pn)
     -- pn.UT_INFO("teardown()")
 end
 
-
+--[[
 -----------------------------------------------------------------------------
 function M.suite_bar_time_create(pn)
 
@@ -169,9 +169,10 @@ function M.suite_bar_time_meta(pn)
     pn.UT_TRUE(472 >= bt2)
 end
 
+]]
 
 -----------------------------------------------------------------------------
-function M.suite_bar_time_new(pn)
+function M.suite_bar_time(pn)
     -- Basic ops.
 
     local bar, beat, sub = btut.tick_to_bt(12345)

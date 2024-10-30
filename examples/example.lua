@@ -29,18 +29,27 @@ local midi_in = "ClickClack"
 local hnd_ccin  = neb.create_input_channel(midi_in, 1)
 
 -- Use DAW or VST host.
-local midi_out = "loopMIDI Port"
-local hnd_keys  = neb.create_output_channel(midi_out, 1, mid.NO_PATCH)
-local hnd_bass  = neb.create_output_channel(midi_out, 2, mid.NO_PATCH)
-local hnd_synth = neb.create_output_channel(midi_out, 3, mid.NO_PATCH)
-local hnd_drums = neb.create_output_channel(midi_out, 10, mid.NO_PATCH)
+use_host = false
 
--- Use builtin GM.
--- local midi_out = "VirtualMIDISynth #1" -- or "Microsoft GS Wavetable Synth"
--- local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
--- local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
--- local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
--- local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
+local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
+local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = neb.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
+local hnd_synth = neb.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
+local hnd_drums = neb.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
+
+-- -- Use DAW or VST host.
+-- local midi_out = "loopMIDI Port"
+-- local hnd_keys  = neb.create_output_channel(midi_out, 1, mid.NO_PATCH)
+-- local hnd_bass  = neb.create_output_channel(midi_out, 2, mid.NO_PATCH)
+-- local hnd_synth = neb.create_output_channel(midi_out, 3, mid.NO_PATCH)
+-- local hnd_drums = neb.create_output_channel(midi_out, 10, mid.NO_PATCH)
+
+-- -- Use builtin GM.
+-- -- local midi_out = "VirtualMIDISynth #1" -- or "Microsoft GS Wavetable Synth"
+-- -- local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
+-- -- local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
+-- -- local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
+-- -- local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
@@ -100,11 +109,16 @@ function step(tick)
     -- Other work you may want to do.
 
     -- Do something every new bar.
-    local t = BarTime(tick)
-    if t.get_beat() == 2 and t.get_sub() == 0 then
-        -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
-        algo_func(tick)
-    end
+        local bar, beat, sub = bt.tick_to_bt(tick)
+        if beat == 2 and sub == 0 then
+            -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
+            algo_func(tick)
+        end
+    -- local t = BarTime(tick)
+    -- if t.get_beat() == 2 and t.get_sub() == 0 then
+    --     -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
+    --     algo_func(tick)
+    -- end
 
     return 0
 end
