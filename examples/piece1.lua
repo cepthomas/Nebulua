@@ -30,10 +30,10 @@ local mtom = drum.HiMidTom
 neb.log_info('### loading piece1.lua ###')
 
 
--- fp, err = io.open('_glob.txt', 'w+')
---     fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
---     fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
--- fp:close()
+fp, err = io.open('C:\\Dev\\repos\\Apps\\Nebulua\\_glob.txt', 'w+')
+    fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
+    fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
+fp:close()
 
 
 
