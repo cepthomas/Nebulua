@@ -90,9 +90,9 @@ function M.suite_process_script(pn)
 
     -- neb.dump_steps('.\\..\\_steps.txt', 's') -- diagnostic
 
-    pn.UT_EQUAL(ut.table_count(section_info), 4)
-    pn.UT_EQUAL(section_info['_LENGTH'], 768)
-    -- print(ut.dump_table_string(section_info, false, 'section_info'))
+    pn.UT_EQUAL(ut.table_count(_section_info), 4)
+    pn.UT_EQUAL(_section_info['_LENGTH'], 768)
+    -- print(ut.dump_table_string(_section_info, false, '_section_info'))
 
     -- Look inside.
     -- local steps, transients = _mole()

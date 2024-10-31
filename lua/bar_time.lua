@@ -41,7 +41,7 @@ end
 --- Convert total beats and subs to internal.
 function M.beats_to_tick(beat, sub)
 
-    e = ut.val_integer(beat, 0, M.MAX_BEAT-1, 'beat')
+    local e = ut.val_integer(beat, 0, M.MAX_BEAT-1, 'beat')
     if e ~= nil then error("Invalid beat", 3) end
 
     e = ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1, 'sub')
@@ -54,7 +54,6 @@ end
 -----------------------------------------------------------------------------
 --- Convert string representation to internal.
 function M.str_to_tick(str)
-
     local tick = -1
 
     if ut.is_string(str) then
@@ -89,9 +88,9 @@ function M.tick_to_bt(tick)
     if e ~= nil then
         error("Invalid tick", 3)
     else
-        bar = math.floor(tick / M.SUBS_PER_BAR)
-        beat = math.floor(tick / M.SUBS_PER_BEAT % M.BEATS_PER_BAR)
-        sub = math.floor(tick % M.SUBS_PER_BEAT)
+        local bar = math.floor(tick / M.SUBS_PER_BAR)
+        local beat = math.floor(tick / M.SUBS_PER_BEAT % M.BEATS_PER_BAR)
+        local sub = math.floor(tick % M.SUBS_PER_BEAT)
         return bar, beat, sub
     end
 end
@@ -104,7 +103,7 @@ function M.tick_to_str(tick)
     if e ~= nil then
         error("Invalid tick", 3)
     else
-        bar, beat, sub = M.tick_to_bt(tick)
+        local bar, beat, sub = M.tick_to_bt(tick)
         return string.format("%d.%d.%d", bar, beat, sub)
     end
 end

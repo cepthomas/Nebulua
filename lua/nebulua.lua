@@ -16,14 +16,6 @@ local M = {}
 
 
 -----------------------------------------------------------------------------
------ Global vars for access by app
------------------------------------------------------------------------------
-
--- Key is section name, value is start tick. Total length is the last element.
-section_info = {}
-
-
------------------------------------------------------------------------------
 ----- Private vars
 -----------------------------------------------------------------------------
 
@@ -50,8 +42,33 @@ local _vol_map = { 0.0, 0.01, 0.05, 0.11, 0.20, 0.31, 0.44, 0.60, 0.79, 1.0 }
 -- Key is chan_hnd, value is double volume.
 local _master_vols = {}
 
--- Debug stuff.
--- function M._mole() return _steps, _transients end
+
+-----------------------------------------------------------------------------
+----- Globals for access by app TODO1 improve these.
+-----------------------------------------------------------------------------
+
+-- Key is section name, value is start tick. Total length is the last element.
+_section_info = {}
+
+-- Unload everything so that the script can be reloaded.
+function _neb_command(cmd, arg)
+    if cmd == 'unload_all' then
+        package.loaded.bar_time = nil
+        package.loaded.debugger = nil
+        package.loaded.lbot_utils = nil
+        package.loaded.midi_defs = nil
+        package.loaded.music_defs = nil
+        package.loaded.nebulua = nil
+        package.loaded.step_types = nil
+        package.loaded.stringex = nil
+    end
+    return 0
+end
+
+-- Debug hook.
+function _mole()
+    return _steps, _transients
+end
 
 
 -----------------------------------------------------------------------------
@@ -89,7 +106,7 @@ M.send_controller = api.send_controller
 -- @param chan_num channel number
 -- @return the new chan_hnd or 0 if invalid
 function M.create_input_channel(dev_name, chan_num)
-    chan_hnd = api.create_input_channel(dev_name, chan_num)
+    local chan_hnd = api.create_input_channel(dev_name, chan_num)
     return chan_hnd
 end
 
@@ -100,7 +117,7 @@ end
 -- @param patch send this patch number if >= 0
 -- @return the new chan_hnd
 function M.create_output_channel(dev_name, chan_num, patch)
-    chan_hnd = api.create_output_channel(dev_name, chan_num, patch)
+    local chan_hnd = api.create_output_channel(dev_name, chan_num, patch)
     _master_vols[chan_hnd] = 0.8
     return chan_hnd
 end
@@ -128,13 +145,14 @@ function M.process_step(tick)
 
     -- Composition steps.
     local steps_now = _steps[tick] -- now
+
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
                if step.volume > 0 then -- noteon - add note off chase
-                   dur = math.max(step.duration, 1) -- (min for drum/hit)
+                   local dur = math.max(step.duration, 1) -- (min for drum/hit)
                    -- chase with noteoff
-                   noteoff = st.note(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
+                   local noteoff = st.note(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
                    ut.table_add(_transients, noteoff.tick, noteoff)
                end
 
@@ -168,6 +186,7 @@ end
 function M.send_note(chan_hnd, note_num, volume, dur)
     if dur == nil then dur = 0 end
     -- M.log_debug(string.format("Send now hnd:%d note:%d vol:%f dur:%d", chan_hnd, note_num, volume, dur))
+
     if volume > 0 then -- noteon
         -- adjust volume
         volume = volume * _master_vols[chan_hnd]
@@ -175,7 +194,7 @@ function M.send_note(chan_hnd, note_num, volume, dur)
         api.send_note(chan_hnd, note_num, volume)
         if dur > 0 then
             -- chase with noteoff
-            noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
+            local noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
             ut.table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
@@ -186,10 +205,10 @@ end
 -----------------------------------------------------------------------------
 -- Process the chunks in the sequence into a list of steps and return that.
 function M.parse_sequence_steps(chan_hnd, seq)
-    steps = {}
+    local steps = {}
     for _, seq_chunk in ipairs(seq) do
         -- Reset position to start of sequence.
-        tick = 0
+        local tick = 0
         local seq_length, seq_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
         for _, step in ipairs(seq_steps) do
             table.insert(steps, step)
@@ -208,17 +227,17 @@ function M.send_sequence_steps(seq_steps, tick)
         if step.step_type == "note" then
 
            if step.volume > 0 then -- is noteon
-               dur = math.max(step.duration, 1) -- (min for drum/hit)
+               local dur = math.max(step.duration, 1) -- (min for drum/hit)
 
-               noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
+               local noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
                ut.table_add(_transients, noteon.tick, noteon)
 
                -- chase with noteoff
-               noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
+               local noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
                ut.table_add(_transients, noteoff.tick, noteoff)
 
            else -- note off
-               noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
+               local noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
                ut.table_add(_transients, noteoff.tick, noteoff)
            end
 
@@ -232,7 +251,7 @@ function M.process_comp()
     -- Hard reset.
     _steps = {}
     _transients = {}
-    section_info = {}
+    _section_info = {}
     -- Total length of composition.
     local length = 0
 
@@ -248,14 +267,14 @@ function M.process_comp()
         M.parse_section(section, length)
 
         -- Save info about section.
-        section_info[section.name] = section.start
+        _section_info[section.name] = section.start
 
         -- Keep track of overall time.
         length = length + section.length
     end
 
     -- All done. Tack on the total.
-    section_info["_LENGTH"] = length
+    _section_info["_LENGTH"] = length
 end
 
 
@@ -290,7 +309,7 @@ function M.parse_section(section, start_tick)
             -- Process each sequence.
             for i = 2, #sect_chan do
                 -- Track max.
-                seq_length_max = 0
+                local seq_length_max = 0
 
                 -- Process the chunks in the sequence.
                 local current_seq = sect_chan[i]
@@ -343,7 +362,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
 
 
     ---------- Local function to package an event. ------ ------
-    function make_note_event(offset, notes_to_play)
+    local function make_note_event(offset, notes_to_play)
         -- scale volume
         local vol = _vol_map[current_vol + 1] -- to lua index
         -- calc duration from start of note
@@ -362,7 +381,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     end
 
     ---------- Local function to package an event. ------------
-    function make_func_event(offset, func, vol_num)
+    local function make_func_event(offset, func, vol_num)
         -- scale volume
         local vol = _vol_map[vol_num]
         local si = st.func(start_tick + event_offset, chan_hnd, func, vol)
@@ -380,7 +399,8 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     -- Process the note descriptor first. Could be number, string, function.
     local what_to_play = chunk[2]
     local tn = type(what_to_play)
-    local notes_to_play = nil    local func = nil
+    local notes_to_play = nil
+    local func = nil
 
     if tn == "number" then
         -- use as is
@@ -468,13 +488,13 @@ end
 -- @param ... the sequences
 function M.sect_chan(chan_hnd, ...)
     if _current_section ~= nil then
-        elems = {}
+        local elems = {}
         if type(chan_hnd) ~= "number" then -- should check for valid/known handle
             error("Invalid channel", 2)
         end
         table.insert(elems, chan_hnd)
 
-        num_args = select('#', ...)
+        local num_args = select('#', ...)
         if num_args < 1 then
             error("No sequences", 2)
         end
@@ -499,7 +519,7 @@ end
 -- @param fn file name
 -- @param which 's'=steps 't'=transients
 function M.dump_steps(fn, which)
-    t = nil
+    local t = nil
     if which == 's' then
         t = _steps
     elseif which == 't' then
@@ -508,7 +528,7 @@ function M.dump_steps(fn, which)
         error('Invalid which '..which)
     end
 
-    fp, err = io.open(fn, 'w+')
+    local fp, err = io.open(fn, 'w+')
     for tick, sts in pairs(t) do
         for i, step in ipairs(sts) do
             fp:write(step.format()..'\n')

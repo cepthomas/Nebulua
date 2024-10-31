@@ -30,15 +30,14 @@ local mtom = drum.HiMidTom
 neb.log_info('### loading piece1.lua ###')
 
 
-fp, err = io.open('C:\\Dev\\repos\\Apps\\Nebulua\\_glob.txt', 'w+')
-    fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
-    fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
+local fp, err = io.open('C:\\Dev\\repos\\Apps\\Nebulua\\_glob.txt', 'w+')
+fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
+fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
 fp:close()
 
 
 
 -- make lua more fp:
--- TODO1 >> pattern matching like F#.
 -- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
 
 
@@ -49,7 +48,7 @@ local midi_in = "ClickClack"
 local hin  = neb.create_input_channel(midi_in, 1)
 
 -- Use DAW or VST host.
-use_host = false
+local use_host = false
 
 local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
 local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
@@ -117,8 +116,10 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     if valid then
-        -- Do something.
+        -- Do something. TODO1 pattern matching like F#.
+
         local bar, beat, sub = bt.tick_to_bt(tick)
+
         if bar == 1 and beat == 0 and sub == 0 then
             neb.send_sequence_steps(keys_seq_steps, tick)
         end

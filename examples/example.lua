@@ -29,7 +29,7 @@ local midi_in = "ClickClack"
 local hnd_ccin  = neb.create_input_channel(midi_in, 1)
 
 -- Use DAW or VST host.
-use_host = false
+local use_host = false
 
 local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
 local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))

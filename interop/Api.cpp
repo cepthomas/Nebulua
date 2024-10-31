@@ -178,7 +178,7 @@ NebStatus Api::OpenScript(String^ fn)
     if (nstat == NebStatus::Ok)
     {
         // Get section info.
-        int ltype = lua_getglobal(_l, "section_info"); // TODO1 not global, maybe in M?
+        int ltype = lua_getglobal(_l, "_section_info");
         lua_pushnil(_l);
         while (lua_next(_l, -2) != 0) // && lstat ==_lUA_OK)
         {
