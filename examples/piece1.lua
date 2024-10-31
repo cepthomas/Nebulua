@@ -38,15 +38,8 @@ neb.log_info('### loading piece1.lua ###')
 
 
 -- make lua more fp:
--- TODO1 >> BarTime to functions:
-    -- M.beats_to_tick(beat, sub) -> tick
-    -- M.bt_to_tick(bar, beat, sub) -> tick
-    -- M.str_to_tick(str) -> tick
-    -- M.tick_to_bt(tick) -> bar, beat, sub
-    -- M.tick_to_str(tick) -> ""
 -- TODO1 >> pattern matching like F#.
--- TODO1 >> StepNote etc to bt.note
-    -- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
+-- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
 
 
 ------------------------- Configuration -------------------------------
@@ -138,23 +131,6 @@ function step(tick)
         if (bar == 0 or bar == 2) and beat == 0 and sub == 0 then
             neb.send_sequence_steps(bass_seq_steps, tick)
         end
-
-        -- local t = BarTime(tick)
-        -- if t.get_bar() == 1 and t.get_beat() == 0 and t.get_sub() == 0 then
-        --     -- neb.log_info('call seq_func() '..tick)
-        --     local note_num = math.random(1, #my_scale)
-        --     -- neb.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
-        --     neb.send_sequence_steps(keys_seq_steps, tick)
-        --     -- seq_func(tick)
-        --     -- neb.send_controller(hout, ctrl.Pan, 90)
-        -- end
-        -- if t.get_beat() == 0 and t.get_sub() == 0 then
-        --     neb.send_sequence_steps(drums_seq_steps, tick)
-        -- end
-        -- -- Every 2 bars
-        -- if (t.get_bar() == 0 or t.get_bar() == 2) and t.get_beat() == 0 and t.get_sub() == 0 then
-        --     neb.send_sequence_steps(bass_seq_steps, tick)
-        -- end
 
     end
 

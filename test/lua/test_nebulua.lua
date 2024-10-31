@@ -136,34 +136,6 @@ end
 function M.suite_step_types(pn)
     -- Test all functions in step_types.lua
 
-    local n = StepNote(1234, 99, 101, 0.4, 10)
-    pn.UT_NIL(n.err)
-    pn.UT_STR_EQUAL(n.format(), "01234 38.2.2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")
-
-    n = StepNote(100001, 88, 111, 0.3, 22)
-    pn.UT_NOT_NIL(n.err)
-    pn.UT_STR_EQUAL(n.format(), "Invalid integer tick: 100001")
-
-    local c = StepController(344, 37, 88, 55)
-    pn.UT_NIL(c.err)
-    pn.UT_STR_EQUAL(c.format(), "00344 10.3.0 DEV:00 CH:37 CTRL:88 VAL:55")
-
-    local c = StepController(455, 55, 260, 23)
-    pn.UT_NOT_NIL(c.err)
-    pn.UT_STR_EQUAL(c.format(), "Invalid integer controller: 260")
-
-    local function stub() end
-
-    local f = StepFunction(508, 122, stub, 0.44)
-    pn.UT_NIL(f.err)
-    pn.UT_STR_EQUAL(f.format(), "00508 15.3.4 DEV:00 CH:122 FUNC:? VOL:0.4")
-end
-
-
------------------------------------------------------------------------------
-function M.suite_step_types_new(pn)
-    -- Test all functions in step_types.lua
-
     local n = st.note(1234, 99, 101, 0.4, 10)
     pn.UT_NIL(n.err)
     pn.UT_STR_EQUAL(tostring(n), "01234 38.2.2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")

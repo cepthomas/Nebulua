@@ -64,16 +64,6 @@ function step(tick)
         neb.send_controller(hnd_synth, 60, 61)
     end
 
-
-    -- local t = BarTime(tick)
-    -- if t.beat == 0 and t.sub == 0 then
-    --     neb.send_controller(hnd_synth, 50, 51)
-    -- end
-
-    -- if t.beat == 1 and t.sub == 4 then
-    --     neb.send_controller(hnd_synth, 60, 61)
-    -- end
-
     return 0
 end
 

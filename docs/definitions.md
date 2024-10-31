@@ -32,7 +32,6 @@ tick       | int    | absolute time, see ##Timing, same length as sub |
 - Each sequence is typically 8 beats. Each section is typically 4 sequences -> 32 beats. A 4 minute song at
   80bpm is 320 beats -> 10 sections -> 40 sequences. If each sequence has an average of 8 notes for a total
   of 320 notes per instrument. A "typical" song with 6 instruments would then have about 4000 on/off events.
-- To make the script translation between bar-beat-sub and ticks, see the [BarTime](#bartime) class below.
 
 ## Standard Note Syntax
 

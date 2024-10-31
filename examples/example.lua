@@ -106,19 +106,12 @@ function step(tick)
     -- Overhead.
     neb.process_step(tick)
 
-    -- Other work you may want to do.
-
-    -- Do something every new bar.
+    -- Other work you may want to do. Like do something every new bar.
         local bar, beat, sub = bt.tick_to_bt(tick)
         if beat == 2 and sub == 0 then
             -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
             algo_func(tick)
         end
-    -- local t = BarTime(tick)
-    -- if t.get_beat() == 2 and t.get_sub() == 0 then
-    --     -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
-    --     algo_func(tick)
-    -- end
 
     return 0
 end

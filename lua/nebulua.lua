@@ -134,7 +134,7 @@ function M.process_step(tick)
                if step.volume > 0 then -- noteon - add note off chase
                    dur = math.max(step.duration, 1) -- (min for drum/hit)
                    -- chase with noteoff
-                   noteoff = StepNote(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
+                   noteoff = st.note(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
                    ut.table_add(_transients, noteoff.tick, noteoff)
                end
 
@@ -175,7 +175,7 @@ function M.send_note(chan_hnd, note_num, volume, dur)
         api.send_note(chan_hnd, note_num, volume)
         if dur > 0 then
             -- chase with noteoff
-            noteoff = StepNote(_current_tick + dur, chan_hnd, note_num, 0, 0)
+            noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
             ut.table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
@@ -210,15 +210,15 @@ function M.send_sequence_steps(seq_steps, tick)
            if step.volume > 0 then -- is noteon
                dur = math.max(step.duration, 1) -- (min for drum/hit)
 
-               noteon = StepNote(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
+               noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
                ut.table_add(_transients, noteon.tick, noteon)
 
                -- chase with noteoff
-               noteoff = StepNote(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
+               noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
                ut.table_add(_transients, noteoff.tick, noteoff)
 
            else -- note off
-               noteoff = StepNote(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
+               noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
                ut.table_add(_transients, noteoff.tick, noteoff)
            end
 
@@ -350,7 +350,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         local dur = math.max(offset - event_offset, 1) -- (min for drum/hit)
 
         for _, nt in ipairs(notes_to_play) do
-            local si = StepNote(start_tick + event_offset, chan_hnd, nt, vol, dur)
+            local si = st.note(start_tick + event_offset, chan_hnd, nt, vol, dur)
             if si.err == nil then
                 table.insert(steps, si)
             else
@@ -365,7 +365,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     function make_func_event(offset, func, vol_num)
         -- scale volume
         local vol = _vol_map[vol_num]
-        local si = StepFunction(start_tick + event_offset, chan_hnd, func, vol)
+        local si = st.func(start_tick + event_offset, chan_hnd, func, vol)
         if si.err == nil then
             table.insert(steps, si)
         else
