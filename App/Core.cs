@@ -368,12 +368,11 @@ namespace Nebulua
 
             // Check args.
             var (index, chan_num) = DeconstructHandle(e.ChanHnd);
-            if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS ||
-                !_outputs[index].Channels[chan_num - 1])
+            if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
             {
                 throw new ScriptSyntaxException($"Script has invalid channel: {e.ChanHnd}");
             }
-            if (e.What < 0 || e.What >= MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value >= MidiDefs.MIDI_VAL_MAX)
+            if (e.What < 0 || e.What > MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value > MidiDefs.MIDI_VAL_MAX)
             {
                 throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
             }

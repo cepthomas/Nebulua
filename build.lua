@@ -1,7 +1,4 @@
---[[
-Used to build and test all parts of this system.
---]]
-
+-- Used to build and test all parts of the nebulua universe.
 
 -- Fix up the lua path first.
 package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
@@ -60,7 +57,7 @@ if opt == 'build_app' then
     res = ut.execute_and_capture(cmd)
     output_text(res)
 
-elseif opt == 'app_tests' then
+elseif opt == 'test_app' then
 
     output_text('Build: Running app tests...')
     cmd = 'pushd "test/Cli/bin/x64/Debug/net8.0-windows" & TestCli.exe & popd'
@@ -79,7 +76,7 @@ elseif opt == 'app_tests' then
     res = ut.execute_and_capture(cmd)
     output_text(res)
 
-elseif opt == 'lua_tests' then
+elseif opt == 'test_lua' then
 
     output_text('Build: Running lua tests...')
     local pr = require('pnut_runner')
@@ -110,6 +107,38 @@ elseif opt == 'gen_md' then
     f:write(content)
     f:close()
 
+-- elseif opt == 'gen_interop' then TODO2
+    -- echo off
+    -- :: Convert spec into interop files.
+    -- :: Args.
+    -- set spec_fn=%~dp0%interop_spec.lua
+    -- set out_path=%~dp0%interop
+    -- :: Build the interop.
+    -- pushd "..\..\Libs\LuaBagOfTricks"
+    -- lua gen_interop.lua -ch %spec_fn% %out_path%
+    -- popd
+
+elseif opt == 'dev' then
+
+    local function go(name, func)
+        v = {}
+        table.insert(v, name)
+        for i = 0, 9 do table.insert(v, string.format("%.2f", func(i)))  end
+        print(sx.strjoin(', ', v))
+    end
+
+    go('linear', function(i) return i / 9 end)
+    go('exp', function(i) return math.exp(i)/8104 end)
+    go('log', function(i) return math.log(i)/2.2 end)
+    go('log 10', function(i) return math.log(i, 10)/0.95 end)
+    go('pow 2', function(i) return i^2/81 end)
+    go('pow 3', function(i) return i^3 end)
+    -- go('pow 10', function(i) return i^10/81 end)
+    go('pow 0.67', function(i) return i^0.67/4.36 end)
+    -- go('pow -2', function(i) return i^-2 end)
+    -- go('pow -10', function(i) return i^-10 end)
+    -- go('10^x/20', function(i) return 10^i/20 end)
+
 else
 
     if opt == nil then
@@ -118,7 +147,7 @@ else
         output_text('Build: Error: Invalid option '..opt..' - Select one of:')
     end
 
-    output_text('build_app  app_tests  lua_tests  gen_md')
+    output_text('build_app  test_app  test_lua  gen_md')
     -- goto done
     ret_code = 1
 

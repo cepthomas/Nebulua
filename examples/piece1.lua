@@ -30,10 +30,10 @@ local mtom = drum.HiMidTom
 neb.log_info('### loading piece1.lua ###')
 
 
-local fp, err = io.open('C:\\Dev\\repos\\Apps\\Nebulua\\_glob.txt', 'w+')
-fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
-fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
-fp:close()
+-- local fp, err = io.open('C:\\Dev\\repos\\Apps\\Nebulua\\_glob.txt', 'w+')
+-- fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
+-- fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
+-- fp:close()
 
 
 
@@ -112,6 +112,13 @@ function setup()
     return 0
 end
 
+
+local _vol_ind = 0
+local _vol_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- mod-linear
+-- local _vol_map = { 0.0, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.0 } -- linear
+-- local _vol_map = { 0.0, 0.3, 0.55, 0.75, 0.85, 0.92, 0.96, 0.98, 0.99, 1.0 } -- log-pot
+-- local _vol_map = { 0.0, 0.4, 0.52, 0.6, 0.68, 0.76, 0.84, 0.90, 0.95, 1.0 } -- mod-log
+
 -----------------------------------------------------------------------------
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
@@ -120,18 +127,29 @@ function step(tick)
 
         local bar, beat, sub = bt.tick_to_bt(tick)
 
-        if bar == 1 and beat == 0 and sub == 0 then
-            neb.send_sequence_steps(keys_seq_steps, tick)
+
+        if bar <= 10 and beat == 0 and sub == 0 then
+            if _vol_ind < #_vol_map then
+                neb.log_info('send '.._vol_ind)
+                neb.send_note(hnd_synth, 60, 0)
+                neb.send_note(hnd_synth, 60, _vol_map[_vol_ind + 1])
+                _vol_ind = _vol_ind + 1
+            end
         end
 
-        if beat == 0 and sub == 0 then
-            neb.send_sequence_steps(drums_seq_steps, tick)
-        end
 
-        -- Every 2 bars
-        if (bar == 0 or bar == 2) and beat == 0 and sub == 0 then
-            neb.send_sequence_steps(bass_seq_steps, tick)
-        end
+        -- if bar == 1 and beat == 0 and sub == 0 then
+        --     neb.send_sequence_steps(keys_seq_steps, tick)
+        -- end
+
+        -- if beat == 0 and sub == 0 then
+        --     neb.send_sequence_steps(drums_seq_steps, tick)
+        -- end
+
+        -- -- Every 2 bars
+        -- if (bar == 0 or bar == 2) and beat == 0 and sub == 0 then
+        --     neb.send_sequence_steps(bass_seq_steps, tick)
+        -- end
 
     end
 
