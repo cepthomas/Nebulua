@@ -44,12 +44,12 @@ int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume);
 /// @return int Unused
 int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int value);
 
-/// Host call lua: Internal use only.
+/// Host call lua: Host calls arbitrary lua function. For internal use only.
 /// @param[in] l Internal lua state.
 /// @param[in] cmd Specific command
 /// @param[in] arg Optional argument
-/// @return int Script return code
-int luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg);
+/// @return const char* Script return
+const char* luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg);
 
 
 //---------------- Work functions for lua call host -------------//
@@ -82,7 +82,7 @@ int luainteropwork_Log(lua_State* l, int level, const char* msg);
 /// @return Unused
 int luainteropwork_SetTempo(lua_State* l, int bpm);
 
-/// If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).
+/// If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 /// @param[in] l Internal lua state.
 /// @param[in] chan_hnd Output channel handle
 /// @param[in] note_num Note number

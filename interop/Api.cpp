@@ -40,7 +40,7 @@ Api::Api(List<String^>^ lpath)
     // Init vars.
     _luaPath = lpath;
     Error = "";
-    SectionInfo = gcnew Dictionary<int, String^>();
+    //SectionInfo = gcnew Dictionary<int, String^>();
     NebStatus nstat = NebStatus::Ok;
     int lstat = LUA_OK;
 
@@ -134,7 +134,7 @@ NebStatus Api::OpenScript(String^ fn)
     int lstat = LUA_OK;
     int ret = 0;
     Error = "";
-    SectionInfo->Clear();
+    //SectionInfo->Clear();
 
     EnterCriticalSection(&_critsect);
 
@@ -172,20 +172,6 @@ NebStatus Api::OpenScript(String^ fn)
             Error = gcnew String(luainterop_Error());
             nstat = NebStatus::SyntaxError;
         }
-    }
-
-    // Get script info.
-    if (nstat == NebStatus::Ok)
-    {
-        // Get section info.
-        int ltype = lua_getglobal(_l, "_section_info");
-        lua_pushnil(_l);
-        while (lua_next(_l, -2) != 0) // && lstat ==_lUA_OK)
-        {
-            SectionInfo->Add((int)lua_tointeger(_l, -1), _ToManagedString(lua_tostring(_l, -2)));
-            lua_pop(_l, 1);
-        }
-        lua_pop(_l, 1); // Clean up stack.
     }
     
     LeaveCriticalSection(&_critsect);
@@ -254,13 +240,13 @@ NebStatus Api::RcvController(int chan_hnd, int controller, int value)
 }
 
 //--------------------------------------------------------//
-int Api::NebCommand(String^ cmd, String^ arg)
+String^ Api::NebCommand(String^ cmd, String^ arg)
 {
     Error = "";
 
     char* scmd = _ToCString(cmd);
     char* sarg = _ToCString(arg);
-    int ret = luainterop_NebCommand(_l, scmd, sarg);
+    const char* ret = luainterop_NebCommand(_l, scmd, sarg);
     free(scmd);
     free(sarg);
 
@@ -269,7 +255,7 @@ int Api::NebCommand(String^ cmd, String^ arg)
         Error = gcnew String(luainterop_Error());
     }
 
-    return ret;
+    return _ToManagedString(ret);
 }
 
 //------------------- Privates ---------------------------//

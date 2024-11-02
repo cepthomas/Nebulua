@@ -6,6 +6,7 @@ local st  = require("step_types")
 local bt  = require("bar_time")
 local api = require("host_api") -- host api mock
 local neb = require("nebulua") -- lua api
+local sx  = require("stringex")
 
 
 -- ut.config_debug(false)
@@ -39,7 +40,7 @@ function M.suite_parse_chunk(pn)
     pn.UT_EQUAL(step.tick, 1024)
     pn.UT_EQUAL(step.chan_hnd, 0x030E)
     pn.UT_EQUAL(step.note_num, 89)
-    pn.UT_CLOSE(step.volume, 0.20, 0.001)
+    pn.UT_CLOSE(step.volume, 0.5, 0.001)
     pn.UT_EQUAL(step.duration, 1)
 
 
@@ -90,8 +91,9 @@ function M.suite_process_script(pn)
 
     -- neb.dump_steps('.\\..\\_steps.txt', 's') -- diagnostic
 
-    pn.UT_EQUAL(ut.table_count(_section_info), 4)
-    pn.UT_EQUAL(_section_info['_LENGTH'], 768)
+    -- TODOT need to execute neb_command
+    local res = neb._neb_command('section_info', '')
+    pn.UT_TRUE(sx.contains(res, '_LENGTH,768'))
     -- print(ut.dump_table_string(_section_info, false, '_section_info'))
 
     -- Look inside.

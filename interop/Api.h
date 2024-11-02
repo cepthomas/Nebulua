@@ -45,9 +45,6 @@ namespace Nebulua { namespace Interop
         /// <summary>If an API or lua function failed this contains info.</summary>
         property String^ Error;
 
-        /// <summary>What's in the script.</summary>
-        property Dictionary<int, String^>^ SectionInfo;
-
         /// <summary>Unique opaque id.</summary>
         property int Id { int get() { return MAKE_ID(_l); }}
     #pragma endregion
@@ -92,7 +89,7 @@ namespace Nebulua { namespace Interop
         /// <param name="cmd">The command</param>
         /// <param name="arg">Maybe arg</param>
         /// <returns>Whatever the script said</returns>
-        int NebCommand(String^ cmd, String^ arg);
+        String^ NebCommand(String^ cmd, String^ arg);
     #pragma endregion
 
     #pragma region Event hooks

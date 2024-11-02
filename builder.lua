@@ -6,6 +6,7 @@ package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
 local ut = require('lbot_utils')
 local sx = require('stringex')
 
+local current_dir = io.popen("cd"):read()
 local opt = arg[1]
 local ret_code = 0
 local res = {}
@@ -42,7 +43,7 @@ end
 if opt == 'build_app' then
 
     bld = '"C:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"'
-    -- -r restore first
+    -- -r = restore first
     -- -t:rebuild
     -- Verbosity levels: q[uiet], m[inimal], n[ormal] (default), d[etailed], and diag[nostic].
     vrb = '-v:m'
@@ -107,13 +108,20 @@ elseif opt == 'gen_md' then
     f:write(content)
     f:close()
 
--- elseif opt == 'gen_interop' then TODO2
+elseif opt == 'gen_interop' then
+
     -- Convert spec into interop files.
+    output_text('Build: Generating interop...')
+    cmd = 'pushd "../../Libs/LuaBagOfTricks" & lua gen_interop.lua -ch '..current_dir..'/interop/interop_spec.lua '..current_dir..'/interop & popd'
+    print(cmd)
+    res = ut.execute_and_capture(cmd)
+    output_text(res)
+
     -- set spec_fn=%~dp0%interop_spec.lua
     -- set out_path=%~dp0%interop
-    -- Build the interop.
-    -- pushd "..\..\Libs\LuaBagOfTricks"
-    -- lua gen_interop.lua -ch %spec_fn% %out_path%
+    -- -- Build the interop.
+    -- pushd "../../Libs/LuaBagOfTricks"
+    -- --lua gen_interop.lua -ch current_dir/interop/interop_spec.lua current_dir/interop
     -- popd
 
 elseif opt == 'dev' then

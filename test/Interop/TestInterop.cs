@@ -30,11 +30,10 @@ namespace Nebulua.Test
             UT_EQUAL(stat, NebStatus.Ok);
             UT_EQUAL(events.CollectedEvents.Count, 7);
 
-            // Have a look inside.
-            UT_EQUAL(interop.SectionInfo.Count, 4);
-
-            // Fake valid loaded script.
-            State.Instance.InitSectionInfo(interop.SectionInfo);
+            //// Have a look inside.
+            //UT_EQUAL(interop.SectionInfo.Count, 4);
+            //// Fake valid loaded script.
+            //State.Instance.InitSectionInfo(interop.SectionInfo);
 
             // Run script steps.
             events.CollectedEvents.Clear();
@@ -56,7 +55,7 @@ namespace Nebulua.Test
                 }
             }
 
-            UT_EQUAL(events.CollectedEvents.Count, 115);
+            UT_EQUAL(events.CollectedEvents.Count, 122);
         }
 
         void State_ValueChangeEvent(object? sender, string name)

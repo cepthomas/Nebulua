@@ -8,6 +8,7 @@ local api = require("host_api")
 local st  = require("step_types")
 local mid = require("midi_defs")
 local mus = require("music_defs")
+local sx  = require("stringex")
 
 
 -- TODOT stress test and bulletproof this.
@@ -21,6 +22,9 @@ local M = {}
 
 -- All the sections defined in the script.
 local _sections = {}
+
+-- Key is section name, value is start tick. Total length is the last element.
+local _section_info = {}
 
 -- For parsing script sections.
 local _current_section = nil
@@ -45,11 +49,8 @@ local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modi
 ----- Globals for internal access by app.
 -----------------------------------------------------------------------------
 
--- Key is section name, value is start tick. Total length is the last element. TODO1 better way than making this global.
-_section_info = {}
-
 -- App executes a lua command. For internal use only.
-function _neb_command(cmd, arg)
+function M._neb_command(cmd, arg)
     if cmd == 'unload_all' then
         -- Unload everything so that the script can be reloaded.
         package.loaded.bar_time = nil
@@ -60,8 +61,14 @@ function _neb_command(cmd, arg)
         package.loaded.nebulua = nil
         package.loaded.step_types = nil
         package.loaded.stringex = nil
+        return '0'
+    elseif cmd == 'section_info' then
+        res = {}
+        for k, v in pairs(_section_info) do
+            table.insert(res, k..','..v)
+        end
+        return sx.strjoin('|', res)
     end
-    return 0
 end
 
 -- Debug hook.

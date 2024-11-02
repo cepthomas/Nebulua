@@ -153,13 +153,13 @@ int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int val
 }
 
 //--------------------------------------------------------//
-int luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg)
+const char* luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg)
 {
     _error = NULL;
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
-    int ret = 0;
+    const char* ret = 0;
 
     // Get function.
     int ltype = lua_getglobal(l, "_neb_command");
@@ -180,8 +180,8 @@ int luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg)
     if (stat == LUA_OK)
     {
         // Get the results from the stack.
-        if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Bad return type for _neb_command(): should be integer"; }
+        if (lua_isstring(l, -1)) { ret = lua_tostring(l, -1); }
+        else { _error = "Bad return type for _neb_command(): should be string"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -284,7 +284,7 @@ static int luainterop_SetTempo(lua_State* l)
 }
 
 //--------------------------------------------------------//
-// Lua call host: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (for drum/hit).
+// Lua call host: If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: chan_hnd Output channel handle

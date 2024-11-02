@@ -119,7 +119,7 @@ namespace Nebulua
             }
 
             // Unload current modules so reload will be minty fresh.
-            int ret = _api.NebCommand("unload_all", "no arg");
+            string ret = _api.NebCommand("unload_all", "no arg");
             if (_api.Error != "")
             {
                 throw new ApiException("NebCommand failed", _api.Error);
@@ -133,8 +133,17 @@ namespace Nebulua
                 throw new ApiException("Api open script failed", _api.Error);
             }
 
-            // Get info about the script.
-            State.Instance.InitSectionInfo(_api.SectionInfo);
+            // Get info about the script. ending,512|middle,256|_LENGTH,768|beginning,0
+            Dictionary<int, string> sectInfo = [];
+            string sinfo = _api.NebCommand("section_info", "no arg");
+
+            var chunks = sinfo.SplitByToken("|");
+            foreach (var chunk in chunks)
+            {
+                var elems = chunk.SplitByToken(",");
+                sectInfo[int.Parse(elems[1])] = elems[0];
+            }
+            State.Instance.InitSectionInfo(sectInfo);
 
             State.Instance.ExecState = ExecState.Idle;
 
@@ -378,8 +387,8 @@ namespace Nebulua
             {
                 // Warn and constrain, not stop.
                 _logger.Warn($"Script has invalid payload: {e.What} {e.Value}");
-                 e.What = MathUtils.Constrain(e.What, 0, MidiDefs.MIDI_VAL_MAX)
-                 e.Value = MathUtils.Constrain(e.Value, 0, MidiDefs.MIDI_VAL_MAX)
+                e.What = MathUtils.Constrain(e.What, 0, MidiDefs.MIDI_VAL_MAX);
+                e.Value = MathUtils.Constrain(e.Value, 0, MidiDefs.MIDI_VAL_MAX);
                 // throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
             }
 

@@ -71,7 +71,7 @@ M.script_funcs =
             { name = "cmd", type = "S", description = "Specific command" },
             { name = "arg", type = "S", description = "Optional argument" },
         },
-        ret = { type = "I", description = "Script return code" }
+        ret = { type = "S", description = "Script return" }
     },
 }
 
