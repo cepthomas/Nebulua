@@ -10,6 +10,12 @@ Scripts can also be [dynamic](examples/airport.lua), a take on Eno's Music for A
 Almost all errors are considered fatal as they are usually things the user needs to fix before continuing such as
 script syntax errors. They are logged, written to the CLI, and then the application exits.
 
+Internally, time is in units of `tick`. This is unwieldy for scripts so helpers are provided.
+Note that `tick` is a plain integer so normal algebraic operations (`+` `-` etc) can be performed on them.
+
+All volumes in the script are numbers in the range of 0.0 -> 1.0. These are mapped to standard midi values
+downstream. If the script uses out of range values, they are constrained and a warning is issued.
+
 
 ## Imports
 
@@ -24,10 +30,6 @@ local ut  = require("lbot_utils") -- misc utilities
 ```
 
 ## Time
-
-Internally, time is in units of `tick`. This is unwieldy for scripts so helpers are provided.
-Note that `tick` is an integer so normal algebraic operations (`+` `-` etc) can be performed on them.
-
 
 ```lua
 function bt.bt_to_tick(bar, beat, sub)
@@ -122,10 +124,10 @@ Send a controller immediately. Useful for things like panning and bank select.
 ```lua
 function neb.set_volume(chan_hnd, volume)
 ```
-Set master volume for the channel.
+Set volume for the channel.
 
 - chan_hnd: The channel handle to set.
-- volume: Master volume. 0.0 -> 1.0.
+- volume: Channel volume. 0.0 -> 1.0.
 
 
 ```lua
@@ -160,6 +162,23 @@ Call this in step(tick) to process things like note offs.
 
 - tick: current tick.
 
+```lua
+function neb.parse_sequence_steps(chan_hnd, sequence)
+```
+Create a dynamic object from a sequence. See [Composition](#markdown-header-composition).
+
+- chan_hnd: Specific channel.
+- sequence: The sequence to parse.
+- return: An object for use by `send_sequence_steps()`.
+
+
+```lua
+function neb.send_sequence_steps(seq_steps, tick)
+```
+Send the object created in `parse_sequence_steps()`. See [Composition](#markdown-header-composition).
+
+- seq_steps: when to send it, usually current tick.
+- tick: when to send it, usually current tick.
 
 ## Script Callbacks
 
@@ -217,7 +236,7 @@ local example_seq =
 ```
 
 - `|7-------|` is one beat with 8 subs.
-- `1 to 9` (volume) starts a note which is held for subsequent `-`. The note is ended with any other character than `-`.
+- `1 to 9` (volume level) starts a note which is held for subsequent `-`. The note is ended with any other character than `-`.
 - `|`, `.` and ` ` are ignored, used for visual assist only. These are particularly useful for drum patterns.
 - `WHAT_TO_PLAY` is a standard string, integer, or function.
 - Pattern: describes a sequence of notes, kind of like a piano roll. 
@@ -238,6 +257,22 @@ sections =
 }
 ```
 
+Sequences can also be loaded dynamically and triggered at arbitrary times in the script.
+
+```lua
+local example_seq_steps = neb.parse_sequence_steps(hnd_keys, example_seq)
+
+function step(tick)
+    local bar, beat, sub = bt.tick_to_bt(tick)
+
+    if bar == 1 and beat == 0 and sub == 0 then
+        neb.send_sequence_steps(example_seq_steps, tick)
+    end
+
+    -- Do this now.
+    neb.process_step(tick)
+end
+```
 
 ## Utilities
 

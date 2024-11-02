@@ -1,11 +1,5 @@
 --[[
 Generates the interop code. Only needed if there are changes to the api.
-Drive it with something like this:
-    set spec_fn=%~dp0%interop_spec.lua
-    set out_path=%~dp0%interop
-    pushd "..\..\Libs\LuaBagOfTricks"
-    lua gen_interop.lua -ch %spec_fn% %out_path%
-    popd
 ]]
 
 local M = {}
@@ -15,7 +9,7 @@ M.config =
     lua_lib_name = "host_api",
 }
 
--- Host calls script.
+------------------------ Host calls script ------------------------
 M.script_funcs =
 {
     {
@@ -81,7 +75,7 @@ M.script_funcs =
     },
 }
 
--- Script calls host.
+------------------------ Script calls host ------------------------
 M.host_funcs =
 {
     {

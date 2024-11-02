@@ -34,22 +34,11 @@ local _transients = {}
 -- Where we be.
 local _current_tick = 0
 
--- Map the 0-9 script volume range to internal double. TODOF make user configurable per channel or enum curve = LIN, SQR, etc.
--- local _vol_map = { 0.0, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 1.0 } -- linear
--- local _vol_map = { 0.0, 0.3, 0.55, 0.75, 0.85, 0.92, 0.96, 0.98, 0.99, 1.0 } -- log-pot
--- local _vol_/map =    { 0.0, 0.4, 0.52, 0.6, 0.68, 0.76, 0.84, 0.90, 0.95, 1.0 } -- mod-log
-local _vol_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- mod-linear
+-- Key is chan_hnd, value is volume 0.0 -> 1.0.
+local _channel_volumes = {}
 
--- TIL Decibels are logarithmic, not linear. 30 dB, is 100 times louder than 10 dB, and 40 dB is 1,000 times louder than 10 dB
--- Human perception of loudness actually works in base 2 scale. A 10 dB increase is perceived as roughly double
---   the loudness (20 dB is 4x as loud, etc.). So a 30 dB increase in sound level corresponds to a 1,000x increase
---   in energy but only an 8x increase in "loudness".
--- The relationship between SPL and loudness of a single tone can be approximated by Stevens's power law in which SPL
---   has an exponent of 0.67. --> O = I^0.67
-
-
--- Key is chan_hnd, value is double volume.
-local _master_vols = {}
+-- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
+local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
 
 
 -----------------------------------------------------------------------------
@@ -59,7 +48,7 @@ local _master_vols = {}
 -- Key is section name, value is start tick. Total length is the last element. TODO1 better way than making this global.
 _section_info = {}
 
--- App executes a lua command.
+-- App executes a lua command. For internal use only.
 function _neb_command(cmd, arg)
     if cmd == 'unload_all' then
         -- Unload everything so that the script can be reloaded.
@@ -128,20 +117,20 @@ end
 -- @return the new chan_hnd
 function M.create_output_channel(dev_name, chan_num, patch)
     local chan_hnd = api.create_output_channel(dev_name, chan_num, patch)
-    _master_vols[chan_hnd] = 1.0 -- default to passthrough.
+    _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
     return chan_hnd
 end
 
 -----------------------------------------------------------------------------
---- Set master volume for the channel.
+--- Set volume for the channel.
 -- @param chan_hnd the channel
--- @param volume master volume
+-- @param volume volume
 -- @return status
 function M.set_volume(chan_hnd, volume)
-    if volume < 0.0 or volume > 1.0 then
+    if volume < 0.1 or volume > 2.0 then
         error(string.format("Invalid master volume %f", volume), 2)
     end
-    _master_vols[chan_hnd] = volume
+    _channel_volumes[chan_hnd] = volume
 
     return 0
 end
@@ -199,7 +188,7 @@ function M.send_note(chan_hnd, note_num, volume, dur)
 
     if volume > 0 then -- noteon
         -- adjust volume
-        volume = volume * _master_vols[chan_hnd]
+        volume = volume * _channel_volumes[chan_hnd]
         -- send note_on now
         api.send_note(chan_hnd, note_num, volume)
         if dur > 0 then
@@ -264,8 +253,6 @@ function M.process_comp()
     _section_info = {}
     -- Total length of composition.
     local length = 0
-
-    length = 0 -- cumulative total length
 
     for isect, section in ipairs(_sections) do
         -- Process the section. Requires a name.
@@ -374,7 +361,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     ---------- Local function to package an event. ------ ------
     local function make_note_event(offset, notes_to_play)
         -- scale volume
-        local vol = _vol_map[current_vol + 1] -- to lua index
+        local vol = _volume_map[current_vol + 1] -- to lua index
         -- calc duration from start of note
         local dur = math.max(offset - event_offset, 1) -- (min for drum/hit)
 
@@ -393,7 +380,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     ---------- Local function to package an event. ------------
     local function make_func_event(offset, func, vol_num)
         -- scale volume
-        local vol = _vol_map[vol_num]
+        local vol = _volume_map[vol_num]
         local si = st.func(start_tick + event_offset, chan_hnd, func, vol)
         if si.err == nil then
             table.insert(steps, si)

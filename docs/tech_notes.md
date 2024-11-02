@@ -6,6 +6,9 @@
 - Uses 64 bit Lua 5.4.2 from [here](https://luabinaries.sourceforge.net/download.html).
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 
+`builder.lua` does most of the work to build, test, etc.
+
+
 ## Design
 
 - All lua code is in modules except for the Api functions such as `step()` which are in global `_G`.
@@ -16,6 +19,33 @@
 - The shared resource that requires synchronization is a singleton `Api`. It is protected by a 
   `CRITICAL_SECTION`. Thread access to the UI is protected by `InvokeIfRequired()`.
 - The interop Api translate between internal `LUA_XXX` status and user-facing `enum NebStatus`. The Api never throws.
+
+## Call Stack
+
+Going up and down the stacks is a bit convoluted. Here are some examples that help (hopefully).
+
+Host -> lua
+```
+MmTimer_Callback(double totalElapsed, double periodElapsed)  [in App\Core.cs]
+    calls
+Api.Step(tick)  [in interop\Api.cpp]
+    calls
+luainterop_Step(_l, tick)  [in interop\luainterop.c]
+    calls
+function step(tick)  [in my_lua_script.lua]
+```
+
+Lua -> host
+```
+neb.send_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
+    calls
+luainterop_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
+    calls
+ Api::NotifySend(args)  [in interop\Api.cpp]
+    calls
+Interop_Send(object? _, SendArgs e)  [in App\Core.cs]
+    calls driver...
+```
 
 ## Error Model
 

@@ -28,7 +28,7 @@ neb.log_info('### loading example.lua ###')
 local midi_in = "ClickClack"
 local hnd_ccin  = neb.create_input_channel(midi_in, 1)
 
--- Use DAW or VST host.
+-- DAW or VST host.
 local use_host = false
 
 local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
@@ -36,20 +36,6 @@ local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.N
 local hnd_bass  = neb.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
 local hnd_synth = neb.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
 local hnd_drums = neb.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
-
--- -- Use DAW or VST host.
--- local midi_out = "loopMIDI Port"
--- local hnd_keys  = neb.create_output_channel(midi_out, 1, mid.NO_PATCH)
--- local hnd_bass  = neb.create_output_channel(midi_out, 2, mid.NO_PATCH)
--- local hnd_synth = neb.create_output_channel(midi_out, 3, mid.NO_PATCH)
--- local hnd_drums = neb.create_output_channel(midi_out, 10, mid.NO_PATCH)
-
--- -- Use builtin GM.
--- -- local midi_out = "VirtualMIDISynth #1" -- or "Microsoft GS Wavetable Synth"
--- -- local hnd_keys  = neb.create_output_channel(midi_out, 1, inst.AcousticGrandPiano)
--- -- local hnd_bass  = neb.create_output_channel(midi_out, 2, inst.AcousticBass)
--- -- local hnd_synth = neb.create_output_channel(midi_out, 3, inst.Lead1Square)
--- -- local hnd_drums = neb.create_output_channel(midi_out, 10, kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
@@ -59,7 +45,7 @@ local hnd_drums = neb.create_output_channel(midi_out, 10, ut.tern(use_host, mid.
 -- local my_scale = mus.get_notes_from_string("G3.Algerian")
 local my_scale = mus.get_notes_from_string("C4.o7")
 
--- Create custom note collection.
+-- Or create custom note collection.
 -- mus.create_definition("MY_SCALE", "1 +3 4 -b7")
 -- local my_scale = mus.get_notes_from_string("B4.MY_SCALE")
 
