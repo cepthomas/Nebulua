@@ -4,6 +4,7 @@ local sx = require("stringex")
 
 local M = {}
 
+local _dump_level = 0
 
 ---------------------------------------------------------------
 --- Execute a file and return the output.
@@ -54,11 +55,11 @@ end
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param tbl What to dump.
--- @param recursive Avoid death loops. TODO1 number depth
+-- @param depth How deep to go in recursion. 0 means just this level.
 -- @param name Of the tbl.
 -- @param indent Nesting.
 -- @return list table of strings
-function M.dump_table(tbl, recursive, name, indent)
+function M.dump_table(tbl, depth, name, indent)
     local res = {}
     indent = indent or 0
     name = name or "no_name"
@@ -71,8 +72,10 @@ function M.dump_table(tbl, recursive, name, indent)
         indent = indent + 1
         sindent = sindent.."    "
         for k, v in pairs(tbl) do
-            if type(v) == "table" and recursive then
-                trec = M.dump_table(v, recursive, k, indent) -- recursion!
+            if type(v) == "table" and _dump_level < depth then
+                _dump_level = _dump_level + 1
+                trec = M.dump_table(v, depth, k, indent) -- recursion!
+                _dump_level = _dump_level - 1
                 for _,v in ipairs(trec) do
                     table.insert(res, v)
                 end
@@ -90,11 +93,11 @@ end
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param tbl What to dump.
--- @param recursive Avoid death loops.
+-- @param depth How deep to go in recursion. 0 means just this level.
 -- @param name Of tbl.
 -- @return string
-function M.dump_table_string(tbl, recursive, name)
-    local res = M.dump_table(tbl, recursive, name, 0)
+function M.dump_table_string(tbl, depth, name)
+    local res = M.dump_table(tbl, depth, name, 0)
     return sx.strjoin('\n', res)
 end
 

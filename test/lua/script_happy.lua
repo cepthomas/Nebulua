@@ -1,7 +1,6 @@
 
 -- Script for unit test - the happy path.
 
--- print('!!!', package.path)
 
 local neb = require("nebulua")
 local mus = require("music_defs")

@@ -4,7 +4,6 @@ Can be run from the cmd line or require pnut_runner from another script/module.
 Future opts maybe: write to file, junit/xml format.
 --]]
 
-
 local pn = require("pnut")
 local ut = require("lbot_utils")
 

@@ -31,8 +31,8 @@ neb.log_info('### loading piece1.lua ###')
 
 
 -- local fp, err = io.open('C:\\Dev\\repos\\Apps\\Nebulua\\_glob.txt', 'w+')
--- fp:write(ut.dump_table_string(package.loaded, false, 'package.loaded')..'\n')
--- fp:write(ut.dump_table_string(_G, false, '_G')..'\n')
+-- fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
+-- fp:write(ut.dump_table_string(_G, 0, '_G')..'\n')
 -- fp:close()
 
 

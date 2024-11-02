@@ -32,7 +32,7 @@ function M.suite_parse_chunk(pn)
     -- Note number. This also checks the list of steps in more detail
     local chunk = { "|5       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 }
     local seq_length, steps = neb.parse_chunk(chunk, 0x030E, 1000 )
-    -- print('+++', ut.dump_table_string(steps, true, 'steps1'))
+    -- print('+++', ut.dump_table_string(steps, 1, 'steps1'))
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
     local step = steps[6] -- pick one
@@ -47,14 +47,14 @@ function M.suite_parse_chunk(pn)
     -- Note name.
     chunk = { "|7   7   |        |        |        |    4---|---     |        |        |",  "C2" }
     seq_length, steps = neb.parse_chunk(chunk, 0x0A04, 234 )
-    -- print('+++', ut.dump_table_string(steps, true, 'steps2'))
+    -- print('+++', ut.dump_table_string(steps, 1, 'steps2'))
     pn.UT_EQUAL(#steps, 3)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Chord.
     chunk = { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" }
     seq_length, steps = neb.parse_chunk(chunk, 0x0A05, 1111 )
-    -- print('+++', ut.dump_table_string(steps, true, 'steps3'))
+    -- print('+++', ut.dump_table_string(steps, 1, 'steps3'))
     pn.UT_EQUAL(#steps, 16) -- 4 x 4 notes in chord
     pn.UT_EQUAL(seq_length, 64)
 
@@ -62,7 +62,7 @@ function M.suite_parse_chunk(pn)
     local dummy = function() end
     chunk = { "|        |    6-  |        |        |        | 9999   |  111   |        |", dummy }
     seq_length, steps = neb.parse_chunk(chunk, 0x0A06, 1555 )
-    -- print('+++', ut.dump_table_string(steps, true, 'steps4'))
+    -- print('+++', ut.dump_table_string(steps, 1, 'steps4'))
     pn.UT_EQUAL(#steps, 8)
     pn.UT_EQUAL(seq_length, 64)
 
@@ -70,9 +70,9 @@ function M.suite_parse_chunk(pn)
     -- dbg()
     chunk = { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 99 }
     seq_length, steps = neb.parse_chunk(chunk, 0x0A07, 678 )
-    -- print('+++', ut.dump_table_string(steps, true, 'steps5'))
+    -- print('+++', ut.dump_table_string(steps, 1, 'steps5'))
     pn.UT_EQUAL(seq_length, 0)
-    pn.UT_STR_CONTAINS(ut.dump_table_string(steps, true, 'xxxx'), "Invalid '-' in pattern string")
+    pn.UT_STR_CONTAINS(ut.dump_table_string(steps, 1, 'xxxx'), "Invalid '-' in pattern string")
 
 end
 
@@ -94,12 +94,12 @@ function M.suite_process_script(pn)
     -- TODOT need to execute neb_command
     local res = neb._neb_command('section_info', '')
     pn.UT_TRUE(sx.contains(res, '_LENGTH,768'))
-    -- print(ut.dump_table_string(_section_info, false, '_section_info'))
+    -- print(ut.dump_table_string(_section_info, 0, '_section_info'))
 
     -- Look inside.
     -- local steps, transients = _mole()
 
-    -- s = ut.dump_table_string(steps, true, "steps")
+    -- s = ut.dump_table_string(steps, 1, "steps")
     -- print(s)
 
     -- Execute some script steps.
@@ -126,7 +126,7 @@ function M.suite_process_script(pn)
     -- Examine collected data.
     --for _, d in ipairs(api.activity) do
 
-    -- s = ut.dump_table_string(transients, true, "transients")
+    -- s = ut.dump_table_string(transients, 1, "transients")
     -- print(s)
 
     local ok, ret = pcall(rcv_note, 10, 11, 0.3)
