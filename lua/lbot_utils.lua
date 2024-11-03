@@ -5,8 +5,14 @@ local sx = require("stringex")
 local M = {}
 
 local _dump_level = 0
+local _color_spec = {}
 
----------------------------------------------------------------
+-----------------------------------------------------------------------------
+------------------------------ High level -----------------------------------
+-----------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------
 --- Execute a file and return the output.
 -- @param cmd Command to run.
 -- @return Output text or nil if invalid file.
@@ -21,7 +27,7 @@ function M.execute_and_capture(cmd)
     end
 end
 
----------------------------------------------------------------
+-----------------------------------------------------------------------------
 --- If using debugger, bind lua error() function to it.
 -- @param use_dbgr Use debugger.
 function M.config_debug(use_dbgr)
@@ -102,6 +108,26 @@ function M.dump_table_string(tbl, depth, name)
 end
 
 -----------------------------------------------------------------------------
+--- Gets the file and line of the caller.
+-- @param level How deep to look:
+--    0 is the getinfo() itself
+--    1 is the function that called getinfo() - get_caller_info()
+--    2 is the function that called get_caller_info() - usually the one of interest
+-- @return filename, linenumber or nil if invalid
+function M.get_caller_info(level)
+    local ret = nil
+    local s = debug.getinfo(level, 'S')
+    local l = debug.getinfo(level, 'l')
+    fn = nil
+    ln = nil
+    if s ~= nil and l ~= nil then
+        fn = s.short_src
+        ln = l.currentline
+    end
+    return fn, ln
+end
+
+-----------------------------------------------------------------------------
 --- Lua has no builtin way to count number of values in an associative table so this does.
 -- @param tbl the table
 -- @return number of values
@@ -124,26 +150,6 @@ function M.table_add(tbl, key, val)
 end
 
 -----------------------------------------------------------------------------
---- Gets the file and line of the caller.
--- @param level How deep to look:
---    0 is the getinfo() itself
---    1 is the function that called getinfo() - get_caller_info()
---    2 is the function that called get_caller_info() - usually the one of interest
--- @return filename, linenumber or nil if invalid
-function M.get_caller_info(level)
-    local ret = nil
-    local s = debug.getinfo(level, 'S')
-    local l = debug.getinfo(level, 'l')
-    fn = nil
-    ln = nil
-    if s ~= nil and l ~= nil then
-        fn = s.short_src
-        ln = l.currentline
-    end
-    return fn, ln
-end
-
------------------------------------------------------------------------------
 --- Emulation of C ternary operator.
 -- @param cond to test
 -- @param tval if cond is true
@@ -152,6 +158,53 @@ end
 function M.tern(cond, tval, fval)
     if cond then return tval else return fval end
 end
+
+
+-----------------------------------------------------------------------------
+------------------------- Math ----------------------------------------------
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+--- Remap a value to new coordinates.
+-- @param val
+-- @param start1
+-- @param stop1
+-- @param start2
+-- @param stop2
+-- @return
+function M.map(val, start1, stop1, start2, stop2)
+    return start2 + (stop2 - start2) * (val - start1) / (stop1 - start1)
+end
+
+-----------------------------------------------------------------------------
+--- Bounds limits a value.
+-- @param val
+-- @param min
+-- @param max
+-- @return
+function M.constrain(val, min, max)
+    val = math.max(val, min)
+    val = math.min(val, max)
+    return val
+end
+
+-----------------------------------------------------------------------------
+--- Snap to closest neighbor.
+-- @param val what to snap
+-- @param granularity The neighbors property line.
+-- @param round Round or truncate.
+-- @return snapped value
+function M.clamp(val, granularity, round)
+    res = (val / granularity) * granularity
+    if round and (val % granularity > granularity / 2) then res = res + granularity end
+    return res
+end
+
+
+-----------------------------------------------------------------------------
+------------------------- Type checking and conversion TODO1 consolidate? ----------------------
+-----------------------------------------------------------------------------
+
 
 ----------------------------------------------------------------------------
 --- Test value type.
@@ -208,58 +261,6 @@ function M.to_integer(v)
 end
 
 -----------------------------------------------------------------------------
---- Like tostring() without address info. Mainly for unit testing.
--- @param v value to convert
--- @return string
-function M.tostring_cln(v)
-    ret = "???"
-    vtp = type(v)
-    if vtp == "table" then ret = "table"
-    elseif vtp == "function" then ret = "function"
-    elseif vtp == "thread" then ret = "thread"
-    elseif vtp == "userdata" then ret = "userdata"
-    else ret = tostring(v)
-    end
-    return ret
-end
-
------------------------------------------------------------------------------
---- Remap a value to new coordinates.
--- @param val
--- @param start1
--- @param stop1
--- @param start2
--- @param stop2
--- @return
-function M.map(val, start1, stop1, start2, stop2)
-    return start2 + (stop2 - start2) * (val - start1) / (stop1 - start1)
-end
-
------------------------------------------------------------------------------
---- Bounds limits a value.
--- @param val
--- @param min
--- @param max
--- @return
-function M.constrain(val, min, max)
-    val = math.max(val, min)
-    val = math.min(val, max)
-    return val
-end
-
------------------------------------------------------------------------------
---- Snap to closest neighbor.
--- @param val what to snap
--- @param granularity The neighbors property line.
--- @param round Round or truncate.
--- @return snapped value
-function M.clamp(val, granularity, round)
-    res = (val / granularity) * granularity
-    if round and (val % granularity > granularity / 2) then res = res + granularity end
-    return res
-end
-
------------------------------------------------------------------------------
 --- Validate a value.
 -- @param v which value
 -- @param min range inclusive
@@ -271,7 +272,7 @@ function M.val_number(v, min, max, name)
     ok = ok and (max ~= nil and v <= max)
     ok = ok and (min ~= nil and v >= min)
     if not ok then
-        return string.format("Invalid number %s: %s", name, M.tostring_cln(v))
+        return string.format('Invalid number '..name..': '..v)
     end
     return nil
 end
@@ -287,7 +288,7 @@ function M.val_integer(v, min, max, name)
     ok = ok and (max ~= nil and v <= max)
     ok = ok and (min ~= nil and v >= min)
     if not ok then
-        return string.format("Invalid integer %s: %s", name, M.tostring_cln(v))
+        return string.format('Invalid integer '..name..': '..v)
     end
     return nil
 end
@@ -299,7 +300,7 @@ end
 function M.val_string(v, name)
     local ok = M.is_string(v)
     if not ok then
-        return string.format("Invalid string %s: %s", name, M.tostring_cln(v))
+        return string.format('Invalid string '..name..': '..v)
     end
     return nil
 end
@@ -311,7 +312,7 @@ end
 function M.val_boolean(v, name)
     local ok = M.is_boolean(v)
     if not ok then
-        return string.format("Invalid boolean %s: %s", name, M.tostring_cln(v))
+        return string.format('Invalid boolean '..name..': '..v)
     end
     return nil
 end
@@ -323,7 +324,7 @@ end
 function M.val_table(v, name)
     local ok = M.is_table(v)
     if not ok then
-        return string.format("Invalid table %s", M.tostring_cln(name))
+        return string.format('Invalid table '..name..': '..v)
     end
     return nil
 end
@@ -335,7 +336,7 @@ end
 function M.val_function(v, name)
     local ok = M.is_function(v)
     if not ok then
-        return string.format("Invalid function %s", M.tostring_cln(name))
+        return string.format('Invalid function '..name..': '..v)
     end
     return nil
 end

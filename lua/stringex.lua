@@ -106,7 +106,7 @@ function M.contains(s, phrase)
 end
 
 -----------------------------------------------------------------------------
---- does s start with prefix or one of prefixes?
+--- does s start with prefix?
 -- @string s a string
 -- @param prefix a string
 function M.startswith(s, prefix)
@@ -114,7 +114,7 @@ function M.startswith(s, prefix)
 end
 
 -----------------------------------------------------------------------------
---- does s end with suffix or one of suffixes?
+--- does s end with suffix?
 -- @string s a string
 -- @param suffix a string
 function M.endswith(s, suffix)

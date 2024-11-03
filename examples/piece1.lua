@@ -5,11 +5,25 @@ local mus = require("music_defs")
 local mid = require("midi_defs") -- GM midi instrument definitions
 local bt  = require("bar_time") -- time utility
 local ut  = require('lbot_utils')
+local sx  = require("stringex")
 
 
 -- Setup for debug.
 -- ut.config_debug(true)
 -- dbg()
+
+-- Say hello.
+neb.log_info('### loading piece1.lua ###')
+
+names = {'John', 'Joe', 'Steve'}
+-- for nameCount = 1, 3 do
+--     print (names[nameCount])
+-- end
+
+for k, v in pairs(names) do
+   print('>>>', k, v)
+end
+
 
 
 -- Aliases
@@ -26,11 +40,11 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
--- Say hello.
-neb.log_info('### loading piece1.lua ###')
 
-
--- local fp, err = io.open('C:\\Dev\\repos\\Apps\\Nebulua\\_glob.txt', 'w+')
+-- local current_dir = io.popen("cd"):read()
+-- local sep = package.config:sub(1, 1)
+-- local fn = sx.strjoin(sep, { current_dir, '_glob.txt' } )
+-- local fp = io.open(fn, 'w+')
 -- fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
 -- fp:write(ut.dump_table_string(_G, 0, '_G')..'\n')
 -- fp:close()

@@ -9,52 +9,49 @@ local sx = require('stringex')
 local current_dir = io.popen("cd"):read()
 local opt = arg[1]
 local ret_code = 0
-local res = {}
 
--- Make pretty.
-local GRAY = string.char(27).."[95m" --"[90m"
-local RED = string.char(27).."[41m" --"[91m"
-local BLUE = string.char(27).."[94m"
-local YELLOW = string.char(27).."[33m"
-local GREEN = string.char(27).."[92m"
-local RESET = string.char(27).."[0m"
 
+-- Make pretty. TODO1 put in lbot?
 local function output_text(text)
     -- Split into lines and colorize.
+
+    local GRAY = string.char(27).."[95m" --"[90m"
+    local RED = string.char(27).."[41m" --"[91m"
+    local BLUE = string.char(27).."[94m"
+    local YELLOW = string.char(27).."[33m"
+    local GREEN = string.char(27).."[92m"
+    local RESET = string.char(27).."[0m"
+
     lines = sx.strsplit(text, '\n', false)
     for _, s in ipairs(lines) do
-        if sx.startswith(s, 'Build: ') then
-            print(GREEN..s..RESET)
-        elseif sx.startswith(s, '! ') then
-            print(RED..s..RESET)
-        elseif sx.contains(s, '): error ') then
-            print(RED..s..RESET)
-        elseif sx.contains(s, '): warning ') then
-            print(YELLOW..s..RESET)
-        else
-            print(s)
+        if sx.startswith(s, 'Build: ') then print(GREEN..s..RESET)
+        elseif sx.startswith(s, '! ') then  print(RED..s..RESET)
+        elseif sx.contains(s, '): error ') then print(RED..s..RESET)
+        elseif sx.contains(s, '): warning ') then print(YELLOW..s..RESET)
+        else  print(s)
         end
     end
 end
+-- spec = { ['Build: ']='green', ['! ']='red', ['): error ']='red', ['): warning ']='yellow' }
 
 
 -------------------------------------------------------------------------
 
 if opt == 'build_app' then
 
-    bld = '"C:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"'
+    local bld_exe = '"C:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"'
     -- -r = restore first
     -- -t:rebuild
     -- Verbosity levels: q[uiet], m[inimal], n[ormal] (default), d[etailed], and diag[nostic].
     vrb = '-v:m'
 
     output_text('Build: Building app...')
-    cmd = sx.strjoin(' ', { bld, vrb, 'Nebulua.sln' } )
+    cmd = sx.strjoin(' ', { bld_exe, vrb, 'Nebulua.sln' } )
     res = ut.execute_and_capture(cmd)
     output_text(res)
 
     output_text('Build: Building app tests...')
-    cmd = sx.strjoin(' ', { bld, vrb, 'test/NebuluaTest.sln' } )
+    cmd = sx.strjoin(' ', { bld_exe, vrb, 'test/NebuluaTest.sln' } )
     res = ut.execute_and_capture(cmd)
     output_text(res)
 
@@ -116,13 +113,6 @@ elseif opt == 'gen_interop' then
     print(cmd)
     res = ut.execute_and_capture(cmd)
     output_text(res)
-
-    -- set spec_fn=%~dp0%interop_spec.lua
-    -- set out_path=%~dp0%interop
-    -- -- Build the interop.
-    -- pushd "../../Libs/LuaBagOfTricks"
-    -- --lua gen_interop.lua -ch current_dir/interop/interop_spec.lua current_dir/interop
-    -- popd
 
 elseif opt == 'dev' then
 

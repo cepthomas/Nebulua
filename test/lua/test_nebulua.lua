@@ -89,7 +89,7 @@ function M.suite_process_script(pn)
     -- Process the data.
     neb.process_comp()
 
-    -- neb.dump_steps('.\\..\\_steps.txt', 's') -- diagnostic
+    -- neb.dump_steps('_steps.txt', 's') -- diagnostic
 
     -- TODOT need to execute neb_command
     local res = neb._neb_command('section_info', '')
