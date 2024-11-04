@@ -101,7 +101,7 @@ end
 function M.UT_TRUE(expr, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
-    if expr == false then
+    if expr == nil or expr == false then
         case_failed('Expression is not true', info)
         pass = false
     end
@@ -115,7 +115,7 @@ end
 function M.UT_FALSE(expr, info)
     local pass = true
     M.num_cases_run = M.num_cases_run + 1
-    if expr == true then
+    if expr == nil or expr == true then
         case_failed('Expression is not false', info)
         pass = false
     end

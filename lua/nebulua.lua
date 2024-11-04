@@ -44,32 +44,9 @@ local _channel_volumes = {}
 -- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
 local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
 
+-- Might be useful.
+local _root_dir
 
------------------------------------------------------------------------------
------ Globals for internal access by app.
------------------------------------------------------------------------------
-
--- App executes a lua command. For internal use only.
-function M._neb_command(cmd, arg)
-    if cmd == 'unload_all' then
-        -- Unload everything so that the script can be reloaded.
-        package.loaded.bar_time = nil
-        package.loaded.debugger = nil
-        package.loaded.lbot_utils = nil
-        package.loaded.midi_defs = nil
-        package.loaded.music_defs = nil
-        package.loaded.nebulua = nil
-        package.loaded.step_types = nil
-        package.loaded.stringex = nil
-        return '0'
-    elseif cmd == 'section_info' then
-        res = {}
-        for k, v in pairs(_section_info) do
-            table.insert(res, k..','..v)
-        end
-        return sx.strjoin('|', res)
-    end
-end
 
 -- Debug hook.
 -- function _mole()
@@ -91,6 +68,7 @@ function M.log_debug(msg) api.log(1, msg) end
 function M.log_trace(msg) api.log(0, msg) end
 
 M.log_info('### loading nebulua.lua ### ')
+
 
 -----------------------------------------------------------------------------
 --- Set system tempo. This goes straight through to the host.
@@ -541,6 +519,32 @@ function M.dump_steps(fn, which)
     fp:close()
 end
 
+-----------------------------------------------------------------------------
+--- App executes a lua command. For internal use only. TODOF return actual tables not strings.
+function _neb_command(cmd, arg)
+    if cmd == 'unload_all' then  -- Unload everything so that the script can be reloaded.
+        package.loaded.bar_time = nil
+        package.loaded.debugger = nil
+        package.loaded.lbot_utils = nil
+        package.loaded.midi_defs = nil
+        package.loaded.music_defs = nil
+        package.loaded.nebulua = nil
+        package.loaded.step_types = nil
+        package.loaded.stringex = nil
+        return '0'
+    elseif cmd == 'section_info' then -- Return the collected section information.
+        res = {}
+        for k, v in pairs(_section_info) do
+            table.insert(res, k..','..v)
+        end
+        return sx.strjoin('|', res)
+    elseif cmd == 'root_dir' then
+        _root_dir = arg
+        return '0'
+    else
+        M.log_info('Unknown cmd '..cmd..' '..arg)
+    end
+end
 
 -----------------------------------------------------------------------------
 -- Return module.

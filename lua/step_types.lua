@@ -1,22 +1,27 @@
 -- Family of midi events.
 
 local ut = require('lbot_utils')
-local mid = require('midi_defs')
 local bt = require('bar_time')
+local mid = require('midi_defs')
 
 
 local M = {}
+
+-- If true call error() otherwise clear .valid flag.
+M.fail_hard = true
+
 
 -- Forward refs.
 local format_chan_hnd
 local format_tick
 
 
+
 -----------------------------------------------------------------------------
 function M.note(tick, chan_hnd, note_num, volume, duration)
     local d = {}
+    d.valid = true
     d.step_type = "note"
-    d.err = nil
     d.tick = tick
     d.chan_hnd = chan_hnd
     d.note_num = note_num
@@ -24,53 +29,52 @@ function M.note(tick, chan_hnd, note_num, volume, duration)
     d.duration = duration
 
     -- Validate.
-    d.err = d.err or ut.val_integer(d.tick, 0, bt.MAX_TICK, 'tick')
-    d.err = d.err or ut.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or ut.val_integer(d.note_num, 0, mid.MAX_MIDI, 'note_num')
-    d.err = d.err or ut.val_number(d.volume, 0.0, 1.0, 'volume')
-    d.err = d.err or ut.val_integer(d.duration, 0, bt.MAX_TICK, 'duration')
+    d.valid = d.valid and ut.val_integer(d.tick, 0, bt.MAX_TICK)
+    d.valid = d.valid and ut.val_integer(d.chan_hnd, 0, 0xFFFF)
+    d.valid = d.valid and ut.val_integer(d.note_num, 0, mid.MAX_MIDI)
+    d.valid = d.valid and ut.val_number(d.volume, 0.0, 1.0)
+    d.valid = d.valid and ut.val_integer(d.duration, 0, bt.MAX_TICK)
 
-    d._format = function() return d.err or
-        string.format('%s %s NOTE:%d VOL:%.1f DUR:%d',
-            format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
-    end
+    setmetatable(d,
+    {
+        __tostring = function(self)
+            return string.format('%s %s NOTE:%d VOL:%.1f DUR:%d',
+                format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
+        end
+    })
 
-    setmetatable(d, { __tostring = function(self) return self._format() end })
-
-    -- setmetatable(d,
-    --     {
-    --         __tostring = function(self)
-    --             return self._format()
-    --         end
-    --     }
-    -- )
+    if not d.valid and M.fail_hard then error('Invalid note '..tostring(d)) end
 
     return d
 end
+
 
 -----------------------------------------------------------------------------
 function M.controller(tick, chan_hnd, controller, value)
 
     local d = {}
+    d.valid = true
     d.step_type = "controller"
-    d.err = nil
     d.tick = tick
     d.chan_hnd = chan_hnd
     d.controller = controller
     d.value = value
 
     -- Validate.
-    d.err = d.err or ut.val_integer(d.tick, 0, bt.MAX_TICK, 'tick')
-    d.err = d.err or ut.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or ut.val_integer(d.controller, 0, mid.MAX_MIDI, 'controller')
-    d.err = d.err or ut.val_integer(d.value, 0, mid.MAX_MIDI, 'value')
+    d.valid = d.valid and ut.val_integer(d.tick, 0, bt.MAX_TICK)
+    d.valid = d.valid and ut.val_integer(d.chan_hnd, 0, 0xFFFF)
+    d.valid = d.valid and ut.val_integer(d.controller, 0, mid.MAX_MIDI)
+    d.valid = d.valid and ut.val_integer(d.value, 0, mid.MAX_MIDI)
 
-    d._format = function() return d.err or
-        string.format('%s %s CTRL:%d VAL:%d',
-            format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.controller, d.value)
-    end
+    setmetatable(d,
+    {
+        __tostring = function(self)
+            return string.format('%s %s CTRL:%d VAL:%d',
+                format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.controller, d.value)
+        end
+    })
 
-    setmetatable(d, { __tostring = function(self) return self._format() end })
+    if not d.valid and M.fail_hard then error('Invalid controller '..tostring(d)) end
 
     return d
 end
@@ -79,25 +83,28 @@ end
 function M.func(tick, chan_hnd, func, volume)
 
     local d = {}
+    d.valid = true
     d.step_type = "function"
-    d.err = nil
     d.tick = tick
     d.chan_hnd = chan_hnd
     d.func = func
     d.volume = volume
 
     -- Validate.
-    d.err = d.err or ut.val_integer(d.tick, 0, bt.MAX_TICK, 'tick')
-    d.err = d.err or ut.val_integer(d.chan_hnd, 0, 0xFFFF, 'chan_hnd')
-    d.err = d.err or ut.val_function(d.func, 'func')
-    d.err = d.err or ut.val_number(d.volume, 0.0, 1.0, 'volume')
+    d.valid = d.valid and ut.val_integer(d.tick, 0, bt.MAX_TICK)
+    d.valid = d.valid and ut.val_integer(d.chan_hnd, 0, 0xFFFF)
+    d.valid = d.valid and ut.val_number(d.volume, 0.0, 1.0)
+    d.valid = d.valid and func ~= nil and type(func) == 'function'
 
-    d._format = function() return d.err or
-        string.format('%s %s FUNC:? VOL:%.1f',
-            format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.volume)
-    end
+    setmetatable(d,
+    {
+        __tostring = function(self)
+            return string.format('%s %s FUNC:? VOL:%.1f',
+                format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.volume)
+        end
+    })
 
-    setmetatable(d, { __tostring = function(self) return self._format() end })
+    if not d.valid and M.fail_hard then error('Invalid function '..d._format()) end
 
     return d
 end
@@ -110,7 +117,7 @@ end
 
 -----------------------------------------------------------------------------
 format_tick = function(tick)
-    return string.format('%05d %s', tick, bt.tick_to_str(tick))
+    return string.format('T:%05d BT:%s', tick, bt.tick_to_str(tick))
 end
 
 

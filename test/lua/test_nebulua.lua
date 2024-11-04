@@ -18,12 +18,21 @@ local M = {}
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
-    -- pn.UT_INFO("setup()!!!")
+    -- Sub error handler to intercept errors.
+    last_error = ""
+    get_error = function()
+        e = last_error
+        last_error = ""
+        return e
+    end
+    save_error = error
+    error = function(err, level) last_error = err end
 end
 
 -----------------------------------------------------------------------------
 function M.teardown(pn)
-    -- pn.UT_INFO("teardown()!!!")
+    -- Restore.
+    error = save_error
 end
 
 
@@ -73,9 +82,7 @@ function M.suite_parse_chunk(pn)
     -- print('+++', ut.dump_table_string(steps, 1, 'steps5'))
     pn.UT_EQUAL(seq_length, 0)
     pn.UT_STR_CONTAINS(ut.dump_table_string(steps, 1, 'xxxx'), "Invalid '-' in pattern string")
-
 end
-
 
 -----------------------------------------------------------------------------
 function M.suite_process_script(pn)
@@ -91,7 +98,7 @@ function M.suite_process_script(pn)
 
     -- neb.dump_steps('_steps.txt', 's') -- diagnostic
 
-    -- TODOT need to execute neb_command
+    -- execute neb_command
     local res = neb._neb_command('section_info', '')
     pn.UT_TRUE(sx.contains(res, '_LENGTH,768'))
     -- print(ut.dump_table_string(_section_info, 0, '_section_info'))
@@ -133,32 +140,32 @@ function M.suite_process_script(pn)
     pn.UT_TRUE(ok, string.format("Script function rcv_note() failed:\n%s ", ret))
 end
 
-
 -----------------------------------------------------------------------------
 function M.suite_step_types(pn)
     -- Test all functions in step_types.lua
 
     local n = st.note(1234, 99, 101, 0.4, 10)
-    pn.UT_NIL(n.err)
-    pn.UT_STR_EQUAL(tostring(n), "01234 38.2.2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")
+    pn.UT_TRUE(n.valid)
+    pn.UT_STR_EQUAL(tostring(n), "T:01234 BT:38.2.2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")
 
     n = st.note(100001, 88, 111, 0.3, 22)
-    pn.UT_NOT_NIL(n.err)
-    pn.UT_STR_EQUAL(tostring(n), "Invalid integer tick: 100001")
+    pn.UT_FALSE(n.valid)
+    pn.UT_STR_EQUAL(last_error, "Invalid note T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
+    pn.UT_STR_EQUAL(tostring(n), "T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
 
     local c = st.controller(344, 37, 88, 55)
-    pn.UT_NIL(c.err)
-    pn.UT_STR_EQUAL(tostring(c), "00344 10.3.0 DEV:00 CH:37 CTRL:88 VAL:55")
+    pn.UT_TRUE(c.valid)
+    pn.UT_STR_EQUAL(tostring(c), "T:00344 BT:10.3.0 DEV:00 CH:37 CTRL:88 VAL:55")
 
-    local c = st.controller(455, 55, 260, 23)
-    pn.UT_NOT_NIL(c.err)
-    pn.UT_STR_EQUAL(tostring(c), "Invalid integer controller: 260")
+    c = st.controller(455, 55, 260, 23)
+    pn.UT_FALSE(c.valid)
+    pn.UT_STR_EQUAL(tostring(c), "T:00455 BT:14.0.7 DEV:00 CH:55 CTRL:260 VAL:23")
 
     local function stub() end
 
     local f = st.func(508, 122, stub, 0.44)
-    pn.UT_NIL(f.err)
-    pn.UT_STR_EQUAL(tostring(f), "00508 15.3.4 DEV:00 CH:122 FUNC:? VOL:0.4")
+    pn.UT_TRUE(f.valid)
+    pn.UT_STR_EQUAL(tostring(f), "T:00508 BT:15.3.4 DEV:00 CH:122 FUNC:? VOL:0.4")
 end
 
 

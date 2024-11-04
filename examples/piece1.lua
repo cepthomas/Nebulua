@@ -15,16 +15,6 @@ local sx  = require("stringex")
 -- Say hello.
 neb.log_info('### loading piece1.lua ###')
 
-names = {'John', 'Joe', 'Steve'}
--- for nameCount = 1, 3 do
---     print (names[nameCount])
--- end
-
-for k, v in pairs(names) do
-   print('>>>', k, v)
-end
-
-
 
 -- Aliases
 local inst = mid.instruments
@@ -40,19 +30,15 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
-
 -- local current_dir = io.popen("cd"):read()
 -- local sep = package.config:sub(1, 1)
 -- local fn = sx.strjoin(sep, { current_dir, '_glob.txt' } )
--- local fp = io.open(fn, 'w+')
--- fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
+
+-- local fp = io.open('C:/Dev/repos/Apps/Nebulua/_glob.txt', 'w+')
+-- fp:write(ut.dump_table_string(package, 2, 'package')..'\n')
+-- -- fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
 -- fp:write(ut.dump_table_string(_G, 0, '_G')..'\n')
 -- fp:close()
-
-
-
--- make lua more fp:
--- https://www.reddit.com/r/lua/comments/1al74ry/why_dont_more_people_suggest_closures_for_classes/
 
 
 ------------------------- Configuration -------------------------------

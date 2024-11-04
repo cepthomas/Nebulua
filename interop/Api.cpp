@@ -84,25 +84,6 @@ Api::Api(List<String^>^ lpath)
         free(spath);
     }
 
-    // Load the helper script into memory.
-    if (nstat == NebStatus::Ok)
-    {
-        String^ fn = Path::Join(_rootdir, "lua", "internal.lua");
-
-        char* cfn = _ToCString(fn);
-        lstat = luaL_loadfile(_l, cfn);
-        free(cfn);
-
-        nstat = _EvalLuaStatus(lstat, "Load internal.lua failed.");
-    }
-
-    // Execute it. This reports runtime syntax errors.
-    if (nstat == NebStatus::Ok)
-    {
-        lstat = luaex_docall(_l, 0, 0);
-        nstat = _EvalLuaStatus(lstat, "Execute internal.lua failed.");
-    }
-
     // Load C host funcs into lua space. This table gets pushed on the stack and into globals.
     luainterop_Load(_l);
 

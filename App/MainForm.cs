@@ -151,6 +151,26 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
+            try
+            {
+                _core.Init();
+            }
+            catch (Exception ex)
+            {
+                var (fatal, msg) = Utils.ProcessException(ex);
+                if (fatal)
+                {
+                    // Logging an error will cause the app to exit.
+                    _logger.Error(msg);
+                }
+                else
+                {
+                    // User can decide what to do with this. They may be recoverable so use warn.
+                    State.Instance.ExecState = ExecState.Idle;
+                    _logger.Warn(msg);
+                }
+            }
+
             if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
             {
                 OpenScriptFile(UserSettings.Current.RecentFiles[0]);

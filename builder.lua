@@ -11,7 +11,7 @@ local opt = arg[1]
 local ret_code = 0
 
 
--- Make pretty. TODO1 put in lbot?
+-- Make pretty. TODOF put in lbot?
 local function output_text(text)
     -- Split into lines and colorize.
 
@@ -143,7 +143,7 @@ else
         output_text('Build: Error: Invalid option '..opt..' - Select one of:')
     end
 
-    output_text('build_app  test_app  test_lua  gen_md')
+    output_text('build_app  test_app  test_lua  gen_md  gen_interop')
     -- goto done
     ret_code = 1
 

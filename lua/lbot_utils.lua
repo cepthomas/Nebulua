@@ -5,7 +5,6 @@ local sx = require("stringex")
 local M = {}
 
 local _dump_level = 0
-local _color_spec = {}
 
 -----------------------------------------------------------------------------
 ------------------------------ High level -----------------------------------
@@ -115,25 +114,22 @@ end
 --    2 is the function that called get_caller_info() - usually the one of interest
 -- @return filename, linenumber or nil if invalid
 function M.get_caller_info(level)
-    local ret = nil
     local s = debug.getinfo(level, 'S')
     local l = debug.getinfo(level, 'l')
-    fn = nil
-    ln = nil
     if s ~= nil and l ~= nil then
-        fn = s.short_src
-        ln = l.currentline
+        return s.short_src, l.currentline
+    else
+        return nil
     end
-    return fn, ln
 end
 
 -----------------------------------------------------------------------------
---- Lua has no builtin way to count number of values in an associative table so this does.
+--- Lua has no built in way to count number of values in an associative table so this does.
 -- @param tbl the table
 -- @return number of values
 function M.table_count(tbl)
     num = 0
-    for k, _ in pairs(tbl) do
+    for _, _ in pairs(tbl) do
         num = num + 1
     end
     return num
@@ -202,143 +198,45 @@ end
 
 
 -----------------------------------------------------------------------------
-------------------------- Type checking and conversion TODO1 consolidate? ----------------------
+------------------------- Value checking ------------------------------------
 -----------------------------------------------------------------------------
 
-
-----------------------------------------------------------------------------
---- Test value type.
--- @param v value to test
-function M.is_integer(v)
-    return M.to_integer(v) ~= nil
-    -- return type(v) == "number" and math.ceil(v) == v
+-----------------------------------------------------------------------------
+--- Validate a number value.
+-- @param v which value
+-- @param min range inclusive - nil means no limit
+-- @param max range inclusive - nil means no limit
+-- @return return true if correct type and in range.
+function M.val_number(v, min, max)
+    local ok = v ~= nil and type(v) == 'number'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+    return ok
 end
 
-----------------------------------------------------------------------------
---- Test value type.
--- @param v value to test
-function M.is_number(v)
-    return v ~= nil and type(v) == 'number'
-end
-
-----------------------------------------------------------------------------
---- Test value type.
--- @param v value to test
-function M.is_string(v)
-    return v ~= nil and type(v) == 'string'
-end
-
-----------------------------------------------------------------------------
---- Test value type.
--- @param v value to test
-function M.is_boolean(v)
-    return v ~= nil and type(v) == 'boolean'
-end
-
-----------------------------------------------------------------------------
---- Test value type.
--- @param v value to test
-function M.is_function(v)
-    return v ~= nil and type(v) == 'function'
-end
-
-----------------------------------------------------------------------------
---- Test value type.
--- @param v value to test
-function M.is_table(v)
-    return v ~= nil and type(v) == 'table'
+-----------------------------------------------------------------------------
+--- Validate an integer value.
+-- @param v which value
+-- @param min range inclusive - nil means no limit
+-- @param max range inclusive - nil means no limit
+-- @return return true if correct type and in range.
+function M.val_integer(v, min, max)
+    local ok = v ~= nil and math.type(v) == 'integer'
+    if ok and max ~= nil then ok = ok and v <= max end
+    if ok and min ~= nil then ok = ok and v >= min end
+    return ok
 end
 
 -----------------------------------------------------------------------------
 --- Convert value to integer.
 -- @param v value to convert
--- @return integer or nil if not convertible
-function M.to_integer(v)
-    if type(v) == "number" and math.ceil(v) == v then return v
+-- @return integer or nil if not convertible.
+function M.tointeger(v)
+    -- if type(v) == "number" and math.ceil(v) == v then return v
+    if math.type(v) == "integer" then return v
     elseif type(v) == "string" then return tonumber(v, 10)
     else return nil
     end
-end
-
------------------------------------------------------------------------------
---- Validate a value.
--- @param v which value
--- @param min range inclusive
--- @param max range inclusive
--- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner. TODO1 revisit this backwards.
-function M.val_number(v, min, max, name)
-    local ok = M.is_number(v)
-    ok = ok and (max ~= nil and v <= max)
-    ok = ok and (min ~= nil and v >= min)
-    if not ok then
-        return string.format('Invalid number '..name..': '..v)
-    end
-    return nil
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param min range inclusive
--- @param max range inclusive
--- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
-function M.val_integer(v, min, max, name)
-    local ok = M.is_integer(v)
-    ok = ok and (max ~= nil and v <= max)
-    ok = ok and (min ~= nil and v >= min)
-    if not ok then
-        return string.format('Invalid integer '..name..': '..v)
-    end
-    return nil
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
-function M.val_string(v, name)
-    local ok = M.is_string(v)
-    if not ok then
-        return string.format('Invalid string '..name..': '..v)
-    end
-    return nil
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
-function M.val_boolean(v, name)
-    local ok = M.is_boolean(v)
-    if not ok then
-        return string.format('Invalid boolean '..name..': '..v)
-    end
-    return nil
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
-function M.val_table(v, name)
-    local ok = M.is_table(v)
-    if not ok then
-        return string.format('Invalid table '..name..': '..v)
-    end
-    return nil
-end
-
------------------------------------------------------------------------------
--- @param v which value
--- @param name value name
--- @return return nil if ok or an error string if not. Backwards from normal but makes client side cleaner.
-function M.val_function(v, name)
-    local ok = M.is_function(v)
-    if not ok then
-        return string.format('Invalid function '..name..': '..v)
-    end
-    return nil
 end
 
 

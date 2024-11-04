@@ -6,6 +6,9 @@ local sx  = require("stringex")
 
 local M = {}
 
+-- If true call error() otherwise return nil.
+M.fail_hard = true
+
 
 -------------------- Definitions - must match C code! --------------
 -- Only 4/4 time supported.
@@ -21,90 +24,107 @@ M.MAX_TICK = M.MAX_BAR * M.SUBS_PER_BAR
 
 
 -----------------------------------------------------------------------------
---- Convert proper components to internal.
+--- Convert proper components to tick.
+-- returns tick or nil
 function M.bt_to_tick(bar, beat, sub)
 
-    local e = ut.val_integer(bar, 0, M.MAX_BAR, 'bar')
-    if e ~= nil then error("Invalid bar", 3) end
+    local valid = true
 
-    e = ut.val_integer(beat, 0, M.BEATS_PER_BAR-1, 'beat')
-    if e ~= nil then error("Invalid beat", 3) end
+    valid = valid and ut.val_integer(bar, 0, M.MAX_BAR)
+    valid = valid and ut.val_integer(beat, 0, M.BEATS_PER_BAR-1)
+    valid = valid and ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
 
-    e = ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1, 'sub')
-    if e ~= nil then error("Invalid sub", 3) end
+    if not valid and M.fail_hard then error(string.format('Invalid bartime %s %s %s', bar, beat, sub)) end
 
-    tick = bar * M.SUBS_PER_BAR + beat * M.SUBS_PER_BEAT + sub
-    return tick
+    if valid then
+        local tick = bar * M.SUBS_PER_BAR + beat * M.SUBS_PER_BEAT + sub
+        return tick
+    else
+        return nil
+    end
 end
 
 -----------------------------------------------------------------------------
---- Convert total beats and subs to internal.
-function M.beats_to_tick(beat, sub)
+--- Convert total beats and subs to tick.
+-- returns tick or nil
+function M.beats_to_tick(beats, sub)
 
-    local e = ut.val_integer(beat, 0, M.MAX_BEAT-1, 'beat')
-    if e ~= nil then error("Invalid beat", 3) end
+    local valid = true
 
-    e = ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1, 'sub')
-    if e ~= nil then error("Invalid sub", 3) end
+    valid = valid and ut.val_integer(beats, 0, M.MAX_BEAT-1)
+    valid = valid and ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
 
-    tick = beat * M.SUBS_PER_BEAT + sub
-    return tick
+    if not valid and M.fail_hard then error(string.format('Invalid bartime %s %s', beats, sub)) end
+
+    if valid then
+        local tick = beats * M.SUBS_PER_BEAT + sub
+        return tick
+    else
+        return nil
+    end
 end
 
 -----------------------------------------------------------------------------
---- Convert string representation to internal.
+--- Convert string representation to tick.
+-- returns tick or nil
 function M.str_to_tick(str)
-    local tick = -1
 
-    if ut.is_string(str) then
+    local tick = nil
+
+    if str ~= nil and type(str) == 'string' then
         local parts = sx.strsplit(str, '.', false)
 
         if #parts == 2 then
             -- Duration form.
-            local beat = ut.to_integer(parts[1])
-            local sub = ut.to_integer(parts[2])
+            local beat = ut.tointeger(parts[1])
+            local sub = ut.tointeger(parts[2])
             tick = M.beats_to_tick(beat, sub)
 
         elseif #parts == 3 then
             -- Absolute form.
-            local bar = ut.to_integer(parts[1])
-            local beat = ut.to_integer(parts[2])
-            local sub = ut.to_integer(parts[3])
+            local bar = ut.tointeger(parts[1])
+            local beat = ut.tointeger(parts[2])
+            local sub = ut.tointeger(parts[3])
             tick = M.bt_to_tick(bar, beat, sub)
         end
     end
 
-    if tick < 0 then
-        error("Invalid bar time: "..tostring(str), 3)
-    end
+    if tick == nil and M.fail_hard then error(string.format('Invalid bartime %s', str)) end
 
     return tick
 end
 
 -----------------------------------------------------------------------------
---- Convert tick to bar, beat, sub.
+--- Convert tick to components.
+-- returns bar,beat,sub or nil
 function M.tick_to_bt(tick)
-    e = ut.val_integer(tick, 0, M.MAX_TICK, 'tick')
-    if e ~= nil then
-        error("Invalid tick", 3)
-    else
+
+    local valid = ut.val_integer(tick, 0, M.MAX_TICK)
+
+    if valid then
         local bar = math.floor(tick / M.SUBS_PER_BAR)
         local beat = math.floor(tick / M.SUBS_PER_BEAT % M.BEATS_PER_BAR)
         local sub = math.floor(tick % M.SUBS_PER_BEAT)
         return bar, beat, sub
+    else
+        if M.fail_hard then error(string.format('Invalid tick %s', tick)) end
+        return nil
     end
 end
 
 -----------------------------------------------------------------------------
 --- Convert tick to string representation
+-- returns string or nil
 function M.tick_to_str(tick)
-    -- return like '1.2.3'
-    e = ut.val_integer(tick, 0, M.MAX_TICK, 'tick')
-    if e ~= nil then
-        error("Invalid tick", 3)
-    else
+
+    local valid = ut.val_integer(tick, 0, M.MAX_TICK)
+
+    if valid then
         local bar, beat, sub = M.tick_to_bt(tick)
         return string.format("%d.%d.%d", bar, beat, sub)
+    else
+        if M.fail_hard then error(string.format('Invalid tick %s', tick)) end
+        return nil
     end
 end
 

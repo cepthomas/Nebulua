@@ -64,7 +64,7 @@ M.script_funcs =
     {
         lua_func_name = "_neb_command",
         host_func_name = "NebCommand",
-        required = "false",
+        required = "true",
         description = "Host calls arbitrary lua function. For internal use only.",
         args =
         {

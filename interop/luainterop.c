@@ -165,7 +165,7 @@ const char* luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg
     int ltype = lua_getglobal(l, "_neb_command");
     if (ltype != LUA_TFUNCTION)
     {
-        if (false) { _error = "Bad function name: _neb_command()"; }
+        if (true) { _error = "Bad function name: _neb_command()"; }
         return ret;
     }
 

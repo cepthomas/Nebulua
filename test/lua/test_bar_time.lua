@@ -11,15 +11,26 @@ local bt = require("bar_time")
 -- Create the namespace/module.
 local M = {}
 
+local save_error
+local last_error = ""
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
-    -- pn.UT_INFO("setup()")
+    -- Sub error handler to intercept errors.
+    last_error = ""
+    get_error = function()
+        e = last_error
+        last_error = ""
+        return e
+    end
+    save_error = error
+    error = function(err, level) last_error = err end
 end
 
 -----------------------------------------------------------------------------
 function M.teardown(pn)
-    -- pn.UT_INFO("teardown()")
+    -- Restore.
+    error = save_error
 end
 
 -----------------------------------------------------------------------------
@@ -60,42 +71,32 @@ function M.suite_bar_time(pn)
 
     -- Bad input in many ways.
 
-    -- Sub error handler to intercept errors.
-    local last_error = ""
-    get_error = function()
-        e = last_error
-        last_error = ""
-        return e
-    end
-    local save_error = error
-    error = function(err, level) last_error = err end
-
     t = bt.bt_to_tick(1001, 1, 5)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bar")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     t = bt.bt_to_tick(10, 4, 3)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid beat")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     t = bt.bt_to_tick(10, 2, 11)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid sub")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     t = bt.beats_to_tick(4001, 2)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid beat")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     t = bt.beats_to_tick(1122, 12)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid sub")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     s = bt.str_to_tick("1:2:3")
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bar time")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     s = bt.str_to_tick("1.2.3.4")
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bar time")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     s = bt.str_to_tick("junk")
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bar time")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     s = bt.str_to_tick({"i'm", "a", "table" })
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bar time")
+    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
 
     bar, beat, sub = bt.tick_to_bt(93.81)
     pn.UT_STR_CONTAINS(get_error(), "Invalid tick")

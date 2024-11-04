@@ -20,7 +20,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("Core");
 
         /// <summary>The interop API.</summary>
-        readonly Api _api;
+        Api _api;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -45,15 +45,10 @@ namespace Nebulua
 
         #region Lifecycle
         /// <summary>
-        /// Constructor inits stuff. Can throw on main thread.
+        /// Constructor inits static stuff.
         /// </summary>
         public Core()
         {
-            // Set up runtime lua environment.
-            var rootDir = Utils.GetAppRoot();
-            List<string> luaPath = [ Path.Join(rootDir, "lua")]; // where app lua files live
-            _api = new(luaPath);
-
             // Hook script callbacks.
             Api.CreateChannel += Interop_CreateChannel;
             Api.Send += Interop_Send;
@@ -62,6 +57,21 @@ namespace Nebulua
 
             // State change handler.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+        }
+
+        /// <summary>
+        /// Init the dynamic stuff so we can catch errors.
+        /// </summary>
+        public void Init()
+        {
+            // Set up runtime lua environment.
+            List<string> luaPath = [Path.Join(Utils.GetAppRoot(), "lua")]; // where app lua files live
+            _api = new(luaPath);
+
+            if (_api.Error.Length > 0)
+            {
+                throw new InvalidOperationException($"Initialize api failed: {_api.Error}");
+            }
         }
 
         /// <summary>
@@ -118,11 +128,11 @@ namespace Nebulua
                 throw new InvalidOperationException("Can't reload, no current file");
             }
 
-            // Unload current modules so reload will be minty fresh.
+            // Unload current modules so reload will be minty fresh. This may fail safely if no script loaded yet.
             string ret = _api.NebCommand("unload_all", "no arg");
             if (_api.Error != "")
             {
-                throw new ApiException("NebCommand failed", _api.Error);
+                //throw new ApiException("NebCommand failed", _api.Error);
             }
 
             _logger.Info($"Loading script file {CurrentScriptFn}");
@@ -132,6 +142,9 @@ namespace Nebulua
             {
                 throw new ApiException("Api open script failed", _api.Error);
             }
+
+            // Do some config now.
+            _api.NebCommand("root_dir", Utils.GetAppRoot());
 
             // Get info about the script. ending,512|middle,256|_LENGTH,768|beginning,0
             Dictionary<int, string> sectInfo = [];
