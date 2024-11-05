@@ -15,7 +15,7 @@ local ut  = require('lbot_utils')
 -- dbg()
 
 -- Say hello.
-neb.log_info('### loading airport.lua ###')
+neb.log_info('Loading airport.lua...')
 
 
 ------------------------- Configuration -------------------------------

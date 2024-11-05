@@ -19,7 +19,7 @@ local kit  = mid.drum_kits
 local ctrl = mid.controllers
 
 -- Say hello.
-neb.log_info('### loading example.lua ###')
+neb.log_info('Loading example.lua...')
 
 
 ------------------------- Configuration -------------------------------

@@ -6,7 +6,7 @@ local sx  = require("stringex")
 
 local M = {}
 
--- If true call error() otherwise return nil.
+-- If true call error() otherwise return nil. TODO1 make generic handler for these - in script.
 M.fail_hard = true
 
 

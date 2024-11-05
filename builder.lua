@@ -11,7 +11,7 @@ local opt = arg[1]
 local ret_code = 0
 
 
--- Make pretty. TODOF put in lbot?
+-- Make pretty. TODO1 put in lbot?
 local function output_text(text)
     -- Split into lines and colorize.
 

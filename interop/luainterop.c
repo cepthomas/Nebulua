@@ -162,10 +162,10 @@ const char* luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg
     const char* ret = 0;
 
     // Get function.
-    int ltype = lua_getglobal(l, "_neb_command");
+    int ltype = lua_getglobal(l, "neb_command");
     if (ltype != LUA_TFUNCTION)
     {
-        if (true) { _error = "Bad function name: _neb_command()"; }
+        if (true) { _error = "Bad function name: neb_command()"; }
         return ret;
     }
 
@@ -181,7 +181,7 @@ const char* luainterop_NebCommand(lua_State* l, const char* cmd, const char* arg
     {
         // Get the results from the stack.
         if (lua_isstring(l, -1)) { ret = lua_tostring(l, -1); }
-        else { _error = "Bad return type for _neb_command(): should be string"; }
+        else { _error = "Bad return type for neb_command(): should be string"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.

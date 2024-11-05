@@ -99,7 +99,7 @@ function M.suite_process_script(pn)
     -- neb.dump_steps('_steps.txt', 's') -- diagnostic
 
     -- execute neb_command
-    local res = neb._neb_command('section_info', '')
+    local res = neb.neb_command('section_info', '')
     pn.UT_TRUE(sx.contains(res, '_LENGTH,768'))
     -- print(ut.dump_table_string(_section_info, 0, '_section_info'))
 

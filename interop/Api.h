@@ -92,7 +92,7 @@ namespace Nebulua { namespace Interop
         String^ NebCommand(String^ cmd, String^ arg);
     #pragma endregion
 
-    #pragma region Event hooks
+    #pragma region Event handlers for Lua calling app
     public:
         static event EventHandler<CreateChannelArgs^>^ CreateChannel;
         static void NotifyCreateChannel(CreateChannelArgs^ args) { CreateChannel(nullptr, args); }

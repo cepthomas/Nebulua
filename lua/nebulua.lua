@@ -48,39 +48,34 @@ local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modi
 local _root_dir
 
 
--- Debug hook.
--- function _mole()
---     return _steps, _transients
--- end
-
-
 -----------------------------------------------------------------------------
------------------------------------------------------------------------------
------ Call host functions from the script
------------------------------------------------------------------------------
+------------- Script calls host api and internal lua functions --------------
 -----------------------------------------------------------------------------
 
--- Log functions. Magic numbers from host code.
+-----------------------------------------------------------------------------
+--- Log functions. This goes straight through to the host.
+-- Magic numbers must match host code.
+-- @param msg what to log
 function M.log_error(msg) api.log(4, msg) end
 function M.log_warn(msg)  api.log(3, msg) end
 function M.log_info(msg)  api.log(2, msg) end
 function M.log_debug(msg) api.log(1, msg) end
 function M.log_trace(msg) api.log(0, msg) end
 
-M.log_info('### loading nebulua.lua ### ')
+M.log_info('Loading nebulua.lua...')
 
 
 -----------------------------------------------------------------------------
---- Set system tempo. This goes straight through to the host.
+--- Set system tempo.
 -- @param bpm new tempo
 -- @return status
 M.set_tempo = api.set_tempo
 
 -----------------------------------------------------------------------------
---- Send a control message now. This goes straight through to the host.
+--- Send a control message now.
 -- @param chan_hnd channel handle
--- @param controller Specific controller 0 => 127
--- @param value Payload 0 => 127
+-- @param controller Specific controller 0 -> 127
+-- @param value Payload 0 -> 127
 -- @return status
 M.send_controller = api.send_controller
 
@@ -166,7 +161,7 @@ function M.process_step(tick)
 end
 
 -----------------------------------------------------------------------------
--- Send note immediately. Manages corresponding note off if tick clock is running.
+-- Send note immediately. Manages corresponding note off.
 function M.send_note(chan_hnd, note_num, volume, dur)
     if dur == nil then dur = 0 end
     -- M.log_debug(string.format("Send now hnd:%d note:%d vol:%f dur:%d", chan_hnd, note_num, volume, dur))
@@ -203,7 +198,7 @@ function M.parse_sequence_steps(chan_hnd, seq)
 end
 
 -----------------------------------------------------------------------------
--- Manually send a list of steps starting now.
+-- Send a list of steps immediately.
 function M.send_sequence_steps(seq_steps, tick)
     if seq_steps == nil then return end
 
@@ -229,100 +224,6 @@ function M.send_sequence_steps(seq_steps, tick)
     end
 end
 
------------------------------------------------------------------------------
---- Process all sections into discrete steps.
-function M.process_comp()
-    -- Hard reset.
-    _steps = {}
-    _transients = {}
-    _section_info = {}
-    -- Total length of composition.
-    local length = 0
-
-    for isect, section in ipairs(_sections) do
-        -- Process the section. Requires a name.
-        if section.name == nil then
-            error(string.format("Missing section name in section %d", isect), 2)
-        end
-
-        -- Do the work.
-        M.parse_section(section, length)
-
-        -- Save info about section.
-        _section_info[section.name] = section.start
-
-        -- Keep track of overall time.
-        length = length + section.length
-    end
-
-    -- All done. Tack on the total.
-    _section_info["_LENGTH"] = length
-end
-
-
------------------------------------------------------------------------------
------------------------------------------------------------------------------
------ Internal functions and stuff called from host
------------------------------------------------------------------------------
------------------------------------------------------------------------------
-
------------------------------------------------------------------------------
---- Process one section. No return but does update the section fields.
--- @param section target
--- @param start_tick absolute start time 0-based
-function M.parse_section(section, start_tick)
-    section.start = start_tick
-    section.length = 0
-
-    local tick = section.start -- running position
-    local seq_start = tick -- start of current sequence
-
-    -- Iterate through the section contents.
-    for _, sect_chan in ipairs(section) do
-        -- Process section channel.
-
-        if #sect_chan >= 2 and type(sect_chan[1]) == "number" then
-            -- Specific channel
-            local chan_hnd = sect_chan[1]
-
-            -- Reset.
-            seq_start = section.start
-
-            -- Process each sequence.
-            for i = 2, #sect_chan do
-                -- Track max.
-                local seq_length_max = 0
-
-                -- Process the chunks in the sequence.
-                local current_seq = sect_chan[i]
-
-                for _, seq_chunk in ipairs(current_seq) do
-                    -- Reset position to start of sequence.
-                    tick = seq_start
-
-                    local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
-                    if seq_length ~= 0 then -- save the steps to master table
-                        for _, step in ipairs(chunk_steps) do
-                            ut.table_add(_steps, step.tick, step)
-                        end
-                        seq_length_max = math.max(seq_length_max, seq_length)
-                    else
-                        error(string.format("Couldn't parse sequence %d in section '%s'", i - 1, section.name), 1)
-                    end
-                end
-
-                -- Keep track of overall times for section.
-                tick = tick + seq_length_max
-                seq_start = tick
-            end
-        else
-            error(string.format("Invalid channel in section '%s'", section.name), 1)
-        end
-    end
-
-    -- Finish up.
-    section.length = tick - section.start
-end
 
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern.
@@ -455,6 +356,103 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     return seq_length, steps
 end
 
+
+
+
+-----------------------------------------------------------------------------
+----------------- TODO1 still need this composition? ------------------------
+-----------------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------------
+--- Process all sections into discrete steps.
+function M.process_comp()
+    -- Hard reset.
+    _steps = {}
+    _transients = {}
+    _section_info = {}
+    -- Total length of composition.
+    local length = 0
+
+    for isect, section in ipairs(_sections) do
+        -- Process the section. Requires a name.
+        if section.name == nil then
+            error(string.format("Missing section name in section %d", isect), 2)
+        end
+
+        -- Do the work.
+        M.parse_section(section, length)
+
+        -- Save info about section.
+        _section_info[section.name] = section.start
+
+        -- Keep track of overall time.
+        length = length + section.length
+    end
+
+    -- All done. Tack on the total.
+    _section_info["_LENGTH"] = length
+end
+
+-----------------------------------------------------------------------------
+--- Process one section. Updates the section fields.
+-- @param section target
+-- @param start_tick absolute start time 0-based
+function M.parse_section(section, start_tick)
+    section.start = start_tick
+    section.length = 0
+
+    local tick = section.start -- running position
+    local seq_start = tick -- start of current sequence
+
+    -- Iterate through the section contents.
+    for _, sect_chan in ipairs(section) do
+        -- Process section channel.
+
+        if #sect_chan >= 2 and type(sect_chan[1]) == "number" then
+            -- Specific channel
+            local chan_hnd = sect_chan[1]
+
+            -- Reset.
+            seq_start = section.start
+
+            -- Process each sequence.
+            for i = 2, #sect_chan do
+                -- Track max.
+                local seq_length_max = 0
+
+                -- Process the chunks in the sequence.
+                local current_seq = sect_chan[i]
+
+                for _, seq_chunk in ipairs(current_seq) do
+                    -- Reset position to start of sequence.
+                    tick = seq_start
+
+                    local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+                    if seq_length ~= 0 then -- save the steps to master table
+                        for _, step in ipairs(chunk_steps) do
+                            ut.table_add(_steps, step.tick, step)
+                        end
+                        seq_length_max = math.max(seq_length_max, seq_length)
+                    else
+                        error(string.format("Couldn't parse sequence %d in section '%s'", i - 1, section.name), 1)
+                    end
+                end
+
+                -- Keep track of overall times for section.
+                tick = tick + seq_length_max
+                seq_start = tick
+            end
+        else
+            error(string.format("Invalid channel in section '%s'", section.name), 1)
+        end
+    end
+
+    -- Finish up.
+    section.length = tick - section.start
+end
+
 -----------------------------------------------------------------------------
 --- Composition spec: start a new section definition.
 -- @param name what to call it
@@ -496,6 +494,11 @@ function M.sect_chan(chan_hnd, ...)
     end
 end
 
+
+-----------------------------------------------------------------------------
+----------------- Internal functions ----------------------------------------
+-----------------------------------------------------------------------------
+
 -----------------------------------------------------------------------------
 --- Diagnostic.
 -- @param fn file name
@@ -520,8 +523,11 @@ function M.dump_steps(fn, which)
 end
 
 -----------------------------------------------------------------------------
---- App executes a lua command. For internal use only. TODOF return actual tables not strings.
-function _neb_command(cmd, arg)
+--- Global function for App interaction with script internals.
+-- @param cmd specific command string
+-- @param arg optional argument string
+-- @return result string TODOF support tables
+function neb_command(cmd, arg)
     if cmd == 'unload_all' then  -- Unload everything so that the script can be reloaded.
         package.loaded.bar_time = nil
         package.loaded.debugger = nil
@@ -543,6 +549,7 @@ function _neb_command(cmd, arg)
         return '0'
     else
         M.log_info('Unknown cmd '..cmd..' '..arg)
+        return '1'
     end
 end
 

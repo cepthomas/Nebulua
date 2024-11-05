@@ -13,7 +13,7 @@ local sx  = require("stringex")
 -- dbg()
 
 -- Say hello.
-neb.log_info('### loading piece1.lua ###')
+neb.log_info('Loading piece1.lua...')
 
 
 -- Aliases
