@@ -1,10 +1,10 @@
 
 -- Functions the script can call - essentially the script api.
--- Impedance matching between C and Lua. Hides or translates the raw C api.
+-- Impedance matching between C and Lua. Hides or translates the raw C interop.
 -- Manages note collections currently being played.
 
+local li  = require("lua_interop")
 local ut  = require("lbot_utils")
-local api = require("host_api")
 local st  = require("step_types")
 local mid = require("midi_defs")
 local mus = require("music_defs")
@@ -48,19 +48,21 @@ local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modi
 local _root_dir
 
 
+
+
 -----------------------------------------------------------------------------
-------------- Script calls host api and internal lua functions --------------
+------------- Script calls host li and internal lua functions --------------
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
 --- Log functions. This goes straight through to the host.
 -- Magic numbers must match host code.
 -- @param msg what to log
-function M.log_error(msg) api.log(4, msg) end
-function M.log_warn(msg)  api.log(3, msg) end
-function M.log_info(msg)  api.log(2, msg) end
-function M.log_debug(msg) api.log(1, msg) end
-function M.log_trace(msg) api.log(0, msg) end
+function M.log_error(msg) li.log(4, msg) end
+function M.log_warn(msg)  li.log(3, msg) end
+function M.log_info(msg)  li.log(2, msg) end
+function M.log_debug(msg) li.log(1, msg) end
+function M.log_trace(msg) li.log(0, msg) end
 
 M.log_info('Loading nebulua.lua...')
 
@@ -69,7 +71,7 @@ M.log_info('Loading nebulua.lua...')
 --- Set system tempo.
 -- @param bpm new tempo
 -- @return status
-M.set_tempo = api.set_tempo
+M.set_tempo = li.set_tempo
 
 -----------------------------------------------------------------------------
 --- Send a control message now.
@@ -77,7 +79,7 @@ M.set_tempo = api.set_tempo
 -- @param controller Specific controller 0 -> 127
 -- @param value Payload 0 -> 127
 -- @return status
-M.send_controller = api.send_controller
+M.send_controller = li.send_controller
 
 -----------------------------------------------------------------------------
 --- Create an input channel.
@@ -85,7 +87,7 @@ M.send_controller = api.send_controller
 -- @param chan_num channel number
 -- @return the new chan_hnd or 0 if invalid
 function M.create_input_channel(dev_name, chan_num)
-    local chan_hnd = api.create_input_channel(dev_name, chan_num)
+    local chan_hnd = li.create_input_channel(dev_name, chan_num)
     return chan_hnd
 end
 
@@ -96,7 +98,7 @@ end
 -- @param patch send this patch number if >= 0
 -- @return the new chan_hnd
 function M.create_output_channel(dev_name, chan_num, patch)
-    local chan_hnd = api.create_output_channel(dev_name, chan_num, patch)
+    local chan_hnd = li.create_output_channel(dev_name, chan_num, patch)
     _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
     return chan_hnd
 end
@@ -136,9 +138,9 @@ function M.process_step(tick)
                end
 
                 -- now send
-                api.send_note(step.chan_hnd, step.note_num, step.volume)
+                li.send_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == "controller" then
-                api.send_controller(step.chan_hnd, step.controller, step.value)
+                li.send_controller(step.chan_hnd, step.controller, step.value)
             elseif step.step_type == "function" then
                 step.func(_current_tick)
             end
@@ -150,7 +152,7 @@ function M.process_step(tick)
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
-               api.send_note(step.chan_hnd, step.note_num, step.volume)
+               li.send_note(step.chan_hnd, step.note_num, step.volume)
             end
         end
         -- Disappear it from collection.
@@ -170,14 +172,14 @@ function M.send_note(chan_hnd, note_num, volume, dur)
         -- adjust volume
         volume = volume * _channel_volumes[chan_hnd]
         -- send note_on now
-        api.send_note(chan_hnd, note_num, volume)
+        li.send_note(chan_hnd, note_num, volume)
         if dur > 0 then
             -- chase with noteoff
             local noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
             ut.table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
-       api.send_note(chan_hnd, note_num, 0)
+       li.send_note(chan_hnd, note_num, 0)
    end
 end
 
@@ -526,7 +528,7 @@ end
 --- Global function for App interaction with script internals.
 -- @param cmd specific command string
 -- @param arg optional argument string
--- @return result string TODOF support tables
+-- @return result string (table would be nice later)
 function neb_command(cmd, arg)
     if cmd == 'unload_all' then  -- Unload everything so that the script can be reloaded.
         package.loaded.bar_time = nil

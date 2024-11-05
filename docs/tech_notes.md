@@ -11,14 +11,15 @@
 
 ## Design
 
-- All lua code is in modules except for the Api functions such as `step()` which are in global `_G`.
+- All lua code is in modules except for the interop functions such as `step()` which are in global `_G`.
 - There are 3 threads:
     - Main which does window event loop and the cli.
     - Midi receive events callback.
     - Timer periodic events callback.
-- The shared resource that requires synchronization is a singleton `Api`. It is protected by a 
+- The shared resource that requires synchronization is a singleton `AppInterop`. It is protected by a 
   `CRITICAL_SECTION`. Thread access to the UI is protected by `InvokeIfRequired()`.
-- The interop Api translate between internal `LUA_XXX` status and user-facing `enum NebStatus`. The Api never throws.
+- The app interop translates between internal `LUA_XXX` status and user-facing `enum NebStatus`.
+  The interop never throws.
 
 ## Call Stack
 
@@ -28,7 +29,7 @@ Host -> lua
 ```
 MmTimer_Callback(double totalElapsed, double periodElapsed)  [in App\Core.cs]
     calls
-Api.Step(tick)  [in interop\Api.cpp]
+AppInterop.Step(tick)  [in interop\AppInterop.cpp]
     calls
 luainterop_Step(_l, tick)  [in interop\luainterop.c]
     calls
@@ -41,7 +42,7 @@ neb.send_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
     calls
 luainterop_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
     calls
- Api::NotifySend(args)  [in interop\Api.cpp]
+ AppInterop::NotifySend(args)  [in interop\AppInterop.cpp]
     calls
 Interop_Send(object? _, SendArgs e)  [in App\Core.cs]
     calls driver...
@@ -67,7 +68,7 @@ Nebulua
 |       *.cs
 |       etc...
 +---interop - C++/CLI project to embed lua
-|       Api.cpp/h
+|       AppInterop.cpp/h - between c++ and App/UI.
 |       luainterop.c/h - generated wrapper code
 |       luainteropwork.cpp - glue
 |       *.c/h - parts of https://github.com/cepthomas/LuaBagOfTricks
@@ -75,7 +76,7 @@ Nebulua
 |       bar_time.lua
 |       midi_defs.lua
 |       music_defs.lua
-|       nebulua.lua
+|       script_api.lua
 |       step_types.lua
 |       *.lua - parts of https://github.com/cepthomas/LuaBagOfTricks
 +---lib

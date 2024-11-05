@@ -6,11 +6,11 @@ namespace Nebulua.Interop
 
     public enum NebStatus
     {
-        Ok, SyntaxError, FileError, RunError, ApiError, AppInternalError,
+        Ok, SyntaxError, FileError, RunError, AppInteropError, AppInternalError,
     }
 
-    /// <summary>Mock interop API. See real class for doc.</summary>
-    public class Api
+    /// <summary>Mock app interop. See real class for doc.</summary>
+    public class AppInterop
     {
         public string Error = "";
 
@@ -19,7 +19,7 @@ namespace Nebulua.Interop
         public long Id { get { return _l; } }
         static long _l = 0;
 
-        public Api(List<string> lpath)
+        public AppInterop(List<string> lpath)
         {
             _l++;
         }
@@ -51,9 +51,9 @@ namespace Nebulua.Interop
             return NebStatus.Ok;
         }
 
-        public int NebCommand(string cmd, string arg)
+        public string NebCommand(string cmd, string arg)
         {
-            return 0;
+            return "ending,512|middle,256|_LENGTH,768|beginning,0";
         }
 
         public static event EventHandler<CreateChannelArgs>? CreateChannel;

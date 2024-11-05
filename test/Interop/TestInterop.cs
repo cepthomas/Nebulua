@@ -18,7 +18,7 @@ namespace Nebulua.Test
 
             // Create interop.
             var lpath = Utils.GetLuaPath();
-            Api interop = new(lpath);
+            AppInterop interop = new(lpath);
 
             EventCollector events = new(interop);
             string scrfn = Path.Join(Utils.GetAppRoot(), "test", "lua", "script_happy.lua");
@@ -86,10 +86,10 @@ namespace Nebulua.Test
             // General syntax error during load.
             {
                 var lpath = Utils.GetLuaPath();
-                Api interop = new(lpath);
+                AppInterop interop = new(lpath);
 
                 File.WriteAllText(tempfn,
-                    @"local neb = require(""nebulua"")
+                    @"local api = require(""script_api"")
                     this is a bad statement
                     end");
                 NebStatus stat = interop.OpenScript(tempfn);
@@ -97,28 +97,28 @@ namespace Nebulua.Test
                 UT_EQUAL(stat, NebStatus.SyntaxError);
             }
 
-            // Missing required C2L api element - luainterop_Setup(_ltest, &iret);
+            // Missing required C2L element - luainterop_Setup(_ltest, &iret);
             {
                 var lpath = Utils.GetLuaPath();
-                Api interop = new(lpath);
+                AppInterop interop = new(lpath);
 
                 File.WriteAllText(tempfn,
-                    @"local neb = require(""nebulua"")
+                    @"local api = require(""script_api"")
                     resx = 345 + 456");
                 NebStatus stat = interop.OpenScript(tempfn);
                 UT_STRING_CONTAINS(interop.Error, "Bad function name: setup()");
                 UT_EQUAL(stat, NebStatus.SyntaxError);
             }
 
-            // Bad L2C api function
+            // Bad L2C function
             {
                 var lpath = Utils.GetLuaPath();
-                Api interop = new(lpath);
+                AppInterop interop = new(lpath);
 
                 File.WriteAllText(tempfn,
-                    @"local neb = require(""nebulua"")
+                    @"local api = require(""script_api"")
                     function setup()
-                        neb.no_good(95)
+                        api.no_good(95)
                         return 0
                     end");
                 NebStatus stat = interop.OpenScript(tempfn);
@@ -129,10 +129,10 @@ namespace Nebulua.Test
             // General explicit error.
             {
                 var lpath = Utils.GetLuaPath();
-                Api interop = new(lpath);
+                AppInterop interop = new(lpath);
 
                 File.WriteAllText(tempfn,
-                    @"local neb = require(""nebulua"")
+                    @"local api = require(""script_api"")
                     function setup()
                         error(""setup() raises error()"")
                         return 0
@@ -145,10 +145,10 @@ namespace Nebulua.Test
             // Runtime error.
             {
                 var lpath = Utils.GetLuaPath();
-                Api interop = new(lpath);
+                AppInterop interop = new(lpath);
 
                 File.WriteAllText(tempfn,
-                    @"local neb = require(""nebulua"")
+                    @"local api = require(""script_api"")
                     function setup()
                         local bad = 123 + ng
                         return 0
@@ -165,18 +165,18 @@ namespace Nebulua.Test
     {
         public List<string> CollectedEvents { get; set; }
 
-        readonly Api _api;
+        readonly AppInterop _interop;
 
-        public EventCollector(Api api)
+        public EventCollector(AppInterop interop)
         {
-            _api = api;
+            _interop = interop;
             CollectedEvents = [];
 
             // Hook script events.
-            Api.CreateChannel += Interop_CreateChannel;
-            Api.Send += Interop_Send;
-            Api.Log += Interop_Log;
-            Api.PropertyChange += Interop_PropertyChange;
+            AppInterop.CreateChannel += Interop_CreateChannel;
+            AppInterop.Send += Interop_Send;
+            AppInterop.Log += Interop_Log;
+            AppInterop.PropertyChange += Interop_PropertyChange;
         }
 
         void Interop_CreateChannel(object? sender, CreateChannelArgs e)

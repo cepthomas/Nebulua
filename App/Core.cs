@@ -19,8 +19,8 @@ namespace Nebulua
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("Core");
 
-        /// <summary>The interop API.</summary>
-        Api _api;
+        /// <summary>The interop.</summary>
+        AppInterop _interop;
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -41,6 +41,9 @@ namespace Nebulua
         #region Proerties
         /// <summary>Current script.</summary>
         public string? CurrentScriptFn { get; private set; }
+
+        /// <summary>Error message.</summary>
+        public string? Error { get; private set; }
         #endregion
 
         #region Lifecycle
@@ -50,28 +53,24 @@ namespace Nebulua
         public Core()
         {
             // Hook script callbacks.
-            Api.CreateChannel += Interop_CreateChannel;
-            Api.Send += Interop_Send;
-            Api.Log += Interop_Log;
-            Api.PropertyChange += Interop_PropertyChange;
+            AppInterop.CreateChannel += Interop_CreateChannel;
+            AppInterop.Send += Interop_Send;
+            AppInterop.Log += Interop_Log;
+            AppInterop.PropertyChange += Interop_PropertyChange;
 
             // State change handler.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-        }
 
-        /// <summary>
-        /// Init the dynamic stuff so we can catch errors.
-        /// </summary>
-        public void Init()
-        {
             // Set up runtime lua environment.
             List<string> luaPath = [Path.Join(Utils.GetAppRoot(), "lua")]; // where app lua files live
-            _api = new(luaPath);
+            _interop = new(luaPath);
 
-            if (_api.Error.Length > 0)
-            {
-                throw new InvalidOperationException($"Initialize api failed: {_api.Error}");
-            }
+            Error = _interop.Error;
+
+            //if (_interop.Error.Length > 0)
+            //{
+            //    throw new InvalidOperationException($"Initialize interop failed: {_interop.Error}");
+            //}
         }
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace Nebulua
                 ResetIo();
 
                 // Release unmanaged resources. https://stackoverflow.com/a/4935448
-                _api.Dispose();
+                _interop.Dispose();
 
                 _disposed = true;
             }
@@ -106,7 +105,7 @@ namespace Nebulua
         /// <returns></returns>
         /// <exception cref="ApplicationArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        /// <exception cref="ApiException"></exception>
+        /// <exception cref="AppInteropException"></exception>
         public NebStatus LoadScript(string? scriptFn = null)
         {
             ResetIo();
@@ -129,26 +128,26 @@ namespace Nebulua
             }
 
             // Unload current modules so reload will be minty fresh. This may fail safely if no script loaded yet.
-            string ret = _api.NebCommand("unload_all", "no arg");
-            if (_api.Error != "")
+            string ret = _interop.NebCommand("unload_all", "no arg");
+            if (_interop.Error != "")
             {
-                //throw new ApiException("NebCommand failed", _api.Error);
+                //throw new AppInteropException("NebCommand failed", _interop.Error);
             }
 
             _logger.Info($"Loading script file {CurrentScriptFn}");
 
-            NebStatus stat = _api.OpenScript(CurrentScriptFn);
+            NebStatus stat = _interop.OpenScript(CurrentScriptFn);
             if (stat != NebStatus.Ok)
             {
-                throw new ApiException("Api open script failed", _api.Error);
+                throw new AppInteropException("AppInterop open script failed", _interop.Error);
             }
 
             // Do some config now.
-            _api.NebCommand("root_dir", Utils.GetAppRoot());
+            _interop.NebCommand("root_dir", Utils.GetAppRoot());
 
-            // Get info about the script. ending,512|middle,256|_LENGTH,768|beginning,0
+            // Get info about the script.
             Dictionary<int, string> sectInfo = [];
-            string sinfo = _api.NebCommand("section_info", "no arg");
+            string sinfo = _interop.NebCommand("section_info", "no arg");
 
             var chunks = sinfo.SplitByToken("|");
             foreach (var chunk in chunks)
@@ -238,10 +237,10 @@ namespace Nebulua
 
                 //_tan?.Arm();
 
-                NebStatus stat = _api!.Step(State.Instance.CurrentTick);
+                NebStatus stat = _interop!.Step(State.Instance.CurrentTick);
                 if (stat != NebStatus.Ok)
                 {
-                   CallbackError(new ApiException("Step() failed", _api.Error));
+                   CallbackError(new AppInteropException("Step() failed", _interop.Error));
                 }
 
                 // Read stopwatch and diff/stats.
@@ -295,15 +294,15 @@ namespace Nebulua
             switch (e)
             {
                 case NoteOnEvent evt:
-                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
+                    stat = _interop!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
                     break;
 
                 case NoteEvent evt:
-                    stat = _api!.RcvNote(chan_hnd, evt.NoteNumber, 0);
+                    stat = _interop!.RcvNote(chan_hnd, evt.NoteNumber, 0);
                     break;
 
                 case ControlChangeEvent evt:
-                    stat = _api!.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                    stat = _interop!.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
                     break;
 
                 default: // Ignore others for now.
@@ -318,7 +317,7 @@ namespace Nebulua
 
             if (stat != NebStatus.Ok)
             {
-               CallbackError(new ApiException("Midi Receive() failed", _api!.Error));
+               CallbackError(new AppInteropException("Midi Receive() failed", _interop!.Error));
             }
         }
         #endregion
@@ -332,7 +331,7 @@ namespace Nebulua
         /// <exception cref="ScriptSyntaxException"></exception>
         void Interop_CreateChannel(object? sender, CreateChannelArgs e)
         {
-            //Debug.WriteLine($"Core.Interop_CreateChannel() this={GetHashCode()} _api={_api?.GetHashCode()} sender={sender?.GetHashCode()} _disposed={_disposed}");
+            //Debug.WriteLine($"Core.Interop_CreateChannel() this={GetHashCode()} _interop={_interop?.GetHashCode()} sender={sender?.GetHashCode()} _disposed={_disposed}");
 
             e.Ret = 0; // chan_hnd default means invalid
 

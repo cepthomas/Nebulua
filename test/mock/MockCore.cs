@@ -14,8 +14,8 @@ namespace Nebulua
     public enum NebStatus
     {
         Ok = 0,
-        // Api returns these:
-        SyntaxError = 10, RunError = 11, ApiError = 12, FileError = 13,
+        // AppInterop returns these:
+        SyntaxError = 10, RunError = 11, AppInteropError = 12, FileError = 13,
         // App level errors:
         AppInternalError = 20,
     };
@@ -62,6 +62,8 @@ namespace Nebulua
 
     public class Core
     {
+        public string? Error { get; private set; }
+
         public Core()
         {
             // // Set up runtime lua environment.
@@ -69,10 +71,10 @@ namespace Nebulua
             // _luaPath.Add($@"{exePath}\lua  _code"); // app lua files
 
             // // Hook script callbacks.
-            // Api.CreateChannel += Interop_CreateChannel;
-            // Api.Send += Interop_Send;
-            // Api.Log += Interop_Log;
-            // Api.PropertyChange += Interop_PropertyChange;
+            // AppInterop.CreateChannel += Interop_CreateChannel;
+            // AppInterop.Send += Interop_Send;
+            // AppInterop.Log += Interop_Log;
+            // AppInterop.PropertyChange += Interop_PropertyChange;
 
             // // State change handler.
             // State.Instance.ValueChangeEvent += State_ValueChangeEvent;

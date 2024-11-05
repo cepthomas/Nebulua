@@ -22,7 +22,7 @@ downstream. If the script uses out of range values, they are constrained and a w
 Scripts need this section.
 
 ```lua
-local neb = require("nebulua") -- lua api
+local api = require("script_api") -- lua api
 local mid = require("midi_defs") -- GM midi instrument definitions
 local mus = require("music_defs") -- chords, scales, etc
 local bt  = require("bar_time") -- time utility
@@ -80,18 +80,18 @@ Call these from your script.
 
 
 ```lua
-function neb.create_output_channel(dev_name, chan_num, patch)
+function api.create_output_channel(dev_name, chan_num, patch)
 ```
 Register an output midi channel.
 
 - dev_name: The system name.
 - chan_num: Specific channel number.
-- patch: Send this patch number or neb.NO_PATCH. Use NO_PATCH if your host manages its own patches.
+- patch: Send this patch number or mid.NO_PATCH. Use NO_PATCH if your host manages its own patches.
 - return: A channel handle to use in subsequent functions.
 
 
 ```lua
-function neb.create_input_channel(dev_name, chan_num)
+function api.create_input_channel(dev_name, chan_num)
 ```
 Register an input midi channel.
 
@@ -101,7 +101,7 @@ Register an input midi channel.
 
 
 ```lua
-function neb.send_note(chan_hnd, note_num, volume, dur)
+function api.send_note(chan_hnd, note_num, volume, dur)
 ```
 Send a note on/off immediately. Adds a note off if dur is specified and tick clock is running.
 
@@ -112,7 +112,7 @@ Send a note on/off immediately. Adds a note off if dur is specified and tick clo
 
 
 ```lua
-function neb.send_controller(chan_hnd, controller, value)
+function api.send_controller(chan_hnd, controller, value)
 ```
 Send a controller immediately. Useful for things like panning and bank select.
 
@@ -122,7 +122,7 @@ Send a controller immediately. Useful for things like panning and bank select.
 
 
 ```lua
-function neb.set_volume(chan_hnd, volume)
+function api.set_volume(chan_hnd, volume)
 ```
 Set volume for the channel.
 
@@ -131,10 +131,10 @@ Set volume for the channel.
 
 
 ```lua
-function neb.log_error(msg)
-function neb.log_info(msg)
-function neb.log_debug(msg)
-function neb.log_trace(msg)
+function api.log_error(msg)
+function api.log_info(msg)
+function api.log_debug(msg)
+function api.log_trace(msg)
 ```
 Log to the application log. Several flavors.
 
@@ -142,7 +142,7 @@ Log to the application log. Several flavors.
 
 
 ```lua
-function neb.set_tempo(bpm)
+function api.set_tempo(bpm)
 ```
 Change the play tempo.
 
@@ -150,20 +150,20 @@ Change the play tempo.
 
 
 ```lua
-function neb.process_comp()
+function api.process_comp()
 ```
 If it's a static composition call this in setup();
 
 
 ```lua
-function neb.process_step(tick)
+function api.process_step(tick)
 ```
 Call this in step(tick) to process things like note offs.
 
 - tick: current tick.
 
 ```lua
-function neb.parse_sequence_steps(chan_hnd, sequence)
+function api.parse_sequence_steps(chan_hnd, sequence)
 ```
 Create a dynamic object from a sequence. See [Composition](#markdown-header-composition).
 
@@ -173,7 +173,7 @@ Create a dynamic object from a sequence. See [Composition](#markdown-header-comp
 
 
 ```lua
-function neb.send_sequence_steps(seq_steps, tick)
+function api.send_sequence_steps(seq_steps, tick)
 ```
 Send the object created in `parse_sequence_steps()`. See [Composition](#markdown-header-composition).
 
@@ -260,17 +260,17 @@ sections =
 Sequences can also be loaded dynamically and triggered at arbitrary times in the script.
 
 ```lua
-local example_seq_steps = neb.parse_sequence_steps(hnd_keys, example_seq)
+local example_seq_steps = api.parse_sequence_steps(hnd_keys, example_seq)
 
 function step(tick)
     local bar, beat, sub = bt.tick_to_bt(tick)
 
     if bar == 1 and beat == 0 and sub == 0 then
-        neb.send_sequence_steps(example_seq_steps, tick)
+        api.send_sequence_steps(example_seq_steps, tick)
     end
 
     -- Do this now.
-    neb.process_step(tick)
+    api.process_step(tick)
 end
 ```
 

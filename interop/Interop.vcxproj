@@ -127,7 +127,7 @@
   <ItemGroup>
     <ClInclude Include="luaex.h" />
     <ClInclude Include="luautils.h" />
-    <ClInclude Include="Api.h" />
+    <ClInclude Include="AppInterop.h" />
     <ClInclude Include="luainterop.h" />
   </ItemGroup>
   <ItemGroup>
@@ -137,7 +137,7 @@
     <ClCompile Include="luautils.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
     </ClCompile>
-    <ClCompile Include="Api.cpp" />
+    <ClCompile Include="AppInterop.cpp" />
     <ClCompile Include="luainterop.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
     </ClCompile>

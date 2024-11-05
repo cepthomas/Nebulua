@@ -1,5 +1,5 @@
 
---  Mock the C lua_interop functions for testing.
+-- Mock the C lua_interop functions for testing.
 
 -- Create the namespace/module.
 local M = {}

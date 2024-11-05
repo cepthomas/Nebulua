@@ -19,7 +19,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("Cli");
 
         /// <summary>Common functionality.</summary>
-        readonly Core _core = new();
+        readonly Core _core;
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -88,6 +88,12 @@ namespace Nebulua
                 new("kill",     'k',  "stop all midi",                 "",                      KillCmd),
                 new("reload",   's',  "reload current script",         "",                      ReloadCmd)
             ];
+
+            _core = new();
+            if (_core.Error is not null)
+            {
+                _logger.Error(_core.Error);
+            }
 
             try
             {

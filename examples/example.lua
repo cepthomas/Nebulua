@@ -2,11 +2,11 @@
 -- An example Nebulua composition file. 
 
 -- Import modules this needs.
-local ut  = require("lbot_utils")
-local neb = require("nebulua")
+local api = require("script_api")
 local mus = require("music_defs")
 local mid = require("midi_defs")
 local bt  = require("bar_time")
+local ut  = require("lbot_utils")
 
 -- Setup for debug. Manually place dbg() statements for breakpoints.
 -- ut.config_debug(true)
@@ -19,23 +19,23 @@ local kit  = mid.drum_kits
 local ctrl = mid.controllers
 
 -- Say hello.
-neb.log_info('Loading example.lua...')
+api.log_info('Loading example.lua...')
 
 
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels.
 local midi_in = "ClickClack"
-local hnd_ccin  = neb.create_input_channel(midi_in, 1)
+local hnd_ccin  = api.create_input_channel(midi_in, 1)
 
 -- DAW or VST host.
 local use_host = false
 
 local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
-local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
-local hnd_bass  = neb.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
-local hnd_synth = neb.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
-local hnd_drums = neb.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
+local hnd_keys  = api.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = api.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
+local hnd_synth = api.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
+local hnd_drums = api.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
 
 
 ------------------------- Variables -----------------------------------
@@ -67,20 +67,20 @@ local algo_func
 -----------------------------------------------------------------------------
 -- Called once to initialize your script stuff. Required.
 function setup()
-    neb.log_info("example initialization")
+    api.log_info("example initialization")
     math.randomseed(os.time())
 
     -- How fast?
-    neb.set_tempo(88)
+    api.set_tempo(88)
 
     -- Set master volumes.
-    neb.set_volume(hnd_keys, 0.7)
-    neb.set_volume(hnd_bass, 0.9)
-    neb.set_volume(hnd_synth, 0.6)
-    neb.set_volume(hnd_drums, 0.9)
+    api.set_volume(hnd_keys, 0.7)
+    api.set_volume(hnd_bass, 0.9)
+    api.set_volume(hnd_synth, 0.6)
+    api.set_volume(hnd_drums, 0.9)
 
     -- This file uses static composition so you must call this!
-    neb.process_comp()
+    api.process_comp()
 
     return 0
 end
@@ -90,12 +90,12 @@ end
 function step(tick)
 
     -- Overhead.
-    neb.process_step(tick)
+    api.process_step(tick)
 
     -- Other work you may want to do. Like do something every new bar.
         local bar, beat, sub = bt.tick_to_bt(tick)
         if beat == 2 and sub == 0 then
-            -- neb.send_controller(hnd_synth, ctrl.Pan, 90)
+            -- api.send_controller(hnd_synth, ctrl.Pan, 90)
             algo_func(tick)
         end
 
@@ -105,11 +105,11 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, volume)
-    -- neb.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
+    -- api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
     if chan_hnd == hnd_ccin then
         -- Play the note.
-        neb.send_note(hnd_synth, note_num, volume)--, 0)
+        api.send_note(hnd_synth, note_num, volume)--, 0)
     end
     return 0
 end
@@ -119,7 +119,7 @@ end
 function rcv_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_ccin then
         -- Do something.
-        neb.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
+        api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
     end
     return 0
 end
@@ -131,7 +131,7 @@ end
 algo_func = function(tick)
     if my_scale ~= nil then
         local note_num = math.random(1, #my_scale)
-        neb.send_note(hnd_synth, my_scale[note_num], 0.8, 3)
+        api.send_note(hnd_synth, my_scale[note_num], 0.8, 3)
     end
 end
 
@@ -202,17 +202,17 @@ local bass_chorus =
 
 
 -----------------------------------------------------------------------------
-neb.sect_start("beginning")
-neb.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
-neb.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
-neb.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)
+api.sect_start("beginning")
+api.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
+api.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
+api.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)
 
-neb.sect_start("middle")
-neb.sect_chan(hnd_keys,  keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus)
-neb.sect_chan(hnd_drums, drums_chorus, drums_chorus, drums_chorus, drums_chorus)
-neb.sect_chan(hnd_bass,  bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus)
+api.sect_start("middle")
+api.sect_chan(hnd_keys,  keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus)
+api.sect_chan(hnd_drums, drums_chorus, drums_chorus, drums_chorus, drums_chorus)
+api.sect_chan(hnd_bass,  bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus)
 
-neb.sect_start("ending")
-neb.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
-neb.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
-neb.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)
+api.sect_start("ending")
+api.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
+api.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
+api.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)

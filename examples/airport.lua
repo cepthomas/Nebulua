@@ -4,10 +4,10 @@
 
 
 -- Import modules we need.
-local neb = require("nebulua") -- lua api
+local api = require("script_api")
 local mus = require("music_defs")
-local mid = require("midi_defs") -- GM midi instrument definitions
-local bt  = require("bar_time") -- time utility
+local mid = require("midi_defs")
+local bt  = require("bar_time")
 local ut  = require('lbot_utils')
 
 -- Setup for debug.
@@ -15,14 +15,14 @@ local ut  = require('lbot_utils')
 -- dbg()
 
 -- Say hello.
-neb.log_info('Loading airport.lua...')
+api.log_info('Loading airport.lua...')
 
 
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels.
 local midi_out = "VirtualMIDISynth #1"
-local chan_hnd = neb.create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
+local chan_hnd = api.create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
 
 
 ------------------------- Variables -----------------------------------
@@ -58,9 +58,9 @@ function setup()
     add_loop("F5",  bt.beats_to_tick(20,0),  bt.beats_to_tick(14,1))
 
     -- How fast?
-    neb.set_tempo(61)
+    api.set_tempo(61)
 
-    -- neb.log_info(string.format('setup %s', tostring(valid )))
+    -- api.log_info(string.format('setup %s', tostring(valid )))
 
     return 0
 end
@@ -70,7 +70,7 @@ end
 function step(tick)
 
     -- Overhead.
-    neb.process_step(tick)
+    api.process_step(tick)
 
     if valid then
         -- Process each current loop.
@@ -79,7 +79,7 @@ function step(tick)
                 for _, note_num in ipairs(loop.notes) do
                     -- Send any note starts now.
                     -- print('on:'..step.note_num)
-                    neb.send_note(chan_hnd, note_num, volume, loop.duration)
+                    api.send_note(chan_hnd, note_num, volume, loop.duration)
                 end
                 -- Calculate next time.
                 loop.next_start = tick + loop.delay + loop.duration;
@@ -102,17 +102,17 @@ add_loop = function(snote, duration, delay)
 
     -- Check args.
     if notes == nil then
-        neb.log_error("Invalid note name: "..snote)
+        api.log_error("Invalid note name: "..snote)
         valid = false
     end
 
     -- if duration == nil then
-    --     neb.log_error("Invalid duration")
+    --     api.log_error("Invalid duration")
     --     valid = false
     -- end
 
     -- if delay == nil then
-    --     neb.log_error("Invalid delay")
+    --     api.log_error("Invalid delay")
     --     valid = false
     -- end
 

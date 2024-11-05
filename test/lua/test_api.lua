@@ -4,9 +4,9 @@
 local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("bar_time")
-local api = require("host_api") -- host api mock
-local neb = require("nebulua") -- lua api
+local li = require("lua_interop") -- host mock
 local sx  = require("stringex")
+local api = require("script_api")
 
 
 -- ut.config_debug(false)
@@ -40,7 +40,7 @@ end
 function M.suite_parse_chunk(pn)
     -- Note number. This also checks the list of steps in more detail
     local chunk = { "|5       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 }
-    local seq_length, steps = neb.parse_chunk(chunk, 0x030E, 1000 )
+    local seq_length, steps = api.parse_chunk(chunk, 0x030E, 1000 )
     -- print('+++', ut.dump_table_string(steps, 1, 'steps1'))
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
@@ -55,14 +55,14 @@ function M.suite_parse_chunk(pn)
 
     -- Note name.
     chunk = { "|7   7   |        |        |        |    4---|---     |        |        |",  "C2" }
-    seq_length, steps = neb.parse_chunk(chunk, 0x0A04, 234 )
+    seq_length, steps = api.parse_chunk(chunk, 0x0A04, 234 )
     -- print('+++', ut.dump_table_string(steps, 1, 'steps2'))
     pn.UT_EQUAL(#steps, 3)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Chord.
     chunk = { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" }
-    seq_length, steps = neb.parse_chunk(chunk, 0x0A05, 1111 )
+    seq_length, steps = api.parse_chunk(chunk, 0x0A05, 1111 )
     -- print('+++', ut.dump_table_string(steps, 1, 'steps3'))
     pn.UT_EQUAL(#steps, 16) -- 4 x 4 notes in chord
     pn.UT_EQUAL(seq_length, 64)
@@ -70,7 +70,7 @@ function M.suite_parse_chunk(pn)
     -- Function.
     local dummy = function() end
     chunk = { "|        |    6-  |        |        |        | 9999   |  111   |        |", dummy }
-    seq_length, steps = neb.parse_chunk(chunk, 0x0A06, 1555 )
+    seq_length, steps = api.parse_chunk(chunk, 0x0A06, 1555 )
     -- print('+++', ut.dump_table_string(steps, 1, 'steps4'))
     pn.UT_EQUAL(#steps, 8)
     pn.UT_EQUAL(seq_length, 64)
@@ -78,7 +78,7 @@ function M.suite_parse_chunk(pn)
     -- Bad syntax.
     -- dbg()
     chunk = { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 99 }
-    seq_length, steps = neb.parse_chunk(chunk, 0x0A07, 678 )
+    seq_length, steps = api.parse_chunk(chunk, 0x0A07, 678 )
     -- print('+++', ut.dump_table_string(steps, 1, 'steps5'))
     pn.UT_EQUAL(seq_length, 0)
     pn.UT_STR_CONTAINS(ut.dump_table_string(steps, 1, 'xxxx'), "Invalid '-' in pattern string")
@@ -94,12 +94,12 @@ function M.suite_process_script(pn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
     -- Process the data.
-    neb.process_comp()
+    api.process_comp()
 
-    -- neb.dump_steps('_steps.txt', 's') -- diagnostic
+    -- api.dump_steps('_steps.txt', 's') -- diagnostic
 
     -- execute neb_command
-    local res = neb.neb_command('section_info', '')
+    local res = neb_command('section_info', '')
     pn.UT_TRUE(sx.contains(res, '_LENGTH,768'))
     -- print(ut.dump_table_string(_section_info, 0, '_section_info'))
 
@@ -111,27 +111,27 @@ function M.suite_process_script(pn)
 
     -- Execute some script steps.
     for i = 0, 200 do
-        api.current_tick = i
-        local stat = neb.process_step(i)
+        li.current_tick = i
+        local stat = api.process_step(i)
         pn.UT_EQUAL(stat, 0)
         -- print(">>>", ut.table_count(transients))
 
         if i == 4 then
-            pn.UT_EQUAL(#api.activity, 13)
+            pn.UT_EQUAL(#li.activity, 13)
             -- pn.UT_EQUAL(ut.table_count(transients), 2)
         end
 
         if i == 40 then
-            pn.UT_EQUAL(#api.activity, 48)
+            pn.UT_EQUAL(#li.activity, 48)
             -- pn.UT_EQUAL(ut.table_count(transients), 1)
         end
     end
 
-    pn.UT_EQUAL(#api.activity, 166)
+    pn.UT_EQUAL(#li.activity, 166)
     -- pn.UT_EQUAL(ut.table_count(transients), 1)
 
     -- Examine collected data.
-    --for _, d in ipairs(api.activity) do
+    --for _, d in ipairs(li.activity) do
 
     -- s = ut.dump_table_string(transients, 1, "transients")
     -- print(s)

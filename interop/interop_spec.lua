@@ -1,12 +1,12 @@
 --[[
-Generates the interop code. Only needed if there are changes to the api.
+Generates the interop code. Only needed if there are changes to the function signatures.
 ]]
 
 local M = {}
 
 M.config =
 {
-    lua_lib_name = "host_api",
+    lua_lib_name = "lua_interop",
 }
 
 ------------------------ Host calls script ------------------------

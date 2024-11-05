@@ -154,10 +154,10 @@ namespace Nebulua
 
         #region Public functions
         /// <summary>
-        /// Convert api version into internal format.
+        /// Convert script version into internal format.
         /// </summary>
-        /// <param name="apiSectionInfo"></param>
-        public void InitSectionInfo(Dictionary<int, string> apiSectionInfo)
+        /// <param name="sectInfo"></param>
+        public void InitSectionInfo(Dictionary<int, string> sectInfo)
         {
             _sectionInfo.Clear();
             _length = 0;
@@ -165,11 +165,11 @@ namespace Nebulua
             _loopEnd = -1;
             _currentTick = 0;
 
-            if (apiSectionInfo.Count > 0)
+            if (sectInfo.Count > 0)
             {
                 List<(int tick, string name)> sinfo = [];
-                var spos = apiSectionInfo.Keys.OrderBy(k => k).ToList();
-                spos.ForEach(sp => _sectionInfo.Add((sp, apiSectionInfo[sp])));
+                var spos = sectInfo.Keys.OrderBy(k => k).ToList();
+                spos.ForEach(sp => _sectionInfo.Add((sp, sectInfo[sp])));
 
                 // Also reset position stuff.
                 _length = _sectionInfo.Last().tick;

@@ -13,8 +13,8 @@ namespace Nebulua { namespace Interop
     public enum class NebStatus
     {
         Ok = 0,
-        // Api returns these:
-        SyntaxError = 10, RunError = 11, ApiError = 12, FileError = 13,
+        // AppInterop returns these:
+        SyntaxError = 10, RunError = 11, AppInteropError = 12, FileError = 13,
         // App level errors:
         AppInternalError = 20,
     };
@@ -26,7 +26,7 @@ namespace Nebulua { namespace Interop
     ref class LogArgs;
     #pragma endregion
 
-    public ref class Api
+    public ref class AppInterop
     {
     #pragma region Fields
     private:
@@ -42,7 +42,7 @@ namespace Nebulua { namespace Interop
 
     #pragma region Properties
     public:
-        /// <summary>If an API or lua function failed this contains info.</summary>
+        /// <summary>If an interop or lua function failed this contains info.</summary>
         property String^ Error;
 
         /// <summary>Unique opaque id.</summary>
@@ -53,10 +53,10 @@ namespace Nebulua { namespace Interop
     public:
         /// <summary>Initialize everything.</summary>
         /// <param name="lpath">LUA_PATH components</param>
-        Api(List<String^>^ lpath);
+        AppInterop(List<String^>^ lpath);
 
         /// <summary>Clean up resources.</summary>
-        ~Api();
+        ~AppInterop();
     #pragma endregion
 
     #pragma region Call lua functions from host

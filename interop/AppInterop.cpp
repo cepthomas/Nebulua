@@ -6,7 +6,7 @@
 extern "C" {
 #include "luautils.h"
 }
-#include "Api.h"
+#include "AppInterop.h"
 
 
 using namespace System;
@@ -33,7 +33,7 @@ static String^ _ToManagedString(const char* input);
 
 
 //--------------------------------------------------------//
-Api::Api(List<String^>^ lpath)
+AppInterop::AppInterop(List<String^>^ lpath)
 {
     InitializeCriticalSection(&_critsect);
 
@@ -93,7 +93,7 @@ Api::Api(List<String^>^ lpath)
 
 
 //--------------------------------------------------------//
-Api::~Api()
+AppInterop::~AppInterop()
 {
     _LogDebug("destruct");
 
@@ -109,7 +109,7 @@ Api::~Api()
 
 
 //--------------------------------------------------------//
-NebStatus Api::OpenScript(String^ fn)
+NebStatus AppInterop::OpenScript(String^ fn)
 {
     NebStatus nstat = NebStatus::Ok;
     int lstat = LUA_OK;
@@ -122,7 +122,7 @@ NebStatus Api::OpenScript(String^ fn)
     if (_l == nullptr)
     {
         Error = gcnew String("You forgot to call Init().");
-        nstat = NebStatus::ApiError;
+        nstat = NebStatus::AppInteropError;
     }
 
     // Load the script into memory.
@@ -160,7 +160,7 @@ NebStatus Api::OpenScript(String^ fn)
 }
 
 //--------------------------------------------------------//
-NebStatus Api::Step(int tick)
+NebStatus AppInterop::Step(int tick)
 {
     NebStatus ret = NebStatus::Ok;
     Error = "";
@@ -171,7 +171,7 @@ NebStatus Api::Step(int tick)
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NebStatus::ApiError;
+        ret = NebStatus::AppInteropError;
     }
 
     LeaveCriticalSection(&_critsect);
@@ -180,7 +180,7 @@ NebStatus Api::Step(int tick)
 }
 
 //--------------------------------------------------------//
-NebStatus Api::RcvNote(int chan_hnd, int note_num, double volume)
+NebStatus AppInterop::RcvNote(int chan_hnd, int note_num, double volume)
 {
     NebStatus ret = NebStatus::Ok;
     Error = "";
@@ -190,7 +190,7 @@ NebStatus Api::RcvNote(int chan_hnd, int note_num, double volume)
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NebStatus::ApiError;
+        ret = NebStatus::AppInteropError;
     }
 
     luainterop_RcvNote(_l, chan_hnd, note_num, volume);
@@ -201,7 +201,7 @@ NebStatus Api::RcvNote(int chan_hnd, int note_num, double volume)
 }
 
 //--------------------------------------------------------//
-NebStatus Api::RcvController(int chan_hnd, int controller, int value)
+NebStatus AppInterop::RcvController(int chan_hnd, int controller, int value)
 {
     NebStatus ret = NebStatus::Ok;
     Error = "";
@@ -212,7 +212,7 @@ NebStatus Api::RcvController(int chan_hnd, int controller, int value)
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
-        ret = NebStatus::ApiError;
+        ret = NebStatus::AppInteropError;
     }
 
     LeaveCriticalSection(&_critsect);
@@ -221,7 +221,7 @@ NebStatus Api::RcvController(int chan_hnd, int controller, int value)
 }
 
 //--------------------------------------------------------//
-String^ Api::NebCommand(String^ cmd, String^ arg)
+String^ AppInterop::NebCommand(String^ cmd, String^ arg)
 {
     Error = "";
 
@@ -242,7 +242,7 @@ String^ Api::NebCommand(String^ cmd, String^ arg)
 //------------------- Privates ---------------------------//
 
 //--------------------------------------------------------//
-NebStatus Api::_EvalLuaStatus(int lstat, String^ info)
+NebStatus AppInterop::_EvalLuaStatus(int lstat, String^ info)
 {
     NebStatus nstat;
 
@@ -253,7 +253,7 @@ NebStatus Api::_EvalLuaStatus(int lstat, String^ info)
         case LUA_ERRSYNTAX: nstat = NebStatus::SyntaxError;     break;
         case LUA_ERRFILE:   nstat = NebStatus::FileError;       break;
         case LUA_ERRRUN:    nstat = NebStatus::RunError;        break;
-        default:            nstat = NebStatus::ApiError;        break;
+        default:            nstat = NebStatus::AppInteropError;        break;
     }
 
     if (nstat != NebStatus::Ok)
@@ -280,12 +280,12 @@ NebStatus Api::_EvalLuaStatus(int lstat, String^ info)
 }
 
 //--------------------------------------------------------//
-void Api::_LogDebug(String^ msg)
+void AppInterop::_LogDebug(String^ msg)
 {
     LogArgs^ args = gcnew LogArgs();
     args->Sender = Id; // MAKE_ID(this);
     args->LogLevel = 1; // debug
-    args->Msg = gcnew String("API ")  + msg;
+    args->Msg = gcnew String("APPINTEROP ")  + msg;
     NotifyLog(args);
 }
 
@@ -294,18 +294,19 @@ void Api::_LogDebug(String^ msg)
 char* _ToCString(String^ input)
 {
     int inlen = input->Length;
-    char* buff = (char*)malloc(static_cast<size_t>(inlen) + 1);
+    char* buff = (char*)calloc(static_cast<size_t>(inlen) + 1, sizeof(char));
 
-    // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
-    // not! const char* str4 = context->marshal_as<const char*>(input);
-    interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
-    int i = 0;
-    for (; *ppchar != L'\0' && i < inlen; ++ppchar, i++)
+    if (buff) // shut up compiler
     {
-        int c = wctob(*ppchar);
-        buff[i] = c != -1 ? c : '?';
+        // https://learn.microsoft.com/en-us/cpp/dotnet/how-to-access-characters-in-a-system-string?view=msvc-170
+        // not! const char* str4 = context->marshal_as<const char*>(input);
+        interior_ptr<const wchar_t> ppchar = PtrToStringChars(input);
+        for (int i = 0; *ppchar != L'\0' && i < inlen; ++ppchar, i++)
+        {
+            int c = wctob(*ppchar);
+            buff[i] = c != -1 ? c : '?';
+        }
     }
-    buff[i] = 0; // terminate
 
     return buff;
 }

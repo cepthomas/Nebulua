@@ -4,8 +4,8 @@
 local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("bar_time")
-local api = require("host_api") -- host api mock
-local neb = require("nebulua") -- lua api
+local api = require("lua_interop") -- host mock
+local api = require("script_api")
 
 
 -- ut.config_debug(true)
@@ -26,10 +26,10 @@ function M.suite_1(pn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
     -- Process the data.
-    neb.process_comp()
+    api.process_comp()
 
     local dumpfn = '_dump.txt'
-    neb.dump_steps(dumpfn, 's') -- diagnostic
+    api.dump_steps(dumpfn, 's') -- diagnostic
 
     -- pn.UT_EQUAL(ut.table_count(_section_info), 4)
     -- pn.UT_EQUAL(_section_info['_LENGTH'], 768)
@@ -41,7 +41,7 @@ function M.suite_1(pn)
     -- -- Execute some script steps. Times and counts are based on script_happy.lua observed.
     -- for i = 0, 200 do
     --     api.current_tick = i
-    --     stat = neb.process_step(i)
+    --     stat = api.process_step(i)
     --     pn.UT_EQUAL(stat, 0)
     --     -- print(">>>", ut.table_count(transients))
 

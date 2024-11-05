@@ -1,9 +1,9 @@
 
 -- Import modules this needs.
-local neb = require("nebulua") -- lua api
+local api = require("script_api")
 local mus = require("music_defs")
-local mid = require("midi_defs") -- GM midi instrument definitions
-local bt  = require("bar_time") -- time utility
+local mid = require("midi_defs")
+local bt  = require("bar_time")
 local ut  = require('lbot_utils')
 local sx  = require("stringex")
 
@@ -13,7 +13,7 @@ local sx  = require("stringex")
 -- dbg()
 
 -- Say hello.
-neb.log_info('Loading piece1.lua...')
+api.log_info('Loading piece1.lua...')
 
 
 -- Aliases
@@ -45,16 +45,16 @@ local mtom = drum.HiMidTom
 
 -- Specify midi channels.
 local midi_in = "ClickClack"
-local hin  = neb.create_input_channel(midi_in, 1)
+local hin  = api.create_input_channel(midi_in, 1)
 
 -- DAW or VST host.
 local use_host = false
 
 local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
-local hnd_keys  = neb.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
-local hnd_bass  = neb.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
-local hnd_synth = neb.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.VoiceOohs))
-local hnd_drums = neb.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
+local hnd_keys  = api.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = api.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
+local hnd_synth = api.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.VoiceOohs))
+local hnd_drums = api.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
 
 
 
@@ -92,9 +92,9 @@ local bass_seq =
     { "|8-------|        |        |        |8-------|        |        |        |", "D3" },
 }
 
-local drums_seq_steps = neb.parse_sequence_steps(hnd_drums, drums_seq)
-local keys_seq_steps = neb.parse_sequence_steps(hnd_keys, keys_seq)
-local bass_seq_steps = neb.parse_sequence_steps(hnd_bass, bass_seq)
+local drums_seq_steps = api.parse_sequence_steps(hnd_drums, drums_seq)
+local keys_seq_steps = api.parse_sequence_steps(hnd_keys, keys_seq)
+local bass_seq_steps = api.parse_sequence_steps(hnd_bass, bass_seq)
 
 local my_scale = mus.get_notes_from_string("G3.Algerian")
 
@@ -107,7 +107,7 @@ local my_scale = mus.get_notes_from_string("G3.Algerian")
 function setup()
 
     -- How fast you wanna go?
-    neb.set_tempo(61)
+    api.set_tempo(61)
 
     return 0
 end
@@ -121,22 +121,22 @@ function step(tick)
         local bar, beat, sub = bt.tick_to_bt(tick)
 
         if bar == 1 and beat == 0 and sub == 0 then
-            neb.send_sequence_steps(keys_seq_steps, tick)
+            api.send_sequence_steps(keys_seq_steps, tick)
         end
 
         if beat == 0 and sub == 0 then
-            neb.send_sequence_steps(drums_seq_steps, tick)
+            api.send_sequence_steps(drums_seq_steps, tick)
         end
 
         -- Every 2 bars
         if (bar == 0 or bar == 2) and beat == 0 and sub == 0 then
-            neb.send_sequence_steps(bass_seq_steps, tick)
+            api.send_sequence_steps(bass_seq_steps, tick)
         end
 
     end
 
     -- Overhead.
-    neb.process_step(tick)
+    api.process_step(tick)
 
     return 0
 end
@@ -144,11 +144,11 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, volume)
-    -- neb.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
+    -- api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
     if chan_hnd == hin then
         -- Play the note.
-        neb.send_note(hnd_synth, note_num, volume)
+        api.send_note(hnd_synth, note_num, volume)
     end
     return 0
 end
@@ -158,7 +158,7 @@ end
 function rcv_controller(chan_hnd, controller, value)
     if chan_hnd == hin then
         -- Do something.
-        neb.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
+        api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
     end
     return 0
 end
@@ -170,7 +170,7 @@ end
 -- Do something.
 seq_func = function(tick)
     local note_num = math.random(1, #my_scale)
-    neb.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
-    neb.send_sequence_steps(keys_seq_steps, tick)
+    api.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
+    api.send_sequence_steps(keys_seq_steps, tick)
 end
 

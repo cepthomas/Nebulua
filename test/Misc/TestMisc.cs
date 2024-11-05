@@ -44,11 +44,11 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             {
-                var ex = new ApiException("message111", "Bad API");
+                var ex = new AppInteropException("message111", "Bad App Interop");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_STRING_CONTAINS(msg, "message111");
-                UT_STRING_CONTAINS(msg, "Bad API");
+                UT_STRING_CONTAINS(msg, "Bad App Interop");
             }
 
             {

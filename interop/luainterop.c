@@ -359,7 +359,7 @@ static int luainterop_Open(lua_State* l)
 
 void luainterop_Load(lua_State* l)
 {
-    luaL_requiref(l, "host_api", luainterop_Open, true);
+    luaL_requiref(l, "lua_interop", luainterop_Open, true);
 }
 
 const char* luainterop_Error()

@@ -1,4 +1,4 @@
--- Used to build and test all parts of the nebulua universe.
+-- Used to build and test all parts of the Nebulua universe.
 
 -- Fix up the lua path first.
 package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
@@ -79,8 +79,8 @@ elseif opt == 'test_lua' then
     output_text('Build: Running lua tests...')
     local pr = require('pnut_runner')
 
-    -- rep = pr.do_tests('test_nebulua')
-    rep = pr.do_tests('test_defs', 'test_bar_time', 'test_nebulua')
+    -- rep = pr.do_tests('test_api')
+    rep = pr.do_tests('test_defs', 'test_bar_time', 'test_api')
     for _, s in ipairs(rep) do
         output_text(s)
     end

@@ -10,10 +10,10 @@ namespace Nebulua
     /// <summary>Lua script syntax error.</summary>
     public class ScriptSyntaxException(string message) : Exception(message) { }
 
-    /// <summary>Api error.</summary>
-    public class ApiException(string message, string apiError) : Exception(message)
+    /// <summary>AppInterop error.</summary>
+    public class AppInteropException(string message, string msg) : Exception(message)
     {
-        public string ApiError { get; init; } = apiError;
+        public string AppInteropError { get; init; } = msg;
     }
 
     /// <summary>App command line error.</summary>
@@ -50,8 +50,8 @@ namespace Nebulua
 
             switch (e)
             {
-                case ApiException ex:
-                    msg = $"Api Error: {ex.Message}:{Environment.NewLine}{ex.ApiError}";
+                case AppInteropException ex:
+                    msg = $"AppInterop Error: {ex.Message}:{Environment.NewLine}{ex.AppInteropError}";
                     break;
 
                 case ScriptSyntaxException ex:
