@@ -59,7 +59,7 @@ local mtom = drum.HiMidTom
 
 
 -- Forward refs.
-local algo_func
+local _algo_func
 
 
 ------------------------- System Functions -----------------------------
@@ -96,7 +96,7 @@ function step(tick)
         local bar, beat, sub = bt.tick_to_bt(tick)
         if beat == 2 and sub == 0 then
             -- api.send_controller(hnd_synth, ctrl.Pan, 90)
-            algo_func(tick)
+            _algo_func(tick)
         end
 
     return 0
@@ -128,7 +128,7 @@ end
 ----------------------- Local Functions ----------------------------------
 
 -- Function called from sequence.
-algo_func = function(tick)
+_algo_func = function(tick)
     if my_scale ~= nil then
         local note_num = math.random(1, #my_scale)
         api.send_note(hnd_synth, my_scale[note_num], 0.8, 3)

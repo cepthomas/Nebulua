@@ -44,15 +44,18 @@ local _channel_volumes = {}
 -- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
 local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
 
+
 -- Might be useful.
 local _root_dir
-
-function M.get_root_dir() return _root_dir end
 
 
 -----------------------------------------------------------------------------
 ------------- Script calls host li and internal lua functions --------------
 -----------------------------------------------------------------------------
+
+
+function M.get_root_dir() return _root_dir or 'unknown' end
+
 
 -----------------------------------------------------------------------------
 --- Log functions. This goes straight through to the host.
@@ -64,7 +67,7 @@ function M.log_info(msg)  li.log(2, msg) end
 function M.log_debug(msg) li.log(1, msg) end
 function M.log_trace(msg) li.log(0, msg) end
 
-M.log_info('Loading nebulua.lua...')
+M.log_info('Loading script_api.lua...')
 
 
 -----------------------------------------------------------------------------
@@ -530,6 +533,7 @@ end
 -- @param arg optional argument string
 -- @return result string (table would be nice later)
 function neb_command(cmd, arg)
+    -- print('neb_command', cmd, arg)
     if cmd == 'unload_all' then  -- Unload everything so that the script can be reloaded.
         package.loaded.bar_time = nil
         package.loaded.debugger = nil

@@ -13,7 +13,7 @@ local sx  = require("stringex")
 -- dbg()
 
 -- Say hello.
-api.log_info('Loading piece1.lua in '..api.get_root_dir()..' ...')
+api.log_info('Loading piece1.lua...')
 
 
 -- Aliases
@@ -51,7 +51,6 @@ local hnd_keys  = api.create_output_channel(midi_out, 1, ut.tern(use_host, mid.N
 local hnd_bass  = api.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
 local hnd_synth = api.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.VoiceOohs))
 local hnd_drums = api.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
-
 
 
 ------------------------- Variables -----------------------------------
@@ -101,6 +100,8 @@ local my_scale = mus.get_notes_from_string("G3.Algerian")
 -----------------------------------------------------------------------------
 -- Called once to initialize your script stuff. Required.
 function setup()
+
+    api.log_info('Running piece1.lua in '..api.get_root_dir()) -- TODO1 doesn't work...
 
     -- How fast you wanna go?
     api.set_tempo(61)

@@ -11,8 +11,118 @@ local opt = arg[1]
 local ret_code = 0
 
 
--- Make pretty. TODO1 put in lbot?
-local function output_text(text)
+-- fwd refs
+local _output_text
+
+
+-------------------------------------------------------------------------
+
+if opt == 'build_app' then
+    local bld_exe = '"C:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"'
+    -- -r = restore first
+    -- -t:rebuild
+    -- Verbosity levels: q[uiet], m[inimal], n[ormal] (default), d[etailed], and diag[nostic].
+    vrb = '-v:m'
+
+    _output_text('Build: Building app...')
+    cmd = sx.strjoin(' ', { bld_exe, vrb, 'Nebulua.sln' } )
+    res = ut.execute_and_capture(cmd)
+    _output_text(res)
+
+    _output_text('Build: Building app tests...')
+    cmd = sx.strjoin(' ', { bld_exe, vrb, 'test/NebuluaTest.sln' } )
+    res = ut.execute_and_capture(cmd)
+    _output_text(res)
+
+elseif opt == 'test_app' then
+    _output_text('Build: Running app tests...')
+    cmd = 'pushd "test/Cli/bin/x64/Debug/net8.0-windows" & TestCli.exe & popd'
+    res = ut.execute_and_capture(cmd)
+    _output_text(res)
+
+    cmd = 'pushd "test/Core/bin/x64/Debug/net8.0-windows" & TestCore.exe & popd'
+    res = ut.execute_and_capture(cmd)
+    _output_text(res)
+
+    cmd = 'pushd "test/Interop/bin/x64/Debug/net8.0-windows" & TestInterop.exe & popd'
+    res = ut.execute_and_capture(cmd)
+    _output_text(res)
+
+    cmd = 'pushd "test/Misc/bin/x64/Debug/net8.0-windows" & TestMisc.exe & popd'
+    res = ut.execute_and_capture(cmd)
+    _output_text(res)
+
+elseif opt == 'test_lua' then
+    _output_text('Build: Running lua tests...')
+    local pr = require('pnut_runner')
+
+    rep = pr.do_tests('test_defs', 'test_bar_time', 'test_api')
+    for _, s in ipairs(rep) do
+        _output_text(s)
+    end
+
+elseif opt == 'gen_md' then
+    _output_text('Build: Gen markdown from definition files...')
+
+    mus = require('music_defs')
+    mid = require('midi_defs')
+    sx  = require('stringex')
+
+    text = mus.gen_md()
+    content = sx.strjoin('\n', text)
+    f = io.open('docs/music_defs.md', 'w')
+    f:write(content)
+    f:close()
+
+    text = mid.gen_md()
+    content = sx.strjoin('\n', text)
+    f = io.open('docs/midi_defs.md', 'w')
+    f:write(content)
+    f:close()
+
+elseif opt == 'gen_interop' then
+    -- Convert spec into interop files.
+    _output_text('Build: Generating interop...')
+    cmd = 'pushd "../../Libs/LuaBagOfTricks" & lua gen_interop.lua -ch '..current_dir..'/interop/interop_spec.lua '..current_dir..'/interop & popd'
+    print(cmd)
+    res = ut.execute_and_capture(cmd)
+    _output_text(res)
+
+elseif opt == 'dev' then
+    local function do_one(name, func)
+        v = {}
+        table.insert(v, name)
+        for i = 0, 9 do table.insert(v, string.format("%.2f", func(i)))  end
+        print(sx.strjoin(', ', v))
+    end
+
+    do_one('linear', function(i) return i / 9 end)
+    do_one('exp', function(i) return math.exp(i) / 8104 end)
+    do_one('log', function(i) return math.log(i) / 2.2 end)
+    do_one('log 10', function(i) return math.log(i, 10) / 0.95 end)
+    do_one('pow 2', function(i) return i^2 / 81 end)
+    do_one('pow 3', function(i) return i^3 end)
+    do_one('pow 0.67', function(i) return i^0.67 / 4.36 end)
+    -- do_one('pow 10', function(i) return i^10 / 81 end)
+    -- do_one('pow -2', function(i) return i^-2 end)
+    -- do_one('pow -10', function(i) return i^-10 end)
+
+else
+    if opt == nil then
+        _output_text('Build: Error: Missing option - Select one of:')
+    else
+        _output_text('Build: Error: Invalid option '..opt..' - Select one of:')
+    end
+
+    _output_text('build_app  test_app  test_lua  gen_md  gen_interop')
+    -- goto done
+    ret_code = 1
+
+end
+
+
+-- Make pretty.
+_output_text = function(text)
     -- Split into lines and colorize.
 
     local GRAY = string.char(27).."[95m" --"[90m"
@@ -33,120 +143,5 @@ local function output_text(text)
     end
 end
 -- spec = { ['Build: ']='green', ['! ']='red', ['): error ']='red', ['): warning ']='yellow' }
-
-
--------------------------------------------------------------------------
-
-if opt == 'build_app' then
-
-    local bld_exe = '"C:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"'
-    -- -r = restore first
-    -- -t:rebuild
-    -- Verbosity levels: q[uiet], m[inimal], n[ormal] (default), d[etailed], and diag[nostic].
-    vrb = '-v:m'
-
-    output_text('Build: Building app...')
-    cmd = sx.strjoin(' ', { bld_exe, vrb, 'Nebulua.sln' } )
-    res = ut.execute_and_capture(cmd)
-    output_text(res)
-
-    output_text('Build: Building app tests...')
-    cmd = sx.strjoin(' ', { bld_exe, vrb, 'test/NebuluaTest.sln' } )
-    res = ut.execute_and_capture(cmd)
-    output_text(res)
-
-elseif opt == 'test_app' then
-
-    output_text('Build: Running app tests...')
-    cmd = 'pushd "test/Cli/bin/x64/Debug/net8.0-windows" & TestCli.exe & popd'
-    res = ut.execute_and_capture(cmd)
-    output_text(res)
-
-    cmd = 'pushd "test/Core/bin/x64/Debug/net8.0-windows" & TestCore.exe & popd'
-    res = ut.execute_and_capture(cmd)
-    output_text(res)
-
-    cmd = 'pushd "test/Interop/bin/x64/Debug/net8.0-windows" & TestInterop.exe & popd'
-    res = ut.execute_and_capture(cmd)
-    output_text(res)
-
-    cmd = 'pushd "test/Misc/bin/x64/Debug/net8.0-windows" & TestMisc.exe & popd'
-    res = ut.execute_and_capture(cmd)
-    output_text(res)
-
-elseif opt == 'test_lua' then
-
-    output_text('Build: Running lua tests...')
-    local pr = require('pnut_runner')
-
-    -- rep = pr.do_tests('test_api')
-    rep = pr.do_tests('test_defs', 'test_bar_time', 'test_api')
-    for _, s in ipairs(rep) do
-        output_text(s)
-    end
-
-elseif opt == 'gen_md' then
-
-    output_text('Build: Gen markdown from definition files...')
-
-    mus = require('music_defs')
-    mid = require('midi_defs')
-    sx  = require('stringex')
-
-    text = mus.gen_md()
-    content = sx.strjoin('\n', text)
-    f = io.open('docs/music_defs.md', 'w')
-    f:write(content)
-    f:close()
-
-    text = mid.gen_md()
-    content = sx.strjoin('\n', text)
-    f = io.open('docs/midi_defs.md', 'w')
-    f:write(content)
-    f:close()
-
-elseif opt == 'gen_interop' then
-
-    -- Convert spec into interop files.
-    output_text('Build: Generating interop...')
-    cmd = 'pushd "../../Libs/LuaBagOfTricks" & lua gen_interop.lua -ch '..current_dir..'/interop/interop_spec.lua '..current_dir..'/interop & popd'
-    print(cmd)
-    res = ut.execute_and_capture(cmd)
-    output_text(res)
-
-elseif opt == 'dev' then
-
-    local function go(name, func)
-        v = {}
-        table.insert(v, name)
-        for i = 0, 9 do table.insert(v, string.format("%.2f", func(i)))  end
-        print(sx.strjoin(', ', v))
-    end
-
-    go('linear', function(i) return i / 9 end)
-    go('exp', function(i) return math.exp(i)/8104 end)
-    go('log', function(i) return math.log(i)/2.2 end)
-    go('log 10', function(i) return math.log(i, 10)/0.95 end)
-    go('pow 2', function(i) return i^2/81 end)
-    go('pow 3', function(i) return i^3 end)
-    -- go('pow 10', function(i) return i^10/81 end)
-    go('pow 0.67', function(i) return i^0.67/4.36 end)
-    -- go('pow -2', function(i) return i^-2 end)
-    -- go('pow -10', function(i) return i^-10 end)
-    -- go('10^x/20', function(i) return 10^i/20 end)
-
-else
-
-    if opt == nil then
-        output_text('Build: Error: Missing option - Select one of:')
-    else
-        output_text('Build: Error: Invalid option '..opt..' - Select one of:')
-    end
-
-    output_text('build_app  test_app  test_lua  gen_md  gen_interop')
-    -- goto done
-    ret_code = 1
-
-end
 
 return ret_code

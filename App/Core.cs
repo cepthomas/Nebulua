@@ -43,7 +43,7 @@ namespace Nebulua
         public string? CurrentScriptFn { get; private set; }
 
         /// <summary>Error message.</summary>
-        public string? Error { get; private set; }
+        public string Error { get { return _interop.Error; } }
         #endregion
 
         #region Lifecycle
@@ -62,15 +62,7 @@ namespace Nebulua
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             // Set up runtime lua environment.
-            List<string> luaPath = [Path.Join(Utils.GetAppRoot(), "lua")]; // where app lua files live
-            _interop = new(luaPath);
-
-            Error = _interop.Error;
-
-            //if (_interop.Error.Length > 0)
-            //{
-            //    throw new InvalidOperationException($"Initialize interop failed: {_interop.Error}");
-            //}
+            _interop = new([Path.Join(Utils.GetAppRoot(), "lua")]);
         }
 
         /// <summary>
@@ -129,10 +121,6 @@ namespace Nebulua
 
             // Unload current modules so reload will be minty fresh. This may fail safely if no script loaded yet.
             string ret = _interop.NebCommand("unload_all", "no arg");
-            if (_interop.Error != "")
-            {
-                //throw new AppInteropException("NebCommand failed", _interop.Error);
-            }
 
             _logger.Info($"Loading script file {CurrentScriptFn}");
 

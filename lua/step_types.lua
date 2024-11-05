@@ -40,7 +40,7 @@ function M.note(tick, chan_hnd, note_num, volume, duration)
         end
     })
 
-    if not d.valid error('Invalid note '..tostring(d))
+    if not d.valid then error('Invalid note '..tostring(d)) end
 
     return d
 end
@@ -71,7 +71,7 @@ function M.controller(tick, chan_hnd, controller, value)
         end
     })
 
-    if not d.valid error('Invalid controller '..tostring(d))
+    if not d.valid then error('Invalid controller '..tostring(d)) end
 
     return d
 end
@@ -101,7 +101,7 @@ function M.func(tick, chan_hnd, func, volume)
         end
     })
 
-    if not d.valid error('Invalid function '..d._format())
+    if not d.valid then error('Invalid function '..d._format()) end
 
     return d
 end

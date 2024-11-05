@@ -56,6 +56,12 @@ namespace Nebulua
             BackColor = UserSettings.Current.BackColor;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
+            _core = new();
+            if (_core.Error.Length > 0)
+            {
+                _logger.Error(_core.Error);
+            }
+
             PopulateFileMenu();
 
             _watcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -143,12 +149,6 @@ namespace Nebulua
 
             // Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-
-            _core = new();
-            if (_core.Error is not null)
-            {
-                _logger.Error(_core.Error);
-            }
         }
 
         /// <summary>
