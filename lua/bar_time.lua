@@ -6,9 +6,6 @@ local sx  = require("stringex")
 
 local M = {}
 
--- If true call error() otherwise return nil. TODO1 make generic handler for these - in script.
-M.fail_hard = true
-
 
 -------------------- Definitions - must match C code! --------------
 -- Only 4/4 time supported.
@@ -34,7 +31,7 @@ function M.bt_to_tick(bar, beat, sub)
     valid = valid and ut.val_integer(beat, 0, M.BEATS_PER_BAR-1)
     valid = valid and ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
 
-    if not valid and M.fail_hard then error(string.format('Invalid bartime %s %s %s', bar, beat, sub)) end
+    if not valid then error(string.format('Invalid bartime %s %s %s', bar, beat, sub)) end
 
     if valid then
         local tick = bar * M.SUBS_PER_BAR + beat * M.SUBS_PER_BEAT + sub
@@ -54,7 +51,7 @@ function M.beats_to_tick(beats, sub)
     valid = valid and ut.val_integer(beats, 0, M.MAX_BEAT-1)
     valid = valid and ut.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
 
-    if not valid and M.fail_hard then error(string.format('Invalid bartime %s %s', beats, sub)) end
+    if not valid then error(string.format('Invalid bartime %s %s', beats, sub)) end
 
     if valid then
         local tick = beats * M.SUBS_PER_BEAT + sub
@@ -89,7 +86,7 @@ function M.str_to_tick(str)
         end
     end
 
-    if tick == nil and M.fail_hard then error(string.format('Invalid bartime %s', str)) end
+    if tick == nil then error(string.format('Invalid bartime %s', str)) end
 
     return tick
 end
@@ -107,8 +104,7 @@ function M.tick_to_bt(tick)
         local sub = math.floor(tick % M.SUBS_PER_BEAT)
         return bar, beat, sub
     else
-        if M.fail_hard then error(string.format('Invalid tick %s', tick)) end
-        return nil
+        error(string.format('Invalid tick %s', tick))
     end
 end
 
@@ -123,8 +119,7 @@ function M.tick_to_str(tick)
         local bar, beat, sub = M.tick_to_bt(tick)
         return string.format("%d.%d.%d", bar, beat, sub)
     else
-        if M.fail_hard then error(string.format('Invalid tick %s', tick)) end
-        return nil
+        error(string.format('Invalid tick %s', tick))
     end
 end
 

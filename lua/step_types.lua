@@ -7,13 +7,10 @@ local mid = require('midi_defs')
 
 local M = {}
 
--- If true call error() otherwise clear .valid flag.
-M.fail_hard = true
-
 
 -- Forward refs.
-local format_chan_hnd
-local format_tick
+local _format_chan_hnd
+local _format_tick
 
 
 
@@ -39,11 +36,11 @@ function M.note(tick, chan_hnd, note_num, volume, duration)
     {
         __tostring = function(self)
             return string.format('%s %s NOTE:%d VOL:%.1f DUR:%d',
-                format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
+                _format_tick(d.tick), _format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
         end
     })
 
-    if not d.valid and M.fail_hard then error('Invalid note '..tostring(d)) end
+    if not d.valid error('Invalid note '..tostring(d))
 
     return d
 end
@@ -70,11 +67,11 @@ function M.controller(tick, chan_hnd, controller, value)
     {
         __tostring = function(self)
             return string.format('%s %s CTRL:%d VAL:%d',
-                format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.controller, d.value)
+                _format_tick(d.tick), _format_chan_hnd(d.chan_hnd), d.controller, d.value)
         end
     })
 
-    if not d.valid and M.fail_hard then error('Invalid controller '..tostring(d)) end
+    if not d.valid error('Invalid controller '..tostring(d))
 
     return d
 end
@@ -100,23 +97,23 @@ function M.func(tick, chan_hnd, func, volume)
     {
         __tostring = function(self)
             return string.format('%s %s FUNC:? VOL:%.1f',
-                format_tick(d.tick), format_chan_hnd(d.chan_hnd), d.volume)
+                _format_tick(d.tick), _format_chan_hnd(d.chan_hnd), d.volume)
         end
     })
 
-    if not d.valid and M.fail_hard then error('Invalid function '..d._format()) end
+    if not d.valid error('Invalid function '..d._format())
 
     return d
 end
 
 
 -----------------------------------------------------------------------------
-format_chan_hnd = function(chan_hnd)
+_format_chan_hnd = function(chan_hnd)
     return string.format("DEV:%02d CH:%02d", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
 end
 
 -----------------------------------------------------------------------------
-format_tick = function(tick)
+_format_tick = function(tick)
     return string.format('T:%05d BT:%s', tick, bt.tick_to_str(tick))
 end
 

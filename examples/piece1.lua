@@ -13,7 +13,7 @@ local sx  = require("stringex")
 -- dbg()
 
 -- Say hello.
-api.log_info('Loading piece1.lua...')
+api.log_info('Loading piece1.lua in '..api.get_root_dir()..' ...')
 
 
 -- Aliases
@@ -30,10 +30,6 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
--- local current_dir = io.popen("cd"):read()
--- local sep = package.config:sub(1, 1)
--- local fn = sx.strjoin(sep, { current_dir, '_glob.txt' } )
-
 -- local fp = io.open('C:/Dev/repos/Apps/Nebulua/_glob.txt', 'w+')
 -- fp:write(ut.dump_table_string(package, 2, 'package')..'\n')
 -- -- fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
@@ -45,7 +41,7 @@ local mtom = drum.HiMidTom
 
 -- Specify midi channels.
 local midi_in = "ClickClack"
-local hin  = api.create_input_channel(midi_in, 1)
+local hin = api.create_input_channel(midi_in, 1)
 
 -- DAW or VST host.
 local use_host = false

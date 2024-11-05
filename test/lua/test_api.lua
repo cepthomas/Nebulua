@@ -15,24 +15,28 @@ local api = require("script_api")
 -- Create the namespace/module.
 local M = {}
 
+local _save_error
+local _last_error
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
     -- Sub error handler to intercept errors.
-    last_error = ""
+    _last_error = ""
+
     get_error = function()
-        e = last_error
-        last_error = ""
+        e = _last_error
+        _last_error = ""
         return e
     end
-    save_error = error
-    error = function(err, level) last_error = err end
+
+    _save_error = error
+    error = function(err, level) _last_error = err end
 end
 
 -----------------------------------------------------------------------------
 function M.teardown(pn)
     -- Restore.
-    error = save_error
+    error = _save_error
 end
 
 
@@ -150,7 +154,7 @@ function M.suite_step_types(pn)
 
     n = st.note(100001, 88, 111, 0.3, 22)
     pn.UT_FALSE(n.valid)
-    pn.UT_STR_EQUAL(last_error, "Invalid note T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
+    pn.UT_STR_EQUAL(get_error(), "Invalid note T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
     pn.UT_STR_EQUAL(tostring(n), "T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
 
     local c = st.controller(344, 37, 88, 55)
