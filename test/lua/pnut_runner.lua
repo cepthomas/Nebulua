@@ -102,7 +102,7 @@ end
 
 --------------------- start here ----------------------------------------
 -- Get script args.
-scrarg = {...}
+local scrarg = {...}
 
 if #scrarg >= 1 then
     if scrarg[1] == 'pnut_runner' then

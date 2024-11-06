@@ -446,7 +446,7 @@ namespace Nebulua
         {
             this.InvokeIfRequired(_ =>
             {
-                traffic.AppendLine(e.Message);
+                traffic.AppendLine(e.ShortMessage);
                 if (e.Level == LogLevel.Error)
                 {
                     traffic.AppendLine("Fatal error - restart");

@@ -112,15 +112,17 @@ end
 --    0 is the getinfo() itself
 --    1 is the function that called getinfo() - get_caller_info()
 --    2 is the function that called get_caller_info() - usually the one of interest
--- @return filename, linenumber or nil if invalid
+-- @return filename, linenumber, directory - may be nil
 function M.get_caller_info(level)
-    local s = debug.getinfo(level, 'S')
-    local l = debug.getinfo(level, 'l')
-    if s ~= nil and l ~= nil then
-        return s.short_src, l.currentline
-    else
-        return nil
-    end
+    local fpath = debug.getinfo(level, 'S').short_src
+    local line = debug.getinfo(level, 'l').currentline
+    -- dir is a bit more work
+    local sep = package.config:sub(1,1)
+    local parts = sx.strsplit(fpath, sep)
+    table.remove(parts, #parts)
+    dir = sx.strjoin(sep, parts)
+
+    return fpath, line, dir
 end
 
 -----------------------------------------------------------------------------

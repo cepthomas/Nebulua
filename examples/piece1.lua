@@ -7,13 +7,18 @@ local bt  = require("bar_time")
 local ut  = require('lbot_utils')
 local sx  = require("stringex")
 
+-- TODO1 how to do this:
+-- local oo  = require("other")
+
 
 -- Setup for debug.
 -- ut.config_debug(true)
 -- dbg()
 
+
 -- Say hello.
-api.log_info('Loading piece1.lua...')
+local fn, line, dir = ut.get_caller_info(2)
+api.log_info('Loading piece1.lua in '..dir)
 
 
 -- Aliases
@@ -31,9 +36,10 @@ local mtom = drum.HiMidTom
 
 
 -- local fp = io.open('C:/Dev/repos/Apps/Nebulua/_glob.txt', 'w+')
--- fp:write(ut.dump_table_string(package, 2, 'package')..'\n')
+-- fp:write(package.config..'\n')
+-- fp:write(ut.dump_table_string(package, 0, 'package!!!')..'\n')
 -- -- fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
--- fp:write(ut.dump_table_string(_G, 0, '_G')..'\n')
+-- -- fp:write(ut.dump_table_string(_G, 0, '_G')..'\n')
 -- fp:close()
 
 
