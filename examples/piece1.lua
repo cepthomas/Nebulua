@@ -101,10 +101,8 @@ local my_scale = mus.get_notes_from_string("G3.Algerian")
 -- Called once to initialize your script stuff. Required.
 function setup()
 
-    api.log_info('Running piece1.lua in '..api.get_root_dir()) -- TODO1 doesn't work...
-
     -- How fast you wanna go?
-    api.set_tempo(61)
+    api.set_tempo(80)
 
     return 0
 end

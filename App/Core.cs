@@ -130,9 +130,6 @@ namespace Nebulua
                 throw new AppInteropException("AppInterop open script failed", _interop.Error);
             }
 
-            // Do some config now.
-            _interop.NebCommand("root_dir", Utils.GetAppRoot());
-
             // Get info about the script.
             Dictionary<int, string> sectInfo = [];
             string sinfo = _interop.NebCommand("section_info", "no arg");

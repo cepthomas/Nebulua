@@ -40,7 +40,6 @@ AppInterop::AppInterop(List<String^>^ lpath)
     // Init vars.
     _luaPath = lpath;
     Error = "";
-    //SectionInfo = gcnew Dictionary<int, String^>();
     NebStatus nstat = NebStatus::Ok;
     int lstat = LUA_OK;
 
@@ -91,7 +90,6 @@ AppInterop::AppInterop(List<String^>^ lpath)
     lua_pop(_l, 1);
 }
 
-
 //--------------------------------------------------------//
 AppInterop::~AppInterop()
 {
@@ -107,7 +105,6 @@ AppInterop::~AppInterop()
     }
 }
 
-
 //--------------------------------------------------------//
 NebStatus AppInterop::OpenScript(String^ fn)
 {
@@ -115,7 +112,6 @@ NebStatus AppInterop::OpenScript(String^ fn)
     int lstat = LUA_OK;
     int ret = 0;
     Error = "";
-    //SectionInfo->Clear();
 
     EnterCriticalSection(&_critsect);
 
@@ -132,7 +128,6 @@ NebStatus AppInterop::OpenScript(String^ fn)
         // Pushes the compiled chunk as a lua function on top of the stack or pushes an error message.
         lstat = luaL_loadfile(_l, fnx);
         free(fnx);
-
         nstat = _EvalLuaStatus(lstat, "Load script file failed.");
     }
 
@@ -156,6 +151,7 @@ NebStatus AppInterop::OpenScript(String^ fn)
     }
     
     LeaveCriticalSection(&_critsect);
+
     return nstat;
 }
 
@@ -168,6 +164,7 @@ NebStatus AppInterop::Step(int tick)
     EnterCriticalSection(&_critsect);
 
     luainterop_Step(_l, tick);
+
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
@@ -187,13 +184,13 @@ NebStatus AppInterop::RcvNote(int chan_hnd, int note_num, double volume)
 
     EnterCriticalSection(&_critsect);
 
+    luainterop_RcvNote(_l, chan_hnd, note_num, volume);
+
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());
         ret = NebStatus::AppInteropError;
     }
-
-    luainterop_RcvNote(_l, chan_hnd, note_num, volume);
 
     LeaveCriticalSection(&_critsect);
 
@@ -209,6 +206,7 @@ NebStatus AppInterop::RcvController(int chan_hnd, int controller, int value)
     EnterCriticalSection(&_critsect);
 
     luainterop_RcvController(_l, chan_hnd, controller, value);
+
     if (luainterop_Error() != NULL)
     {
         Error = gcnew String(luainterop_Error());

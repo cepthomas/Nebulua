@@ -45,16 +45,9 @@ local _channel_volumes = {}
 local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
 
 
--- Might be useful.
-local _root_dir
-
-
 -----------------------------------------------------------------------------
 ------------- Script calls host li and internal lua functions --------------
 -----------------------------------------------------------------------------
-
-
-function M.get_root_dir() return _root_dir or 'unknown' end
 
 
 -----------------------------------------------------------------------------
@@ -229,7 +222,6 @@ function M.send_sequence_steps(seq_steps, tick)
     end
 end
 
-
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern.
 --- This does not call error() so caller can process in context. However this results in a somewhat messy
@@ -361,14 +353,9 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     return seq_length, steps
 end
 
-
-
-
 -----------------------------------------------------------------------------
 ----------------- TODO1 still need composition? -----------------------------
 -----------------------------------------------------------------------------
-
-
 
 -----------------------------------------------------------------------------
 --- Process all sections into discrete steps.
@@ -499,7 +486,6 @@ function M.sect_chan(chan_hnd, ...)
     end
 end
 
-
 -----------------------------------------------------------------------------
 ----------------- Internal functions ----------------------------------------
 -----------------------------------------------------------------------------
@@ -540,7 +526,7 @@ function neb_command(cmd, arg)
         package.loaded.lbot_utils = nil
         package.loaded.midi_defs = nil
         package.loaded.music_defs = nil
-        package.loaded.nebulua = nil
+        package.loaded.script_api = nil
         package.loaded.step_types = nil
         package.loaded.stringex = nil
         return '0'
@@ -550,9 +536,6 @@ function neb_command(cmd, arg)
             table.insert(res, k..','..v)
         end
         return sx.strjoin('|', res)
-    elseif cmd == 'root_dir' then
-        _root_dir = arg
-        return '0'
     else
         M.log_info('Unknown cmd '..cmd..' '..arg)
         return '1'
