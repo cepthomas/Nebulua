@@ -472,7 +472,7 @@ function M.sect_chan(chan_hnd, ...)
         end
 
         for i = 1, num_args do
-            seq = select(i, ...)
+            local seq = select(i, ...)
             if type(seq) == "table" then -- should check for valid/known
                 table.insert(elems, seq)
             else
@@ -507,7 +507,7 @@ function M.dump_steps(fn, which)
     local fp, err = io.open(fn, 'w+')
     for tick, sts in pairs(t) do
         for i, step in ipairs(sts) do
-            fp:write(step.format()..'\n')
+            fp:write(tostring(step)..'\n')
         end
     end
     fp:close()
@@ -531,7 +531,7 @@ function neb_command(cmd, arg)
         package.loaded.stringex = nil
         return '0'
     elseif cmd == 'section_info' then -- Return the collected section information.
-        res = {}
+        local res = {}
         for k, v in pairs(_section_info) do
             table.insert(res, k..','..v)
         end

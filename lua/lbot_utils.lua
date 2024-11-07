@@ -1,15 +1,34 @@
 --- GP utilities: tables, math, validation, errors, ...
+-- Some parts are lifted from or inspired by https://github.com/lunarmodules/Penlight.
 
 local sx = require("stringex")
 
 local M = {}
 
+
+-----------------------------------------------------------------------------
+------------------------------ Fields ---------------------------------------
+-----------------------------------------------------------------------------
+
+-- For table dumping.
 local _dump_level = 0
 
------------------------------------------------------------------------------
------------------------------- High level -----------------------------------
------------------------------------------------------------------------------
+-- Expect to see these.
+local _sys_globals = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
+    'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
+    'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
+    'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall' }
 
+-- Client phrases.
+local _colorize_map = {}
+
+-- ANSI colors
+local _colors = { ['red']=41, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95 }
+
+
+-----------------------------------------------------------------------------
+------------------------------ Application ----------------------------------
+-----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
 --- Execute a file and return the output.
@@ -55,6 +74,172 @@ function M.config_debug(use_dbgr)
         }
         setmetatable(dbg, { __call = function(self) end })
     end
+end
+
+-----------------------------------------------------------------------------
+--- Gets the file and line of the caller.
+-- @param level How deep to look:
+--    0 is the getinfo() itself
+--    1 is the function that called getinfo() - get_caller_info()
+--    2 is the function that called get_caller_info() - usually the one of interest
+-- @return filename, linenumber, directory - may be nil
+function M.get_caller_info(level)
+    local fpath = debug.getinfo(level, 'S').short_src
+    local line = debug.getinfo(level, 'l').currentline
+    -- dir is a bit more work
+    local sep = package.config:sub(1,1)
+    local parts = sx.strsplit(fpath, sep)
+    table.remove(parts, #parts)
+    local dir = sx.strjoin(sep, parts)
+
+    return fpath, line, dir
+end
+
+-----------------------------------------------------------------------------
+--- Emulation of C ternary operator.
+-- @param cond to test
+-- @param tval if cond is true
+-- @param fval if cond is false
+-- @return tval or fval
+function M.tern(cond, tval, fval)
+    if cond then return tval else return fval end
+end
+
+-----------------------------------------------------------------------------
+--- Checks global space for intruders aka you-forgot-local-again.
+-- @param app_exp list of app specific globals
+-- @return extraneous globals, missing expected
+function M.check_globals(app_exp)
+    -- Make copies as we destroy the tables - residual is considered missing.
+    local app_exp_c = M.copy(app_exp)
+    local sys_exp_c = M.copy(_sys_globals)
+    local g_extra = {}
+
+    local global_names = M.keys(_G)
+
+    for _, v in ipairs(global_names) do
+        local ind = M.contains(sys_exp_c, v)
+        if ind ~= nil then
+            table.remove(sys_exp_c, ind)
+        end
+
+        if ind == nil then
+            ind = M.contains(app_exp_c, v)
+            if ind ~= nil then
+                table.remove(app_exp_c, ind)
+            end
+        end
+
+        if ind == nil then
+            table.insert(g_extra, v)
+        end
+    end
+
+    return g_extra, app_exp_c
+end
+
+-----------------------------------------------------------------------------
+--- ANSI colorize lines of text if phrases are found. Also breaks at newlines.
+-- @param text to test
+-- @return list of text lines
+function M.colorize_text(text)
+    -- Split into lines and colorize.
+    local res = {}
+
+    lines = sx.strsplit(text, '\n', false)
+    for _, l in ipairs(lines) do
+        local s = l -- default
+        for k, v in pairs(_colorize_map) do
+            if sx.contains(l, k) then
+                local col = _colors[v]
+                if col == nil then error('Invalid color for phrase '..k) end
+                s = string.char(27)..'['..col..'m'..l..string.char(27)..'[0m'
+            end
+        end
+        table.insert(res, s)
+    end
+    return res
+end
+
+function M.set_colorize(map)
+    _colorize_map = map
+end
+
+
+-----------------------------------------------------------------------------
+------------------------- Tables --------------------------------------------
+-----------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------
+--- Get all the keys of tbl.
+-- @param tbl the table
+-- @return list of keys
+function M.keys(tbl)
+    local res = {}
+    for k, _ in pairs(tbl) do
+        table.insert(res, k)
+    end
+    return res
+end
+
+-----------------------------------------------------------------------------
+--- Get all the values of tbl.
+-- @param tbl the table
+-- @return list of values
+function M.values(tbl)
+    local res = {}
+    for _, v in pairs(tbl) do
+        table.insert(res, v)
+    end
+    return res
+end
+
+-----------------------------------------------------------------------------
+--- Lua has no built in way to count number of values in an associative table so this does.
+-- @param tbl the table
+-- @return number of values
+function M.table_count(tbl)
+    local num = 0
+    for _, _ in pairs(tbl) do
+        num = num + 1
+    end
+    return num
+end
+
+-----------------------------------------------------------------------------
+--- Tests if the value is in the table.
+-- @param tbl the table
+-- @param val the value
+-- @return corresponding key or nil if not in tbl
+function M.contains(tbl, val)
+    local num = 0
+    for k, v in pairs(tbl) do
+        if v == val then return k end
+    end
+    return nil
+end
+
+-----------------------------------------------------------------------------
+-- Boilerplate for adding a new kv to a table.
+-- @param tbl the table
+-- @param key new entry key
+-- @param val new entry value
+function M.table_add(tbl, key, val)
+   if tbl[key] == nil then tbl[key] = {} end
+   table.insert(tbl[key], val)
+end
+
+-----------------------------------------------------------------------------
+-- Shallow copy of tbl.
+-- @param tbl the table
+-- @return new table
+function M.copy(tbl)
+    local res = {}
+    for k, v in pairs(tbl) do
+        res[k] = v
+    end
+    return res
 end
 
 -----------------------------------------------------------------------------
@@ -106,57 +291,6 @@ function M.dump_table_string(tbl, depth, name)
     return sx.strjoin('\n', res)
 end
 
------------------------------------------------------------------------------
---- Gets the file and line of the caller.
--- @param level How deep to look:
---    0 is the getinfo() itself
---    1 is the function that called getinfo() - get_caller_info()
---    2 is the function that called get_caller_info() - usually the one of interest
--- @return filename, linenumber, directory - may be nil
-function M.get_caller_info(level)
-    local fpath = debug.getinfo(level, 'S').short_src
-    local line = debug.getinfo(level, 'l').currentline
-    -- dir is a bit more work
-    local sep = package.config:sub(1,1)
-    local parts = sx.strsplit(fpath, sep)
-    table.remove(parts, #parts)
-    dir = sx.strjoin(sep, parts)
-
-    return fpath, line, dir
-end
-
------------------------------------------------------------------------------
---- Lua has no built in way to count number of values in an associative table so this does.
--- @param tbl the table
--- @return number of values
-function M.table_count(tbl)
-    num = 0
-    for _, _ in pairs(tbl) do
-        num = num + 1
-    end
-    return num
-end
-
------------------------------------------------------------------------------
--- Boilerplate for adding a new kv to a table.
--- @param tbl the table
--- @param key new entry key
--- @param val new entry value
-function M.table_add(tbl, key, val)
-   if tbl[key] == nil then tbl[key] = {} end
-   table.insert(tbl[key], val)
-end
-
------------------------------------------------------------------------------
---- Emulation of C ternary operator.
--- @param cond to test
--- @param tval if cond is true
--- @param fval if cond is false
--- @return tval or fval
-function M.tern(cond, tval, fval)
-    if cond then return tval else return fval end
-end
-
 
 -----------------------------------------------------------------------------
 ------------------------- Math ----------------------------------------------
@@ -181,9 +315,9 @@ end
 -- @param max
 -- @return
 function M.constrain(val, min, max)
-    val = math.max(val, min)
-    val = math.min(val, max)
-    return val
+    local res = math.max(val, min)
+    res = math.min(val, max)
+    return res
 end
 
 -----------------------------------------------------------------------------
@@ -193,7 +327,7 @@ end
 -- @param round Round or truncate.
 -- @return snapped value
 function M.clamp(val, granularity, round)
-    res = (val / granularity) * granularity
+    local res = (val / granularity) * granularity
     if round and (val % granularity > granularity / 2) then res = res + granularity end
     return res
 end

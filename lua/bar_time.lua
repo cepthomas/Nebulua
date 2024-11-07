@@ -104,7 +104,7 @@ function M.tick_to_bt(tick)
         local sub = math.floor(tick % M.SUBS_PER_BEAT)
         return bar, beat, sub
     else
-        error(string.format('Invalid tick %s', tick))
+        error('Invalid tick '..tick)
     end
 end
 
@@ -119,7 +119,7 @@ function M.tick_to_str(tick)
         local bar, beat, sub = M.tick_to_bt(tick)
         return string.format("%d.%d.%d", bar, beat, sub)
     else
-        error(string.format('Invalid tick %s', tick))
+        error('Invalid tick '..tick)
     end
 end
 

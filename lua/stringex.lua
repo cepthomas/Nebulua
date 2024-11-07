@@ -101,7 +101,7 @@ end
 -- @string s a string
 -- @param phrase a string
 function M.contains(s, phrase)
-    res = s:find(phrase, 1, true)
+    local res = s:find(phrase, 1, true)
     return res ~= nil and res >= 1
 end
 

@@ -4,7 +4,7 @@
 local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("bar_time")
-local api = require("lua_interop") -- host mock
+-- local li = require("lua_interop") -- mock
 local api = require("script_api")
 
 

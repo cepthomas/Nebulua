@@ -11,9 +11,12 @@ local opt = arg[1]
 local ret_code = 0
 
 
--- fwd refs
-local _output_text
 
+-- Make pretty.
+ut.set_colorize({ ['Build: ']='green', ['! ']='red', ['): error ']='red', ['): warning ']='yellow' })
+local function _output_text(text)
+    for _, v in ipairs(ut.colorize_text(text)) do print(v) end
+end
 
 -------------------------------------------------------------------------
 
@@ -89,6 +92,14 @@ elseif opt == 'gen_interop' then
     _output_text(res)
 
 elseif opt == 'dev' then
+    local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
+    extra, missing = ut.check_globals(exp_neb)
+    res = ut.dump_table_string(extra, 0, 'extra')
+    _output_text(res)
+    res = ut.dump_table_string(missing, 0, 'missing')
+    _output_text(res)
+
+elseif opt == 'math' then
     local function do_one(name, func)
         v = {}
         table.insert(v, name)
@@ -103,9 +114,6 @@ elseif opt == 'dev' then
     do_one('pow 2', function(i) return i^2 / 81 end)
     do_one('pow 3', function(i) return i^3 end)
     do_one('pow 0.67', function(i) return i^0.67 / 4.36 end)
-    -- do_one('pow 10', function(i) return i^10 / 81 end)
-    -- do_one('pow -2', function(i) return i^-2 end)
-    -- do_one('pow -10', function(i) return i^-10 end)
 
 else
     if opt == nil then
@@ -120,28 +128,5 @@ else
 
 end
 
-
--- Make pretty.
-_output_text = function(text)
-    -- Split into lines and colorize.
-
-    local GRAY = string.char(27).."[95m" --"[90m"
-    local RED = string.char(27).."[41m" --"[91m"
-    local BLUE = string.char(27).."[94m"
-    local YELLOW = string.char(27).."[33m"
-    local GREEN = string.char(27).."[92m"
-    local RESET = string.char(27).."[0m"
-
-    lines = sx.strsplit(text, '\n', false)
-    for _, s in ipairs(lines) do
-        if sx.startswith(s, 'Build: ') then print(GREEN..s..RESET)
-        elseif sx.startswith(s, '! ') then  print(RED..s..RESET)
-        elseif sx.contains(s, '): error ') then print(RED..s..RESET)
-        elseif sx.contains(s, '): warning ') then print(YELLOW..s..RESET)
-        else  print(s)
-        end
-    end
-end
--- spec = { ['Build: ']='green', ['! ']='red', ['): error ']='red', ['): warning ']='yellow' }
 
 return ret_code
