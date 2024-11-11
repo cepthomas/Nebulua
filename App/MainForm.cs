@@ -114,11 +114,11 @@ namespace Nebulua
             sldVolume.DrawColor = UserSettings.Current.ControlColor;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
 
-            sldTempo.BackColor = UserSettings.Current.BackColor;
+            sldTempo.BackColor = UserSettings.Current.BackColor; 
             sldTempo.DrawColor = UserSettings.Current.ControlColor;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
-            traffic.BackColor = UserSettings.Current.BackColor;
+            traffic.BackColor = UserSettings.Current.BackColor; //TODO1 these?
             traffic.MatchColors.Add("ERR", Color.HotPink);
             traffic.MatchColors.Add("WRN", Color.Coral);
             traffic.MatchColors.Add("SND", Color.PaleGreen);

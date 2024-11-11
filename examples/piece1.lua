@@ -44,14 +44,15 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
-local function _dump()
+-- Example of how to check for invalid globals.
+local function _gcheck()
     local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
-    extra, missing = ut.check_globals(exp_neb)
+    local extra, missing = ut.check_globals(exp_neb)
     print(ut.dump_table_string(extra, 0, 'extra'))
     print(ut.dump_table_string(missing, 0, 'missing'))
 end
 
-_dump()
+_gcheck()
 
 
 -- local fp = io.open('C:/Dev/repos/Apps/Nebulua/_glob.txt', 'w+')
@@ -140,7 +141,7 @@ function step(tick)
         local bar, beat, sub = bt.tick_to_bt(tick)
 
         if bar == 1 and beat == 0 and sub == 0 then
-            _dump()
+            _gcheck()
 
             api.send_sequence_steps(keys_seq_steps, tick)
         end
