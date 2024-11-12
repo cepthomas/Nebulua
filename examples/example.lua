@@ -8,6 +8,16 @@ local mid = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("lbot_utils")
 
+-- Example of how to check for invalid globals.
+local function _gcheck()
+    local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
+    local extra, missing = ut.check_globals(exp_neb)
+    -- print(ut.dump_table_string(extra, 0, 'extra'))
+    -- print(ut.dump_table_string(missing, 0, 'missing'))
+end
+
+_gcheck()
+
 -- Setup for debug. Manually place dbg() statements for breakpoints.
 -- ut.config_debug(true)
 -- dbg()
@@ -139,6 +149,7 @@ end
 ------------------------- Composition ---------------------------------------
 
 -- Sequences --
+-- each sequence is 8 beats = 2 bars, section is 8 bars
 
 local quiet =
 {
@@ -147,7 +158,8 @@ local quiet =
 
 local example_seq =
 {
-    -- | beat 1 | beat 2 |........|........|........|........|........|........|,  WHAT_TO_PLAY
+    -- | beat 0 | beat 1 | beat 2 | beat 3 | beat 4 | beat 5 | beat 6 | beat 7 |,  WHAT_TO_PLAY
+    -- |........|........|........|........|........|........|........|........|
     { "|6-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
     { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
     { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
@@ -155,10 +167,10 @@ local example_seq =
 
 local drums_verse =
 {
-    --|........|........|........|........|........|........|........|........|
-    {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
-    {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
-    {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
+    -- |........|........|........|........|........|........|........|........|
+    { "|8       |        |8       |        |8       |        |8       |        |", bdrum },
+    { "|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
+    { "|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
 }
 
 local drums_chorus =
@@ -201,7 +213,8 @@ local bass_chorus =
 }
 
 
------------------------------------------------------------------------------
+-- each sequence is 8 beats = 2 bars, each section is 8 bars
+--                       0             2             4             6
 api.sect_start("beginning")
 api.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
 api.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)

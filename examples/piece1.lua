@@ -21,11 +21,6 @@ local oo = require("other")
 -- dbg()
 
 
--- TextViewer.cs
---         /// <summary>Cosmetics. Note this needs to be set in client constructor not OnLoad(). Unknown reason.</summary>
---         public override Color BackColor { get { return _rtb.BackColor; } set { _rtb.BackColor = value; } }
-
-
 -- Say hello.
 api.log_info('Loading piece1.lua in '..dir)
 
@@ -48,8 +43,8 @@ local mtom = drum.HiMidTom
 local function _gcheck()
     local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
     local extra, missing = ut.check_globals(exp_neb)
-    print(ut.dump_table_string(extra, 0, 'extra'))
-    print(ut.dump_table_string(missing, 0, 'missing'))
+    -- print(ut.dump_table_string(extra, 0, 'extra'))
+    -- print(ut.dump_table_string(missing, 0, 'missing'))
 end
 
 _gcheck()
@@ -87,7 +82,7 @@ local valid = true
 local seq_func
 
 
-------------------------- Canned Sequences ---------------------------------
+------------------------- Canned Sequences ----------------------------
 
 local drums_seq =
 {
@@ -195,125 +190,4 @@ seq_func = function(tick)
     local note_num = math.random(1, #my_scale)
     api.send_note(hnd_synth, my_scale[note_num], 0.9, 8)
     api.send_sequence_steps(keys_seq_steps, tick)
-end
-
-
-------------------------- Composition ---------------------------------------
-
--- Sequences --
-
-local quiet =
-{
-    { "|        |        |        |        |        |        |        |        |", 0 }
-}
-
-local example_seq =
-{
-    -- | beat 0 | beat 1 | beat 2 | beat 3 | beat 4 | beat 5 | beat 6 | beat 7 |,  WHAT_TO_PLAY
-    { "|6-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    { "|7-------|--      |        |        |7-------|--      |        |        |",  84 },
-    { "|        |        |        |5---    |        |        |        |5-8---  |", "D6" },
-}
-
-local drums_verse =
-{
-    --|........|........|........|........|........|........|........|........|
-    {"|8       |        |8       |        |8       |        |8       |        |", bdrum },
-    {"|    8   |        |    8   |    8   |    8   |        |    8   |    8   |", snare },
-    {"|        |     8 8|        |     8 8|        |     8 8|        |     8 8|", hhcl }
-}
-
-local drums_chorus =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|6       |        |6       |        |6       |        |6       |        |", bdrum },
-    { "|        |7 7     |        |7 7     |        |7 7     |        |        |", ride },
-    { "|        |    4   |        |        |        |    4   |        |        |", mtom },
-    { "|        |        |        |        |        |        |        |8       |", crash },
-}
-
-local keys_verse =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" },
-}
-
-local keys_chorus =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|6-      |        |        |        |        |        |        |        |", "F4" },
-    { "|    5-  |        |        |        |        |        |        |        |", "D#4" },
-    { "|        |6-      |        |        |        |        |        |        |", "C4" },
-    { "|        |    6-  |        |        |        |        |        |        |", "B4.m7" },
-}
-
-local bass_verse =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|7   7   |        |        |        |        |        |        |        |", "C2" },
-    { "|        |        |        |    7   |        |        |        |        |", "E2" },
-    { "|        |        |        |        |        |        |        |    7   |", "A#2" },
-}
-
-local bass_chorus =
-{
-    -- |........|........|........|........|........|........|........|........|
-    { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
-}
-
-
------------------------------------------------------------------------------
-api.sect_start("beginning")
--- each sequence is 8 beats = 2 bars
---                       0             2             4             6
-api.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
-api.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
-api.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)
-
-api.sect_start("middle")
---                       8             10            12            14
-api.sect_chan(hnd_keys,  keys_chorus,  keys_chorus,  keys_chorus,  keys_chorus)
-api.sect_chan(hnd_drums, drums_chorus, drums_chorus, drums_chorus, drums_chorus)
-api.sect_chan(hnd_bass,  bass_chorus,  bass_chorus,  bass_chorus,  bass_chorus)
-
-api.sect_start("ending")
---                       16            18            20            22
-api.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)
-api.sect_chan(hnd_drums, drums_verse,  drums_verse,  drums_verse,  drums_verse)
-api.sect_chan(hnd_bass,  bass_verse,   bass_verse,   bass_verse,   bass_verse)
-
-
-local function step_not(tick)
-
-
-
-    -- "beginning"
-    -- bar = 0,2,4,6     hnd_keys -> keys_verse   hnd_drums -> drums_verse
-    -- "middle"
-    -- bar = 8,10,12,14  hnd_keys -> keys_chorus  hnd_drums -> drums_chorus
-    -- "ending"
-    -- bar = 16,18,20,22 hnd_keys -> keys_verse   hnd_drums -> drums_verse
-
-
-
-    local bar, beat, sub = bt.tick_to_bt(tick)
-
-
-    if bar == 1 and beat == 0 and sub == 0 then
-        api.send_sequence_steps(keys_seq_steps, tick)
-    end
-
-    if beat == 0 and sub == 0 then
-        api.send_sequence_steps(drums_seq_steps, tick)
-        oo.do_something()
-    end
-
-    -- Every 2 bars
-    if (bar == 0 or bar == 2) and beat == 0 and sub == 0 then
-        api.send_sequence_steps(bass_seq_steps, tick)
-    end
-
-
-
 end

@@ -191,7 +191,6 @@ function M.parse_sequence_steps(chan_hnd, seq)
             table.insert(steps, step)
         end
     end
-
     return steps
 end
 
