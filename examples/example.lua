@@ -8,15 +8,6 @@ local mid = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("lbot_utils")
 
--- Example of how to check for invalid globals.
-local function _gcheck()
-    local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
-    local extra, missing = ut.check_globals(exp_neb)
-    -- print(ut.dump_table_string(extra, 0, 'extra'))
-    -- print(ut.dump_table_string(missing, 0, 'missing'))
-end
-
-_gcheck()
 
 -- Setup for debug. Manually place dbg() statements for breakpoints.
 -- ut.config_debug(true)
@@ -52,12 +43,11 @@ local hnd_drums = api.create_output_channel(midi_out, 10, ut.tern(use_host, mid.
 
 
 -- Get some stock chords and scales.
--- local my_scale = mus.get_notes_from_string("G3.Algerian")
 local my_scale = mus.get_notes_from_string("C4.o7")
 
--- Or create custom note collection.
--- mus.create_definition("MY_SCALE", "1 +3 4 -b7")
--- local my_scale = mus.get_notes_from_string("B4.MY_SCALE")
+-- Create custom note collection.
+mus.create_definition("MY_CHORD", "1 +3 4 -b7")
+local my_chord = mus.get_notes_from_string("B4.MY_CHORD")
 
 -- Aliases for instruments - easier typing.
 local snare = drum.AcousticSnare

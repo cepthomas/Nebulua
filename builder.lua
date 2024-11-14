@@ -94,10 +94,10 @@ elseif opt == 'gen_interop' then
 elseif opt == 'dev' then
     local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
     extra, missing = ut.check_globals(exp_neb)
-    res = ut.dump_table_string(extra, 0, 'extra')
-    _output_text(res)
-    res = ut.dump_table_string(missing, 0, 'missing')
-    _output_text(res)
+    res = ut.dump_list(extra)
+    _output_text('extra:'..res)
+    res = ut.dump_list(missing)
+    _output_text('missing:'..res)
 
 elseif opt == 'math' then
     local function do_one(name, func)

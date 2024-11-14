@@ -39,21 +39,22 @@ local crash = drum.CrashCymbal2
 local mtom = drum.HiMidTom
 
 
--- Example of how to check for invalid globals.
+-- Example of how to check for extraneous and missing globals.
 local function _gcheck()
     local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
     local extra, missing = ut.check_globals(exp_neb)
-    -- print(ut.dump_table_string(extra, 0, 'extra'))
-    -- print(ut.dump_table_string(missing, 0, 'missing'))
+
+    api.log_debug('extra:'..ut.dump_list(extra))
+    api.log_debug('missing:'..ut.dump_list(missing))
 end
 
-_gcheck()
+-- _gcheck()
 
 
 -- local fp = io.open('C:/Dev/repos/Apps/Nebulua/_glob.txt', 'w+')
--- -- fp:write(ut.dump_table_string(package, 0, 'package!!!')..'\n')
--- -- fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
--- fp:write(ut.dump_table_string(_G, 0, '_G')..'\n')
+-- -- fp:write(ut.dump_table_formatted(package, 0, 'package!!!')..'\n')
+-- -- fp:write(ut.dump_table_formatted(package.loaded, 0, 'package.loaded')..'\n')
+-- fp:write(ut.dump_table_formatted(_G, 0, '_G')..'\n')
 -- fp:close()
 
 
@@ -121,6 +122,8 @@ local my_scale = mus.get_notes_from_string("G3.Algerian")
 -- Called once to initialize your script stuff. Required.
 function setup()
 
+    _gcheck()
+
     -- How fast you wanna go?
     api.set_tempo(80)
 
@@ -131,12 +134,12 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     if valid then
-        -- Do something. TODO1 pattern matching like F#. Replace composition?
+        -- Do something. TODO1 pattern matching like F#.
 
         local bar, beat, sub = bt.tick_to_bt(tick)
 
         if bar == 1 and beat == 0 and sub == 0 then
-            _gcheck()
+        --     _gcheck()
 
             api.send_sequence_steps(keys_seq_steps, tick)
         end

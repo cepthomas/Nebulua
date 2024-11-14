@@ -106,7 +106,7 @@ function M.suite_music_defs(pn)
 
     ----- gen_md().
     tres = md.gen_md()
-    -- print(ut.dump_table_string(tres, 0, 'ddd'))
+    -- print(ut.dump_table_formatted(tres, 0, 'ddd'))
     pn.UT_EQUAL(#tres, 87)
 
 end

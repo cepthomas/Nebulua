@@ -13,17 +13,11 @@ local M = {}
 -- For table dumping.
 local _dump_level = 0
 
--- Expect to see these.
-local _sys_globals = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
-    'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
-    'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
-    'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall' }
-
--- Client phrases.
+-- Text to colorize.
 local _colorize_map = {}
 
--- ANSI colors
-local _colors = { ['red']=41, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95 }
+-- ANSI colors.
+local _colors = { ['red']=91, ['green']=92, ['blue']=94, ['yellow']=33, ['gray']=95, ['bred']=41 }
 
 
 -----------------------------------------------------------------------------
@@ -108,12 +102,18 @@ end
 -----------------------------------------------------------------------------
 --- Checks global space for intruders aka you-forgot-local-again.
 -- @param app_exp list of app specific globals
--- @return extraneous globals, missing expected
+-- @return list of extraneous globals, list of missing expected
 function M.check_globals(app_exp)
     -- Make copies as we destroy the tables - residual is considered missing.
     local app_exp_c = M.copy(app_exp)
-    local sys_exp_c = M.copy(_sys_globals)
-    local g_extra = {}
+
+    -- Expect to see these.
+    local sys_exp_c = {'_G', '_VERSION', 'assert', 'collectgarbage', 'coroutine', 'debug', 'dofile', 'error',
+        'getmetatable', 'io', 'ipairs', 'load', 'loadfile', 'math', 'next', 'os', 'package', 'pairs', 'pcall',
+        'print', 'rawequal', 'rawget', 'rawlen', 'rawset', 'require', 'select', 'setmetatable', 'string',
+        'table', 'tonumber', 'tostring', 'type', 'utf8', 'warn', 'xpcall' }
+
+    local extra = {}
 
     local global_names = M.keys(_G)
 
@@ -131,11 +131,11 @@ function M.check_globals(app_exp)
         end
 
         if ind == nil then
-            table.insert(g_extra, v)
+            table.insert(extra, v)
         end
     end
 
-    return g_extra, app_exp_c
+    return extra, app_exp_c
 end
 
 -----------------------------------------------------------------------------
@@ -281,14 +281,26 @@ function M.dump_table(tbl, depth, name, indent)
 end
 
 -----------------------------------------------------------------------------
---- Diagnostic.
+--- Diagnostic. Dump table as formatted strings.
 -- @param tbl What to dump.
 -- @param depth How deep to go in recursion. 0 means just this level.
 -- @param name Of tbl.
--- @return string
+-- @return string Formatted/multiline contents
 function M.dump_table_string(tbl, depth, name)
     local res = M.dump_table(tbl, depth, name, 0)
     return sx.strjoin('\n', res)
+end
+
+-----------------------------------------------------------------------------
+--- Diagnostic. 
+-- @param lst What to dump.
+-- @return string Comma delim line of contents.
+function M.dump_list(lst)
+    res = {}
+    for _, l in ipairs(lst) do
+        table.insert(res, l)
+    end
+    return sx.strjoin(',', res)
 end
 
 
