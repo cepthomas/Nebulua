@@ -8,9 +8,9 @@ local ut  = require('lbot_utils')
 local sx  = require("stringex")
 
 
--- Custom require. May need path fixup.
-local fn, line, dir = ut.get_caller_info(2)
-if not sx.contains(package.path, dir) then
+-- Use arbitrary lua files. require needs path fixup.
+local _, _, dir = ut.get_caller_info(2)
+if not sx.contains(package.path, dir) then -- already there?
     package.path = dir..'/?.lua;'..package.path
 end
 local oo = require("other")
@@ -41,14 +41,11 @@ local mtom = drum.HiMidTom
 
 -- Example of how to check for extraneous and missing globals.
 local function _gcheck()
-    local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
+    local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller'}
     local extra, missing = ut.check_globals(exp_neb)
-
     api.log_debug('extra:'..ut.dump_list(extra))
     api.log_debug('missing:'..ut.dump_list(missing))
 end
-
--- _gcheck()
 
 
 -- local fp = io.open('C:/Dev/repos/Apps/Nebulua/_glob.txt', 'w+')
@@ -139,8 +136,7 @@ function step(tick)
         local bar, beat, sub = bt.tick_to_bt(tick)
 
         if bar == 1 and beat == 0 and sub == 0 then
-        --     _gcheck()
-
+            -- _gcheck()
             api.send_sequence_steps(keys_seq_steps, tick)
         end
 

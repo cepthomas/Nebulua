@@ -8,6 +8,12 @@ local mid = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("lbot_utils")
 
+-- Use arbitrary lua files. require needs path fixup.
+local _, _, dir = ut.get_caller_info(2)
+if not sx.contains(package.path, dir) then -- already there?
+    package.path = dir..'/?.lua;'..package.path
+end
+local oo = require("other")
 
 -- Setup for debug. Manually place dbg() statements for breakpoints.
 -- ut.config_debug(true)
@@ -81,6 +87,8 @@ function setup()
 
     -- This file uses static composition so you must call this!
     api.process_comp()
+
+    oo.do_something()
 
     return 0
 end
