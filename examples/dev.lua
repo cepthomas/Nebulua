@@ -1,3 +1,4 @@
+-- Playing with lua/nebulua features.
 
 -- Import modules this needs.
 local api = require("script_api")
@@ -22,7 +23,7 @@ local oo = require("other")
 
 
 -- Say hello.
-api.log_info('Loading piece1.lua in '..dir)
+api.log_info('Loading dev.lua in '..dir)
 
 
 -- Aliases
@@ -48,11 +49,11 @@ local function _gcheck()
 end
 
 
--- local fp = io.open('C:/Dev/repos/Apps/Nebulua/_glob.txt', 'w+')
--- -- fp:write(ut.dump_table_formatted(package, 0, 'package!!!')..'\n')
--- -- fp:write(ut.dump_table_formatted(package.loaded, 0, 'package.loaded')..'\n')
--- fp:write(ut.dump_table_formatted(_G, 0, '_G')..'\n')
--- fp:close()
+local fp = io.open('C:/Dev/repos/Apps/Nebulua/_dump.txt', 'w+')
+fp:write(ut.dump_table_string(package, 0, 'package!!!')..'\n')
+fp:write(ut.dump_table_string(package.loaded, 0, 'package.loaded')..'\n')
+fp:write(ut.dump_table_string(_G, 0, '_G')..'\n')
+fp:close()
 
 
 ------------------------- Configuration -------------------------------

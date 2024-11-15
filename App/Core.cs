@@ -421,7 +421,7 @@ namespace Nebulua
         {
             if (e.LogLevel >= (int)LogLevel.Trace && e.LogLevel <= (int)LogLevel.Error) 
             {
-                _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Msg}");
+                _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Message}");
                 e.Ret = 0;
             }
             else

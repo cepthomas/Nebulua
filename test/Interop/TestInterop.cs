@@ -195,7 +195,7 @@ namespace Nebulua.Test
 
         void Interop_Log(object? sender, LogArgs e)
         {
-            string s = $"Log LogLevel:{e.LogLevel} Msg:{e.Msg}";
+            string s = $"Log LogLevel:{e.LogLevel} Message:{e.Message}";
             CollectedEvents.Add(s);
             e.Ret = (int)NebStatus.Ok;
         }

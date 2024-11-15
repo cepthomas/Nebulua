@@ -95,7 +95,7 @@ namespace Nebulua.Interop
         public long Id;       // unique/opaque
         public int Ret;       // handler return value
         public int LogLevel;
-        public string? Msg;
+        public string? Message;
     };
 
     public class PropertyArgs

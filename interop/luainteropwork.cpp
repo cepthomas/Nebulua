@@ -16,7 +16,7 @@ int luainteropwork_Log(lua_State* l, int level, const char* msg)
     LogArgs^ args = gcnew LogArgs();
     args->Sender = MAKE_ID(l);
     args->LogLevel = level;
-    args->Msg = gcnew String(msg);
+    args->Message = gcnew String(msg);
     AppInterop::NotifyLog(args); // do work
     return args->Ret; // status
 }

@@ -90,7 +90,7 @@ namespace Nebulua
             ];
 
             _core = new();
-            if (_core.Error is not null)
+            if (_core.Error.Length > 0)
             {
                 _logger.Error(_core.Error);
             }
@@ -193,12 +193,12 @@ namespace Nebulua
         {
             if (e.Level == LogLevel.Error)
             {
-                Write($"Fatal! shutting down.{Environment.NewLine}{e.Message}");
+                Write($"Fatal! shutting down.{Environment.NewLine}{e.ShortMessage}");
                 State.Instance.ExecState = ExecState.Exit;
             }
             else
             {
-                Write(e.Message);
+                Write(e.ShortMessage);
             }
         }
         #endregion

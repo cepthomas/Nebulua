@@ -51,7 +51,7 @@ function M.config_debug(use_dbgr)
         have_dbgr, dbg = pcall(require, "debugger")
     end
 
-    if dbg then 
+    if dbg then
         -- sub debug handler
         error = dbg.error
         if use_term then
@@ -266,8 +266,8 @@ function M.dump_table(tbl, depth, name, indent)
                 _dump_level = _dump_level + 1
                 trec = M.dump_table(v, depth, k, indent) -- recursion!
                 _dump_level = _dump_level - 1
-                for _,v in ipairs(trec) do
-                    table.insert(res, v)
+                for _, v2 in ipairs(trec) do
+                    table.insert(res, v2)
                 end
             else
                 table.insert(res, sindent..k..":"..tostring(v).."("..type(v)..")")

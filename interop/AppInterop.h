@@ -158,7 +158,7 @@ namespace Nebulua { namespace Interop
     {
     public:
         property int LogLevel;
-        property String^ Msg;
+        property String^ Message;
     };
     #pragma endregion
 } }

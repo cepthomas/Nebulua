@@ -20,8 +20,8 @@ api.log_info('Loading other.lua...')
 -----------------------------------------------------------------------------
 -- Do something.
 function M.do_something()
-    local note_num = math.random(1, 10)
-    api.log_info('>>>'..note_num)
+    local nn = math.random(1, 10)
+    api.log_info('>>>'..nn)
 end
 
 

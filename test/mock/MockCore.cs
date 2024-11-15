@@ -56,7 +56,7 @@ namespace Nebulua
         public int Sender;    // unique/opaque id or 0 for generic
         public int Ret;       // handler return value
         public int LogLevel;
-        public string? Msg;
+        public string? Message;
     }
     #endregion
 

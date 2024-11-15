@@ -7,17 +7,8 @@ local mus = require("music_defs")
 local mid = require("midi_defs")
 local bt  = require("bar_time")
 local ut  = require("lbot_utils")
+local sx  = require("stringex")
 
--- Use arbitrary lua files. require needs path fixup.
-local _, _, dir = ut.get_caller_info(2)
-if not sx.contains(package.path, dir) then -- already there?
-    package.path = dir..'/?.lua;'..package.path
-end
-local oo = require("other")
-
--- Setup for debug. Manually place dbg() statements for breakpoints.
--- ut.config_debug(true)
--- dbg()
 
 -- Aliases for imports - easier typing.
 local inst = mid.instruments
@@ -55,7 +46,7 @@ local my_scale = mus.get_notes_from_string("C4.o7")
 mus.create_definition("MY_CHORD", "1 +3 4 -b7")
 local my_chord = mus.get_notes_from_string("B4.MY_CHORD")
 
--- Aliases for instruments - easier typing.
+-- Aliases for instruments.
 local snare = drum.AcousticSnare
 local bdrum = drum.AcousticBassDrum
 local hhcl = drum.ClosedHiHat
@@ -74,7 +65,6 @@ local _algo_func
 -- Called once to initialize your script stuff. Required.
 function setup()
     api.log_info("example initialization")
-    math.randomseed(os.time())
 
     -- How fast?
     api.set_tempo(88)
@@ -87,8 +77,6 @@ function setup()
 
     -- This file uses static composition so you must call this!
     api.process_comp()
-
-    oo.do_something()
 
     return 0
 end

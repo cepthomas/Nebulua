@@ -283,7 +283,7 @@ void AppInterop::_LogDebug(String^ msg)
     LogArgs^ args = gcnew LogArgs();
     args->Sender = Id; // MAKE_ID(this);
     args->LogLevel = 1; // debug
-    args->Msg = gcnew String("APPINTEROP ")  + msg;
+    args->Message = gcnew String("APPINTEROP ")  + msg;
     NotifyLog(args);
 }
 
