@@ -84,7 +84,7 @@ namespace Nebulua
                 new("loop",     'l',  "set loop or tell current",      "(start end)",           LoopCmd),
                 new("rewind",   'w',  "rewind loop",                   "",                      RewindCmd),
                 new("tempo",    't',  "get or set the tempo",          "(40-240)",              TempoCmd),
-                new("monitor",  'm',  "toggle monitor midi traffic",   "r=rcv|s=snd|o=off",     MonCmd),
+                new("monitor",  'm',  "toggle monitor midi traffic",   "(r=rcv|s=snd|o=off)",   MonCmd),
                 new("kill",     'k',  "stop all midi",                 "",                      KillCmd),
                 new("reload",   's',  "reload current script",         "",                      ReloadCmd)
             ];
@@ -367,25 +367,36 @@ namespace Nebulua
         {
             bool ret = true;
 
+            string Status()
+            {
+                var srcv = "mon rcv " + (UserSettings.Current.MonitorRcv ? "on" : "off");
+                var ssnd = "mon snd " + (UserSettings.Current.MonitorRcv ? "on" : "off");
+                return ($"{srcv} {ssnd}");
+            }
+
             switch (args.Count)
             {
+                case 1: // get
+                    Write(Status());
+                    break;
+
                 case 2: // set
                     switch (args[1])
                     {
                         case "r":
                             UserSettings.Current.MonitorRcv = !UserSettings.Current.MonitorRcv;
-                            Write("monitor rcv");
+                            Write(Status());
                             break;
 
                         case "s":
                             UserSettings.Current.MonitorSnd = !UserSettings.Current.MonitorSnd;
-                            Write("monitor snd");
+                            Write(Status());
                             break;
 
                         case "o":
                             UserSettings.Current.MonitorRcv = false;
                             UserSettings.Current.MonitorSnd = false;
-                            Write("monitor off");
+                            Write(Status());
                             break;
 
                         default:
@@ -516,11 +527,11 @@ namespace Nebulua
                     break;
 
                 default:
-                    Write("");
                     ret = false;
                     break;
             }
 
+            Write("");
             return ret;
         }
 
