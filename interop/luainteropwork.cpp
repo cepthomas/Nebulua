@@ -7,7 +7,7 @@ using namespace Nebulua::Interop;
 #define MIDI_VAL_MAX 127
 
 
-// Work functions called by bound lua functions in luainterop.c.
+// Work functions called by bound lua functions in luainterop.c. TODO1 can go in AppInterop.cpp.
 
 
 //--------------------------------------------------------//
