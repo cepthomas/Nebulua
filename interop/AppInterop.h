@@ -6,10 +6,12 @@ using namespace System::Collections::Generic;
 // This is crude but should be ok for now.
 #define MAKE_ID(l)  ((int)((long long)l & 0X00000000FFFFFFFF))
 
+TODO1 deal with luaexec.* better
 
-namespace Nebulua { namespace Interop
+
+namespace Nebulua { namespace Interop TODO1 namespaces
 {
-    /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled consistently.</summary>
+    /// <summary>Nebulua status. App errors start after internal lua errors so they can be handled homogeneously.</summary>
     public enum class NebStatus
     {
         Ok = 0,
@@ -19,16 +21,17 @@ namespace Nebulua { namespace Interop
         AppInternalError = 20,
     };
 
-    #pragma region Forward refs
+    //------- Forward refs ------
     ref class CreateChannelArgs;
     ref class SendArgs;
     ref class PropertyArgs;
     ref class LogArgs;
-    #pragma endregion
 
+
+    //------- Main class ------
     public ref class AppInterop
     {
-    #pragma region Fields
+    //------- Fields ------
     private:
         /// <summary>The lua thread.</summary>
         lua_State* _l = nullptr;
@@ -38,18 +41,18 @@ namespace Nebulua { namespace Interop
 
         /// <summary>Used to find resources at run time.</summary>
         String^ _rootdir;
-    #pragma endregion
 
-    #pragma region Properties
+
+    //------- Properties ------
     public:
         /// <summary>If an interop or lua function failed this contains info.</summary>
         property String^ Error;
 
         /// <summary>Unique opaque id.</summary>
-        property int Id { int get() { return MAKE_ID(_l); }}
-    #pragma endregion
+        property int Id { int get() { return MAKE_ID(_l); }} TODO1 not needed
 
-    #pragma region Lifecycle
+
+    //------- Lifecycle ------
     public:
         /// <summary>Initialize everything.</summary>
         /// <param name="lpath">LUA_PATH components</param>
@@ -57,14 +60,14 @@ namespace Nebulua { namespace Interop
 
         /// <summary>Clean up resources.</summary>
         ~AppInterop();
-    #pragma endregion
 
-    #pragma region Call lua functions from host
+
+    //------- Call lua functions from host ------
     public:
         /// <summary>Load and process.</summary>
         /// <param name="fn">Full file path</param>
         /// <returns>Neb Status</returns>
-        NebStatus OpenScript(String^ fn);
+        NebStatus OpenScript(String^ fn); TODO1 not NebStatus!
 
         /// <summary>Called every fast timer increment aka tick.</summary>
         /// <param name="tick">Current tick 0 => N</param>
@@ -90,9 +93,9 @@ namespace Nebulua { namespace Interop
         /// <param name="arg">Maybe arg</param>
         /// <returns>Whatever the script said</returns>
         String^ NebCommand(String^ cmd, String^ arg);
-    #pragma endregion
 
-    #pragma region Event handlers for Lua calling app
+
+    //------- Event handlers for Lua calling app ------
     public:
         static event EventHandler<CreateChannelArgs^>^ CreateChannel;
         static void NotifyCreateChannel(CreateChannelArgs^ args) { CreateChannel(nullptr, args); }
@@ -105,21 +108,21 @@ namespace Nebulua { namespace Interop
 
         static event EventHandler<PropertyArgs^>^ PropertyChange;
         static void NotifyPropertyChange(PropertyArgs^ args) { PropertyChange(nullptr, args); }
-    #pragma endregion
 
-    #pragma region Private functions
+
+    //------- Private functions ------
     private:
         /// <summary>Checks lua status and converts to neb status. Stores an error message if it failed.</summary>
         NebStatus _EvalLuaStatus(int stat, String^ msg);
 
         /// <summary> Log from here.</summary>
         void _LogDebug(String^ msg);
-    #pragma endregion
+
     };
 
-    #pragma region Script callback data (events)
+    //------- Script callback data (events) ------
     /// <summary>Common elements.</summary>
-    public ref class BaseArgs : public EventArgs
+    public ref class BaseArgs : public EventArgs   TODO1 clean these up
     {
     public:
         property int Sender;    // unique/opaque id or 0 for generic
@@ -160,5 +163,5 @@ namespace Nebulua { namespace Interop
         property int LogLevel;
         property String^ Message;
     };
-    #pragma endregion
+
 } }
