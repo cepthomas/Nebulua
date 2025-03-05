@@ -127,10 +127,10 @@ namespace Nebulua
             //sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             //traffic.BackColor = UserSettings.Current.BackColor;
-            //traffic.MatchColors.Add("ERR", Color.HotPink);
-            //traffic.MatchColors.Add("WRN", Color.Coral);
-            //traffic.MatchColors.Add("SND", Color.PaleGreen);
-            //traffic.MatchColors.Add("RCV", Color.LightBlue);
+            //traffic.MatchText.Add("ERR", Color.HotPink);
+            //traffic.MatchText.Add("WRN", Color.Coral);
+            //traffic.MatchText.Add("SND", Color.PaleGreen);
+            //traffic.MatchText.Add("RCV", Color.LightBlue);
             //traffic.Font = new("Cascadia Mono", 9);
             //traffic.Prompt = "";
             //traffic.WordWrap = UserSettings.Current.WordWrap;
@@ -224,10 +224,10 @@ namespace Nebulua
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             traffic.BackColor = UserSettings.Current.BackColor;
-            traffic.MatchColors.Add("ERR", Color.HotPink);
-            traffic.MatchColors.Add("WRN", Color.Coral);
-            traffic.MatchColors.Add("SND", Color.PaleGreen);
-            traffic.MatchColors.Add("RCV", Color.LightBlue);
+            traffic.MatchText.Add("ERR", Color.HotPink);
+            traffic.MatchText.Add("WRN", Color.Coral);
+            traffic.MatchText.Add("SND", Color.PaleGreen);
+            traffic.MatchText.Add("RCV", Color.LightBlue);
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
