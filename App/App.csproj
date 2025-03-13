@@ -41,6 +41,9 @@
     <Reference Include="Ephemera.NBagOfUis">
       <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
     </Reference>
+    <Reference Include="Script">
+      <HintPath>..\lib\Script.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

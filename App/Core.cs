@@ -8,8 +8,8 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using Nebulua.Interop;
-
+//using Nebulua.Interop;
+using Script;
 
 namespace Nebulua
 {
@@ -20,7 +20,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("Core");
 
         /// <summary>The interop.</summary>
-        AppInterop _interop;
+        Interop _interop = new();
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -53,10 +53,17 @@ namespace Nebulua
         public Core()
         {
             // Hook script callbacks.
-            AppInterop.CreateChannel += Interop_CreateChannel;
-            AppInterop.Send += Interop_Send;
-            AppInterop.Log += Interop_Log;
-            AppInterop.PropertyChange += Interop_PropertyChange;
+            Interop.Log += Interop_Log;
+            Interop.CreateInputChannel += Interop_CreateInputChannel;
+            Interop.CreateOutputChannel += Interop_CreateOutputChannel;
+            Interop.SendNote += Interop_SendNote; ;
+            Interop.SendController += Interop_SendController;
+            Interop.SetTempo += Interop_SetTempo;
+
+
+            Interop.CreateChannel += Interop_CreateChannel;
+            Interop.Send += Interop_Send;
+            Interop.PropertyChange += Interop_PropertyChange;
 
             // State change handler.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
@@ -308,76 +315,111 @@ namespace Nebulua
         #endregion
 
         #region Script Event Handlers
-        /// <summary>
-        /// Script wants to define a channel. Can throw.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <exception cref="ScriptSyntaxException"></exception>
-        void Interop_CreateChannel(object? sender, CreateChannelArgs e)
-        {
-            //Debug.WriteLine($"Core.Interop_CreateChannel() this={GetHashCode()} _interop={_interop?.GetHashCode()} sender={sender?.GetHashCode()} _disposed={_disposed}");
 
+        private void Interop_CreateInputChannel(object? sender, CreateInputChannelArgs e)
+        {
             e.Ret = 0; // chan_hnd default means invalid
 
             // Check args.
-            if (e.DevName is null || e.DevName.Length == 0 || e.ChanNum < 1 || e.ChanNum > MidiDefs.NUM_MIDI_CHANNELS)
+            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new ScriptSyntaxException($"Script has invalid input midi device: {e.DevName}");
+                throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
             }
 
-            if (e.IsOutput)
+            // Locate or create the device.
+            var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+            if (input is null)
             {
-                // Locate or create the device.
-                var output = _outputs.FirstOrDefault(o => o.DeviceName == e.DevName);
-                if (output is null) 
-                {
-                    output = new(e.DevName); // throws if invalid
-                    _outputs.Add(output);
-                }
-
-                output.Channels[e.ChanNum - 1] = true;
-                e.Ret = MakeOutHandle(_outputs.Count - 1, e.ChanNum);
-
-                if (e.Patch >= 0)
-                {
-                    // Send the patch now.
-                    PatchChangeEvent pevt = new(0, e.ChanNum, e.Patch);
-                    output.Send(pevt);
-                }
+                input = new(e.dev_name); // throws if invalid
+                input.ReceiveEvent += Midi_ReceiveEvent;
+                _inputs.Add(input);
             }
-            else
-            {
-                // Locate or create the device.
-                var input = _inputs.FirstOrDefault(o => o.DeviceName == e.DevName);
-                if (input is null)
-                {
-                    input = new(e.DevName); // throws if invalid
-                    input.ReceiveEvent += Midi_ReceiveEvent;
-                    _inputs.Add(input);
-                }
 
-                input.Channels[e.ChanNum - 1] = true;
-                e.Ret = MakeInHandle(_inputs.Count - 1, e.ChanNum);
+            input.Channels[e.chan_num - 1] = true;
+            e.Ret = MakeInHandle(_inputs.Count - 1, e.chan_num);
+        }
+
+
+        private void Interop_CreateOutputChannel(object? sender, CreateOutputChannelArgs e)
+        {
+            e.Ret = 0; // chan_hnd default means invalid
+
+            // Check args.
+            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            {
+                throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
+            }
+
+            // Locate or create the device.
+            var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+            if (output is null)
+            {
+                output = new(e.dev_name); // throws if invalid
+                _outputs.Add(output);
+            }
+
+            output.Channels[e.chan_num - 1] = true;
+            e.Ret = MakeOutHandle(_outputs.Count - 1, e.chan_num);
+
+            if (e.patch >= 0)
+            {
+                // Send the patch now.
+                PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
+                output.Send(pevt);
             }
         }
 
-        /// <summary>
-        /// Sending some midi from script. Can throw.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="e"></param>
-        /// <exception cref="ScriptSyntaxException"></exception>
-        void Interop_Send(object? _, SendArgs e)
+
+
+
+
+        private void Interop_SendNote(object? sender, SendNoteArgs e)
+        {
+            //e.Ret = 0; // not used
+
+            // Check args.
+            var (index, chan_num) = DeconstructHandle(e.chan_hnd);
+
+            if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
+            {
+                throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
+            }
+
+            if (e.note_num < 0 || e.note_num > MidiDefs.MIDI_VAL_MAX || e.volume < 0 || e.volume > MidiDefs.MIDI_VAL_MAX)
+            {
+                // Warn and constrain, not stop.
+                _logger.Warn($"Script has invalid payload: {e.note_num} {e.volume}");
+                e.note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
+                e.volume = MathUtils.Constrain(e.volume, 0, MidiDefs.MIDI_VAL_MAX);
+                // throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
+            }
+
+            var output = _outputs[index];
+            MidiEvent evt;
+
+            // Check velocity for note off.
+            evt = e.volume == 0 ?
+                new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.note_num, 0) :
+                new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.note_num, e.volume);
+
+            output.Send(evt);
+
+            if (UserSettings.Current.MonitorSnd)
+            {
+                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+            }
+        }
+
+        private void Interop_SendController(object? sender, SendControllerArgs e)
         {
             e.Ret = 0; // not used
 
             // Check args.
-            var (index, chan_num) = DeconstructHandle(e.ChanHnd);
+            var (index, chan_num) = DeconstructHandle(e.chan_hnd);
 
             if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
             {
-                throw new ScriptSyntaxException($"Script has invalid channel: {e.ChanHnd}");
+                throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
             }
 
             if (e.What < 0 || e.What > MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value > MidiDefs.MIDI_VAL_MAX)
@@ -392,23 +434,36 @@ namespace Nebulua
             var output = _outputs[index];
             MidiEvent evt;
 
-            if (e.IsNote)
-            {
-                // Check velocity for note off.
-                evt = e.Value == 0 ?
-                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.What, 0) :
-                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.What, e.Value);
-            }
-            else
-            {
-                evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
-            }
+            evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
 
             output.Send(evt);
 
             if (UserSettings.Current.MonitorSnd)
             {
-                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.ChanHnd)}");
+                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+            }
+        }
+
+
+
+
+        private void Interop_SetTempo(object? sender, SetTempoArgs e)
+        {
+            if (e.bpm >= 30 && e.bpm <= 240)
+            {
+                State.Instance.Tempo = e.bpm;
+                SetTimer(State.Instance.Tempo);
+                //e.Ret = 0;
+            }
+            else if (e.bpm == 0)
+            {
+                SetTimer(0);
+            }
+            else
+            {
+                //e.Ret = 1;
+                SetTimer(0);
+                throw new ScriptSyntaxException($"Invalid tempo: {e.bpm}");
             }
         }
 
@@ -419,42 +474,17 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_Log(object? sender, LogArgs e)
         {
-            if (e.LogLevel >= (int)LogLevel.Trace && e.LogLevel <= (int)LogLevel.Error) 
+            if (e.level >= (int)LogLevel.Trace && e.level <= (int)LogLevel.Error)
             {
-                _logger.Log((LogLevel)e.LogLevel, $"SCRIPT {e.Message}");
-                e.Ret = 0;
+                _logger.Log((LogLevel)e.level, $"SCRIPT {e.msg}");
+                //e.Ret = 0;
             }
             else
             {
-                CallbackError(new ScriptSyntaxException($"SCRIPT Invalid log level: {e.LogLevel}"));
+                CallbackError(new ScriptSyntaxException($"SCRIPT Invalid log level: {e.level}"));
             }
         }
 
-        /// <summary>
-        /// Script wants to change a property. Can throw.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <exception cref="ScriptSyntaxException"></exception>
-        void Interop_PropertyChange(object? sender, PropertyArgs e)
-        {
-            if (e.Bpm >= 30 && e.Bpm <= 240)
-            {
-                State.Instance.Tempo = e.Bpm;
-                SetTimer(State.Instance.Tempo);
-                e.Ret = 0;
-            }
-            else if (e.Bpm == 0)
-            {
-                SetTimer(0);
-            }
-            else
-            {
-                e.Ret = 1;
-                SetTimer(0);
-                throw new ScriptSyntaxException($"Invalid tempo: {e.Bpm}");
-            }
-        }
         #endregion
 
         #region Private functions

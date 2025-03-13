@@ -30,7 +30,6 @@ namespace Nebulua
         DateTime _watcherDebounce = DateTime.Now;
         #endregion
 
-
         #region Lifecycle
         /// <summary>
         /// Constructor inits most of the UI.

@@ -3,7 +3,7 @@
 -- Impedance matching between C and Lua. Hides or translates the raw C interop.
 -- Manages note collections currently being played.
 
-local li  = require("lua_interop")
+local li  = require("luainterop")
 local ut  = require("lbot_utils")
 local st  = require("step_types")
 local mid = require("midi_defs")

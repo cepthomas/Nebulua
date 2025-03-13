@@ -7,3 +7,4 @@ bincli/
 objcli/
 *.vcxproj.user
 *.csproj.user
+Script/
