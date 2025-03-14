@@ -12,13 +12,16 @@ using Ephemera.NBagOfUis;
 using System.Threading;
 
 
+TODO1 need to copy? the \lua dir to output or where
+
+
 namespace Nebulua
 {
     public partial class MainForm : Form
     {
         #region Fields
         /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("App");
+        readonly Logger _logger = LogManager.CreateLogger("APP");
 
         /// <summary>Common functionality.</summary>
         readonly Core _core;
@@ -57,10 +60,10 @@ namespace Nebulua
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             _core = new();
-            if (_core.Error.Length > 0)
-            {
-                _logger.Error(_core.Error);
-            }
+            //if (_core.Error.Length > 0)
+            //{
+            //    _logger.Error(_core.Error);
+            //}
 
 
             /////////////////////////////////////////////////////////////////////////

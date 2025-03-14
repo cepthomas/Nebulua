@@ -5,6 +5,9 @@
     <OutputType>Exe</OutputType>
     <!-- <OutputType>WinExe</OutputType> -->
 
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -30,9 +33,9 @@
     <Content Include="Resources\app.ico" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <ProjectReference Include="..\Interop\Interop.vcxproj" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
@@ -41,9 +44,9 @@
     <Reference Include="Ephemera.NBagOfUis">
       <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
     </Reference>
-    <Reference Include="Script">
+    <!-- <Reference Include="Script">
       <HintPath>..\lib\Script.dll</HintPath>
-    </Reference>
+    </Reference> -->
   </ItemGroup>
 
   <ItemGroup>
@@ -65,6 +68,10 @@
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
     <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Script\Script.vcxproj" />
   </ItemGroup>
 
 </Project>

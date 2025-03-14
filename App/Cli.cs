@@ -16,7 +16,7 @@ namespace Nebulua
     {
         #region Fields
         /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("Cli");
+        readonly Logger _logger = LogManager.CreateLogger("CLI");
 
         /// <summary>Common functionality.</summary>
         readonly Core _core;
@@ -89,14 +89,15 @@ namespace Nebulua
                 new("reload",   's',  "reload current script",         "",                      ReloadCmd)
             ];
 
-            _core = new();
-            if (_core.Error.Length > 0)
-            {
-                _logger.Error(_core.Error);
-            }
+            //if (_core.Error.Length > 0)
+            //{
+            //    _logger.Error(_core.Error);
+            //}
 
             try
             {
+                _core = new();
+
                 // Script file validity checked in LoadScript().
                 _logger.Info($"Loading script file {scriptFn}");
                 _core.LoadScript(scriptFn);

@@ -20,15 +20,15 @@ namespace Nebulua
     public class ApplicationArgumentException(string message) : Exception(message) { }
     #endregion
 
-    /// <summary>TODO1?? Nebulua status. App errors start after internal lua errors so they can be handled homogeneously.</summary>
-    public enum NebStatus
-    {
-        Ok = 0,
-        // AppInterop returns these:
-        SyntaxError = 10, RunError = 11, AppInteropError = 12, FileError = 13,
-        // App level errors:
-        AppInternalError = 20,
-    };
+    ///// <summary>TODO1?? Nebulua status. App errors start after internal lua errors so they can be handled homogeneously.</summary>
+    //public enum NebStatus
+    //{
+    //    Ok = 0,
+    //    // AppInterop returns these:
+    //    SyntaxError = 10, RunError = 11, AppInteropError = 12, FileError = 13,
+    //    // App level errors:
+    //    AppInternalError = 20,
+    //};
 
     #region Console abstraction to support testing
     public interface IConsole

@@ -9,6 +9,7 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 //using Nebulua.Interop;
+using InteropCore;
 using Script;
 
 namespace Nebulua
@@ -17,7 +18,7 @@ namespace Nebulua
     {
         #region Fields
         /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("Core");
+        readonly Logger _logger = LogManager.CreateLogger("COR");
 
         /// <summary>The interop.</summary>
         Interop _interop = new();
@@ -43,7 +44,7 @@ namespace Nebulua
         public string? CurrentScriptFn { get; private set; }
 
         /// <summary>Error message.</summary>
-        public string Error { get { return _interop.Error; } }
+//        public string Error { get { return _interop.Error; } }
         #endregion
 
         #region Lifecycle
@@ -61,15 +62,12 @@ namespace Nebulua
             Interop.SetTempo += Interop_SetTempo;
 
 
-            Interop.CreateChannel += Interop_CreateChannel;
-            Interop.Send += Interop_Send;
-            Interop.PropertyChange += Interop_PropertyChange;
+            //Interop.CreateChannel += Interop_CreateChannel;
+            //Interop.Send += Interop_Send;
+            //Interop.PropertyChange += Interop_PropertyChange;
 
             // State change handler.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-
-            // Set up runtime lua environment.
-            _interop = new([Path.Join(Utils.GetAppRoot(), "lua")]);
         }
 
         /// <summary>
@@ -105,7 +103,7 @@ namespace Nebulua
         /// <exception cref="ApplicationArgumentException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="AppInteropException"></exception>
-        public NebStatus LoadScript(string? scriptFn = null)
+        public void LoadScript(string? scriptFn = null)
         {
             ResetIo();
 
@@ -131,11 +129,37 @@ namespace Nebulua
 
             _logger.Info($"Loading script file {CurrentScriptFn}");
 
-            NebStatus stat = _interop.OpenScript(CurrentScriptFn);
-            if (stat != NebStatus.Ok)
-            {
-                throw new AppInteropException("AppInterop open script failed", _interop.Error);
-            }
+            // Set up runtime lua environment.
+            // var luaPath = new([Path.Join(Utils.GetAppRoot(), "lua")]);
+            //set LUA_PATH="my_lua_dir\?.lua;?.lua;;""
+            //Appending LUA_PATH's value with a double semi-colon will make Lua append the default path to the specified path.
+
+
+            /*
+             * set LUA_PATH=my_path\?.lua;;
+            >>>
+            my_path\?.lua;
+            C:\Lua\lua\?.lua;
+            C:\Lua\lua\?\init.lua;
+            C:\Lua\?.lua;
+            C:\Lua\?\init.lua;
+            C:\Lua\..\share\lua\5.4\?.lua;
+            C:\Lua\..\share\lua\5.4\?\init.lua;
+            .\?.lua;
+            .\?\init.lua;
+            */
+
+
+
+            _interop.Run(CurrentScriptFn);
+            _interop.OpenScript(CurrentScriptFn);
+
+
+            //NebStatus stat = _interop.OpenScript(CurrentScriptFn);
+            //if (stat != NebStatus.Ok)
+            //{
+            //    throw new AppInteropException("AppInterop open script failed", _interop.Error);
+            //}
 
             // Get info about the script.
             Dictionary<int, string> sectInfo = [];
@@ -155,7 +179,7 @@ namespace Nebulua
             SetTimer(State.Instance.Tempo);
             _mmTimer.Start();
 
-            return stat;
+            //return stat;
         }
 
         /// <summary>
@@ -201,9 +225,9 @@ namespace Nebulua
         /// Handler for state changes of interest. Doesn't throw.
         /// Responsible for core stuff like tempo, kill.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="_"></param>
         /// <param name="name">Specific State value.</param>
-        void State_ValueChangeEvent(object? sender, string name)
+        void State_ValueChangeEvent(object? _, string name)
         {
             switch (name)
             {
@@ -225,47 +249,54 @@ namespace Nebulua
         {
             if (State.Instance.ExecState == ExecState.Run)
             {
-                // Do script. TODOF Handle solo and/or mute like nebulator.
-
-                //_tan?.Arm();
-
-                NebStatus stat = _interop!.Step(State.Instance.CurrentTick);
-                if (stat != NebStatus.Ok)
+                try
                 {
-                   CallbackError(new AppInteropException("Step() failed", _interop.Error));
-                }
+                    // Do script. TODOF Handle solo and/or mute like nebulator.
 
-                // Read stopwatch and diff/stats.
-                //string? s = _tan?.Dump();
+                    //_tan?.Arm();
 
-                if (State.Instance.IsComposition)
-                {
-                    // Bump time and check state.
-                    int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-                    int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
+                    int ret = _interop.Step(State.Instance.CurrentTick);
+                    //if (stat != NebStatus.Ok)
+                    //{
+                    //   CallbackError(new AppInteropException("Step() failed", _interop.Error));
+                    //}
 
-                    if (++State.Instance.CurrentTick >= end) // done
+                    // Read stopwatch and diff/stats.
+                    //string? s = _tan?.Dump();
+
+                    if (State.Instance.IsComposition)
                     {
-                        // Keep going? else stop/rewind.
-                        if (State.Instance.DoLoop)
-                        {
-                            // Keep going.
-                            State.Instance.CurrentTick = start;
-                        }
-                        else
-                        {
-                            // Stop and rewind.
-                            State.Instance.ExecState = ExecState.Idle;
-                            State.Instance.CurrentTick = start;
+                        // Bump time and check state.
+                        int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
+                        int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
 
-                            // just in case
-                            KillAll();
+                        if (++State.Instance.CurrentTick >= end) // done
+                        {
+                            // Keep going? else stop/rewind.
+                            if (State.Instance.DoLoop)
+                            {
+                                // Keep going.
+                                State.Instance.CurrentTick = start;
+                            }
+                            else
+                            {
+                                // Stop and rewind.
+                                State.Instance.ExecState = ExecState.Idle;
+                                State.Instance.CurrentTick = start;
+
+                                // just in case
+                                KillAll();
+                            }
                         }
                     }
+                    else // dynamic script
+                    {
+                        ++State.Instance.CurrentTick;
+                    }
                 }
-                else // dynamic script
+                catch (Exception ex)
                 {
-                    ++State.Instance.CurrentTick;
+                    _logger.Exception(ex);
                 }
             }
         }
@@ -277,177 +308,210 @@ namespace Nebulua
         /// <param name="e"></param>
         void Midi_ReceiveEvent(object? sender, MidiEvent e)
         {
-            NebStatus stat = NebStatus.Ok;
-
-            int index = _inputs.IndexOf((MidiInput)sender!);
-            int chan_hnd = MakeInHandle(index, e.Channel);
-            bool logit = true;
-
-            switch (e)
+            try
             {
-                case NoteOnEvent evt:
-                    stat = _interop!.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
-                    break;
+                int index = _inputs.IndexOf((MidiInput)sender!);
+                int chan_hnd = MakeInHandle(index, e.Channel);
+                bool logit = true;
 
-                case NoteEvent evt:
-                    stat = _interop!.RcvNote(chan_hnd, evt.NoteNumber, 0);
-                    break;
+                switch (e)
+                {
+                    case NoteOnEvent evt:
+                        _interop.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
+                        break;
 
-                case ControlChangeEvent evt:
-                    stat = _interop!.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
-                    break;
+                    case NoteEvent evt:
+                        _interop.RcvNote(chan_hnd, evt.NoteNumber, 0);
+                        break;
 
-                default: // Ignore others for now.
-                    logit = false;
-                    break;
+                    case ControlChangeEvent evt:
+                        _interop.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                        break;
+
+                    default: // Ignore others for now.
+                        logit = false;
+                        break;
+                }
+
+                if (logit && UserSettings.Current.MonitorRcv)
+                {
+                    _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
+                }
             }
-
-            if (logit && UserSettings.Current.MonitorRcv)
+            catch (Exception ex)
             {
-                _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chan_hnd)}");
-            }
-
-            if (stat != NebStatus.Ok)
-            {
-               CallbackError(new AppInteropException("Midi Receive() failed", _interop!.Error));
+                _logger.Exception(ex);
             }
         }
         #endregion
 
         #region Script Event Handlers
-
-        private void Interop_CreateInputChannel(object? sender, CreateInputChannelArgs e)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="e"></param>
+        void Interop_CreateInputChannel(object? _, CreateInputChannelArgs e)
         {
-            e.Ret = 0; // chan_hnd default means invalid
-
-            // Check args.
-            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            try
             {
-                throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
+                e.ret = 0; // chan_hnd default means invalid
+
+                // Check args.
+                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+                {
+                    throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
+                }
+
+                // Locate or create the device.
+                var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+                if (input is null)
+                {
+                    input = new(e.dev_name); // throws if invalid
+                    input.ReceiveEvent += Midi_ReceiveEvent;
+                    _inputs.Add(input);
+                }
+
+                input.Channels[e.chan_num - 1] = true;
+                e.ret = MakeInHandle(_inputs.Count - 1, e.chan_num);
             }
-
-            // Locate or create the device.
-            var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-            if (input is null)
+            catch (Exception ex)
             {
-                input = new(e.dev_name); // throws if invalid
-                input.ReceiveEvent += Midi_ReceiveEvent;
-                _inputs.Add(input);
-            }
-
-            input.Channels[e.chan_num - 1] = true;
-            e.Ret = MakeInHandle(_inputs.Count - 1, e.chan_num);
-        }
-
-
-        private void Interop_CreateOutputChannel(object? sender, CreateOutputChannelArgs e)
-        {
-            e.Ret = 0; // chan_hnd default means invalid
-
-            // Check args.
-            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
-            {
-                throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
-            }
-
-            // Locate or create the device.
-            var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-            if (output is null)
-            {
-                output = new(e.dev_name); // throws if invalid
-                _outputs.Add(output);
-            }
-
-            output.Channels[e.chan_num - 1] = true;
-            e.Ret = MakeOutHandle(_outputs.Count - 1, e.chan_num);
-
-            if (e.patch >= 0)
-            {
-                // Send the patch now.
-                PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
-                output.Send(pevt);
+                _logger.Exception(ex);
             }
         }
 
-
-
-
-
-        private void Interop_SendNote(object? sender, SendNoteArgs e)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="e"></param>
+        void Interop_CreateOutputChannel(object? _, CreateOutputChannelArgs e)
         {
-            //e.Ret = 0; // not used
-
-            // Check args.
-            var (index, chan_num) = DeconstructHandle(e.chan_hnd);
-
-            if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
+            try
             {
-                throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
+                e.ret = 0; // chan_hnd default means invalid
+
+                // Check args.
+                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+                {
+                    throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
+                }
+
+                // Locate or create the device.
+                var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+                if (output is null)
+                {
+                    output = new(e.dev_name); // throws if invalid
+                    _outputs.Add(output);
+                }
+
+                output.Channels[e.chan_num - 1] = true;
+                e.ret = MakeOutHandle(_outputs.Count - 1, e.chan_num);
+
+                if (e.patch >= 0)
+                {
+                    // Send the patch now.
+                    PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
+                    output.Send(pevt);
+                }
             }
-
-            if (e.note_num < 0 || e.note_num > MidiDefs.MIDI_VAL_MAX || e.volume < 0 || e.volume > MidiDefs.MIDI_VAL_MAX)
+            catch (Exception ex)
             {
-                // Warn and constrain, not stop.
-                _logger.Warn($"Script has invalid payload: {e.note_num} {e.volume}");
-                e.note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
-                e.volume = MathUtils.Constrain(e.volume, 0, MidiDefs.MIDI_VAL_MAX);
-                // throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
-            }
-
-            var output = _outputs[index];
-            MidiEvent evt;
-
-            // Check velocity for note off.
-            evt = e.volume == 0 ?
-                new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, e.note_num, 0) :
-                new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, e.note_num, e.volume);
-
-            output.Send(evt);
-
-            if (UserSettings.Current.MonitorSnd)
-            {
-                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                _logger.Exception(ex);
             }
         }
 
-        private void Interop_SendController(object? sender, SendControllerArgs e)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="e"></param>
+        void Interop_SendNote(object? _, SendNoteArgs e)
         {
-            e.Ret = 0; // not used
-
-            // Check args.
-            var (index, chan_num) = DeconstructHandle(e.chan_hnd);
-
-            if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
+            try
             {
-                throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
+                e.ret = 0; // not used
+
+                // Check args.
+                var (index, chan_num) = DeconstructHandle(e.chan_hnd);
+
+                if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
+                {
+                    throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
+                }
+
+                int note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
+                int velocity = MathUtils.Constrain((int)(e.volume * MidiDefs.MIDI_VAL_MAX), 0, MidiDefs.MIDI_VAL_MAX);
+
+                var output = _outputs[index];
+                MidiEvent evt;
+
+                // Check velocity for note off.
+                evt = e.volume == 0 ?
+                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, note_num, 0) :
+                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, note_num, velocity);
+
+                output.Send(evt);
+
+                if (UserSettings.Current.MonitorSnd)
+                {
+                    _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                }
             }
-
-            if (e.What < 0 || e.What > MidiDefs.MIDI_VAL_MAX || e.Value < 0 || e.Value > MidiDefs.MIDI_VAL_MAX)
+            catch (Exception ex)
             {
-                // Warn and constrain, not stop.
-                _logger.Warn($"Script has invalid payload: {e.What} {e.Value}");
-                e.What = MathUtils.Constrain(e.What, 0, MidiDefs.MIDI_VAL_MAX);
-                e.Value = MathUtils.Constrain(e.Value, 0, MidiDefs.MIDI_VAL_MAX);
-                // throw new ScriptSyntaxException($"Script has invalid payload: {e.What} {e.Value}");
-            }
-
-            var output = _outputs[index];
-            MidiEvent evt;
-
-            evt = new ControlChangeEvent(0, chan_num, (MidiController)e.What, e.Value);
-
-            output.Send(evt);
-
-            if (UserSettings.Current.MonitorSnd)
-            {
-                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                _logger.Exception(ex);
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="e"></param>
+        void Interop_SendController(object? _, SendControllerArgs e)
+        {
+            try
+            {
+                e.ret = 0; // not used
 
+                // Check args.
+                var (index, chan_num) = DeconstructHandle(e.chan_hnd);
 
+                if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
+                {
+                    throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
+                }
 
-        private void Interop_SetTempo(object? sender, SetTempoArgs e)
+                int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
+                int value = MathUtils.Constrain(e.value, 0, MidiDefs.MIDI_VAL_MAX);
+
+                var output = _outputs[index];
+                MidiEvent evt;
+
+                evt = new ControlChangeEvent(0, chan_num, (MidiController)controller, value);
+
+                output.Send(evt);
+
+                if (UserSettings.Current.MonitorSnd)
+                {
+                    _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception(ex);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="e"></param>
+        /// <exception cref="ScriptSyntaxException"></exception>
+        void Interop_SetTempo(object? _, SetTempoArgs e)
         {
             if (e.bpm >= 30 && e.bpm <= 240)
             {
@@ -470,9 +534,9 @@ namespace Nebulua
         /// <summary>
         /// Log something from script.
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_Log(object? sender, LogArgs e)
+        void Interop_Log(object? _, LogArgs e)
         {
             if (e.level >= (int)LogLevel.Trace && e.level <= (int)LogLevel.Error)
             {
@@ -484,7 +548,6 @@ namespace Nebulua
                 CallbackError(new ScriptSyntaxException($"SCRIPT Invalid log level: {e.level}"));
             }
         }
-
         #endregion
 
         #region Private functions
@@ -546,7 +609,7 @@ namespace Nebulua
         /// <param name="tick">Current tick.</param>
         /// <param name="chan_hnd">Channel info.</param>
         /// <returns>Suitable string.</returns>
-        public string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
+        string FormatMidiEvent(MidiEvent evt, int tick, int chan_hnd)
         {
             // Common part.
             (int index, int chan_num) = DeconstructHandle(chan_hnd);
@@ -574,23 +637,22 @@ namespace Nebulua
         }
 
         /// <summary>Make a standard output handle.</summary>
-        public int MakeOutHandle(int index, int chan_num)
+        int MakeOutHandle(int index, int chan_num)
         {
             return (index << 8) | chan_num | 0x8000;
         }
 
         /// <summary>Make a standard input handle.</summary>
-        public int MakeInHandle(int index, int chan_num)
+        int MakeInHandle(int index, int chan_num)
         {
             return (index << 8) | chan_num;
         }
 
         /// <summary>Take apart a standard in/out handle.</summary>
-        public (int index, int chan_num) DeconstructHandle(int chan_hnd)
+        (int index, int chan_num) DeconstructHandle(int chan_hnd)
         {
             return (((chan_hnd & ~0x8000) >> 8) & 0xFF, (chan_hnd & ~0x8000) & 0xFF);
         }
-
         #endregion
     }
 }
