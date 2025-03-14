@@ -12,7 +12,7 @@ using Ephemera.NBagOfUis;
 using System.Threading;
 
 
-TODO1 need to copy? the \lua dir to output or where
+//TODO1 need to copy? the \lua dir to output or where
 
 
 namespace Nebulua
