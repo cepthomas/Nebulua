@@ -1,0 +1,113 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- OutputType is Exe which opens a terminal used for cl flavor and script debugging. -->
+    <OutputType>Exe</OutputType>
+    <!-- <OutputType>WinExe</OutputType> -->
+
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Platforms>x64</Platforms>
+    <NoWarn>1701;1702;CA1416;IDE1006;CS1591;CA1816;CS1587;CA1822</NoWarn>
+    <Deterministic>False</Deterministic>
+    <Version>1.2.0</Version>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <AssemblyName>Nebulua</AssemblyName>
+    <RootNamespace>Nebulua</RootNamespace>
+    <Company>Ephemera Inc</Company>
+    <Product>Nebulua</Product>
+    <Description>Play music with lua.</Description>
+    <Copyright>MIT License</Copyright>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="lib\**" />
+    <Compile Remove="Script\bin\**" />
+    <Compile Remove="Script\obj\**" />
+    <Compile Remove="Script\_LBOT\**" />
+    <Compile Remove="test\**" />
+    <EmbeddedResource Remove="lib\**" />
+    <EmbeddedResource Remove="Script\bin\**" />
+    <EmbeddedResource Remove="Script\obj\**" />
+    <EmbeddedResource Remove="Script\_LBOT\**" />
+    <EmbeddedResource Remove="test\**" />
+    <None Remove="lib\**" />
+    <None Remove="Script\bin\**" />
+    <None Remove="Script\obj\**" />
+    <None Remove="Script\_LBOT\**" />
+    <None Remove="test\**" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Include="Resources\app.ico" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="lua\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="docs\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+
+  <!-- <ItemGroup>
+    <ProjectReference Include="..\Interop\Interop.vcxproj" />
+  </ItemGroup> -->
+
+  <ItemGroup>
+    <Reference Include="Ephemera.NBagOfTricks">
+      <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
+    </Reference>
+    <Reference Include="Ephemera.NBagOfUis">
+      <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
+    </Reference>
+    <!-- <Reference Include="Script">
+      <HintPath>lib\Script.dll</HintPath>
+    </Reference> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Script\Script.vcxproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

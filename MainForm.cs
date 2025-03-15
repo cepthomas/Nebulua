@@ -5,14 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
-using System.Threading;
-
-
-//TODO1 need to copy? the \lua dir to output or where
 
 
 namespace Nebulua
@@ -25,6 +22,9 @@ namespace Nebulua
 
         /// <summary>Common functionality.</summary>
         readonly Core _core;
+
+        /// <summary>Current script. Null means none.</summary>
+        string? _scriptFn = null;
 
         /// <summary>Detect external edits to current script.</summary>
         readonly FileSystemWatcher _watcher = new();
@@ -318,7 +318,7 @@ namespace Nebulua
         {
             List<string> options = [];
             options.Add("Open...");
-            if (_core.CurrentScriptFn is not null)
+            if (_scriptFn is not null)
             {
                 options.Add("Reload");
             }
@@ -374,17 +374,19 @@ namespace Nebulua
         {
             try
             {
-                _logger.Info(scriptFn is null ? "Reloading script" : $"Loading script file {scriptFn}");
+                _scriptFn = scriptFn;
 
-                _core.LoadScript(scriptFn); // may throw
+                _logger.Info(_scriptFn is null ? "Reloading script" : $"Loading script file {_scriptFn}");
+
+                _core.LoadScript(_scriptFn); // may throw
 
                 // Everything ok.
-                var fn = _core.CurrentScriptFn!;
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {fn}";
-                _watcher.Filter = Path.GetFileName(fn);
-                _watcher.Path = Path.GetDirectoryName(fn)!;
+                //var fn = _core.__scriptFn!;
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
+                _watcher.Filter = Path.GetFileName(_scriptFn);
+                _watcher.Path = Path.GetDirectoryName(_scriptFn)!;
                 _watcher.EnableRaisingEvents = true;
-                UserSettings.Current.UpdateMru(fn);
+                UserSettings.Current.UpdateMru(_scriptFn);
                 PopulateFileMenu();
 
                 timeBar.Invalidate(); // force update
@@ -602,15 +604,15 @@ namespace Nebulua
         void About_Click(object? sender, EventArgs e)
         {
             // Consolidate docs.
-            var rootDir = Utils.GetAppRoot();
+            var appDir = Environment.CurrentDirectory;
             var files = new List<string>()
             {
-                Path.Join(rootDir, "README.md"),
-                Path.Join(rootDir, "docs", "definitions.md"),
-                Path.Join(rootDir, "docs", "writing_scripts.md"),
-                Path.Join(rootDir, "docs", "midi_defs.md"),
-                Path.Join(rootDir, "docs", "music_defs.md"),
-                Path.Join(rootDir, "docs", "tech_notes.md"),
+                Path.Join(appDir, "README.md"),
+                Path.Join(appDir, "docs", "definitions.md"),
+                Path.Join(appDir, "docs", "writing_scripts.md"),
+                Path.Join(appDir, "docs", "midi_defs.md"),
+                Path.Join(appDir, "docs", "music_defs.md"),
+                Path.Join(appDir, "docs", "tech_notes.md"),
             };
 
             List<string> ls = [];
@@ -639,7 +641,7 @@ namespace Nebulua
             }
 
             var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
-            var docfn = Path.Join(rootDir, "doc.html");
+            var docfn = Path.Join(appDir, "doc.html");
             File.WriteAllText(docfn, html);
             new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
         }

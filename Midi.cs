@@ -52,7 +52,7 @@ namespace Nebulua
         /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        /// <exception cref="ScriptSyntaxException"></exception>
+        /// <exception cref="SyntaxException"></exception>
         public MidiInput(string deviceName)
         {
             bool valid = false;
@@ -87,7 +87,7 @@ namespace Nebulua
                 {
                     devs.Add($"\"{MidiIn.DeviceInfo(i).ProductName}\"");
                 }
-                throw new ScriptSyntaxException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
+                throw new SyntaxException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
             }
             else
             {
@@ -157,7 +157,7 @@ namespace Nebulua
         /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        /// <exception cref="ScriptSyntaxException"></exception>
+        /// <exception cref="SyntaxException"></exception>
         public MidiOutput(string deviceName)
         {
             DeviceName = deviceName;
@@ -180,7 +180,7 @@ namespace Nebulua
                 {
                     devs.Add($"\"{MidiOut.DeviceInfo(i).ProductName}\"");
                 }
-                throw new ScriptSyntaxException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
+                throw new SyntaxException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
             }
         }
 

@@ -132,7 +132,7 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     if valid then
-        -- Do something. TODO1 pattern matching like F#.
+        -- Do something. TODO1 pattern matching like F#/C#?
 
         local bar, beat, sub = bt.tick_to_bt(tick)
 

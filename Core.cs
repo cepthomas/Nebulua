@@ -37,14 +37,9 @@ namespace Nebulua
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
-        #endregion
 
-        #region Proerties
-        /// <summary>Current script.</summary>
-        public string? CurrentScriptFn { get; private set; }
-
-        /// <summary>Error message.</summary>
-//        public string Error { get { return _interop.Error; } }
+        /// <summary>Current script. Null means none.</summary>
+        string? _scriptFn = null;
         #endregion
 
         #region Lifecycle
@@ -100,66 +95,42 @@ namespace Nebulua
         /// </summary>
         /// <param name="scriptFn">The script file or null to reload current.</param>
         /// <returns></returns>
-        /// <exception cref="ApplicationArgumentException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <exception cref="AppInteropException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public void LoadScript(string? scriptFn = null)
         {
             ResetIo();
+
+
 
             // Check file arg.
             if (scriptFn is not null)
             {
                 if (scriptFn.EndsWith(".lua") && Path.Exists(scriptFn))
                 {
-                    CurrentScriptFn = scriptFn;
+                    _scriptFn = scriptFn;
                 }
                 else
                 {
-                    throw new ApplicationArgumentException($"Invalid script file: {scriptFn}");
+                    throw new ArgumentException($"Invalid script file: {scriptFn}");
                 }
             }
-            else if (CurrentScriptFn is null)
+            else if (_scriptFn is null)
             {
-                throw new InvalidOperationException("Can't reload, no current file");
+                throw new ArgumentException("Can't reload, no current file");
             }
 
-            // Unload current modules so reload will be minty fresh. This may fail safely if no script loaded yet.
+            // Unload current modules so reload will be minty fresh. This fails grracefully if no script loaded yet.
             string ret = _interop.NebCommand("unload_all", "no arg");
 
-            _logger.Info($"Loading script file {CurrentScriptFn}");
+            _logger.Info($"Loading script file {_scriptFn}");
 
-            // Set up runtime lua environment.
-            // var luaPath = new([Path.Join(Utils.GetAppRoot(), "lua")]);
-            //set LUA_PATH="my_lua_dir\?.lua;?.lua;;""
-            //Appending LUA_PATH's value with a double semi-colon will make Lua append the default path to the specified path.
+            // Set up runtime lua environment. The lua lib files, the dir containing the script file, ???
+            var appDir = Environment.CurrentDirectory;
+            var scriptDir = Path.GetDirectoryName(_scriptFn);
+            var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
 
+            _interop.Run(_scriptFn, luaPath);
 
-            /*
-             * set LUA_PATH=my_path\?.lua;;
-            >>>
-            my_path\?.lua;
-            C:\Lua\lua\?.lua;
-            C:\Lua\lua\?\init.lua;
-            C:\Lua\?.lua;
-            C:\Lua\?\init.lua;
-            C:\Lua\..\share\lua\5.4\?.lua;
-            C:\Lua\..\share\lua\5.4\?\init.lua;
-            .\?.lua;
-            .\?\init.lua;
-            */
-
-
-
-            _interop.Run(CurrentScriptFn);
-            _interop.OpenScript(CurrentScriptFn);
-
-
-            //NebStatus stat = _interop.OpenScript(CurrentScriptFn);
-            //if (stat != NebStatus.Ok)
-            //{
-            //    throw new AppInteropException("AppInterop open script failed", _interop.Error);
-            //}
 
             // Get info about the script.
             Dictionary<int, string> sectInfo = [];
@@ -199,7 +170,7 @@ namespace Nebulua
             }
             else
             {
-                CallbackError(new ScriptSyntaxException($"Invalid internal device:{devName}"));
+                CallbackError(new SyntaxException($"Invalid internal device:{devName}"));
             }
         }
 
@@ -256,10 +227,6 @@ namespace Nebulua
                     //_tan?.Arm();
 
                     int ret = _interop.Step(State.Instance.CurrentTick);
-                    //if (stat != NebStatus.Ok)
-                    //{
-                    //   CallbackError(new AppInteropException("Step() failed", _interop.Error));
-                    //}
 
                     // Read stopwatch and diff/stats.
                     //string? s = _tan?.Dump();
@@ -360,7 +327,7 @@ namespace Nebulua
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
+                    throw new SyntaxException($"Script has invalid input midi device: {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -395,7 +362,7 @@ namespace Nebulua
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new ScriptSyntaxException($"Script has invalid input midi device: {e.dev_name}");
+                    throw new SyntaxException($"Script has invalid input midi device: {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -438,7 +405,7 @@ namespace Nebulua
 
                 if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
                 {
-                    throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
+                    throw new SyntaxException($"Script has invalid channel: {e.chan_hnd}");
                 }
 
                 int note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
@@ -481,7 +448,7 @@ namespace Nebulua
 
                 if (index >= _outputs.Count || chan_num < 1 || chan_num > MidiDefs.NUM_MIDI_CHANNELS || !_outputs[index].Channels[chan_num - 1])
                 {
-                    throw new ScriptSyntaxException($"Script has invalid channel: {e.chan_hnd}");
+                    throw new SyntaxException($"Script has invalid channel: {e.chan_hnd}");
                 }
 
                 int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
@@ -510,7 +477,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        /// <exception cref="ScriptSyntaxException"></exception>
+        /// <exception cref="SyntaxException"></exception>
         void Interop_SetTempo(object? _, SetTempoArgs e)
         {
             if (e.bpm >= 30 && e.bpm <= 240)
@@ -527,7 +494,7 @@ namespace Nebulua
             {
                 //e.Ret = 1;
                 SetTimer(0);
-                throw new ScriptSyntaxException($"Invalid tempo: {e.bpm}");
+                throw new SyntaxException($"Invalid tempo: {e.bpm}");
             }
         }
 
@@ -545,7 +512,7 @@ namespace Nebulua
             }
             else
             {
-                CallbackError(new ScriptSyntaxException($"SCRIPT Invalid log level: {e.level}"));
+                CallbackError(new SyntaxException($"SCRIPT Invalid log level: {e.level}"));
             }
         }
         #endregion

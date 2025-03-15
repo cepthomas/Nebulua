@@ -10,14 +10,6 @@ It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulat
 
 
 
-https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/mklink
-To create and remove a symbolic link named MyFolder from the root directory to the \Users\User1\Documents directory
-mklink /d \MyFolder \Users\User1\Documents
-rd \MyFolder
-
-How to find all symbolic, soft links, junction points and hard links in a folder in Windows Server quickly? Use dir /al /s /b . Displays a list of files and subdirectories in a directory.
-
-In Windows, you can use the command line tool "dir" or "where" to identify the target of an NTFS symbolic link. This will return information about the link, including the type of file (symbolic link), the permissions, and the target path.
 
 
 ## Usage

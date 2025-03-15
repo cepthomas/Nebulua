@@ -12,7 +12,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
-    public class Cli : IDisposable
+    public class Cli : IDisposable // TODO1 use NTerm?
     {
         #region Fields
         /// <summary>App logger.</summary>
