@@ -8,9 +8,8 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-//using Nebulua.Interop;
-using InteropCore;
 using Script;
+
 
 namespace Nebulua
 {
@@ -21,7 +20,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("COR");
 
         /// <summary>The interop.</summary>
-        Interop _interop = new();
+        readonly Interop _interop = new();
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -56,13 +55,8 @@ namespace Nebulua
             Interop.SendController += Interop_SendController;
             Interop.SetTempo += Interop_SetTempo;
 
-
-            //Interop.CreateChannel += Interop_CreateChannel;
-            //Interop.Send += Interop_Send;
-            //Interop.PropertyChange += Interop_PropertyChange;
-
             // State change handler.
-            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+            //State.Instance.ValueChangeEvent += State_ValueChangeEvent;
         }
 
         /// <summary>
@@ -100,8 +94,6 @@ namespace Nebulua
         {
             ResetIo();
 
-
-
             // Check file arg.
             if (scriptFn is not null)
             {
@@ -119,18 +111,18 @@ namespace Nebulua
                 throw new ArgumentException("Can't reload, no current file");
             }
 
-            // Unload current modules so reload will be minty fresh. This fails grracefully if no script loaded yet.
-            string ret = _interop.NebCommand("unload_all", "no arg");
+            // Unload current modules so reload will be minty fresh. This fails gracefully if no script loaded yet.
+            _interop.NebCommand("unload_all", "no arg");
 
+            // Load and run the new script.
             _logger.Info($"Loading script file {_scriptFn}");
-
             // Set up runtime lua environment. The lua lib files, the dir containing the script file, ???
             var appDir = Environment.CurrentDirectory;
             var scriptDir = Path.GetDirectoryName(_scriptFn);
             var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
 
             _interop.Run(_scriptFn, luaPath);
-
+            State.Instance.ExecState = ExecState.Idle;
 
             // Get info about the script.
             Dictionary<int, string> sectInfo = [];
@@ -144,13 +136,9 @@ namespace Nebulua
             }
             State.Instance.InitSectionInfo(sectInfo);
 
-            State.Instance.ExecState = ExecState.Idle;
-
-            // Start timer.
+            // Start pump timer.
             SetTimer(State.Instance.Tempo);
             _mmTimer.Start();
-
-            //return stat;
         }
 
         /// <summary>
@@ -192,24 +180,24 @@ namespace Nebulua
             State.Instance.ExecState = ExecState.Idle;
         }
 
-        /// <summary>
-        /// Handler for state changes of interest. Doesn't throw.
-        /// Responsible for core stuff like tempo, kill.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="name">Specific State value.</param>
-        void State_ValueChangeEvent(object? _, string name)
-        {
-            switch (name)
-            {
-                case "CurrentTick":
-                    break;
+        ///// <summary>
+        ///// Handler for state changes of interest. Doesn't throw.
+        ///// Responsible for core stuff like tempo, kill.
+        ///// </summary>
+        ///// <param name="_"></param>
+        ///// <param name="name">Specific State value.</param>
+        //void State_ValueChangeEvent(object? _, string name)
+        //{
+        //    switch (name)
+        //    {
+        //        case "CurrentTick":
+        //            break;
 
-                case "Tempo":
-                    SetTimer(State.Instance.Tempo);
-                    break;
-            }
-        }
+        //        case "Tempo":
+        //            SetTimer(State.Instance.Tempo);
+        //            break;
+        //    }
+        //}
 
         /// <summary>
         /// Process events. These are on the client UI thread now. Doesn't throw.
@@ -223,7 +211,6 @@ namespace Nebulua
                 try
                 {
                     // Do script. TODOF Handle solo and/or mute like nebulator.
-
                     //_tan?.Arm();
 
                     int ret = _interop.Step(State.Instance.CurrentTick);
@@ -508,7 +495,7 @@ namespace Nebulua
             if (e.level >= (int)LogLevel.Trace && e.level <= (int)LogLevel.Error)
             {
                 _logger.Log((LogLevel)e.level, $"SCRIPT {e.msg}");
-                //e.Ret = 0;
+                e.ret = 0;
             }
             else
             {

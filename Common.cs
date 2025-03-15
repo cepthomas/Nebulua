@@ -10,15 +10,6 @@ namespace Nebulua
     #region Exceptions
     /// <summary>Lua script syntax error.</summary>
     public class SyntaxException(string message) : Exception(message) { }
-
-    /// <summary>AppInterop error.</summary>
-    //public class AppInteropException(string message, string msg) : Exception(message)
-    //{
-    //    public string AppInteropError { get; init; } = msg;
-    //}
-
-    ///// <summary>App command line error.</summary>
-    //public class ApplicationArgumentException(string message) : Exception(message) { }
     #endregion
 
     #region Console abstraction to support testing
@@ -39,8 +30,6 @@ namespace Nebulua
 
     public class Utils
     {
-        static string? _rootDir = null; // cache
-
         /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
@@ -57,12 +46,12 @@ namespace Nebulua
 
                 case ArgumentException ex:
                     msg = $"Argument Error: {ex.Message}";
-                    //fatal = true;
+                    //? fatal = true;
                     break;
 
                 case LuaException ex:
                     msg = $"Lua/Interop Error: {ex.Message}";
-                    //fatal = true;
+                    //? fatal = true;
                     break;
 
                 default: // other, probably fatal
@@ -73,33 +62,5 @@ namespace Nebulua
 
             return (fatal, msg);
         }
-
-        ///// <summary>
-        ///// Get the directory name where the application lives.
-        ///// </summary>
-        ///// <returns></returns>
-        //public static string GetAppRoot()
-        //{
-        //    if (_rootDir is null)
-        //    {
-        //        DirectoryInfo dinfo = new(MiscUtils.GetSourcePath());
-        //        while (dinfo.Name! != "Nebulua")
-        //        {
-        //            dinfo = dinfo.Parent!;
-        //        }
-        //        _rootDir = dinfo.FullName;
-        //    }
-
-        //    return _rootDir!;
-        //}
-
-        ///// <summary>Get LUA_PATH components.</summary>
-        ///// <returns>List of paths if success or null if invalid.</returns>
-        //public static List<string> GetLuaPath()
-        //{
-        //    // Set up lua environment.
-        //    var appRoot = GetAppRoot();
-        //    return [$@"{appRoot}\lua", $@"{appRoot}\test\lua"];
-        //}
     }
 }

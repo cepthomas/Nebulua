@@ -43,8 +43,6 @@ namespace Nebulua
             InitializeComponent();
             KeyPreview = true; // for routing kbd strokes properly
 
-            //Thread.Sleep(1000);
-
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
             UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
@@ -60,11 +58,6 @@ namespace Nebulua
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             _core = new();
-            //if (_core.Error.Length > 0)
-            //{
-            //    _logger.Error(_core.Error);
-            //}
-
 
             /////////////////////////////////////////////////////////////////////////
             // TODO1 When running in VS: If the controls are inited here (as they should)
@@ -352,7 +345,6 @@ namespace Nebulua
                         {
                             OpenScriptFile(openDlg.FileName);
                         }
-
                     }
                     break;
 
@@ -383,10 +375,10 @@ namespace Nebulua
                 // Everything ok.
                 //var fn = _core.__scriptFn!;
                 Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                _watcher.Filter = Path.GetFileName(_scriptFn);
+                _watcher.Filter = Path.GetFileName(_scriptFn)!;
                 _watcher.Path = Path.GetDirectoryName(_scriptFn)!;
                 _watcher.EnableRaisingEvents = true;
-                UserSettings.Current.UpdateMru(_scriptFn);
+                UserSettings.Current.UpdateMru(_scriptFn!);
                 PopulateFileMenu();
 
                 timeBar.Invalidate(); // force update

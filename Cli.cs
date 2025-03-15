@@ -19,7 +19,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("CLI");
 
         /// <summary>Common functionality.</summary>
-        readonly Core _core;
+        readonly Core _core = new();
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -96,8 +96,6 @@ namespace Nebulua
 
             try
             {
-                _core = new();
-
                 // Script file validity checked in LoadScript().
                 _logger.Info($"Loading script file {scriptFn}");
                 _core.LoadScript(scriptFn);
