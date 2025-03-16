@@ -91,11 +91,11 @@ Nebulua
 The Lua script interop should not need to be rebuilt after the api is finalized so the kind of ugly components
 used to build it are kept out of sight of the general public. If a change is required, do this:
 
-- Unzip Script.zip into a folder `...\Nebulua\Script` and cd into it.
+- Unzip `Script.zip` into a folder `...\Nebulua\Script` and cd into it.
 - Create a folder named `LBOT` with the contents of [this](https://github.com/cepthomas/LuaBagOfTricks). This can
   be done using a git submodule, a hard copy, or a symlink to this repo in another location on your machine.
 - Edit `interop_spec.lua` with new changes.
 - Execute 'gen_interop.cmd'. This generates the code files to support the interop.
 - Execute 'build_interop.cmd'. This also copies artifacts to where they need to be.
 - Open `Nebulua.sln` and rebuild all.
-- When satisfied, zip the `Script` dir and replace the current Script.zip file.
+- When satisfied, zip the `Script` dir and replace the current `Script.zip` file.
