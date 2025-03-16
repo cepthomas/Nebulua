@@ -50,61 +50,52 @@ Interop_Send(object? _, SendArgs e)  [in App\Core.cs]
 
 ## Error Model
 
-- Almost all errors are considered fatal as they are usually things the user needs to fix before continuing
+- Almost all errors are considered fatal as they are usually things the user needs to fix before continuing,
   such as script syntax errors. They are logged and then the application exits.
 - Lua functions defined in C do not call `luaL_error()`. Only call `luaL_error()` in code that is called from
   the lua side. C side needs to handle function returns manually via status codes, error msgs, etc.
-- The application side uses custom exceptions to harmonize the heterogenous nature of the C#/C++/Lua stack.
-- The errors originating in thread callbacks can't throw so use another mechanism: `CallbackError`.
+- The C# application side uses custom exceptions to harmonize the heterogenous nature of the C#/C++/C/Lua stack.
+- The errors originating in thread callbacks can't throw so use another mechanism: `CallbackError()`.
 
 ## Files
 
 Source dir:
 ```
 Nebulua
-|   gen_interop.cmd, interop_spec.lua - generates interop wrapper code
-|   README.md
-+---App - standard C# project for the main app
-|       *.cs
-|       etc...
-+---interop - C++/CLI project to embed lua
-|       AppInterop.cpp/h - between c++ and App/UI.
-|       luainterop.c/h - generated wrapper code
-|       luainteropwork.cpp - glue
-|       *.c/h - parts of https://github.com/cepthomas/LuaBagOfTricks
+|   - standard C# project for the main app
+|   README.md - hello!
+|   *.cs
+|   Script.zip - see below
+|   etc...
 +---lua - lua modules for application
 |       bar_time.lua
+|       debugger.lua
+|       lbot_utils.lua
 |       midi_defs.lua
 |       music_defs.lua
 |       script_api.lua
 |       step_types.lua
-|       *.lua - parts of https://github.com/cepthomas/LuaBagOfTricks
-+---lib
-|       *.dll\xml - .NET dependencies
-|       lua54 - lua binaries
-+---test - various test code projects
+|       stringex.lua
 +---examples
 |       airport.lua
 |       example.lua
-+---docs
-|       *.md
-\---App\bin\x64\Debug\net8.0-windows - build products
-        Nebulua.exe
-        *.dll
-        etc...
++---docs - *.md
++---lib - .NET dependencies
++---test - various test code projects
+\---bin\x64\Debug\net8.0-windows - build products
 ```
 
 
-Install/runtime:
-```
-Nebulua
-|   README.md
-+---bin
-|       Nebulua.exe
-|       *.dll
-|       etc...
-+---lib - same as Source
-+---lua - same as Source
-+---examples - same as Source
-\---docs - same as Source
-```
+## Building Script
+
+The Lua script interop should not need to be rebuilt after the api is finalized so the kind of ugly components
+used to build it are kept out of sight of the general public. If a change is required, do this:
+
+- Unzip Script.zip into a folder `...\Nebulua\Script` and cd into it.
+- Create a folder named `LBOT` with the contents of [this](https://github.com/cepthomas/LuaBagOfTricks). This can
+  be done using a git submodule, a hard copy, or a symlink to this repo in another location on your machine.
+- Edit `interop_spec.lua` with new changes.
+- Execute 'gen_interop.cmd'. This generates the code files to support the interop.
+- Execute 'build_interop.cmd'. This also copies artifacts to where they need to be.
+- Open `Nebulua.sln` and rebuild all.
+- When satisfied, zip the `Script` dir and replace the current Script.zip file.

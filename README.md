@@ -9,9 +9,6 @@ It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulat
 ![logo](docs/marks.png)
 
 
-TODO1 LBOT symlink
-
-
 ## Usage
 
 If you pass it a script file name on the command line it runs as a command line application. If not the UI is started.

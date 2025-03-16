@@ -11,7 +11,7 @@ using Nebulua.Interop;
 namespace Nebulua.Test
 {
     /// <summary>Test core functions.</summary>
-    public class CORE_BASIC : TestSuite
+    public class CORE_BASIC : TestSuite // TODO1 fix all tests
     {
         public override void RunSuite()
         {
