@@ -18,8 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\App\Common.cs" Link="Common.cs" />
-    <Compile Include="..\..\App\State.cs" Link="State.cs" />
+    <Compile Include="..\..\Common.cs" Link="Common.cs" />
+    <Compile Include="..\..\State.cs" Link="State.cs" />
   </ItemGroup>
 
   <ItemGroup>

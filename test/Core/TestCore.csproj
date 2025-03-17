@@ -18,11 +18,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\App\Common.cs" Link="Common.cs" />
-    <Compile Include="..\..\App\Core.cs" Link="Core.cs" />
-    <Compile Include="..\..\App\State.cs" Link="State.cs" />
-    <Compile Include="..\..\App\UserSettings.cs" Link="UserSettings.cs" />
-    <Compile Include="..\..\App\MusicTime.cs" Link="MusicTime.cs" />
+    <Compile Include="..\..\Common.cs" Link="Common.cs" />
+    <Compile Include="..\..\Core.cs" Link="Core.cs" />
+    <Compile Include="..\..\State.cs" Link="State.cs" />
+    <Compile Include="..\..\UserSettings.cs" Link="UserSettings.cs" />
+    <Compile Include="..\..\MusicTime.cs" Link="MusicTime.cs" />
     <Compile Include="..\mock\MockInterop.cs" Link="MockInterop.cs" />
     <Compile Include="..\mock\MockNAudio.cs" Link="MockNAudio.cs" />
     <Compile Include="..\mock\MockMidi.cs" Link="MockMidi.cs" />
