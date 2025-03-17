@@ -518,7 +518,7 @@ end
 -- @param arg optional argument string
 -- @return result string (table would be nice later)
 function neb_command(cmd, arg)
-    -- print('neb_command', cmd, arg)
+    M.log_info('>>> neb_command '..cmd..' '..arg)
     if cmd == 'unload_all' then  -- Unload everything so that the script can be reloaded.
         package.loaded.bar_time = nil
         package.loaded.debugger = nil
@@ -536,7 +536,7 @@ function neb_command(cmd, arg)
         end
         return sx.strjoin('|', res)
     else
-        M.log_info('Unknown cmd '..cmd..' '..arg)
+        M.log_info('Unknown cmd:'..cmd..' arg:'..arg)
         return '1'
     end
 end

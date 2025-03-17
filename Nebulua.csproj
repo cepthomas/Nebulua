@@ -31,27 +31,19 @@
 
   <ItemGroup>
     <Compile Remove="lib\**" />
-    <Compile Remove="Script\bin\**" />
-    <Compile Remove="Script\obj\**" />
-    <Compile Remove="Script\_LBOT\**" />
+    <Compile Remove="Script\**" />
     <Compile Remove="test\**" />
     <EmbeddedResource Remove="lib\**" />
-    <EmbeddedResource Remove="Script\bin\**" />
-    <EmbeddedResource Remove="Script\obj\**" />
-    <EmbeddedResource Remove="Script\_LBOT\**" />
+    <EmbeddedResource Remove="Script\**" />
     <EmbeddedResource Remove="test\**" />
     <None Remove="lib\**" />
-    <None Remove="Script\bin\**" />
-    <None Remove="Script\obj\**" />
-    <None Remove="Script\_LBOT\**" />
+    <None Remove="Script\**" />
     <None Remove="test\**" />
   </ItemGroup>
-
 
   <ItemGroup>
     <Content Include="Resources\app.ico" />
   </ItemGroup>
-
 
   <ItemGroup>
     <None Include="lua\**">
@@ -62,10 +54,10 @@
     </None>
   </ItemGroup>
 
-
-  <!-- <ItemGroup>
-    <ProjectReference Include="..\Interop\Interop.vcxproj" />
-  </ItemGroup> -->
+  <ItemGroup>
+    <None Remove="nebulua.sublime-project" />
+    <None Remove="nebulua.sublime-workspace" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
@@ -77,6 +69,10 @@
     <!-- <Reference Include="Script">
       <HintPath>lib\Script.dll</HintPath>
     </Reference> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Script\Script.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -98,10 +94,6 @@
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
     <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="Script\Script.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>

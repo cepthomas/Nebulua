@@ -112,7 +112,7 @@ namespace Nebulua
             }
 
             // Unload current modules so reload will be minty fresh. This fails gracefully if no script loaded yet.
-            _interop.NebCommand("unload_all", "no arg");
+            //TODO1 no _l yet! _interop.NebCommand("unload_all", "no arg");
 
             // Load and run the new script.
             _logger.Info($"Loading script file {_scriptFn}");
@@ -120,7 +120,6 @@ namespace Nebulua
             var appDir = Environment.CurrentDirectory;
             var scriptDir = Path.GetDirectoryName(_scriptFn);
             var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
-
             _interop.Run(_scriptFn, luaPath);
             State.Instance.ExecState = ExecState.Idle;
 

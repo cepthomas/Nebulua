@@ -366,19 +366,34 @@ namespace Nebulua
         {
             try
             {
-                _scriptFn = scriptFn;
 
-                _logger.Info(_scriptFn is null ? "Reloading script" : $"Loading script file {_scriptFn}");
+                if (scriptFn is not null)
+                {
+                    _scriptFn = scriptFn;
+                    _logger.Info($"Loading new script {_scriptFn}");
+                }
+                else if (_scriptFn is not null)
+                {
+                    _logger.Info($"Reloading script {_scriptFn}");
+                }
+                else
+                {
+                    _logger.Info($"No script loaded");
+                }
 
-                _core.LoadScript(_scriptFn); // may throw
+                if (_scriptFn is not null)
+                {
+                    _core.LoadScript(_scriptFn); // may throw
 
-                // Everything ok.
-                //var fn = _core.__scriptFn!;
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                _watcher.Filter = Path.GetFileName(_scriptFn)!;
-                _watcher.Path = Path.GetDirectoryName(_scriptFn)!;
-                _watcher.EnableRaisingEvents = true;
-                UserSettings.Current.UpdateMru(_scriptFn!);
+                    // Everything ok.
+                    //var fn = _core.__scriptFn!;
+                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
+                    _watcher.Filter = Path.GetFileName(_scriptFn)!;
+                    _watcher.Path = Path.GetDirectoryName(_scriptFn)!;
+                    _watcher.EnableRaisingEvents = true;
+                    UserSettings.Current.UpdateMru(_scriptFn!);
+                }
+
                 PopulateFileMenu();
 
                 timeBar.Invalidate(); // force update
