@@ -59,7 +59,7 @@ fp:close()
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels.
-local midi_in = "ClickClack"
+local midi_in = "ccMidiGen"
 local hin = api.create_input_channel(midi_in, 1)
 
 -- DAW or VST host.

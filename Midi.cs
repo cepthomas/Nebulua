@@ -60,7 +60,7 @@ namespace Nebulua
             Channels.ForEach(b => b = false);
 
             // Figure out which midi input device. Check internals first.
-            if (deviceName == "ClickClack")
+            if (deviceName == "ccMidiGen")
             {
                 // ok, do nothing.
                 valid = true;

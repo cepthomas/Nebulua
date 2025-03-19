@@ -12,7 +12,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
-    public class Cli : IDisposable
+    public class Cli : IDisposable // TODOF
     {
         #region Fields
         /// <summary>App logger.</summary>
@@ -600,4 +600,35 @@ namespace Nebulua
         }
         #endregion
     }
+
+    #region Console abstraction to support testing
+    public interface IConsole
+    {
+        bool KeyAvailable { get; }
+        bool CursorVisible { get; set; }
+        string Title { get; set; }
+        int BufferWidth { get; set; }
+        void Write(string text);
+        void WriteLine(string text);
+        string? ReadLine();
+        ConsoleKeyInfo ReadKey(bool intercept);
+        (int left, int top) GetCursorPosition();
+        void SetCursorPosition(int left, int top);
+    }
+    #endregion
+
+    public class RealConsole : IConsole
+    {
+        public bool KeyAvailable { get => Console.KeyAvailable; }
+        public bool CursorVisible { get => Console.CursorVisible; set => Console.CursorVisible = value; }
+        public string Title { get => Console.Title; set => Console.Title = value; }
+        public int BufferWidth { get => Console.BufferWidth; set => Console.BufferWidth = value; }
+        public string? ReadLine() { return Console.ReadLine(); }
+        public ConsoleKeyInfo ReadKey(bool intercept) { return Console.ReadKey(intercept); }
+        public void Write(string text) { Console.Write(text); }
+        public void WriteLine(string text) { Console.WriteLine(text); }
+        public void SetCursorPosition(int left, int top) { Console.SetCursorPosition(left, top); }
+        public (int left, int top) GetCursorPosition() { return Console.GetCursorPosition(); }
+    }
+
 }

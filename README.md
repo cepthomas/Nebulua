@@ -1,3 +1,42 @@
+
+===================================================
+
+x control inits in constructor
+
+
+x remove File system watcher
+
+x don't autoload script
+
+x Remove all cosmetics from controls.
+
+- TextViewer
+x InvokeIfRequired stuff
+
+<!-- public override Color BackColor
+{
+    get { return _rtb.BackColor; }
+    set { this.InvokeIfRequired(_ => _rtb.BackColor = value); }
+}
+
+long _tick = Stopwatch.GetTimestamp();
+
+
+void DoOne(string msg)
+{
+    double msec = 1000.0 * (Stopwatch.GetTimestamp() - _tick) / Stopwatch.Frequency;
+    _logger.Info($"{msec} {msg}");
+    _tick = Stopwatch.GetTimestamp();
+}
+ -->
+
+! removed all gui inits and watcher - seems to be fixed
+
+
+????
+AutoReload
+
+
 # Nebulua
 
 A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.

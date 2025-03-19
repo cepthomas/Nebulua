@@ -1,111 +1,115 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <!-- OutputType is Exe which opens a terminal used for cl flavor and script debugging. -->
-      <!-- OutputType>Exe</OutputType> -->
-    <OutputType>WinExe</OutputType>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <UseWindowsForms>true</UseWindowsForms>
+        <Version>1.2.0</Version>
+        <AssemblyName>Nebulua</AssemblyName>
+        <RootNamespace>Nebulua</RootNamespace>
 
-    <SelfContained>false</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <!-- https://stackoverflow.com/questions/67117053/ca1416-how-to-tell-builder-that-only-platform-is-windows-->
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <PlatformName>windows</PlatformName>
+        <Platforms>x64</Platforms>
+        <SelfContained>false</SelfContained>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 
-      <!--TODO1?? https://stackoverflow.com/questions/67117053/ca1416-how-to-tell-builder-that-only-platform-is-windows-->
-      <PlatformName>windows</PlatformName>
-      <Platforms>x64</Platforms>
-      
-      <!-- <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-      <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute> -->
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <NoWarn>CA1816;CA1822</NoWarn>
+        <Deterministic>False</Deterministic>
+        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+        <Company>Ephemera Inc</Company>
+        <Product>Nebulua</Product>
+        <Description>Play music with lua.</Description>
+        <Copyright>MIT License</Copyright>
+        <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+        <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+    </PropertyGroup>
 
-      <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <NoWarn>CA1816;CA1822</NoWarn>
-    <Deterministic>False</Deterministic>
-    <Version>1.2.0</Version>
-    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-    <AssemblyName>Nebulua</AssemblyName>
-    <RootNamespace>Nebulua</RootNamespace>
-    <Company>Ephemera Inc</Company>
-    <Product>Nebulua</Product>
-    <Description>Play music with lua.</Description>
-    <Copyright>MIT License</Copyright>
-    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-      
-      
-    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
-  </PropertyGroup>
+    <!-- <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="lib\**" />
-    <Compile Remove="Script\**" />
-    <Compile Remove="test\**" />
-    <EmbeddedResource Remove="lib\**" />
-    <EmbeddedResource Remove="Script\**" />
-    <EmbeddedResource Remove="test\**" />
-    <None Remove="lib\**" />
-    <None Remove="Script\**" />
-    <None Remove="test\**" />
-  </ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    </PropertyGroup> -->
 
-  <ItemGroup>
-    <Content Include="Resources\app.ico" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="Cli\**" />
+        <Compile Remove="lib\**" />
+        <Compile Remove="Script\**" />
+        <Compile Remove="test\**" />
+        <EmbeddedResource Remove="Cli\**" />
+        <EmbeddedResource Remove="lib\**" />
+        <EmbeddedResource Remove="Script\**" />
+        <EmbeddedResource Remove="test\**" />
+        <None Remove="Cli\**" />
+        <None Remove="lib\**" />
+        <None Remove="Script\**" />
+        <None Remove="test\**" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Include="lua\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="docs\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <Content Include="Resources\app.ico" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Update="README.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <None Include="lua\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="docs\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="nebulua.sublime-project" />
-    <None Remove="nebulua.sublime-workspace" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Update="README.md">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Ephemera.NBagOfTricks">
-      <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
-    </Reference>
-    <Reference Include="Ephemera.NBagOfUis">
-      <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
-    </Reference>
-    <!-- <Reference Include="Script">
-      <HintPath>lib\Script.dll</HintPath>
-    </Reference> -->
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="nebulua.sublime-project" />
+        <None Remove="nebulua.sublime-workspace" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="Script\Script.vcxproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Ephemera.NBagOfTricks">
+            <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
+        </Reference>
+        <Reference Include="Ephemera.NBagOfUis">
+            <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
+        </Reference>
+        <!-- <Reference Include="Script">
+          <HintPath>lib\Script.dll</HintPath>
+        </Reference> -->
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="Script\Script.vcxproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Properties\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NAudio.Midi" Version="2.2.1" />
-    <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Properties\Resources.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+        <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
+        <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
+    </ItemGroup>
 
 </Project>

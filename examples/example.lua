@@ -23,7 +23,7 @@ api.log_info('Loading example.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels.
-local midi_in = "ClickClack"
+local midi_in = "ccMidiGen"
 local hnd_ccin  = api.create_input_channel(midi_in, 1)
 
 -- DAW or VST host.
