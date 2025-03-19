@@ -3,6 +3,8 @@
 -- Impedance matching between C and Lua. Hides or translates the raw C interop.
 -- Manages note collections currently being played.
 
+local dbg = require("debugger")
+
 local li  = require("luainterop")
 local ut  = require("lbot_utils")
 local st  = require("step_types")
@@ -365,6 +367,8 @@ function M.process_comp()
     _section_info = {}
     -- Total length of composition.
     local length = 0
+
+    dbg()
 
     for isect, section in ipairs(_sections) do
         -- Process the section. Requires a name.

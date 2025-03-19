@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
+        <!-- Use Exe type to make console available. -->
+        <OutputType>Exe</OutputType>
+        <!-- <OutputType>WinExe</OutputType> -->
         <UseWindowsForms>true</UseWindowsForms>
         <Version>1.2.0</Version>
         <AssemblyName>Nebulua</AssemblyName>
@@ -37,15 +39,12 @@
     </PropertyGroup> -->
 
     <ItemGroup>
-        <Compile Remove="Cli\**" />
         <Compile Remove="lib\**" />
         <Compile Remove="Script\**" />
         <Compile Remove="test\**" />
-        <EmbeddedResource Remove="Cli\**" />
         <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Script\**" />
         <EmbeddedResource Remove="test\**" />
-        <None Remove="Cli\**" />
         <None Remove="lib\**" />
         <None Remove="Script\**" />
         <None Remove="test\**" />

@@ -27,11 +27,12 @@ namespace Nebulua
         string? _scriptFn = null;
         #endregion
 
+
         void DoOne(string msg)
         {
-            double msec = 1000.0 * (Stopwatch.GetTimestamp() - _tick) / Stopwatch.Frequency;
-            _logger.Info($"{msec} {msg}");
-            _tick = Stopwatch.GetTimestamp();
+            //double msec = 1000.0 * (Stopwatch.GetTimestamp() - _tick) / Stopwatch.Frequency;
+            //_logger.Info($"{msec} {msg}");
+            //_tick = Stopwatch.GetTimestamp();
         }
         long _tick = Stopwatch.GetTimestamp();
 
@@ -348,7 +349,7 @@ namespace Nebulua
             options.Add("Open...");
             if (_scriptFn is not null)
             {
-                options.Add("Reload");
+                options.Add("Reload"); // TODO1 better way?
             }
             if (UserSettings.Current.RecentFiles.Count > 0)
             {

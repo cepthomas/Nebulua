@@ -111,10 +111,10 @@ namespace Nebulua
                 throw new ArgumentException("Can't reload, no current file");
             }
 
-            // Unload current modules so reload will be minty fresh.
+            // Unload current modules so reload will be minty fresh. TODO1 need a more robust way than this
             if (_interop.ScriptLoaded())
             {
-                _interop.NebCommand("unload_all", "no arg"); //TODO1 need a more robust way than this
+                _interop.NebCommand("unload_all", "no arg");
             }
 
             // Load and run the new script.
@@ -122,9 +122,15 @@ namespace Nebulua
             // Set up runtime lua environment. The lua lib files, the dir containing the script file, ???
             var appDir = Environment.CurrentDirectory;
             var scriptDir = Path.GetDirectoryName(_scriptFn);
-            var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
+
+            //var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
+            var luaPath = $"{scriptDir}\\?.lua;\\Dev\\Apps\\Nebulua\\lua\\?.lua;;"; //TODO1 handle path for debugging.
+
+
             _interop.Run(_scriptFn, luaPath);
             State.Instance.ExecState = ExecState.Idle;
+
+            _interop.Setup();
 
             // Get info about the script.
             Dictionary<int, string> sectInfo = [];

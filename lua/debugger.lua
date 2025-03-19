@@ -618,6 +618,7 @@ end
 
 
 local color_maybe_supported = (stdout_isatty and os.getenv("TERM") and os.getenv("TERM") ~= "dumb")
+print(color_maybe_supported)
 if color_maybe_supported and not os.getenv("DBG_NOCOLOR") then
     dbg.enable_color()
 end
