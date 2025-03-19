@@ -1,6 +1,9 @@
 
 -- An example Nebulua composition file. 
 
+local dbg = require("debugger")
+--print(dd)
+
 -- Import modules this needs.
 local api = require("script_api")
 local mus = require("music_defs")
@@ -19,6 +22,7 @@ local ctrl = mid.controllers
 -- Say hello.
 api.log_info('Loading example.lua...')
 
+print('>>>>>>>>>>>>>>')
 
 ------------------------- Configuration -------------------------------
 
@@ -58,6 +62,7 @@ local mtom = drum.HiMidTom
 -- Forward refs.
 local _algo_func
 
+-- dbg()
 
 ------------------------- System Functions -----------------------------
 
@@ -74,6 +79,8 @@ function setup()
     api.set_volume(hnd_bass, 0.9)
     api.set_volume(hnd_synth, 0.6)
     api.set_volume(hnd_drums, 0.9)
+
+    dbg()
 
     -- This file uses static composition so you must call this!
     api.process_comp()
@@ -99,26 +106,26 @@ function step(tick)
 end
 
 -----------------------------------------------------------------------------
--- Handler for input note events. Optional.
-function rcv_note(chan_hnd, note_num, volume)
-    -- api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
+-- -- Handler for input note events. Optional.
+-- function rcv_note(chan_hnd, note_num, volume)
+--     -- api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
-    if chan_hnd == hnd_ccin then
-        -- Play the note.
-        api.send_note(hnd_synth, note_num, volume)--, 0)
-    end
-    return 0
-end
+--     if chan_hnd == hnd_ccin then
+--         -- Play the note.
+--         api.send_note(hnd_synth, note_num, volume)--, 0)
+--     end
+--     return 0
+-- end
 
 -----------------------------------------------------------------------------
--- Handlers for input controller events. Optional.
-function rcv_controller(chan_hnd, controller, value)
-    if chan_hnd == hnd_ccin then
-        -- Do something.
-        api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
-    end
-    return 0
-end
+-- -- Handlers for input controller events. Optional.
+-- function rcv_controller(chan_hnd, controller, value)
+--     if chan_hnd == hnd_ccin then
+--         -- Do something.
+--         api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
+--     end
+--     return 0
+-- end
 
 
 ----------------------- Local Functions ----------------------------------
@@ -187,9 +194,9 @@ local keys_chorus =
 local bass_verse =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|7   7   |        |        |        |        |        |        |        |", "C2" },
-    { "|        |        |        |    7   |        |        |        |        |", "E2" },
-    { "|        |        |        |        |        |        |        |    7   |", "A#2" },
+    { "|9-------|        |        |        |        |        |        |        |", "C2" },
+    { "|        |        |        |    9---|        |        |        |        |", "E2" },
+    { "|        |        |        |        |        |        |        |    9---|", "A#2" },
 }
 
 local bass_chorus =

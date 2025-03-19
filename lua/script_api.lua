@@ -368,7 +368,7 @@ function M.process_comp()
     -- Total length of composition.
     local length = 0
 
-    dbg()
+    -- dbg()
 
     for isect, section in ipairs(_sections) do
         -- Process the section. Requires a name.

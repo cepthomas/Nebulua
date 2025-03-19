@@ -119,13 +119,12 @@ namespace Nebulua
 
             // Load and run the new script.
             _logger.Info($"Loading script file {_scriptFn}");
-            // Set up runtime lua environment. The lua lib files, the dir containing the script file, ???
-            var appDir = Environment.CurrentDirectory;
+
+            // Set up runtime lua environment. The lua lib files, the dir containing the script file. TODO1 need an install process.
+            //var appDir = Environment.CurrentDirectory; // The bin dir.
+            var appDir = MiscUtils.GetSourcePath(); // The source dir.
             var scriptDir = Path.GetDirectoryName(_scriptFn);
-
-            //var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
-            var luaPath = $"{scriptDir}\\?.lua;\\Dev\\Apps\\Nebulua\\lua\\?.lua;;"; //TODO1 handle path for debugging.
-
+            var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
 
             _interop.Run(_scriptFn, luaPath);
             State.Instance.ExecState = ExecState.Idle;

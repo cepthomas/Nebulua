@@ -65,7 +65,6 @@ namespace Nebulua
             BackColor = UserSettings.Current.BackColor;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
-
             DoOne("22222");
 
             /////////////////////////////////////////////////////////////////////////
