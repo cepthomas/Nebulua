@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\interop\Interop.vcxproj" />
+    <ProjectReference Include="..\..\Script\Script.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>

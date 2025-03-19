@@ -111,8 +111,11 @@ namespace Nebulua
                 throw new ArgumentException("Can't reload, no current file");
             }
 
-            // Unload current modules so reload will be minty fresh. This fails gracefully if no script loaded yet.
-            //TODO1 no _l yet! _interop.NebCommand("unload_all", "no arg");
+            // Unload current modules so reload will be minty fresh.
+            if (_interop.ScriptLoaded())
+            {
+                _interop.NebCommand("unload_all", "no arg"); //TODO1 need a more robust way than this
+            }
 
             // Load and run the new script.
             _logger.Info($"Loading script file {_scriptFn}");

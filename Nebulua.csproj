@@ -2,18 +2,24 @@
 
   <PropertyGroup>
     <!-- OutputType is Exe which opens a terminal used for cl flavor and script debugging. -->
-    <OutputType>Exe</OutputType>
-    <!-- <OutputType>WinExe</OutputType> -->
+      <!-- OutputType>Exe</OutputType> -->
+    <OutputType>WinExe</OutputType>
 
     <SelfContained>false</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
-    <TargetFramework>net8.0-windows</TargetFramework>
+      <!--TODO1?? https://stackoverflow.com/questions/67117053/ca1416-how-to-tell-builder-that-only-platform-is-windows-->
+      <PlatformName>windows</PlatformName>
+      <Platforms>x64</Platforms>
+      
+      <!-- <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+      <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute> -->
+
+      <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>disable</ImplicitUsings>
-    <Platforms>x64</Platforms>
-    <NoWarn>1701;1702;CA1416;IDE1006;CS1591;CA1816;CS1587;CA1822</NoWarn>
+    <NoWarn>CA1816;CA1822</NoWarn>
     <Deterministic>False</Deterministic>
     <Version>1.2.0</Version>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
@@ -24,8 +30,8 @@
     <Description>Play music with lua.</Description>
     <Copyright>MIT License</Copyright>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+      
+      
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -50,6 +56,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="docs\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -94,12 +106,6 @@
     <PackageReference Include="NAudio.Midi" Version="2.2.1" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
     <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="README.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

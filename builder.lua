@@ -1,4 +1,4 @@
--- Used to build and test all parts of the Nebulua universe. TODO1
+-- Used to build and test all parts of the Nebulua universe.
 
 -- Fix up the lua path first.
 package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
@@ -84,12 +84,13 @@ elseif opt == 'gen_md' then
     f:close()
 
 elseif opt == 'gen_interop' then
-    -- Convert spec into interop files.
-    _output_text('Build: Generating interop...')
-    cmd = 'pushd "../../Libs/LuaBagOfTricks" & lua gen_interop.lua -ch '..current_dir..'/interop/interop_spec.lua '..current_dir..'/interop & popd'
-    print(cmd)
-    res = ut.execute_and_capture(cmd)
-    _output_text(res)
+    print('If you really need to do this, see https://github.com/cepthomas/Nebulua/blob/main/docs/tech_notes.md#building-script.')
+    -- -- Convert spec into interop files.
+    -- _output_text('Build: Generating interop...')
+    -- cmd = 'pushd "../../Libs/LuaBagOfTricks" & lua gen_interop.lua -ch '..current_dir..'/interop/interop_spec.lua '..current_dir..'/interop & popd'
+    -- print(cmd)
+    -- res = ut.execute_and_capture(cmd)
+    -- _output_text(res)
 
 elseif opt == 'dev' then
     local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }

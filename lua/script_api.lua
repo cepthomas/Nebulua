@@ -516,9 +516,9 @@ end
 --- Global function for App interaction with script internals.
 -- @param cmd specific command string
 -- @param arg optional argument string
--- @return result string (table would be nice later)
+-- @return result string
 function neb_command(cmd, arg)
-    M.log_info('>>> neb_command '..cmd..' '..arg)
+    -- M.log_info('>>> neb_command '..cmd..' '..arg)
     if cmd == 'unload_all' then  -- Unload everything so that the script can be reloaded.
         package.loaded.bar_time = nil
         package.loaded.debugger = nil

@@ -15,6 +15,9 @@ namespace Nebulua
         [STAThread]
         static void Main(string[] args)
         {
+            //AppDomain currentDomain = AppDomain.CurrentDomain;
+            //currentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             // Process cmd line args.
             switch (args.Length)
             {
@@ -36,6 +39,10 @@ namespace Nebulua
                     break;
             }
         }
+
+        //private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        //{
+        //}
     }
 
     public class RealConsole : IConsole

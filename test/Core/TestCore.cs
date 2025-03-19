@@ -3,26 +3,27 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
+using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-using Nebulua.Interop;
+using Script;
 
 
 namespace Nebulua.Test
 {
-    /// <summary>Test core functions.</summary>
-    public class CORE_BASIC : TestSuite // TODO1 fix all tests
+    /// <summary> Test core functions.</summary>
+    public class CORE_BASIC : TestSuite
     {
         public override void RunSuite()
         {
-            NebStatus stat;
-            var scriptFn = Path.Join(Utils.GetAppRoot(), "test", "lua", "script_happy.lua");
+            var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "..", "lua", "script_happy.lua");
 
             // Load the script.
             Core core = new();
             UT_NOT_NULL(core);
-            stat = core.LoadScript(scriptFn);
-            UT_EQUAL(stat, NebStatus.Ok);
+            core.LoadScript(scriptFn);
+            //stat = core.LoadScript(scriptFn);
+            //UT_EQUAL(stat, NebStatus.Ok);
 
             // Look inside private stuff:
             //void CallbackError(Exception e)

@@ -26,6 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Script\Script.vcxproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Ephemera.NBagOfTricks">
       <HintPath>..\..\lib\Ephemera.NBagOfTricks.dll</HintPath>
     </Reference>

@@ -2,10 +2,13 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
-using Ephemera.NBagOfTricks.PNUT;
-using Nebulua;
 using System.Runtime.CompilerServices;
 using System.Data;
+using Ephemera.NBagOfTricks.PNUT;
+using Nebulua;
+using InteropCore;
+using Script;
+
 
 
 namespace Nebulua.Test
@@ -44,22 +47,23 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             {
-                var ex = new AppInteropException("message111", "Bad App Interop");
+                var ex = new LuaException("message111");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_STRING_CONTAINS(msg, "message111");
                 UT_STRING_CONTAINS(msg, "Bad App Interop");
+                UT_STRING_CONTAINS(msg, "Lua Error: message222");
             }
 
             {
-                var ex = new ScriptSyntaxException("message222");
+                var ex = new SyntaxException("message222");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_STRING_CONTAINS(msg, "Script Syntax Error: message222");
             }
 
             {
-                var ex = new ApplicationArgumentException("message333");
+                var ex = new ArgumentException("message333");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_TRUE(fatal);
                 UT_STRING_CONTAINS(msg, "Application Argument Error: message333");

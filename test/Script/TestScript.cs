@@ -4,17 +4,31 @@ using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
-using Nebulua.Interop;
+using Nebulua;
+using Script;
 
 
 namespace Nebulua.Test
 {
     /// <summary>All success operations.</summary>
-    public class INTEROP_HAPPY : TestSuite
+    public class SCRIPT_HAPPY : TestSuite
     {
         public override void RunSuite()
         {
             UT_STOP_ON_FAIL(true);
+
+            //_core.LoadScript(_scriptFn); // may throw
+            var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "..", "lua", "script_happy.lua");
+
+            // Load the script.
+            Core core = new();
+            UT_NOT_NULL(core);
+            core.LoadScript(scriptFn); // may throw
+
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+
 
             // Create interop.
             var lpath = Utils.GetLuaPath();
@@ -72,7 +86,7 @@ namespace Nebulua.Test
     }
 
     /// <summary>Test basic failure modes.</summary>
-    public class INTEROP_FAIL : TestSuite
+    public class SCRIPT_FAIL : TestSuite
     {
         public override void RunSuite()
         {
