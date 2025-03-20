@@ -69,33 +69,24 @@ Nebulua
 |   etc...
 +---lua - lua modules for application
 |       bar_time.lua
-|       debugger.lua
-|       lbot_utils.lua
 |       midi_defs.lua
 |       music_defs.lua
 |       script_api.lua
 |       step_types.lua
-|       stringex.lua
++---LBOT - LuaBagOfTricks modules for application
 +---examples
 |       airport.lua
 |       example.lua
 +---docs - *.md
 +---lib - .NET dependencies
-+---test - various test code projects
-\---bin\x64\Debug\net8.0-windows - build products
+\---test - various test code projects
 ```
 
 
-## Building Script
+## Updating Script
 
-The Lua script interop should not need to be rebuilt after the api is finalized so the kind of ugly components
-used to build it are kept out of sight of the general public. If a change is required, do this:
-
-- Unzip `Script.zip` into a folder `...\Nebulua\Script` and cd into it.
-- Create a folder named `LBOT` with the contents of [this](https://github.com/cepthomas/LuaBagOfTricks). This can
-  be done using a git submodule, a hard copy, or a symlink to this repo in another location on your machine.
+The Lua script interop should not need to be rebuilt after the api is finalized.
+If a change is required, do this:
 - Edit `interop_spec.lua` with new changes.
 - Execute 'gen_interop.cmd'. This generates the code files to support the interop.
-- Execute 'build_interop.cmd'. This also copies artifacts to where they need to be.
 - Open `Nebulua.sln` and rebuild all.
-- When satisfied, zip the `Script` dir and replace the current `Script.zip` file.

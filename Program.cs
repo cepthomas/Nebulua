@@ -15,32 +15,26 @@ namespace Nebulua
         [STAThread]
         static void Main(string[] args)
         {
-            ApplicationConfiguration.Initialize();
-            Application.Run(new MainForm());
+            // Process cmd line args.
+            switch (args.Length)
+            {
+                case 0:
+                    ApplicationConfiguration.Initialize();
+                    Application.Run(new MainForm());
+                    break;
 
-            //AppDomain currentDomain = AppDomain.CurrentDomain;
-            //currentDomain.UnhandledException += CurrentDomain_UnhandledException;
+                case 1:
+                    var scriptFn = args[0];
+                    RealConsole console = new();
+                    var cli = new Cli(scriptFn, console);
+                    cli.Run();
+                    cli.Dispose();
+                    break;
 
-            // // Process cmd line args.
-            // switch (args.Length)
-            // {
-            //     case 0:
-            //         ApplicationConfiguration.Initialize();
-            //         Application.Run(new MainForm());
-            //         break;
-
-            //     case 1:
-            //         var scriptFn = args[0];
-            //         RealConsole console = new();
-            //         var cli = new Cli(scriptFn, console);
-            //         cli.Run();
-            //         cli.Dispose();
-            //         break;
-
-            //     default:
-            //         Console.WriteLine("Invalid command line");
-            //         break;
-            // }
+                default:
+                    Console.WriteLine("Invalid command line");
+                    break;
+            }
         }
     }
 }
