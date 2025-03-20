@@ -124,7 +124,7 @@ namespace Nebulua
             //var appDir = Environment.CurrentDirectory; // The bin dir.
             var appDir = MiscUtils.GetSourcePath(); // The source dir.
             var scriptDir = Path.GetDirectoryName(_scriptFn);
-            var luaPath = $"{scriptDir}\\?.lua;{appDir}\\lua\\?.lua;;";
+            var luaPath = $"{scriptDir}\\?.lua;{appDir}\\LBOT\\?.lua;{appDir}\\lua\\?.lua;;";
 
             _interop.Run(_scriptFn, luaPath);
             State.Instance.ExecState = ExecState.Idle;

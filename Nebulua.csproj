@@ -40,13 +40,10 @@
 
     <ItemGroup>
         <Compile Remove="lib\**" />
-        <Compile Remove="Script\**" />
         <Compile Remove="test\**" />
         <EmbeddedResource Remove="lib\**" />
-        <EmbeddedResource Remove="Script\**" />
         <EmbeddedResource Remove="test\**" />
         <None Remove="lib\**" />
-        <None Remove="Script\**" />
         <None Remove="test\**" />
     </ItemGroup>
 
@@ -54,20 +51,20 @@
         <Content Include="Resources\app.ico" />
     </ItemGroup>
 
-    <ItemGroup>
+    <!-- <ItemGroup>
         <None Include="lua\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Include="docs\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
+    </ItemGroup> -->
 
-    <ItemGroup>
+    <!-- <ItemGroup>
         <None Update="README.md">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
+    </ItemGroup> -->
 
     <ItemGroup>
         <None Remove="nebulua.sublime-project" />

@@ -28,7 +28,7 @@ namespace Nebulua
         #endregion
 
 
-        void DoOne(string msg)
+        void TimeIt(string msg)
         {
             //double msec = 1000.0 * (Stopwatch.GetTimestamp() - _tick) / Stopwatch.Frequency;
             //_logger.Info($"{msec} {msg}");
@@ -56,7 +56,7 @@ namespace Nebulua
             LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
-            DoOne("11111");
+            TimeIt("11111");
 
             // Main window.
             Location = UserSettings.Current.FormGeometry.Location;
@@ -65,7 +65,7 @@ namespace Nebulua
             BackColor = UserSettings.Current.BackColor;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
-            DoOne("22222");
+            TimeIt("22222");
 
             /////////////////////////////////////////////////////////////////////////
             // TODO1 Running in VS is very slow to startup. Not from running the exe.
@@ -269,7 +269,7 @@ namespace Nebulua
 
             ///////////////////////////////////
             btnGo.Click += (_, __) => Console.WriteLine("<<<<<< GOGOGOGO >>>>>");
-            DoOne("33333");
+            TimeIt("33333");
 
             //// Now ready to go live.
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
@@ -281,7 +281,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            DoOne("666666");
+            TimeIt("666666");
 
             PopulateFileMenu();
 
@@ -290,10 +290,10 @@ namespace Nebulua
                 OpenScriptFile(UserSettings.Current.RecentFiles[0]);
             }
 
-            DoOne("77777");
+            TimeIt("77777");
 
             base.OnLoad(e);
-            DoOne("88888");
+            TimeIt("88888");
         }
 
         /// <summary>
