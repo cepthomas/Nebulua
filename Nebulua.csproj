@@ -30,14 +30,6 @@
         <ApplicationIcon>Resources\app.ico</ApplicationIcon>
     </PropertyGroup>
 
-    <!-- <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    </PropertyGroup> -->
-
     <ItemGroup>
         <Compile Remove="lib\**" />
         <Compile Remove="test\**" />
