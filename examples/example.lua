@@ -1,8 +1,8 @@
 
 -- An example Nebulua composition file. 
 
+-- Use the debugger. For color output set env var 'TERM' and uncomment one of the dbg() statements.
 local dbg = require("debugger")
---print(dd)
 
 -- Import modules this needs.
 local api = require("script_api")
@@ -22,7 +22,6 @@ local ctrl = mid.controllers
 -- Say hello.
 api.log_info('Loading example.lua...')
 
-print('>>>>>>>>>>>>>>')
 
 ------------------------- Configuration -------------------------------
 
@@ -105,27 +104,27 @@ function step(tick)
     return 0
 end
 
------------------------------------------------------------------------------
--- -- Handler for input note events. Optional.
--- function rcv_note(chan_hnd, note_num, volume)
---     -- api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
+---------------------------------------------------------------------------
+-- Handler for input note events. Optional.
+function rcv_note(chan_hnd, note_num, volume)
+    -- api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
---     if chan_hnd == hnd_ccin then
---         -- Play the note.
---         api.send_note(hnd_synth, note_num, volume)--, 0)
---     end
---     return 0
--- end
+    if chan_hnd == hnd_ccin then
+        -- Play the note.
+        api.send_note(hnd_synth, note_num, volume)--, 0)
+    end
+    return 0
+end
 
------------------------------------------------------------------------------
--- -- Handlers for input controller events. Optional.
--- function rcv_controller(chan_hnd, controller, value)
---     if chan_hnd == hnd_ccin then
---         -- Do something.
---         api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
---     end
---     return 0
--- end
+---------------------------------------------------------------------------
+-- Handlers for input controller events. Optional.
+function rcv_controller(chan_hnd, controller, value)
+    if chan_hnd == hnd_ccin then
+        -- Do something.
+        api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
+    end
+    return 0
+end
 
 
 ----------------------- Local Functions ----------------------------------
@@ -141,8 +140,7 @@ end
 
 ------------------------- Composition ---------------------------------------
 
--- Sequences --
--- each sequence is 8 beats = 2 bars, section is 8 bars
+-- Sequences -- each sequence is 8 beats = 2 bars, section is 8 bars
 
 local quiet =
 {
@@ -206,7 +204,7 @@ local bass_chorus =
 }
 
 
--- each sequence is 8 beats = 2 bars, each section is 8 bars
+-- Sections -- each section is 8 bars
 --                       0             2             4             6
 api.sect_start("beginning")
 api.sect_chan(hnd_keys,  keys_verse,   keys_verse,   keys_verse,   keys_verse)

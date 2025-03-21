@@ -25,7 +25,6 @@ namespace Nebulua
             btnRewind = new Button();
             sldVolume = new Ephemera.NBagOfUis.Slider();
             sldTempo = new Ephemera.NBagOfUis.Slider();
-            // traffic = new TextViewerX();
             traffic = new Ephemera.NBagOfUis.TextViewer();
             btnAbout = new Button();
             btnKill = new Button();
@@ -270,7 +269,6 @@ namespace Nebulua
         private Button btnRewind;
         private Ephemera.NBagOfUis.Slider sldVolume;
         private Ephemera.NBagOfUis.Slider sldTempo;
-        // private TextViewerX traffic;
         private Ephemera.NBagOfUis.TextViewer traffic;
         private Button btnAbout;
         private Button btnKill;

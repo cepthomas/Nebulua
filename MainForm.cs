@@ -11,7 +11,10 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
+
 // TODO1 Tests are broken badly. Fix/replace?
+// TODOF Running in VS is very slow to startup but not running the exe or cli.
+
 
 namespace Nebulua
 {
@@ -68,48 +71,7 @@ namespace Nebulua
 
             TimeIt("22222");
 
-            /////////////////////////////////////////////////////////////////////////
-            // TODO1 Running in VS is very slow to startup. Not from running the exe.
-            // TODO1 Finalize the weird ui init stuff.
-
-
-            #region Init the controls - simple
-
-            //chkPlay.Click += Play_Click;
-            //chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
-            //chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
-            //chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
-            //chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
-            //chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
-            //btnRewind.Click += Rewind_Click;
-            //btnAbout.Click += About_Click;
-            //btnKill.Click += (_, __) => { _core!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
-            //btnSettings.Click += Settings_Click;
-            //sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
-            //sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
-            //traffic.MatchText.Add("ERR", Color.HotPink);
-            //traffic.MatchText.Add("WRN", Color.Coral);
-            //traffic.MatchText.Add("SND", Color.PaleGreen);
-            //traffic.MatchText.Add("RCV", Color.LightBlue);
-            //traffic.Font = new("Cascadia Mono", 9);
-            //traffic.Prompt = "";
-            //traffic.WordWrap = UserSettings.Current.WordWrap;
-            ////ccMidiGen.Name = "ClickClack";
-            ////ccMidiGen.MinX = 24; // C0
-            ////ccMidiGen.MaxX = 96; // C6
-            ////ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
-            ////ccMidiGen.MinY = 0; // min velocity == note off
-            ////ccMidiGen.MaxY = 127; // max velocity
-            ////ccMidiGen.GridY = [32, 64, 96];
-            //ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
-            //ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
-            //ddbtnFile.Enabled = true;
-            //ddbtnFile.Selected += File_Selected;
-
-            #endregion
-
-
-            #region Init the controls - moderate
+            #region Init the controls  TODO1 Finalize the weird ui init stuff
 
             timeBar.BackColor = UserSettings.Current.BackColor;
             timeBar.ProgressColor = UserSettings.Current.ControlColor;
@@ -188,92 +150,10 @@ namespace Nebulua
 
             #endregion
 
-            #region Init the controls - fancy
-
-            //timeBar.BackColor = UserSettings.Current.BackColor;
-            //timeBar.ProgressColor = UserSettings.Current.ControlColor;
-            //timeBar.MarkerColor = Color.Black;
-
-            //chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.ForeColor);
-            //chkPlay.BackColor = UserSettings.Current.BackColor;
-            //chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            //chkPlay.Click += Play_Click;
-
-            //chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.ForeColor);
-            //chkLoop.BackColor = UserSettings.Current.BackColor;
-            //chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            //chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
-
-            //chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            //chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
-            //chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            //chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
-            //chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
-
-            //chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            //chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
-            //chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            //chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
-            //chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
-
-            //btnRewind.BackColor = UserSettings.Current.BackColor;
-            //btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
-            //btnRewind.Click += Rewind_Click;
-
-            //btnAbout.BackColor = UserSettings.Current.BackColor;
-            //btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.ForeColor);
-            //btnAbout.Click += About_Click;
-
-            //btnKill.BackColor = UserSettings.Current.BackColor;
-            //btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
-            //btnKill.Click += (_, __) => { _core!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
-
-            //btnSettings.BackColor = UserSettings.Current.BackColor;
-            //btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
-            //btnSettings.Click += Settings_Click;
-
-            //sldVolume.BackColor = UserSettings.Current.BackColor;
-            //sldVolume.DrawColor = UserSettings.Current.ControlColor;
-            //sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
-
-            //sldTempo.BackColor = UserSettings.Current.BackColor;
-            //sldTempo.DrawColor = UserSettings.Current.ControlColor;
-            //sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
-
-            //traffic.BackColor = UserSettings.Current.BackColor;
-            //traffic.MatchText.Add("ERR", Color.HotPink);
-            //traffic.MatchText.Add("WRN", Color.Coral);
-            //traffic.MatchText.Add("SND", Color.PaleGreen);
-            //traffic.MatchText.Add("RCV", Color.LightBlue);
-            //traffic.Font = new("Cascadia Mono", 9);
-            //traffic.Prompt = "";
-            //traffic.WordWrap = UserSettings.Current.WordWrap;
-
-            //ccMidiGen.Name = "ccMidiGen";
-            //ccMidiGen.MinX = 24; // C0
-            //ccMidiGen.MaxX = 96; // C6
-            //ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
-            //ccMidiGen.MinY = 0; // min velocity == note off
-            //ccMidiGen.MaxY = 127; // max velocity
-            //ccMidiGen.GridY = [32, 64, 96];
-            //ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
-            //ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
-
-            //ddbtnFile.Image = GraphicsUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.ForeColor);
-            //ddbtnFile.BackColor = UserSettings.Current.BackColor;
-            //ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            //ddbtnFile.Enabled = true;
-            //ddbtnFile.Selected += File_Selected;
-
-            #endregion
-
-
-            ///////////////////////////////////
-            btnGo.Click += (_, __) => Console.WriteLine("<<<<<< GOGOGOGO >>>>>");
-            TimeIt("33333");
-
-            //// Now ready to go live.
+            // btnGo.Click += (_, __) => Console.WriteLine("<<<<<< GOGOGOGO >>>>>");
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+
+            TimeIt("33333");
         }
 
         /// <summary>
@@ -349,7 +229,7 @@ namespace Nebulua
             options.Add("Open...");
             if (_scriptFn is not null)
             {
-                options.Add("Reload"); // TODO1 better way?
+                options.Add("Reload"); // TODO1 better ui way?
             }
             if (UserSettings.Current.RecentFiles.Count > 0)
             {
