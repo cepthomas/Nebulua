@@ -31,10 +31,16 @@
 
     <ItemGroup>
         <Compile Remove="lib\**" />
+        <Compile Remove="Script\bin\**" />
+        <Compile Remove="Script\obj\**" />
         <Compile Remove="test\**" />
         <EmbeddedResource Remove="lib\**" />
+        <EmbeddedResource Remove="Script\bin\**" />
+        <EmbeddedResource Remove="Script\obj\**" />
         <EmbeddedResource Remove="test\**" />
         <None Remove="lib\**" />
+        <None Remove="Script\bin\**" />
+        <None Remove="Script\obj\**" />
         <None Remove="test\**" />
     </ItemGroup>
 

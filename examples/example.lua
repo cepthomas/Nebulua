@@ -26,18 +26,18 @@ api.log_info('Loading example.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels.
-local midi_in = "ccMidiGen"
-local hnd_ccin  = api.create_input_channel(midi_in, 1)
+local hnd_ccin  = api.create_input_channel("ccMidiGen", 1)
 
 -- DAW or VST host.
 local use_host = false
 
-local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
+local midi_out  = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
 local hnd_keys  = api.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
 local hnd_bass  = api.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
 local hnd_synth = api.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
 local hnd_drums = api.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
 
+local hnd_ccout = api.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.Pad3Polysynth))
 
 ------------------------- Variables -----------------------------------
 
@@ -78,6 +78,7 @@ function setup()
     api.set_volume(hnd_bass, 0.9)
     api.set_volume(hnd_synth, 0.6)
     api.set_volume(hnd_drums, 0.9)
+    api.set_volume(hnd_ccout, 0.9)
 
     -- dbg()
 
@@ -105,11 +106,11 @@ end
 ---------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, volume)
-    -- api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
+    api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
 
     if chan_hnd == hnd_ccin then
         -- Play the note.
-        api.send_note(hnd_synth, note_num, volume)--, 0)
+        api.send_note(hnd_ccout, note_num, volume)--, 0)
     end
     return 0
 end

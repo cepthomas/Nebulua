@@ -33,14 +33,13 @@ namespace Nebulua
         #endregion
 
 
-        void TimeIt(string msg)
-        {
-            //double msec = 1000.0 * (Stopwatch.GetTimestamp() - _tick) / Stopwatch.Frequency;
-            //_logger.Info($"{msec} {msg}");
-            //_tick = Stopwatch.GetTimestamp();
-        }
-        long _tick = Stopwatch.GetTimestamp();
-
+        //void TimeIt(string msg)
+        //{
+        //    double msec = 1000.0 * (Stopwatch.GetTimestamp() - _tick) / Stopwatch.Frequency;
+        //    _logger.Info($"{msec} {msg}");
+        //    _tick = Stopwatch.GetTimestamp();
+        //}
+        //long _tick = Stopwatch.GetTimestamp();
 
 
         #region Lifecycle
@@ -63,7 +62,7 @@ namespace Nebulua
             LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
-            TimeIt("11111");
+            //TimeIt("11111");
 
             // Main window.
             Location = UserSettings.Current.FormGeometry.Location;
@@ -72,50 +71,48 @@ namespace Nebulua
             BackColor = UserSettings.Current.BackColor;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
-            TimeIt("22222");
-
-            #region Init the controls  TODO1 Finalize the weird ui init stuff
+            #region Init the controls
 
             timeBar.BackColor = UserSettings.Current.BackColor;
             timeBar.ProgressColor = UserSettings.Current.ControlColor;
             timeBar.MarkerColor = Color.Black;
 
-            //chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.ForeColor);
+            chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.ForeColor);
             chkPlay.BackColor = UserSettings.Current.BackColor;
             chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            //chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.ForeColor);
+            chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.ForeColor);
             chkLoop.BackColor = UserSettings.Current.BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            //chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
+            chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
             chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
 
             chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            //chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
+            chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
             chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
 
             btnRewind.BackColor = UserSettings.Current.BackColor;
-            //btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
+            btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
             btnRewind.Click += Rewind_Click;
 
             btnAbout.BackColor = UserSettings.Current.BackColor;
-            //btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.ForeColor);
+            btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.ForeColor);
             btnAbout.Click += About_Click;
 
             btnKill.BackColor = UserSettings.Current.BackColor;
-            //btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
+            btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
             btnKill.Click += (_, __) => { _core!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
-            //btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
+            btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
             btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = UserSettings.Current.BackColor;
@@ -144,8 +141,8 @@ namespace Nebulua
             ccMidiGen.GridY = [32, 64, 96];
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
-
-            //ddbtnFile.Image = GraphicsUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.ForeColor);
+            
+            ddbtnFile.Image = GraphicsUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.ForeColor);
             ddbtnFile.BackColor = UserSettings.Current.BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
@@ -156,7 +153,7 @@ namespace Nebulua
             // btnGo.Click += (_, __) => Console.WriteLine("<<<<<< GOGOGOGO >>>>>");
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-            TimeIt("33333");
+            //TimeIt("33333");
         }
 
         /// <summary>
@@ -165,7 +162,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            TimeIt("666666");
+            //TimeIt("666666");
 
             PopulateFileMenu();
 
@@ -174,10 +171,10 @@ namespace Nebulua
                 OpenScriptFile(UserSettings.Current.RecentFiles[0]);
             }
 
-            TimeIt("77777");
+            //TimeIt("77777");
 
             base.OnLoad(e);
-            TimeIt("88888");
+            //TimeIt("88888");
         }
 
         /// <summary>
@@ -412,7 +409,7 @@ namespace Nebulua
                 string name = ((ClickClack)sender!).Name;
                 int x = (int)e.X;
                 int y = (int)e.Y;
-                _core.InjectReceiveEvent(name, 1, x, y < 0 ? 0 : y);
+                _core.InjectReceiveEvent(name, 1, x, y < 0 ? 0 : y); //Click clack needs a  channel number //!!!!!!!!!!!!!!!!!!!
             }
         }
 
