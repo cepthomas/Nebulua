@@ -10,6 +10,7 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
+using System.Reflection;
 
 
 // TODO1 Tests are broken badly. Fix/replace?
@@ -50,6 +51,8 @@ namespace Nebulua
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
+
+            Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
 
             KeyPreview = true; // for routing kbd strokes properly
 

@@ -13,10 +13,10 @@ using namespace Script;
 //============= C# => C functions .cpp =============//
 
 //--------------------------------------------------------//
-int Interop::Setup()
+String^ Interop::Setup()
 {
     LOCK();
-    int ret = luainterop_Setup(_l);
+    String^ ret = gcnew String(luainterop_Setup(_l));
     EvalLuaInteropStatus(luainterop_Error(), "Setup()");
     return ret; 
 }

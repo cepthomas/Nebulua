@@ -135,7 +135,7 @@ public:
 
     /// <summary>Setup</summary>
     /// <returns>Script return</returns>
-    int Setup();
+    String^ Setup();
 
     /// <summary>Step</summary>
     /// <param name="tick">Current tick 0 => N</param>

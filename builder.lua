@@ -87,7 +87,7 @@ elseif opt == 'gen_interop' then
     print('If you really need to do this, see https://github.com/cepthomas/Nebulua/blob/main/docs/tech_notes.md#updating-script.')
 
 elseif opt == 'dev' then
-    local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller' }
+    local exp_neb = {'lua_interop', 'setup', 'step', 'rcv_note', 'rcv_controller' }
     extra, missing = ut.check_globals(exp_neb)
     res = ut.dump_list(extra)
     _output_text('extra:'..res)

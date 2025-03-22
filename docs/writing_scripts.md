@@ -152,7 +152,9 @@ Change the play tempo.
 ```lua
 function api.process_comp()
 ```
-If it's a static composition call this in setup();
+If it's a static composition call this in setup().
+
+- return: Meta info about the composition for internal use.
 
 
 ```lua

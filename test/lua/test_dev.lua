@@ -26,7 +26,7 @@ function M.suite_1(pn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
     -- Process the data.
-    api.process_comp()
+    local meta = api.process_comp()
 
     local dumpfn = '_dump.txt'
     api.dump_steps(dumpfn, 's') -- diagnostic

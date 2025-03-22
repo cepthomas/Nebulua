@@ -56,7 +56,7 @@ namespace Nebulua
             Interop.SetTempo += Interop_SetTempo;
 
             // State change handler.
-            //State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
         }
 
         /// <summary>
@@ -111,11 +111,11 @@ namespace Nebulua
                 throw new ArgumentException("Can't reload, no current file");
             }
 
-            // Unload current modules so reload will be minty fresh. TODO1 need a more robust way than this
-            if (_interop.ScriptLoaded())
-            {
-                _interop.NebCommand("unload_all", "no arg");
-            }
+            // // Unload current modules so reload will be minty fresh.
+            // if (_interop.ScriptLoaded())
+            // {
+            //     _interop.NebCommand("unload_all", "");
+            // }
 
             // Load and run the new script.
             _logger.Info($"Loading script file {_scriptFn}");
@@ -128,13 +128,11 @@ namespace Nebulua
             _interop.Run(_scriptFn, luaPath);
             State.Instance.ExecState = ExecState.Idle;
 
-            _interop.Setup();
-
+            string smeta = _interop.Setup();
             // Get info about the script.
+            // string smeta = _interop.NebCommand("section_info", "");
             Dictionary<int, string> sectInfo = [];
-            string sinfo = _interop.NebCommand("section_info", "no arg");
-
-            var chunks = sinfo.SplitByToken("|");
+            var chunks = smeta.SplitByToken("|");
             foreach (var chunk in chunks)
             {
                 var elems = chunk.SplitByToken(",");
@@ -186,24 +184,24 @@ namespace Nebulua
             State.Instance.ExecState = ExecState.Idle;
         }
 
-        ///// <summary>
-        ///// Handler for state changes of interest. Doesn't throw.
-        ///// Responsible for core stuff like tempo, kill.
-        ///// </summary>
-        ///// <param name="_"></param>
-        ///// <param name="name">Specific State value.</param>
-        //void State_ValueChangeEvent(object? _, string name)
-        //{
-        //    switch (name)
-        //    {
-        //        case "CurrentTick":
-        //            break;
+        /// <summary>
+        /// Handler for state changes of interest. Doesn't throw.
+        /// Responsible for core stuff like tempo, kill.
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="name">Specific State value.</param>
+        void State_ValueChangeEvent(object? _, string name)
+        {
+            switch (name)
+            {
+                case "CurrentTick":
+                    break;
 
-        //        case "Tempo":
-        //            SetTimer(State.Instance.Tempo);
-        //            break;
-        //    }
-        //}
+                case "Tempo":
+                    SetTimer(State.Instance.Tempo);
+                    break;
+            }
+        }
 
         /// <summary>
         /// Process events. These are on the client UI thread now. Doesn't throw.
@@ -402,16 +400,15 @@ namespace Nebulua
                 }
 
                 int note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
-                int velocity = MathUtils.Constrain((int)(e.volume * MidiDefs.MIDI_VAL_MAX), 0, MidiDefs.MIDI_VAL_MAX);
+
+                // Check for note off.
+                var vol = e.volume * State.Instance.Volume;
+                int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MIDI_VAL_MAX), 0, MidiDefs.MIDI_VAL_MAX);
+                MidiEvent evt = vel == 0?
+                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, note_num, 0) :
+                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, note_num, vel);
 
                 var output = _outputs[index];
-                MidiEvent evt;
-
-                // Check velocity for note off.
-                evt = e.volume == 0 ?
-                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOff, note_num, 0) :
-                    new NoteEvent(0, chan_num, MidiCommandCode.NoteOn, note_num, velocity);
-
                 output.Send(evt);
 
                 if (UserSettings.Current.MonitorSnd)

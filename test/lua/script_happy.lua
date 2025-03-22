@@ -36,15 +36,13 @@ local chord_notes = mus.get_notes_from_string("C4.o7")
 -----------------------------------------------------------------------------
 -- Init stuff. Required function.
 function setup()
-    api.process_comp() -- required if using composition
-
     -- Set master volumes.
     api.set_volume(hnd_piano, 0.6)
     api.set_volume(hnd_drums, 0.9)
 
     api.set_tempo(95)
 
-    return 0
+    return api.process_comp() -- required if using composition
 end
 
 -----------------------------------------------------------------------------

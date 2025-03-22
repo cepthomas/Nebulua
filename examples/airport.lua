@@ -62,7 +62,7 @@ function setup()
 
     -- api.log_info(string.format('setup %s', tostring(valid )))
 
-    return 0
+    return ''
 end
 
 -----------------------------------------------------------------------------

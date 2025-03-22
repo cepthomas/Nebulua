@@ -1,7 +1,7 @@
 
 -- An example Nebulua composition file. 
 
--- Use the debugger. For color output set env var 'TERM' and uncomment one of the dbg() statements.
+-- Use the debugger. For color output set env var 'TERM' and provide a dbg() statement.
 local dbg = require("debugger")
 
 -- Import modules this needs.
@@ -79,12 +79,10 @@ function setup()
     api.set_volume(hnd_synth, 0.6)
     api.set_volume(hnd_drums, 0.9)
 
-    dbg()
+    -- dbg()
 
     -- This file uses static composition so you must call this!
-    api.process_comp()
-
-    return 0
+    return api.process_comp()
 end
 
 -----------------------------------------------------------------------------

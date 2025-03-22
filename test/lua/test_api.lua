@@ -98,14 +98,9 @@ function M.suite_process_script(pn)
     pn.UT_TRUE(ok, string.format("Failed to load script: %s\n  => %s ", scrfn, scr))
 
     -- Process the data.
-    api.process_comp()
-
+    local meta = api.process_comp()
     -- api.dump_steps('_steps.txt', 's') -- diagnostic
-
-    -- execute neb_command
-    local res = neb_command('section_info', '')
-    pn.UT_TRUE(sx.contains(res, '_LENGTH,768'))
-    -- print(ut.dump_table_string(_section_info, 0, '_section_info'))
+    pn.UT_TRUE(sx.contains(meta, '_LENGTH,768'))
 
     -- Look inside.
     -- local steps, transients = _mole()

@@ -42,7 +42,7 @@ local mtom = drum.HiMidTom
 
 -- Example of how to check for extraneous and missing globals.
 local function _gcheck()
-    local exp_neb = {'lua_interop', 'neb_command', 'setup', 'step', 'rcv_note', 'rcv_controller'}
+    local exp_neb = {'lua_interop', 'setup', 'step', 'rcv_note', 'rcv_controller'}
     local extra, missing = ut.check_globals(exp_neb)
     api.log_debug('extra:'..ut.dump_list(extra))
     api.log_debug('missing:'..ut.dump_list(missing))
@@ -125,7 +125,7 @@ function setup()
     -- How fast you wanna go?
     api.set_tempo(80)
 
-    return 0
+    return 'nada'
 end
 
 -----------------------------------------------------------------------------

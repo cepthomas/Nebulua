@@ -17,8 +17,8 @@ extern "C" {
 
 // Call to initialize Nebulator and composition.
 // @param[in] l Internal lua state.
-// @return int Unused
-int luainterop_Setup(lua_State* l);
+// @return const char* Script meta info if composition
+const char* luainterop_Setup(lua_State* l);
 
 // Called every fast timer increment aka tick.
 // @param[in] l Internal lua state.

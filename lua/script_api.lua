@@ -25,9 +25,6 @@ local M = {}
 -- All the sections defined in the script.
 local _sections = {}
 
--- Key is section name, value is start tick. Total length is the last element.
-local _section_info = {}
-
 -- For parsing script sections.
 local _current_section = nil
 
@@ -355,17 +352,20 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
 end
 
 -----------------------------------------------------------------------------
------------------ Composition stuff? ----------------------------------------
+----------------- Composition stuff -----------------------------------------
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
---- Process all sections into discrete steps.
+--- Process all sections into discrete steps. Return meta info about composition.
 function M.process_comp()
     -- Hard reset.
     _steps = {}
     _transients = {}
-    _section_info = {}
-    -- Total length of composition.
+
+    -- Key is section name, value is start tick. Total length is the last element.
+    local section_info = {}
+
+    -- Accumulate length of composition.
     local length = 0
 
     -- dbg()
@@ -380,14 +380,22 @@ function M.process_comp()
         M.parse_section(section, length)
 
         -- Save info about section.
-        _section_info[section.name] = section.start
+        section_info[section.name] = section.start
 
         -- Keep track of overall time.
         length = length + section.length
     end
 
     -- All done. Tack on the total.
-    _section_info["_LENGTH"] = length
+    section_info["_LENGTH"] = length
+
+    -- Stringify the meta.
+    local res = {}
+    for k, v in pairs(section_info) do
+        table.insert(res, k..','..v)
+    end
+
+    return sx.strjoin('|', res)
 end
 
 -----------------------------------------------------------------------------
@@ -516,34 +524,24 @@ function M.dump_steps(fn, which)
     fp:close()
 end
 
------------------------------------------------------------------------------
---- Global function for App interaction with script internals.
--- @param cmd specific command string
--- @param arg optional argument string
--- @return result string
-function neb_command(cmd, arg)
-    -- M.log_info('>>> neb_command '..cmd..' '..arg)
-    if cmd == 'unload_all' then  -- Unload everything so that the script can be reloaded.
-        package.loaded.bar_time = nil
-        package.loaded.debugger = nil
-        package.loaded.lbot_utils = nil
-        package.loaded.midi_defs = nil
-        package.loaded.music_defs = nil
-        package.loaded.script_api = nil
-        package.loaded.step_types = nil
-        package.loaded.stringex = nil
-        return '0'
-    elseif cmd == 'section_info' then -- Return the collected section information.
-        local res = {}
-        for k, v in pairs(_section_info) do
-            table.insert(res, k..','..v)
-        end
-        return sx.strjoin('|', res)
-    else
-        M.log_info('Unknown cmd:'..cmd..' arg:'..arg)
-        return '1'
-    end
-end
+-- -----------------------------------------------------------------------------
+-- --- Global function for App interaction with script internals.
+-- -- @param cmd specific command string
+-- -- @param arg optional argument string
+-- -- @return result string
+-- function neb_command(cmd, arg)
+--     -- M.log_info('neb_command '..cmd..' '..arg)
+--     if cmd == 'section_info' then -- Return the collected section information.
+--         local res = {}
+--         for k, v in pairs(_section_info) do
+--             table.insert(res, k..','..v)
+--         end
+--         return sx.strjoin('|', res)
+--     else
+--         M.log_info('Unknown cmd:'..cmd..' arg:'..arg)
+--         return '1'
+--     end
+-- end
 
 -----------------------------------------------------------------------------
 -- Return module.

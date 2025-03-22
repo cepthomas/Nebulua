@@ -18,7 +18,7 @@ M.script_funcs =
         required = "true",
         description = "Call to initialize Nebulator and composition.",
         -- no args
-        ret = { type = "I", description = "Unused" }
+        ret = { type = "S", description = "Script meta info if composition" }
     },
 
     {
