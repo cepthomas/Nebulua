@@ -105,7 +105,7 @@ namespace Nebulua
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
             traffic.Prompt = "";
-            traffic.Size = new Size(835, 179);
+            traffic.Size = new Size(835, 190);
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
@@ -207,7 +207,7 @@ namespace Nebulua
             // ccMidiGen
             // 
             ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            ccMidiGen.Location = new Point(52, 332);
+            ccMidiGen.Location = new Point(52, 343);
             ccMidiGen.MaxX = 100;
             ccMidiGen.MaxY = 100;
             ccMidiGen.MinX = 0;
@@ -240,7 +240,7 @@ namespace Nebulua
             // 
             AutoScaleDimensions = new SizeF(8F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(865, 520);
+            ClientSize = new Size(865, 531);
             Controls.Add(btnGo);
             Controls.Add(ddbtnFile);
             Controls.Add(ccMidiGen);

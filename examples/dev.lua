@@ -59,8 +59,7 @@ fp:close()
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels.
-local midi_in = "ccMidiGen"
-local hin = api.create_input_channel(midi_in, 1)
+local hin = api.create_input_channel("ccMidiGen", 1)
 
 -- DAW or VST host.
 local use_host = false

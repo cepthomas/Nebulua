@@ -12,7 +12,7 @@ It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulat
 ## Caveats
 
 - Currently this is a build-and-run-it-yourself configuration. Eventually an installer may be provided.
-- Building this solution requires [this](https://github.com/cepthomas/LuaBagOfTricks) in a folder named `LBOT`
+- Building this solution requires [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks) in a folder named `LBOT`
   at the top level. This can be done one of several ways:
   - git submodule
   - copy of pertinent parts

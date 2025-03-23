@@ -158,7 +158,6 @@ namespace Nebulua
                 NoteEvent nevt = velocity > 0 ?
                     new NoteOnEvent(0, channel, noteNum, velocity, 0) :
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
-
                 Midi_ReceiveEvent(input, nevt);
             }
             else
@@ -306,7 +305,7 @@ namespace Nebulua
 
         #region Script Event Handlers
         /// <summary>
-        /// 
+        /// Script creates an input channel.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -341,7 +340,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// 
+        /// Script creates an output channel.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>

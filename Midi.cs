@@ -40,6 +40,9 @@ namespace Nebulua
             set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); _capturing = value; }
         }
         bool _capturing = false;
+
+        /// <summary>Simulated midi input device names.</summary>
+        public List<string> InternalMidiInputs { get; set; } = [];
         #endregion
 
         #region Events
@@ -60,12 +63,12 @@ namespace Nebulua
             Channels.ForEach(b => b = false);
 
             // Figure out which midi input device. Check internals first.
-            if (deviceName == "ccMidiGen")
+            if (InternalMidiInputs.Contains(deviceName))
             {
-                // ok, do nothing.
+                // ok, do nothing midi.
                 valid = true;
             }
-            else // Real device.
+            else // Try real device.
             {
                 for (int i = 0; i < MidiIn.NumberOfDevices; i++)
                 {
@@ -85,7 +88,11 @@ namespace Nebulua
                 List<string> devs = ["Valid midi inputs:"];
                 for (int i = 0; i < MidiIn.NumberOfDevices; i++)
                 {
-                    devs.Add($"\"{MidiIn.DeviceInfo(i).ProductName}\"");
+                    devs.Add($"[{MidiIn.DeviceInfo(i).ProductName}]");
+                }
+                for (int i = 0; i < InternalMidiInputs.Count; i++)
+                {
+                    devs.Add($"[{MidiIn.DeviceInfo(i).ProductName}]");
                 }
                 throw new SyntaxException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
             }
@@ -178,7 +185,7 @@ namespace Nebulua
                 List<string> devs = ["Valid midi outputs:"];
                 for (int i = 0; i < MidiOut.NumberOfDevices; i++)
                 {
-                    devs.Add($"\"{MidiOut.DeviceInfo(i).ProductName}\"");
+                    devs.Add($"[{MidiOut.DeviceInfo(i).ProductName}]");
                 }
                 throw new SyntaxException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
             }

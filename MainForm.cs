@@ -14,7 +14,8 @@ using System.Reflection;
 
 
 // TODO1 Tests are broken badly. Fix/replace?
-// TODOF Running in VS is very slow to startup but not running the exe or cli.
+
+// TODOF Running in VS is slow to startup. Running the exe or cli is quick.
 
 
 namespace Nebulua
@@ -501,15 +502,15 @@ namespace Nebulua
         void About_Click(object? sender, EventArgs e)
         {
             // Consolidate docs.
-            var appDir = Environment.CurrentDirectory;
+            var srcDir = MiscUtils.GetSourcePath();
             var files = new List<string>()
             {
-                Path.Join(appDir, "README.md"),
-                Path.Join(appDir, "docs", "definitions.md"),
-                Path.Join(appDir, "docs", "writing_scripts.md"),
-                Path.Join(appDir, "docs", "midi_defs.md"),
-                Path.Join(appDir, "docs", "music_defs.md"),
-                Path.Join(appDir, "docs", "tech_notes.md"),
+                Path.Join(srcDir, "README.md"),
+                Path.Join(srcDir, "docs", "definitions.md"),
+                Path.Join(srcDir, "docs", "writing_scripts.md"),
+                Path.Join(srcDir, "docs", "midi_defs.md"),
+                Path.Join(srcDir, "docs", "music_defs.md"),
+                Path.Join(srcDir, "docs", "tech_notes.md"),
             };
 
             List<string> ls = [];
@@ -538,7 +539,7 @@ namespace Nebulua
             }
 
             var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
-            var docfn = Path.Join(appDir, "doc.html");
+            var docfn = Path.Join(srcDir, "doc.html");
             File.WriteAllText(docfn, html);
             new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
         }
