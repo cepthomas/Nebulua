@@ -42,10 +42,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="MidXi.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="Resources\app.ico" />
     </ItemGroup>
 
@@ -76,9 +72,6 @@
         <Reference Include="Ephemera.NBagOfUis">
             <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
         </Reference>
-        <!-- <Reference Include="Script">
-          <HintPath>lib\Script.dll</HintPath>
-        </Reference> -->
     </ItemGroup>
 
     <ItemGroup>

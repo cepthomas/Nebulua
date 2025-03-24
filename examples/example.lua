@@ -25,14 +25,13 @@ api.log_info('Loading example.lua...')
 
 ------------------------- Configuration -------------------------------
 
--- Specify midi channels.
+-- Specify midi channels. Note that yours will be different!
 local hnd_ccin  = api.create_input_channel("ccMidiGen", 1)
-local hnd_inxx  = api.create_input_channel("loopMIDI Port", 7)
+local hnd_lmin  = api.create_input_channel("loopMIDI Port", 7)
 
 -- DAW or VST host.
-local use_host = false
-
-local midi_out  = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
+-- local midi_out  = "loopMIDI Port"
+local midi_out  = "VirtualMIDISynth #1"
 local hnd_keys  = api.create_output_channel(midi_out, 1,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
 local hnd_bass  = api.create_output_channel(midi_out, 2,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
 local hnd_synth = api.create_output_channel(midi_out, 3,  ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))

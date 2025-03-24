@@ -89,11 +89,6 @@ namespace Nebulua
                 new("reload",   's',  "reload current script",         "",                      ReloadCmd)
             ];
 
-            //if (_core.Error.Length > 0)
-            //{
-            //    _logger.Error(_core.Error);
-            //}
-
             try
             {
                 // Script file validity checked in LoadScript().

@@ -40,9 +40,6 @@ namespace Nebulua
             set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); _capturing = value; }
         }
         bool _capturing = false;
-
-        // /// <summary>Simulated midi input device names.</summary>
-        // public List<string> InternalMidiInputs { get; set; } = []; // TODO0
         #endregion
 
         #region Events
@@ -82,52 +79,6 @@ namespace Nebulua
                 _midiIn = null;
             }
         }
-
-        //public MidiInput(string deviceName) // TODO1 remove
-        //{
-        //    bool valid = false;
-        //    DeviceName = deviceName;
-        //    Channels.ForEach(b => b = false);
-
-        //    // Figure out which midi input device. Check internals first.
-        //    if (InternalMidiInputs.Contains(deviceName))
-        //    {
-        //        // ok, do nothing midi.
-        //        valid = true;
-        //    }
-        //    else // Try real device.
-        //    {
-        //        for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-        //        {
-        //            if (deviceName == MidiIn.DeviceInfo(i).ProductName)
-        //            {
-        //                _midiIn = new MidiIn(i);
-        //                _midiIn.MessageReceived += MidiIn_MessageReceived;
-        //                _midiIn.ErrorReceived += MidiIn_ErrorReceived;
-        //                valid = true;
-        //                break;
-        //            }
-        //        }
-        //    }
-
-        //    if (!valid)
-        //    {
-        //        List<string> devs = ["Valid midi inputs:"];
-        //        for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-        //        {
-        //            devs.Add($"[{MidiIn.DeviceInfo(i).ProductName}]");
-        //        }
-        //        for (int i = 0; i < InternalMidiInputs.Count; i++)
-        //        {
-        //            devs.Add($"[{MidiIn.DeviceInfo(i).ProductName}]");
-        //        }
-        //        throw new SyntaxException($"Invalid input device name: {deviceName}. {string.Join(" ", devs)}");
-        //    }
-        //    else
-        //    {
-        //        CaptureEnable = true;
-        //    }
-        //}
 
         /// <summary>
         /// Resource clean up.

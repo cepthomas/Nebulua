@@ -131,7 +131,10 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     if valid then
-        -- Do something. TODO1 pattern matching like F#/C#?
+        -- Do something. TODO1 pattern matching like F#/C#? >>>
+        -- https://stackoverflow.com/questions/37447704
+        -- http://lua-users.org/wiki/SwitchStatement
+
 
         local bar, beat, sub = bt.tick_to_bt(tick)
 

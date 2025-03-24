@@ -14,8 +14,8 @@ using System.Reflection;
 
 
 // TODO1 Tests are broken badly. Fix/replace?
-
-// TODOF Running in VS is slow to startup. Running the exe or cli is quick.
+// TODOF Running in VS debugger has slow startup. Running the exe or cli is ok.
+// TODOF Big delay in playing notes with clickclack.
 
 
 namespace Nebulua
@@ -141,7 +141,6 @@ namespace Nebulua
 
             #endregion
 
-            // btnGo.Click += (_, __) => Console.WriteLine("<<<<<< GOGOGOGO >>>>>");
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             Utils.TimeIt("MainForm() exit");
@@ -287,7 +286,6 @@ namespace Nebulua
                     _core.LoadScript(_scriptFn); // may throw
 
                     // Everything ok.
-                    //var fn = _core.__scriptFn!;
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
                     UserSettings.Current.UpdateMru(_scriptFn!);
                 }
@@ -367,7 +365,7 @@ namespace Nebulua
             }
             else // something wrong
             {
-                //State.Instance.ExecState = ExecState.Dead;
+                // State.Instance.ExecState = ExecState.Dead;
             }
         }
 
@@ -396,7 +394,7 @@ namespace Nebulua
                 string name = ((ClickClack)sender!).Name;
                 int x = (int)e.X; // note
                 int y = (int)e.Y; // velocity
-                _core.InjectReceiveEvent(name, 1, x, y); // TODO0
+                _core.InjectReceiveEvent(name, 1, x, y);
                 Utils.TimeIt("CcMidiGen_MouseClickEvent() exit");
             }
         }

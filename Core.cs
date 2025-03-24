@@ -142,7 +142,7 @@ namespace Nebulua
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
-        public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity) // TODO0
+        public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             Utils.TimeIt("InjectReceiveEvent() enter");
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
@@ -262,7 +262,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Midi_ReceiveEvent(object? sender, MidiEvent e) // TODO0
+        void Midi_ReceiveEvent(object? sender, MidiEvent e)
         {
             Utils.TimeIt("Midi_ReceiveEvent() enter");
             try
@@ -309,11 +309,11 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_CreateInputChannel(object? _, CreateInputChannelArgs e) // TODO0
+        void Interop_CreateInputChannel(object? _, CreateInputChannelArgs e)
         {
             try
             {
-                e.ret = 0; // chan_hnd default means invalid
+                e.ret = 0;
 
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)

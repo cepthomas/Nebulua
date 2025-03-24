@@ -67,11 +67,11 @@ namespace Nebulua
                 _lastTick = tick;
             }
 
-            //double durMsec = 1000.0 * (tick - _lastTick) / Stopwatch.Frequency;
-            //double totMsec = 1000.0 * (tick - _startTick) / Stopwatch.Frequency;
-            //var s = $"dur:{durMsec} tot:{totMsec} {msg}";
-            ////_logger.Info(s);
-            //Console.WriteLine(s);
+            double durMsec = 1000.0 * (tick - _lastTick) / Stopwatch.Frequency;
+            double totMsec = 1000.0 * (tick - _startTick) / Stopwatch.Frequency;
+            var s = $"dur:{durMsec} tot:{totMsec} {msg}";
+            //_logger.Info(s);
+            // Console.WriteLine(s);
             _lastTick = tick;
         }
     }

@@ -29,10 +29,7 @@ namespace Nebulua
         #region Properties that notify
         public ExecState ExecState
         {
-            get
-            {
-                return _execState;
-            }
+            get { return _execState; }
             set
             {
                 if (value != _execState)
@@ -46,10 +43,7 @@ namespace Nebulua
         /// <summary>Where are we in composition.</summary>
         public int CurrentTick
         {
-            get
-            {
-                return _currentTick;
-            }
+            get { return _currentTick; }
             set
             {
                 _currentTick = value;
@@ -61,10 +55,7 @@ namespace Nebulua
         /// <summary>Current tempo in bpm.</summary>
         public int Tempo
         {
-            get
-            {
-                return _tempo;
-            }
+            get { return _tempo; }
             set
             {
                 if (value != _tempo)
@@ -80,10 +71,7 @@ namespace Nebulua
         /// <summary>Parts of the composition plus total length. If empty, notes are generated dynamically.</summary>
         public List<(int tick, string name)> SectionInfo
         {
-            get
-            {
-                return _sectionInfo;
-            }
+            get { return _sectionInfo; }
             set
             {
                 // Init internals.
