@@ -33,16 +33,6 @@ namespace Nebulua
         string? _scriptFn = null;
         #endregion
 
-
-        //void TimeIt(string msg)
-        //{
-        //    double msec = 1000.0 * (Stopwatch.GetTimestamp() - _tick) / Stopwatch.Frequency;
-        //    _logger.Info($"{msec} {msg}");
-        //    _tick = Stopwatch.GetTimestamp();
-        //}
-        //long _tick = Stopwatch.GetTimestamp();
-
-
         #region Lifecycle
         /// <summary>
         /// Constructor inits most of the UI.
@@ -63,7 +53,7 @@ namespace Nebulua
             LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
-            //TimeIt("11111");
+            Utils.TimeIt("MainForm() enter");
 
             // Main window.
             Location = UserSettings.Current.FormGeometry.Location;
@@ -154,7 +144,7 @@ namespace Nebulua
             // btnGo.Click += (_, __) => Console.WriteLine("<<<<<< GOGOGOGO >>>>>");
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-            //TimeIt("33333");
+            Utils.TimeIt("MainForm() exit");
         }
 
         /// <summary>
@@ -163,8 +153,6 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            //TimeIt("666666");
-
             PopulateFileMenu();
 
             if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
@@ -172,10 +160,7 @@ namespace Nebulua
                 OpenScriptFile(UserSettings.Current.RecentFiles[0]);
             }
 
-            //TimeIt("77777");
-
             base.OnLoad(e);
-            //TimeIt("88888");
         }
 
         /// <summary>
@@ -407,10 +392,12 @@ namespace Nebulua
         {
             if (e.X is not null && e.Y is not null)
             {
+                Utils.TimeIt("CcMidiGen_MouseClickEvent() enter");
                 string name = ((ClickClack)sender!).Name;
-                int x = (int)e.X;
-                int y = (int)e.Y;
-                _core.InjectReceiveEvent(name, 1, x, y < 0 ? 0 : y); //Click clack needs a  channel number //!!!!!!!!!!!!!!!!!!!
+                int x = (int)e.X; // note
+                int y = (int)e.Y; // velocity
+                _core.InjectReceiveEvent(name, 1, x, y); // TODO0
+                Utils.TimeIt("CcMidiGen_MouseClickEvent() exit");
             }
         }
 

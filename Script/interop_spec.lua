@@ -98,32 +98,9 @@ M.host_funcs =
         args =
         {
             { name = "dev_name", type = "S", description = "Midi device name" },
-            { name = "chan_num", type = "I", description = "Midi channel number 1 => 16" },
+            { name = "chan_num", type = "I", description = "Midi channel number 1 => 16 or 0 => all" },
         },
         ret = { type = "I", description = "Channel handle or 0 if invalid" }
-    },
-
-    {
-        lua_func_name = "log",
-        host_func_name = "Log",
-        description = "Script wants to log something.",
-        args =
-        {
-            { name = "level", type = "I", description = "Log level" },
-            { name = "msg", type = "S", description = "Log message" },
-        },
-        ret = { type = "I", description = "Unused" }
-    },
-
-    {
-        lua_func_name = "set_tempo",
-        host_func_name = "SetTempo",
-        description = "Script wants to change tempo.",
-        args =
-        {
-            { name = "bpm", type = "I", description = "BPM 40 => 240" },
-        },
-        ret = { type = "I", description = "Unused" }
     },
 
     {
@@ -148,6 +125,29 @@ M.host_funcs =
             { name = "chan_hnd", type = "I", description = "Output channel handle" },
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
+        },
+        ret = { type = "I", description = "Unused" }
+    },
+
+    {
+        lua_func_name = "log",
+        host_func_name = "Log",
+        description = "Script wants to log something.",
+        args =
+        {
+            { name = "level", type = "I", description = "Log level" },
+            { name = "msg", type = "S", description = "Log message" },
+        },
+        ret = { type = "I", description = "Unused" }
+    },
+
+    {
+        lua_func_name = "set_tempo",
+        host_func_name = "SetTempo",
+        description = "Script wants to change tempo.",
+        args =
+        {
+            { name = "bpm", type = "I", description = "BPM 40 => 240" },
         },
         ret = { type = "I", description = "Unused" }
     },

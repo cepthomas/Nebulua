@@ -1,7 +1,7 @@
 
 -- An example Nebulua composition file. 
 
--- Use the debugger. For color output set env var 'TERM' and provide a dbg() statement.
+-- Use the debugger, trigger with a dbg() statement. For color output set env var 'TERM'.
 local dbg = require("debugger")
 
 -- Import modules this needs.
@@ -27,17 +27,18 @@ api.log_info('Loading example.lua...')
 
 -- Specify midi channels.
 local hnd_ccin  = api.create_input_channel("ccMidiGen", 1)
+local hnd_inxx  = api.create_input_channel("loopMIDI Port", 7)
 
 -- DAW or VST host.
 local use_host = false
 
 local midi_out  = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
-local hnd_keys  = api.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
-local hnd_bass  = api.create_output_channel(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
-local hnd_synth = api.create_output_channel(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
+local hnd_keys  = api.create_output_channel(midi_out, 1,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = api.create_output_channel(midi_out, 2,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
+local hnd_synth = api.create_output_channel(midi_out, 3,  ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
 local hnd_drums = api.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
 
-local hnd_ccout = api.create_output_channel(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.Pad3Polysynth))
+local hnd_ccout = api.create_output_channel(midi_out, 6, ut.tern(use_host, mid.NO_PATCH, inst.StringEnsemble1))
 
 ------------------------- Variables -----------------------------------
 
@@ -107,6 +108,7 @@ end
 -- Handler for input note events. Optional.
 function rcv_note(chan_hnd, note_num, volume)
     api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
+    api.log_debug(string.format(">>> chan_hnd:%d hnd_ccin:%d", chan_hnd, hnd_ccin))
 
     if chan_hnd == hnd_ccin then
         -- Play the note.

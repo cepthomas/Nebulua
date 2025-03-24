@@ -83,7 +83,7 @@ namespace Nebulua
         }
         #endregion
 
-        #region Primary workers
+        #region Public workers
         /// <summary>
         /// Load and execute script. Can throw.
         /// </summary>
@@ -110,12 +110,6 @@ namespace Nebulua
             {
                 throw new ArgumentException("Can't reload, no current file");
             }
-
-            // // Unload current modules so reload will be minty fresh.
-            // if (_interop.ScriptLoaded())
-            // {
-            //     _interop.NebCommand("unload_all", "");
-            // }
 
             // Load and run the new script.
             _logger.Info($"Loading script file {_scriptFn}");
@@ -148,8 +142,9 @@ namespace Nebulua
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
-        public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
+        public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity) // TODO0
         {
+            Utils.TimeIt("InjectReceiveEvent() enter");
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
 
             if (input is not null)
@@ -164,6 +159,7 @@ namespace Nebulua
             {
                 CallbackError(new SyntaxException($"Invalid internal device:{devName}"));
             }
+            Utils.TimeIt("InjectReceiveEvent() exit");
         }
 
         /// <summary>
@@ -183,7 +179,9 @@ namespace Nebulua
             // Hard reset.
             State.Instance.ExecState = ExecState.Idle;
         }
+        #endregion
 
+        #region Event handlers
         /// <summary>
         /// Handler for state changes of interest. Doesn't throw.
         /// Responsible for core stuff like tempo, kill.
@@ -264,8 +262,9 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Midi_ReceiveEvent(object? sender, MidiEvent e)
+        void Midi_ReceiveEvent(object? sender, MidiEvent e) // TODO0
         {
+            Utils.TimeIt("Midi_ReceiveEvent() enter");
             try
             {
                 int index = _inputs.IndexOf((MidiInput)sender!);
@@ -300,16 +299,17 @@ namespace Nebulua
             {
                 _logger.Exception(ex);
             }
+            Utils.TimeIt("Midi_ReceiveEvent() exit");
         }
         #endregion
 
-        #region Script Event Handlers
+        #region Script => Host Callbacks
         /// <summary>
         /// Script creates an input channel.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_CreateInputChannel(object? _, CreateInputChannelArgs e)
+        void Interop_CreateInputChannel(object? _, CreateInputChannelArgs e) // TODO0
         {
             try
             {
@@ -330,12 +330,20 @@ namespace Nebulua
                     _inputs.Add(input);
                 }
 
-                input.Channels[e.chan_num - 1] = true;
+                if (e.chan_num == 0) // listen to all
+                {
+                    Enumerable.Range(0, MidiDefs.NUM_MIDI_CHANNELS).ForEach(ch => input.Channels[ch] = true);
+                }
+                else
+                {
+                    input.Channels[e.chan_num - 1] = true;
+                }
+
                 e.ret = MakeInHandle(_inputs.Count - 1, e.chan_num);
             }
             catch (Exception ex)
             {
-                _logger.Exception(ex);
+                CallbackError(ex);
             }
         }
 
@@ -376,17 +384,18 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                _logger.Exception(ex);
+                CallbackError(ex);
             }
         }
 
         /// <summary>
-        /// 
+        /// Script wants to send a midi note.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
         void Interop_SendNote(object? _, SendNoteArgs e)
         {
+            Utils.TimeIt("Interop_SendNote() enter");
             try
             {
                 e.ret = 0; // not used
@@ -418,12 +427,13 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                _logger.Exception(ex);
+                CallbackError(ex);
             }
+            Utils.TimeIt("Interop_SendNote() exit");
         }
 
         /// <summary>
-        /// 
+        /// Script wants to send a midi controller.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -458,12 +468,12 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                _logger.Exception(ex);
+                CallbackError(ex);
             }
         }
 
         /// <summary>
-        /// 
+        /// Script wants to change tempo.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -484,12 +494,12 @@ namespace Nebulua
             {
                 //e.Ret = 1;
                 SetTimer(0);
-                throw new SyntaxException($"Invalid tempo: {e.bpm}");
+                CallbackError(new SyntaxException($"SCRIPT Invalid tempo: {e.bpm}"));
             }
         }
 
         /// <summary>
-        /// Log something from script.
+        /// Script wants to log something.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>

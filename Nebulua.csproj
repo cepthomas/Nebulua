@@ -31,17 +31,18 @@
 
     <ItemGroup>
         <Compile Remove="lib\**" />
-        <Compile Remove="Script\bin\**" />
-        <Compile Remove="Script\obj\**" />
+        <Compile Remove="Script\**" />
         <Compile Remove="test\**" />
         <EmbeddedResource Remove="lib\**" />
-        <EmbeddedResource Remove="Script\bin\**" />
-        <EmbeddedResource Remove="Script\obj\**" />
+        <EmbeddedResource Remove="Script\**" />
         <EmbeddedResource Remove="test\**" />
         <None Remove="lib\**" />
-        <None Remove="Script\bin\**" />
-        <None Remove="Script\obj\**" />
+        <None Remove="Script\**" />
         <None Remove="test\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="MidXi.cs" />
     </ItemGroup>
 
     <ItemGroup>
