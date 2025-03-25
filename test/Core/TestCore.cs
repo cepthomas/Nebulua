@@ -9,7 +9,7 @@ using Nebulua;
 using Script;
 
 
-namespace Nebulua.Test
+namespace TestCore
 {
     /// <summary> Test core functions.</summary>
     public class CORE_BASIC : TestSuite
@@ -17,6 +17,8 @@ namespace Nebulua.Test
         public override void RunSuite()
         {
             var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "..", "lua", "script_happy.lua");
+
+            Interop.CreateOutputChannel += Interop_CreateOutputChannel;
 
             // Load the script.
             Core core = new();
@@ -42,6 +44,11 @@ namespace Nebulua.Test
 
             // Clean up.
             core.Dispose();
+        }
+
+        private void Interop_CreateOutputChannel(object? sender, CreateOutputChannelArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 

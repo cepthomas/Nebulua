@@ -5,6 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using InteropCore;
+using Script;
 
 
 namespace Nebulua

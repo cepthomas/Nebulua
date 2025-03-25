@@ -6,16 +6,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Reflection;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
-using System.Reflection;
 
 
 // TODO1 Tests are broken badly. Fix/replace?
 // TODOF Running in VS debugger has slow startup. Running the exe or cli is ok.
-// TODOF Big delay in playing notes with clickclack.
+// TODO1 Big delay in playing notes with clickclack. May be VirtualMIDISynth? Try reaper.
+// TODO1 fix/tweak lsp lua:
+// C:/Dev/Apps/Nebulua/nebulua.sublime-project) has build, lsp options
+// C:\Users\cepth\AppData\Roaming\Sublime Text\Packages\User\LSP-lua.sublime-settings
 
 
 namespace Nebulua
@@ -214,7 +217,7 @@ namespace Nebulua
             options.Add("Open...");
             if (_scriptFn is not null)
             {
-                options.Add("Reload"); // TODO1 better ui way?
+                options.Add("Reload"); // TODOF better ui way?
             }
             if (UserSettings.Current.RecentFiles.Count > 0)
             {

@@ -89,5 +89,5 @@ The Lua script interop should not need to be rebuilt after the api is finalized.
 If a change is required, do this:
 - Go to the `Script` folder.
 - Edit `interop_spec.lua` with new changes.
-- Execute 'gen_interop.cmd'. This generates the code files to support the interop.
+- Execute `gen_interop.cmd`. This generates the code files to support the interop.
 - Open `Nebulua.sln` and rebuild all.
