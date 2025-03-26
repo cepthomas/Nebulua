@@ -1,0 +1,225 @@
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.IO;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfTricks.PNUT;
+using Nebulua;
+using Script;
+
+
+namespace Test
+{
+    /// <summary>All success operations.</summary>
+    public class SCRIPT_HAPPY : TestSuite
+    {
+        public override void RunSuite()
+        {
+            UT_STOP_ON_FAIL(true);
+
+            //_core.LoadScript(_scriptFn); // may throw
+            var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "..", "lua", "script_happy.lua");
+
+            // Load the script. 
+            HostCore hostCore = new();
+            hostCore.LoadScript(scriptFn); // may throw
+
+            UT_NOT_NULL(hostCore);
+
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+
+
+            // Create interop.
+            var lpath = Utils.GetLuaPath();
+            Interop interop = new(lpath);
+
+            EventCollector events = new(interop);
+            string scrfn = Path.Join(Utils.GetAppRoot(), "test", "lua", "script_happy.lua");
+            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+
+            // Load the script.
+            NebStatus stat = interop.OpenScript(scrfn);
+            UT_EQUAL(interop.Error, "");
+            UT_EQUAL(stat, NebStatus.Ok);
+            UT_EQUAL(events.CollectedEvents.Count, 7);
+
+            //// Have a look inside.
+            //UT_EQUAL(interop.SectionInfo.Count, 4);
+            //// Fake valid loaded script.
+            //State.Instance.InitSectionInfo(interop.SectionInfo);
+
+            // Run script steps.
+            events.CollectedEvents.Clear();
+            for (int i = 0; i < 99; i++)
+            {
+                stat = interop.Step(State.Instance.CurrentTick++);
+
+                // Inject some received midi events.
+                if (i % 20 == 0)
+                {
+                    stat = interop.RcvNote(0x0102, i, (double)i / 100);
+                    UT_EQUAL(stat, NebStatus.Ok);
+                }
+
+                if (i % 20 == 5)
+                {
+                    stat = interop.RcvController(0x0102, i, i);
+                    UT_EQUAL(stat, NebStatus.Ok);
+                }
+            }
+
+            UT_EQUAL(events.CollectedEvents.Count, 122);
+        }
+
+        void State_ValueChangeEvent(object? sender, string name)
+        {
+            switch (name)
+            {
+                case "CurrentTick":
+                    // if (sender != this) {}
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    /// <summary>Test basic failure modes.</summary>
+    public class SCRIPT_FAIL : TestSuite
+    {
+        public override void RunSuite()
+        {
+            UT_STOP_ON_FAIL(true);
+
+            // Program.MyInterop!.Dispose();
+            //var interop = Program.MyInterop!;
+
+            var tempfn = "_test_temp.lua";
+
+            // General syntax error during load.
+            {
+                var lpath = Utils.GetLuaPath();
+                AppInterop interop = new(lpath);
+
+                File.WriteAllText(tempfn,
+                    @"local api = require(""script_api"")
+                    this is a bad statement
+                    end");
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_STRING_CONTAINS(interop.Error, "syntax error near 'is'");
+                UT_EQUAL(stat, NebStatus.SyntaxError);
+            }
+
+            // Missing required C2L element - luainterop_Setup(_ltest, &iret);
+            {
+                var lpath = Utils.GetLuaPath();
+                AppInterop interop = new(lpath);
+
+                File.WriteAllText(tempfn,
+                    @"local api = require(""script_api"")
+                    resx = 345 + 456");
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_STRING_CONTAINS(interop.Error, "Bad function name: setup()");
+                UT_EQUAL(stat, NebStatus.SyntaxError);
+            }
+
+            // Bad L2C function
+            {
+                var lpath = Utils.GetLuaPath();
+                AppInterop interop = new(lpath);
+
+                File.WriteAllText(tempfn,
+                    @"local api = require(""script_api"")
+                    function setup()
+                        api.no_good(95)
+                        return 0
+                    end");
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_STRING_CONTAINS(interop.Error, "attempt to call a nil value (field 'no_good')");
+                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
+            }
+
+            // General explicit error.
+            {
+                var lpath = Utils.GetLuaPath();
+                AppInterop interop = new(lpath);
+
+                File.WriteAllText(tempfn,
+                    @"local api = require(""script_api"")
+                    function setup()
+                        error(""setup() raises error()"")
+                        return 0
+                    end");
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_STRING_CONTAINS(interop.Error, "setup() raises error()");
+                UT_EQUAL(stat, NebStatus.SyntaxError);
+            }
+
+            // Runtime error.
+            {
+                var lpath = Utils.GetLuaPath();
+                AppInterop interop = new(lpath);
+
+                File.WriteAllText(tempfn,
+                    @"local api = require(""script_api"")
+                    function setup()
+                        local bad = 123 + ng
+                        return 0
+                    end");
+                NebStatus stat = interop.OpenScript(tempfn);
+                UT_STRING_CONTAINS(interop.Error, "attempt to perform arithmetic on a nil value (global 'ng')");
+                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
+            }
+        }
+    }
+
+    /// <summary>Hook used to capture events from test target.</summary>
+    internal class EventCollector
+    {
+        public List<string> CollectedEvents { get; set; }
+
+        readonly AppInterop _interop;
+
+        public EventCollector(AppInterop interop)
+        {
+            _interop = interop;
+            CollectedEvents = [];
+
+            // Hook script events.
+            AppInterop.CreateChannel += Interop_CreateChannel;
+            AppInterop.Send += Interop_Send;
+            AppInterop.Log += Interop_Log;
+            AppInterop.PropertyChange += Interop_PropertyChange;
+        }
+
+        void Interop_CreateChannel(object? sender, CreateChannelArgs e)
+        {
+            string s = $"CreateChannel DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
+            CollectedEvents.Add(s);
+            e.Ret = 0x0102;
+        }
+
+        void Interop_Send(object? sender, SendArgs e)
+        {
+            string s = $"Send ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
+            CollectedEvents.Add(s);
+            e.Ret = (int)NebStatus.Ok;
+        }
+
+        void Interop_Log(object? sender, LogArgs e)
+        {
+            string s = $"Log LogLevel:{e.LogLevel} Message:{e.Message}";
+            CollectedEvents.Add(s);
+            e.Ret = (int)NebStatus.Ok;
+        }
+
+        void Interop_PropertyChange(object? sender, PropertyArgs e)
+        {
+            string s = $"PropertyChange Bpm:{e.Bpm}";
+            CollectedEvents.Add(s);
+            e.Ret = (int)NebStatus.Ok;
+        }
+    }
+}
