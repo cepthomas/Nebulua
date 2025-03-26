@@ -6,9 +6,6 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace Script
-{
-
 //============= C => C# callback payload .h =============//
 
 //--------------------------------------------------------//
@@ -38,7 +35,7 @@ public ref class CreateInputChannelArgs : public EventArgs
 public:
     /// <summary>Midi device name</summary>
     property String^ dev_name;
-    /// <summary>Midi channel number 1 => 16</summary>
+    /// <summary>Midi channel number 1 => 16 or 0 => all</summary>
     property int chan_num;
     /// <summary>Channel handle or 0 if invalid</summary>
     property int ret;
@@ -47,39 +44,6 @@ public:
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
-    }
-};
-
-//--------------------------------------------------------//
-public ref class LogArgs : public EventArgs
-{
-public:
-    /// <summary>Log level</summary>
-    property int level;
-    /// <summary>Log message</summary>
-    property String^ msg;
-    /// <summary>Unused</summary>
-    property int ret;
-    /// <summary>Constructor.</summary>
-    LogArgs(int level, const char* msg)
-    {
-        this->level = level;
-        this->msg = gcnew String(msg);
-    }
-};
-
-//--------------------------------------------------------//
-public ref class SetTempoArgs : public EventArgs
-{
-public:
-    /// <summary>BPM 40 => 240</summary>
-    property int bpm;
-    /// <summary>Unused</summary>
-    property int ret;
-    /// <summary>Constructor.</summary>
-    SetTempoArgs(int bpm)
-    {
-        this->bpm = bpm;
     }
 };
 
@@ -125,9 +89,42 @@ public:
     }
 };
 
+//--------------------------------------------------------//
+public ref class LogArgs : public EventArgs
+{
+public:
+    /// <summary>Log level</summary>
+    property int level;
+    /// <summary>Log message</summary>
+    property String^ msg;
+    /// <summary>Unused</summary>
+    property int ret;
+    /// <summary>Constructor.</summary>
+    LogArgs(int level, const char* msg)
+    {
+        this->level = level;
+        this->msg = gcnew String(msg);
+    }
+};
+
+//--------------------------------------------------------//
+public ref class SetTempoArgs : public EventArgs
+{
+public:
+    /// <summary>BPM 40 => 240</summary>
+    property int bpm;
+    /// <summary>Unused</summary>
+    property int ret;
+    /// <summary>Constructor.</summary>
+    SetTempoArgs(int bpm)
+    {
+        this->bpm = bpm;
+    }
+};
+
 
 //----------------------------------------------------//
-public ref class Interop : InteropCore::Core
+public ref class Interop : InteropCore
 {
 
 //============= C# => C functions .h =============//
@@ -170,17 +167,17 @@ public:
     static event EventHandler<CreateInputChannelArgs^>^ CreateInputChannel;
     static void Notify(CreateInputChannelArgs^ args) { CreateInputChannel(nullptr, args); }
 
-    static event EventHandler<LogArgs^>^ Log;
-    static void Notify(LogArgs^ args) { Log(nullptr, args); }
-
-    static event EventHandler<SetTempoArgs^>^ SetTempo;
-    static void Notify(SetTempoArgs^ args) { SetTempo(nullptr, args); }
-
     static event EventHandler<SendNoteArgs^>^ SendNote;
     static void Notify(SendNoteArgs^ args) { SendNote(nullptr, args); }
 
     static event EventHandler<SendControllerArgs^>^ SendController;
     static void Notify(SendControllerArgs^ args) { SendController(nullptr, args); }
+
+    static event EventHandler<LogArgs^>^ Log;
+    static void Notify(LogArgs^ args) { Log(nullptr, args); }
+
+    static event EventHandler<SetTempoArgs^>^ SetTempo;
+    static void Notify(SetTempoArgs^ args) { SetTempo(nullptr, args); }
 
 
 //============= Infrastructure .h =============//
@@ -190,5 +187,3 @@ public:
     /// <param name="luaPath">LUA_PATH components</param>
     void Run(String^ scriptFn, String^ luaPath);
 };
-
-}

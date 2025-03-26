@@ -6,7 +6,6 @@ M.config =
 {
     lua_lib_name = "luainterop",    -- for require
     class_name = "Interop",         -- host filenames
-    namespace = "Script"            -- host namespace
 }
 
 ------------------------ Host => Script ------------------------

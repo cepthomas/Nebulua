@@ -6,12 +6,12 @@ using System.Runtime.CompilerServices;
 using System.Data;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-using InteropCore;
-using Script;
+//using InteropCore;
+//using Script;
 
 
 
-namespace Nebulua.Test
+namespace TestMisc
 {
     /// <summary>Odds and ends that have no other home.</summary>
     public class MISC_COMMON : TestSuite

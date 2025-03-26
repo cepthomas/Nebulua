@@ -6,7 +6,7 @@ using System.Diagnostics;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-using Script;
+//using Script;
 
 
 namespace TestCore
@@ -24,6 +24,7 @@ namespace TestCore
             Core core = new();
             UT_NOT_NULL(core);
             core.LoadScript(scriptFn);
+
             //stat = core.LoadScript(scriptFn);
             //UT_EQUAL(stat, NebStatus.Ok);
 

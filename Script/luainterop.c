@@ -224,7 +224,7 @@ static int luainterop_CreateOutputChannel(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
-// Lua arg: chan_num Midi channel number 1 => 16
+// Lua arg: chan_num Midi channel number 1 => 16 or 0 => all
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_CreateInputChannel(lua_State* l)
 {
@@ -238,48 +238,6 @@ static int luainterop_CreateInputChannel(lua_State* l)
 
     // Do the work. One result.
     int ret = luainteropcb_CreateInputChannel(l, dev_name, chan_num);
-    lua_pushinteger(l, ret);
-    return 1;
-}
-
-//--------------------------------------------------------//
-// Script wants to log something.
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
-// Lua arg: level Log level
-// Lua arg: msg Log message
-// Lua return: int Unused
-static int luainterop_Log(lua_State* l)
-{
-    // Get arguments
-    int level;
-    if (lua_isinteger(l, 1)) { level = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Bad arg type for: level"); }
-    const char* msg;
-    if (lua_isstring(l, 2)) { msg = lua_tostring(l, 2); }
-    else { luaL_error(l, "Bad arg type for: msg"); }
-
-    // Do the work. One result.
-    int ret = luainteropcb_Log(l, level, msg);
-    lua_pushinteger(l, ret);
-    return 1;
-}
-
-//--------------------------------------------------------//
-// Script wants to change tempo.
-// @param[in] l Internal lua state.
-// @return Number of lua return values.
-// Lua arg: bpm BPM 40 => 240
-// Lua return: int Unused
-static int luainterop_SetTempo(lua_State* l)
-{
-    // Get arguments
-    int bpm;
-    if (lua_isinteger(l, 1)) { bpm = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Bad arg type for: bpm"); }
-
-    // Do the work. One result.
-    int ret = luainteropcb_SetTempo(l, bpm);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -338,6 +296,48 @@ static int luainterop_SendController(lua_State* l)
     return 1;
 }
 
+//--------------------------------------------------------//
+// Script wants to log something.
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
+// Lua arg: level Log level
+// Lua arg: msg Log message
+// Lua return: int Unused
+static int luainterop_Log(lua_State* l)
+{
+    // Get arguments
+    int level;
+    if (lua_isinteger(l, 1)) { level = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Bad arg type for: level"); }
+    const char* msg;
+    if (lua_isstring(l, 2)) { msg = lua_tostring(l, 2); }
+    else { luaL_error(l, "Bad arg type for: msg"); }
+
+    // Do the work. One result.
+    int ret = luainteropcb_Log(l, level, msg);
+    lua_pushinteger(l, ret);
+    return 1;
+}
+
+//--------------------------------------------------------//
+// Script wants to change tempo.
+// @param[in] l Internal lua state.
+// @return Number of lua return values.
+// Lua arg: bpm BPM 40 => 240
+// Lua return: int Unused
+static int luainterop_SetTempo(lua_State* l)
+{
+    // Get arguments
+    int bpm;
+    if (lua_isinteger(l, 1)) { bpm = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Bad arg type for: bpm"); }
+
+    // Do the work. One result.
+    int ret = luainteropcb_SetTempo(l, bpm);
+    lua_pushinteger(l, ret);
+    return 1;
+}
+
 
 //============= Infrastructure .c =============//
 
@@ -345,10 +345,10 @@ static const luaL_Reg function_map[] =
 {
     { "create_output_channel", luainterop_CreateOutputChannel },
     { "create_input_channel", luainterop_CreateInputChannel },
-    { "log", luainterop_Log },
-    { "set_tempo", luainterop_SetTempo },
     { "send_note", luainterop_SendNote },
     { "send_controller", luainterop_SendController },
+    { "log", luainterop_Log },
+    { "set_tempo", luainterop_SetTempo },
     { NULL, NULL }
 };
 

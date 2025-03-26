@@ -5,10 +5,10 @@ using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-using Script;
+//using Script;
 
 
-namespace Nebulua.Test
+namespace TestScript
 {
     /// <summary>All success operations.</summary>
     public class SCRIPT_HAPPY : TestSuite

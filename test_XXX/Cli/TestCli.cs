@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
+using Nebulua.Test;
 
-
-namespace Nebulua.Test
+namespace TestCli
 {
     /// <summary>Test the simpler functions.</summary>
     public class CLI_BASIC : TestSuite

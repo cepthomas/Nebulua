@@ -8,7 +8,6 @@ using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
-using Script;
 
 
 namespace Nebulua

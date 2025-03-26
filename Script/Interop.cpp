@@ -6,8 +6,6 @@
 
 using namespace System;
 using namespace System::Collections::Generic;
-using namespace InteropCore;
-using namespace Script;
 
 
 //============= C# => C functions .cpp =============//
@@ -85,28 +83,6 @@ int luainteropcb_CreateInputChannel(lua_State* l, const char* dev_name, int chan
 
 //--------------------------------------------------------//
 
-int luainteropcb_Log(lua_State* l, int level, const char* msg)
-{
-    LOCK();
-    LogArgs^ args = gcnew LogArgs(level, msg);
-    Interop::Notify(args);
-    return args->ret;
-}
-
-
-//--------------------------------------------------------//
-
-int luainteropcb_SetTempo(lua_State* l, int bpm)
-{
-    LOCK();
-    SetTempoArgs^ args = gcnew SetTempoArgs(bpm);
-    Interop::Notify(args);
-    return args->ret;
-}
-
-
-//--------------------------------------------------------//
-
 int luainteropcb_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     LOCK();
@@ -122,6 +98,28 @@ int luainteropcb_SendController(lua_State* l, int chan_hnd, int controller, int 
 {
     LOCK();
     SendControllerArgs^ args = gcnew SendControllerArgs(chan_hnd, controller, value);
+    Interop::Notify(args);
+    return args->ret;
+}
+
+
+//--------------------------------------------------------//
+
+int luainteropcb_Log(lua_State* l, int level, const char* msg)
+{
+    LOCK();
+    LogArgs^ args = gcnew LogArgs(level, msg);
+    Interop::Notify(args);
+    return args->ret;
+}
+
+
+//--------------------------------------------------------//
+
+int luainteropcb_SetTempo(lua_State* l, int bpm)
+{
+    LOCK();
+    SetTempoArgs^ args = gcnew SetTempoArgs(bpm);
     Interop::Notify(args);
     return args->ret;
 }
