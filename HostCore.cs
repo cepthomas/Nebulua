@@ -12,7 +12,7 @@ using Ephemera.NBagOfTricks.Slog;
 
 namespace Nebulua
 {
-    public class Core : IDisposable
+    public class HostCore : IDisposable
     {
         #region Fields
         /// <summary>App logger.</summary>
@@ -44,7 +44,7 @@ namespace Nebulua
         /// <summary>
         /// Constructor inits static stuff.
         /// </summary>
-        public Core()
+        public HostCore()
         {
             // Hook script callbacks.
             Interop.Log += Interop_Log;

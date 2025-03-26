@@ -30,7 +30,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("APP");
 
         /// <summary>Common functionality.</summary>
-        readonly Core _core = new();
+        readonly HostCore _hostCore = new();
 
         /// <summary>Current script. Null means none.</summary>
         string? _scriptFn = null;
@@ -103,7 +103,7 @@ namespace Nebulua
 
             btnKill.BackColor = UserSettings.Current.BackColor;
             btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
-            btnKill.Click += (_, __) => { _core!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
+            btnKill.Click += (_, __) => { _hostCore!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
             btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
@@ -174,7 +174,7 @@ namespace Nebulua
             State.Instance.ExecState = ExecState.Idle;
 
             // Just in case.
-            _core.KillAll();
+            _hostCore.KillAll();
 
             LogManager.Stop();
 
@@ -201,7 +201,7 @@ namespace Nebulua
             if (disposing)
             {
                 components?.Dispose();
-                _core.Dispose();
+                _hostCore.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -286,7 +286,7 @@ namespace Nebulua
 
                 if (_scriptFn is not null)
                 {
-                    _core.LoadScript(_scriptFn); // may throw
+                    _hostCore.LoadScript(_scriptFn); // may throw
 
                     // Everything ok.
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
@@ -362,7 +362,7 @@ namespace Nebulua
                 else
                 {
                     State.Instance.ExecState = ExecState.Idle;
-                    _core.KillAll();
+                    _hostCore.KillAll();
 
                 }
             }
@@ -397,7 +397,7 @@ namespace Nebulua
                 string name = ((ClickClack)sender!).Name;
                 int x = (int)e.X; // note
                 int y = (int)e.Y; // velocity
-                _core.InjectReceiveEvent(name, 1, x, y);
+                _hostCore.InjectReceiveEvent(name, 1, x, y);
                 Utils.TimeIt("CcMidiGen_MouseClickEvent() exit");
             }
         }

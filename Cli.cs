@@ -19,7 +19,7 @@ namespace Nebulua
         readonly Logger _logger = LogManager.CreateLogger("CLI");
 
         /// <summary>Common functionality.</summary>
-        readonly Core _core = new();
+        readonly HostCore _hostCore = new();
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -93,7 +93,7 @@ namespace Nebulua
             {
                 // Script file validity checked in LoadScript().
                 _logger.Info($"Loading script file {scriptFn}");
-                _core.LoadScript(scriptFn);
+                _hostCore.LoadScript(scriptFn);
 
                 // Done. Wait a bit in case there are some lingering events or logging.
                 Thread.Sleep(100);
@@ -134,7 +134,7 @@ namespace Nebulua
         {
             if (!_disposed)
             {
-                _core?.Dispose();
+                _hostCore?.Dispose();
                 _disposed = true;
             }
         }
@@ -326,7 +326,7 @@ namespace Nebulua
                         case ExecState.Run:
                             State.Instance.ExecState = ExecState.Idle;
                             Write("stopped");
-                            _core.KillAll();
+                            _hostCore.KillAll();
                             break;
 
                         default:
@@ -348,7 +348,7 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool ExitCmd(CommandDescriptor cmd, List<string> args)
         {
-            _core.KillAll();
+            _hostCore.KillAll();
 
             State.Instance.ExecState = ExecState.Exit;
             Write($"Goodbye!");
@@ -412,7 +412,7 @@ namespace Nebulua
         //--------------------------------------------------------//
         bool KillCmd(CommandDescriptor cmd, List<string> args)
         {
-            _core.KillAll();
+            _hostCore.KillAll();
             Write("killed all");
 
             return true;
@@ -538,7 +538,7 @@ namespace Nebulua
             switch (args.Count)
             {
                 case 1: // no args
-                    _core.LoadScript();
+                    _hostCore.LoadScript();
                     break;
 
                 default:
