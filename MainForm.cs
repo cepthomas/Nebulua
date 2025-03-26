@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
@@ -14,6 +15,8 @@ using Ephemera.NBagOfUis;
 
 
 // TODO1 Tests are broken badly. Fix/replace?
+//[assembly: InternalsVisibleTo("Test")]
+
 // TODOF Running in VS debugger has slow startup. Running the exe or cli is ok.
 // TODO1 Big delay in playing notes with clickclack. May be VirtualMIDISynth? Try reaper.
 // TODO1 fix/tweak lsp lua:

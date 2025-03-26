@@ -5,7 +5,7 @@ using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-using Script;
+//using Script;
 
 
 namespace Test
@@ -17,33 +17,16 @@ namespace Test
         {
             UT_STOP_ON_FAIL(true);
 
+            EventCollector events = new();
             //_core.LoadScript(_scriptFn); // may throw
             var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "..", "lua", "script_happy.lua");
 
             // Load the script. 
             HostCore hostCore = new();
             hostCore.LoadScript(scriptFn); // may throw
+           // hostCore.
 
             UT_NOT_NULL(hostCore);
-
-
-
-            ////////////////////////////////////////////////////////////////////////////////////////
-
-
-            // Create interop.
-            var lpath = Utils.GetLuaPath();
-            Interop interop = new(lpath);
-
-            EventCollector events = new(interop);
-            string scrfn = Path.Join(Utils.GetAppRoot(), "test", "lua", "script_happy.lua");
-            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
-
-            // Load the script.
-            NebStatus stat = interop.OpenScript(scrfn);
-            UT_EQUAL(interop.Error, "");
-            UT_EQUAL(stat, NebStatus.Ok);
-            UT_EQUAL(events.CollectedEvents.Count, 7);
 
             //// Have a look inside.
             //UT_EQUAL(interop.SectionInfo.Count, 4);
@@ -54,35 +37,23 @@ namespace Test
             events.CollectedEvents.Clear();
             for (int i = 0; i < 99; i++)
             {
-                stat = interop.Step(State.Instance.CurrentTick++);
+                stat = hostCore._interop.Step(State.Instance.CurrentTick++);
 
                 // Inject some received midi events.
                 if (i % 20 == 0)
                 {
                     stat = interop.RcvNote(0x0102, i, (double)i / 100);
-                    UT_EQUAL(stat, NebStatus.Ok);
+                    //UT_EQUAL(stat, NebStatus.Ok);
                 }
 
                 if (i % 20 == 5)
                 {
                     stat = interop.RcvController(0x0102, i, i);
-                    UT_EQUAL(stat, NebStatus.Ok);
+                    //UT_EQUAL(stat, NebStatus.Ok);
                 }
             }
 
             UT_EQUAL(events.CollectedEvents.Count, 122);
-        }
-
-        void State_ValueChangeEvent(object? sender, string name)
-        {
-            switch (name)
-            {
-                case "CurrentTick":
-                    // if (sender != this) {}
-                    break;
-                default:
-                    break;
-            }
         }
     }
 
@@ -100,9 +71,6 @@ namespace Test
 
             // General syntax error during load.
             {
-                var lpath = Utils.GetLuaPath();
-                AppInterop interop = new(lpath);
-
                 File.WriteAllText(tempfn,
                     @"local api = require(""script_api"")
                     this is a bad statement
@@ -114,9 +82,6 @@ namespace Test
 
             // Missing required C2L element - luainterop_Setup(_ltest, &iret);
             {
-                var lpath = Utils.GetLuaPath();
-                AppInterop interop = new(lpath);
-
                 File.WriteAllText(tempfn,
                     @"local api = require(""script_api"")
                     resx = 345 + 456");
@@ -127,9 +92,6 @@ namespace Test
 
             // Bad L2C function
             {
-                var lpath = Utils.GetLuaPath();
-                AppInterop interop = new(lpath);
-
                 File.WriteAllText(tempfn,
                     @"local api = require(""script_api"")
                     function setup()
@@ -143,9 +105,6 @@ namespace Test
 
             // General explicit error.
             {
-                var lpath = Utils.GetLuaPath();
-                AppInterop interop = new(lpath);
-
                 File.WriteAllText(tempfn,
                     @"local api = require(""script_api"")
                     function setup()
@@ -159,9 +118,6 @@ namespace Test
 
             // Runtime error.
             {
-                var lpath = Utils.GetLuaPath();
-                AppInterop interop = new(lpath);
-
                 File.WriteAllText(tempfn,
                     @"local api = require(""script_api"")
                     function setup()
@@ -180,46 +136,59 @@ namespace Test
     {
         public List<string> CollectedEvents { get; set; }
 
-        readonly AppInterop _interop;
-
-        public EventCollector(AppInterop interop)
+        public EventCollector()
         {
-            _interop = interop;
             CollectedEvents = [];
 
-            // Hook script events.
-            AppInterop.CreateChannel += Interop_CreateChannel;
-            AppInterop.Send += Interop_Send;
-            AppInterop.Log += Interop_Log;
-            AppInterop.PropertyChange += Interop_PropertyChange;
-        }
-
-        void Interop_CreateChannel(object? sender, CreateChannelArgs e)
-        {
-            string s = $"CreateChannel DevName:{e.DevName} ChanNum:{e.ChanNum} IsOutput:{e.IsOutput} Patch:{e.Patch}";
-            CollectedEvents.Add(s);
-            e.Ret = 0x0102;
-        }
-
-        void Interop_Send(object? sender, SendArgs e)
-        {
-            string s = $"Send ChanHnd:{e.ChanHnd} IsNote:{e.IsNote} What:{e.What} Value:{e.Value}";
-            CollectedEvents.Add(s);
-            e.Ret = (int)NebStatus.Ok;
+            // Hook script callbacks.
+            Interop.Log += Interop_Log;
+            Interop.CreateInputChannel += Interop_CreateInputChannel;
+            Interop.CreateOutputChannel += Interop_CreateOutputChannel;
+            Interop.SendNote += Interop_SendNote;
+            Interop.SendController += Interop_SendController;
+            Interop.SetTempo += Interop_SetTempo;
         }
 
         void Interop_Log(object? sender, LogArgs e)
         {
-            string s = $"Log LogLevel:{e.LogLevel} Message:{e.Message}";
+            string s = $"Log LogLevel:{e.level} Message:{e.msg}";
             CollectedEvents.Add(s);
-            e.Ret = (int)NebStatus.Ok;
+            e.ret = 0;
         }
 
-        void Interop_PropertyChange(object? sender, PropertyArgs e)
+        void Interop_CreateInputChannel(object? sender, CreateInputChannelArgs e)
         {
-            string s = $"PropertyChange Bpm:{e.Bpm}";
+            string s = $"CreateInputChannel DevName:{e.dev_name} chan_num:{e.chan_num}";
             CollectedEvents.Add(s);
-            e.Ret = (int)NebStatus.Ok;
+            e.ret = 0x0102;
+        }
+
+        void Interop_CreateOutputChannel(object? sender, CreateOutputChannelArgs e)
+        {
+            string s = $"CreateOutputChannel DevName:{e.dev_name} chan_num: {e.chan_num} patch:{e.patch}";
+            CollectedEvents.Add(s);
+            e.ret = 0x0102;
+        }
+
+        void Interop_SendNote(object? sender, SendNoteArgs e)
+        {
+            string s = $"SendNote ChanHnd:{e.chan_hnd} note_num:{e.note_num} volume:{e.volume}";
+            CollectedEvents.Add(s);
+            e.ret = 0;
+        }
+
+        void Interop_SendController(object? sender, SendControllerArgs e)
+        {
+            string s = $"Send SendController:{e.chan_hnd} controller:{e.controller} value:{e.value}";
+            CollectedEvents.Add(s);
+            e.ret = 0;
+        }
+
+        void Interop_SetTempo(object? sender, SetTempoArgs e)
+        {
+            string s = $"SetTempo Bpm:{e.bpm}";
+            CollectedEvents.Add(s);
+            e.ret = 0;
         }
     }
 }

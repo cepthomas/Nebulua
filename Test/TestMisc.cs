@@ -6,9 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Data;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-//using InteropCore;
-//using Script;
-
 
 
 namespace Test

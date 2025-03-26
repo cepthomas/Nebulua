@@ -50,7 +50,7 @@ namespace Nebulua
             Interop.Log += Interop_Log;
             Interop.CreateInputChannel += Interop_CreateInputChannel;
             Interop.CreateOutputChannel += Interop_CreateOutputChannel;
-            Interop.SendNote += Interop_SendNote; ;
+            Interop.SendNote += Interop_SendNote;
             Interop.SendController += Interop_SendController;
             Interop.SetTempo += Interop_SetTempo;
 

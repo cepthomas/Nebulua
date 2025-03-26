@@ -74,4 +74,21 @@ namespace Nebulua
             _lastTick = tick;
         }
     }
+
+    #region Console abstraction to support testing
+    public interface IConsole
+    {
+        bool KeyAvailable { get; }
+        bool CursorVisible { get; set; }
+        string Title { get; set; }
+        int BufferWidth { get; set; }
+        void Write(string text);
+        void WriteLine(string text);
+        string? ReadLine();
+        ConsoleKeyInfo ReadKey(bool intercept);
+        (int left, int top) GetCursorPosition();
+        void SetCursorPosition(int left, int top);
+    }
+    #endregion
+
 }
