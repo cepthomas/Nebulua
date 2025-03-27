@@ -8,6 +8,65 @@ using Nebulua;
 //using Script;
 
 
+// const char* ToCString(String^ input);
+
+// /// <summary>Exception used for all interop errors.</summary>
+// public ref struct LuaException : public System::Exception
+// {
+// public:
+//     LuaException(String^ message) : Exception(message) {}
+// };
+
+
+// public class Scope
+// {
+// public:
+//     Scope();
+//     virtual ~Scope();
+// };
+// #define SCOPE() Scope _scope;
+// static CRITICAL_SECTION _critsect;
+// Scope::Scope() { EnterCriticalSection(&_critsect); }
+// Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
+
+
+// public ref class InteropCore
+// {
+// public:
+//     bool ScriptLoaded();
+
+// protected:
+//     lua_State* _l = nullptr;
+//     InteropCore();
+//     ~InteropCore();
+//     void InitLua(String^ luaPath);
+//     void OpenScript(String^ fn);
+//     /// <summary>Checks lua status and throws exception if it failed.</summary>
+//     void EvalLuaStatus(int stat, String^ msg);
+//     /// <summary>Checks lua interop error and throws exception if it failed.</summary>
+//     void EvalLuaInteropStatus(const char* err, const char* info);
+// };
+
+
+// public ref class Interop : InteropCore
+// {
+// public:
+//     String^ Setup();
+//     int Step(int tick);
+//     int RcvNote(int chan_hnd, int note_num, double volume);
+//     int RcvController(int chan_hnd, int controller, int value);
+//     String^ NebCommand(String^ cmd, String^ arg);
+//     void Run(String^ scriptFn, String^ luaPath);
+
+// public:
+//     static void Notify(CreateOutputChannelArgs^ args) { CreateOutputChannel(nullptr, args); }
+//     static void Notify(CreateInputChannelArgs^ args) { CreateInputChannel(nullptr, args); }
+//     static void Notify(SendNoteArgs^ args) { SendNote(nullptr, args); }
+//     static void Notify(SendControllerArgs^ args) { SendController(nullptr, args); }
+//     static void Notify(LogArgs^ args) { Log(nullptr, args); }
+//     static void Notify(SetTempoArgs^ args) { SetTempo(nullptr, args); }
+// };
+
 namespace Test
 {
     /// <summary>All success operations.</summary>

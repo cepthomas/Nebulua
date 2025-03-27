@@ -13,7 +13,7 @@ using namespace System::Collections::Generic;
 //--------------------------------------------------------//
 String^ Interop::Setup()
 {
-    LOCK();
+    SCOPE();
     String^ ret = gcnew String(luainterop_Setup(_l));
     EvalLuaInteropStatus(luainterop_Error(), "Setup()");
     return ret; 
@@ -22,7 +22,7 @@ String^ Interop::Setup()
 //--------------------------------------------------------//
 int Interop::Step(int tick)
 {
-    LOCK();
+    SCOPE();
     int ret = luainterop_Step(_l, tick);
     EvalLuaInteropStatus(luainterop_Error(), "Step()");
     return ret; 
@@ -31,7 +31,7 @@ int Interop::Step(int tick)
 //--------------------------------------------------------//
 int Interop::RcvNote(int chan_hnd, int note_num, double volume)
 {
-    LOCK();
+    SCOPE();
     int ret = luainterop_RcvNote(_l, chan_hnd, note_num, volume);
     EvalLuaInteropStatus(luainterop_Error(), "RcvNote()");
     return ret; 
@@ -40,7 +40,7 @@ int Interop::RcvNote(int chan_hnd, int note_num, double volume)
 //--------------------------------------------------------//
 int Interop::RcvController(int chan_hnd, int controller, int value)
 {
-    LOCK();
+    SCOPE();
     int ret = luainterop_RcvController(_l, chan_hnd, controller, value);
     EvalLuaInteropStatus(luainterop_Error(), "RcvController()");
     return ret; 
@@ -49,7 +49,7 @@ int Interop::RcvController(int chan_hnd, int controller, int value)
 //--------------------------------------------------------//
 String^ Interop::NebCommand(String^ cmd, String^ arg)
 {
-    LOCK();
+    SCOPE();
     String^ ret = gcnew String(luainterop_NebCommand(_l, ToCString(cmd), ToCString(arg)));
     EvalLuaInteropStatus(luainterop_Error(), "NebCommand()");
     return ret; 
@@ -63,7 +63,7 @@ String^ Interop::NebCommand(String^ cmd, String^ arg)
 
 int luainteropcb_CreateOutputChannel(lua_State* l, const char* dev_name, int chan_num, int patch)
 {
-    LOCK();
+    SCOPE();
     CreateOutputChannelArgs^ args = gcnew CreateOutputChannelArgs(dev_name, chan_num, patch);
     Interop::Notify(args);
     return args->ret;
@@ -74,7 +74,7 @@ int luainteropcb_CreateOutputChannel(lua_State* l, const char* dev_name, int cha
 
 int luainteropcb_CreateInputChannel(lua_State* l, const char* dev_name, int chan_num)
 {
-    LOCK();
+    SCOPE();
     CreateInputChannelArgs^ args = gcnew CreateInputChannelArgs(dev_name, chan_num);
     Interop::Notify(args);
     return args->ret;
@@ -85,7 +85,7 @@ int luainteropcb_CreateInputChannel(lua_State* l, const char* dev_name, int chan
 
 int luainteropcb_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
-    LOCK();
+    SCOPE();
     SendNoteArgs^ args = gcnew SendNoteArgs(chan_hnd, note_num, volume);
     Interop::Notify(args);
     return args->ret;
@@ -96,7 +96,7 @@ int luainteropcb_SendNote(lua_State* l, int chan_hnd, int note_num, double volum
 
 int luainteropcb_SendController(lua_State* l, int chan_hnd, int controller, int value)
 {
-    LOCK();
+    SCOPE();
     SendControllerArgs^ args = gcnew SendControllerArgs(chan_hnd, controller, value);
     Interop::Notify(args);
     return args->ret;
@@ -107,7 +107,7 @@ int luainteropcb_SendController(lua_State* l, int chan_hnd, int controller, int 
 
 int luainteropcb_Log(lua_State* l, int level, const char* msg)
 {
-    LOCK();
+    SCOPE();
     LogArgs^ args = gcnew LogArgs(level, msg);
     Interop::Notify(args);
     return args->ret;
@@ -118,7 +118,7 @@ int luainteropcb_Log(lua_State* l, int level, const char* msg)
 
 int luainteropcb_SetTempo(lua_State* l, int bpm)
 {
-    LOCK();
+    SCOPE();
     SetTempoArgs^ args = gcnew SetTempoArgs(bpm);
     Interop::Notify(args);
     return args->ret;
