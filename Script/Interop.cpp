@@ -46,15 +46,6 @@ int Interop::RcvController(int chan_hnd, int controller, int value)
     return ret; 
 }
 
-//--------------------------------------------------------//
-String^ Interop::NebCommand(String^ cmd, String^ arg)
-{
-    SCOPE();
-    String^ ret = gcnew String(luainterop_NebCommand(_l, ToCString(cmd), ToCString(arg)));
-    EvalLuaInteropStatus(luainterop_Error(), "NebCommand()");
-    return ret; 
-}
-
 
 //============= C => C# callback functions .cpp =============//
 

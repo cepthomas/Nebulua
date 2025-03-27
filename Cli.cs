@@ -364,7 +364,7 @@ namespace Nebulua
             string Status()
             {
                 var srcv = "mon rcv " + (UserSettings.Current.MonitorRcv ? "on" : "off");
-                var ssnd = "mon snd " + (UserSettings.Current.MonitorRcv ? "on" : "off");
+                var ssnd = "mon snd " + (UserSettings.Current.MonitorSnd ? "on" : "off");
                 return ($"{srcv} {ssnd}");
             }
 

@@ -47,30 +47,28 @@ namespace Test
                 var ex = new LuaException("message111");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
-                UT_STRING_CONTAINS(msg, "message111");
-                UT_STRING_CONTAINS(msg, "Bad App Interop");
-                UT_STRING_CONTAINS(msg, "Lua Error: message222");
+                UT_EQUAL(msg, "Lua/Interop Error: message111");
             }
 
             {
                 var ex = new SyntaxException("message222");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
-                UT_STRING_CONTAINS(msg, "Script Syntax Error: message222");
+                UT_EQUAL(msg, "Script Syntax Error: message222");
             }
 
             {
                 var ex = new ArgumentException("message333");
                 var (fatal, msg) = Utils.ProcessException(ex);
-                UT_TRUE(fatal);
-                UT_STRING_CONTAINS(msg, "Application Argument Error: message333");
+                UT_FALSE(fatal);
+                UT_EQUAL(msg, "Argument Error: message333");
             }
 
             {
                 var ex = new DuplicateNameException("message444");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_TRUE(fatal);
-                UT_STRING_CONTAINS(msg, "System.Data.DuplicateNameException: message444");
+                UT_EQUAL(msg, "System.Data.DuplicateNameException: message444");
             }
         }
     }

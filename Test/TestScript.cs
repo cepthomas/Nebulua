@@ -5,70 +5,55 @@ using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-//using Script;
 
-
-// const char* ToCString(String^ input);
-
-// /// <summary>Exception used for all interop errors.</summary>
-// public ref struct LuaException : public System::Exception
-// {
-// public:
-//     LuaException(String^ message) : Exception(message) {}
-// };
-
-
-// public class Scope
-// {
-// public:
-//     Scope();
-//     virtual ~Scope();
-// };
-// #define SCOPE() Scope _scope;
-// static CRITICAL_SECTION _critsect;
-// Scope::Scope() { EnterCriticalSection(&_critsect); }
-// Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
-
-
-// public ref class InteropCore
-// {
-// public:
-//     bool ScriptLoaded();
-
-// protected:
-//     lua_State* _l = nullptr;
-//     InteropCore();
-//     ~InteropCore();
-//     void InitLua(String^ luaPath);
-//     void OpenScript(String^ fn);
-//     /// <summary>Checks lua status and throws exception if it failed.</summary>
-//     void EvalLuaStatus(int stat, String^ msg);
-//     /// <summary>Checks lua interop error and throws exception if it failed.</summary>
-//     void EvalLuaInteropStatus(const char* err, const char* info);
-// };
-
-
-// public ref class Interop : InteropCore
-// {
-// public:
-//     String^ Setup();
-//     int Step(int tick);
-//     int RcvNote(int chan_hnd, int note_num, double volume);
-//     int RcvController(int chan_hnd, int controller, int value);
-//     String^ NebCommand(String^ cmd, String^ arg);
-//     void Run(String^ scriptFn, String^ luaPath);
-
-// public:
-//     static void Notify(CreateOutputChannelArgs^ args) { CreateOutputChannel(nullptr, args); }
-//     static void Notify(CreateInputChannelArgs^ args) { CreateInputChannel(nullptr, args); }
-//     static void Notify(SendNoteArgs^ args) { SendNote(nullptr, args); }
-//     static void Notify(SendControllerArgs^ args) { SendController(nullptr, args); }
-//     static void Notify(LogArgs^ args) { Log(nullptr, args); }
-//     static void Notify(SetTempoArgs^ args) { SetTempo(nullptr, args); }
-// };
 
 namespace Test
 {
+    /// <summary>Utility functions.</summary>
+    public class SCRIPT_INTERNALS : TestSuite
+    {
+        public override void RunSuite()
+        {
+            UT_STOP_ON_FAIL(true);
+
+            EventCollector ecoll = new();
+            using Interop interop = new();
+
+            // Checks lua status and throws exception if it failed.
+            // interop.EvalLuaStatus(0, "Hello");
+            // #define LUA_OK      0
+            // #define LUA_YIELD   1
+            // #define LUA_ERRRUN  2  "ScriptRunError"
+            // #define LUA_ERRSYNTAX   3   "ScriptSyntaxError"
+            // #define LUA_ERRMEM  4
+            // #define LUA_ERRERR  5
+            // #define LUA_ERRFILE LUA_ERRERR+1  "ScriptFileError"
+            // default: "AppInteropError"
+
+
+            // Checks lua interop error and throws exception if it failed.
+            // interop.EvalLuaInteropStatus(new string("const char* err"), "const char* info");
+
+
+            // var c = interop.ToCString("input");
+            // interop.Collect();
+            // public class Scope
+            // {
+            // public:
+            //     Scope();
+            //     virtual ~Scope();
+            // };
+            // #define SCOPE() Scope _scope;
+            // static CRITICAL_SECTION _critsect;
+            // Scope::Scope() { EnterCriticalSection(&_critsect); }
+            // Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
+
+
+            // Exception used for all interop errors.
+            // LuaException(String^ message) : Exception(message) {}
+        }
+    }
+
     /// <summary>All success operations.</summary>
     public class SCRIPT_HAPPY : TestSuite
     {
@@ -76,43 +61,38 @@ namespace Test
         {
             UT_STOP_ON_FAIL(true);
 
-            EventCollector events = new();
-            //_core.LoadScript(_scriptFn); // may throw
-            var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "..", "lua", "script_happy.lua");
+            EventCollector ecoll = new();
+            using Interop interop = new();
 
-            // Load the script. 
-            HostCore hostCore = new();
-            hostCore.LoadScript(scriptFn); // may throw
-           // hostCore.
+            // Set up runtime lua environment.
+            var testDir = MiscUtils.GetSourcePath();
+            var luaPath = $"{testDir}\\?.lua;{testDir}\\..\\LBOT\\?.lua;{testDir}\\..\\lua\\?.lua;;";
+            var scriptFn = Path.Join(testDir, "script_happy.lua");
 
-            UT_NOT_NULL(hostCore);
+            interop.Run(scriptFn, luaPath);
+            var ret = interop.Setup();
 
-            //// Have a look inside.
-            //UT_EQUAL(interop.SectionInfo.Count, 4);
-            //// Fake valid loaded script.
-            //State.Instance.InitSectionInfo(interop.SectionInfo);
+            //ret = interop.NebCommand("cmd", "arg");
+            //UT_EQUAL(ret, "122");
 
             // Run script steps.
-            events.CollectedEvents.Clear();
             for (int i = 0; i < 99; i++)
             {
-                stat = hostCore._interop.Step(State.Instance.CurrentTick++);
+                var stat = interop.Step(State.Instance.CurrentTick++);
 
                 // Inject some received midi events.
                 if (i % 20 == 0)
                 {
                     stat = interop.RcvNote(0x0102, i, (double)i / 100);
-                    //UT_EQUAL(stat, NebStatus.Ok);
+//???                    UT_EQUAL(stat, 99);
                 }
 
                 if (i % 20 == 5)
                 {
                     stat = interop.RcvController(0x0102, i, i);
-                    //UT_EQUAL(stat, NebStatus.Ok);
+//???                    UT_EQUAL(stat, 99);
                 }
             }
-
-            UT_EQUAL(events.CollectedEvents.Count, 122);
         }
     }
 
@@ -123,6 +103,11 @@ namespace Test
         {
             UT_STOP_ON_FAIL(true);
 
+            // Set up runtime lua environment.
+            var testDir = MiscUtils.GetSourcePath();
+            var luaPath = $"{testDir}\\?.lua;{testDir}\\..\\LBOT\\?.lua;;";
+            var scriptFn = Path.Join(testDir, "script_happy.lua");
+
             // Program.MyInterop!.Dispose();
             //var interop = Program.MyInterop!;
 
@@ -130,124 +115,98 @@ namespace Test
 
             // General syntax error during load.
             {
-                File.WriteAllText(tempfn,
-                    @"local api = require(""script_api"")
+                try
+                {
+                    using Interop interop = new();
+                    File.WriteAllText(tempfn,
+                        @"local api = require(""luainterop"")
                     this is a bad statement
                     end");
-                NebStatus stat = interop.OpenScript(tempfn);
-                UT_STRING_CONTAINS(interop.Error, "syntax error near 'is'");
-                UT_EQUAL(stat, NebStatus.SyntaxError);
+                    interop.Run(tempfn, luaPath);
+                    UT_FAIL("did not throw");
+                }
+                catch (Exception e)
+                {
+                    UT_STRING_CONTAINS(e.Message, "syntax error near 'is'");
+                }
             }
 
             // Missing required C2L element - luainterop_Setup(_ltest, &iret);
             {
-                File.WriteAllText(tempfn,
-                    @"local api = require(""script_api"")
+                try
+                {
+                    using Interop interop = new();
+                    File.WriteAllText(tempfn,
+                        @"local api = require(""luainterop"")
                     resx = 345 + 456");
-                NebStatus stat = interop.OpenScript(tempfn);
-                UT_STRING_CONTAINS(interop.Error, "Bad function name: setup()");
-                UT_EQUAL(stat, NebStatus.SyntaxError);
+                    interop.Run(tempfn, luaPath);
+                    UT_FAIL("did not throw");
+                }
+                catch (Exception e)
+                {
+                    UT_STRING_CONTAINS(e.Message, "????");
+                }
             }
 
             // Bad L2C function
             {
-                File.WriteAllText(tempfn,
-                    @"local api = require(""script_api"")
+                try
+                {
+                    using Interop interop = new();
+                    File.WriteAllText(tempfn,
+                        @"local api = require(""luainterop"")
                     function setup()
                         api.no_good(95)
                         return 0
                     end");
-                NebStatus stat = interop.OpenScript(tempfn);
-                UT_STRING_CONTAINS(interop.Error, "attempt to call a nil value (field 'no_good')");
-                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
+                    interop.Run(tempfn, luaPath);
+                    UT_FAIL("did not throw");
+                }
+                catch (Exception e)
+                {
+                    UT_STRING_CONTAINS(e.Message, "????");
+                }
             }
 
             // General explicit error.
             {
-                File.WriteAllText(tempfn,
-                    @"local api = require(""script_api"")
+                try
+                {
+                    using Interop interop = new();
+                    File.WriteAllText(tempfn,
+                        @"local api = require(""luainterop"")
                     function setup()
                         error(""setup() raises error()"")
                         return 0
                     end");
-                NebStatus stat = interop.OpenScript(tempfn);
-                UT_STRING_CONTAINS(interop.Error, "setup() raises error()");
-                UT_EQUAL(stat, NebStatus.SyntaxError);
+                    interop.Run(tempfn, luaPath);
+                    UT_FAIL("did not throw");
+                }
+                catch (Exception e)
+                {
+                    UT_STRING_CONTAINS(e.Message, "????");
+                }
             }
 
             // Runtime error.
             {
-                File.WriteAllText(tempfn,
-                    @"local api = require(""script_api"")
+                try
+                {
+                    using Interop interop = new();
+                    File.WriteAllText(tempfn,
+                        @"local api = require(""luainterop"")
                     function setup()
                         local bad = 123 + ng
                         return 0
                     end");
-                NebStatus stat = interop.OpenScript(tempfn);
-                UT_STRING_CONTAINS(interop.Error, "attempt to perform arithmetic on a nil value (global 'ng')");
-                UT_EQUAL(stat, NebStatus.SyntaxError); // runtime error
+                    interop.Run(tempfn, luaPath);
+                    UT_FAIL("did not throw");
+                }
+                catch (Exception e)
+                {
+                    UT_STRING_CONTAINS(e.Message, "????");
+                }
             }
-        }
-    }
-
-    /// <summary>Hook used to capture events from test target.</summary>
-    internal class EventCollector
-    {
-        public List<string> CollectedEvents { get; set; }
-
-        public EventCollector()
-        {
-            CollectedEvents = [];
-
-            // Hook script callbacks.
-            Interop.Log += Interop_Log;
-            Interop.CreateInputChannel += Interop_CreateInputChannel;
-            Interop.CreateOutputChannel += Interop_CreateOutputChannel;
-            Interop.SendNote += Interop_SendNote;
-            Interop.SendController += Interop_SendController;
-            Interop.SetTempo += Interop_SetTempo;
-        }
-
-        void Interop_Log(object? sender, LogArgs e)
-        {
-            string s = $"Log LogLevel:{e.level} Message:{e.msg}";
-            CollectedEvents.Add(s);
-            e.ret = 0;
-        }
-
-        void Interop_CreateInputChannel(object? sender, CreateInputChannelArgs e)
-        {
-            string s = $"CreateInputChannel DevName:{e.dev_name} chan_num:{e.chan_num}";
-            CollectedEvents.Add(s);
-            e.ret = 0x0102;
-        }
-
-        void Interop_CreateOutputChannel(object? sender, CreateOutputChannelArgs e)
-        {
-            string s = $"CreateOutputChannel DevName:{e.dev_name} chan_num: {e.chan_num} patch:{e.patch}";
-            CollectedEvents.Add(s);
-            e.ret = 0x0102;
-        }
-
-        void Interop_SendNote(object? sender, SendNoteArgs e)
-        {
-            string s = $"SendNote ChanHnd:{e.chan_hnd} note_num:{e.note_num} volume:{e.volume}";
-            CollectedEvents.Add(s);
-            e.ret = 0;
-        }
-
-        void Interop_SendController(object? sender, SendControllerArgs e)
-        {
-            string s = $"Send SendController:{e.chan_hnd} controller:{e.controller} value:{e.value}";
-            CollectedEvents.Add(s);
-            e.ret = 0;
-        }
-
-        void Interop_SetTempo(object? sender, SetTempoArgs e)
-        {
-            string s = $"SetTempo Bpm:{e.bpm}";
-            CollectedEvents.Add(s);
-            e.ret = 0;
         }
     }
 }

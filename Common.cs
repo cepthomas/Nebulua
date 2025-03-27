@@ -44,7 +44,11 @@ namespace Nebulua
                     break;
 
                 default: // other, probably fatal
-                    msg = $"{e.GetType()}: {e.Message}{Environment.NewLine}{e.StackTrace}";
+                    msg = $"{e.GetType()}: {e.Message}";
+                    if (e.StackTrace is not null)
+                    {
+                        msg += $"{Environment.NewLine}{e.StackTrace}";
+                    }
                     fatal = true;
                     break;
             }

@@ -153,12 +153,6 @@ public:
     /// <returns>Script return</returns>
     int RcvController(int chan_hnd, int controller, int value);
 
-    /// <summary>NebCommand</summary>
-    /// <param name="cmd">Specific command</param>
-    /// <param name="arg">Optional argument</param>
-    /// <returns>Script return</returns>
-    String^ NebCommand(String^ cmd, String^ arg);
-
 //============= C => C# callback functions =============//
 public:
     static event EventHandler<CreateOutputChannelArgs^>^ CreateOutputChannel;

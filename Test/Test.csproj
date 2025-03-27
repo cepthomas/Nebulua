@@ -5,7 +5,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StartupObject>Nebulua.Test.Program</StartupObject>
+    <StartupObject>Test.Program</StartupObject>
     <Platforms>x64</Platforms>
   </PropertyGroup>
 
@@ -31,11 +31,6 @@
     <Compile Include="..\Midi.cs" Link="Midi.cs" />
     <Compile Include="..\State.cs" Link="State.cs" />
     <Compile Include="..\MusicTime.cs" Link="MusicTime.cs" />
-    <!-- <Compile Include="..\UserSettings.cs" Link="UserSettings.cs" /> -->
-    <!-- <Compile Include="..\mock\MockCore.cs" Link="MockCore.cs" />
-    <Compile Include="..\mock\MockIO.cs" Link="MockIO.cs" />
-    <Compile Include="..\mock\MockNAudio.cs" Link="MockNAudio.cs" />
-    <Compile Include="..\mock\MockMidi.cs" Link="MockMidi.cs" /> -->
   </ItemGroup>
 
   <ItemGroup>

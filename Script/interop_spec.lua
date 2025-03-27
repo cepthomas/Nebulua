@@ -60,18 +60,18 @@ M.script_funcs =
         ret = { type = "I", description = "Unused" }
     },
 
-    {
-        lua_func_name = "neb_command",
-        host_func_name = "NebCommand",
-        required = "true",
-        description = "Host calls arbitrary lua function. For internal use only.",
-        args =
-        {
-            { name = "cmd", type = "S", description = "Specific command" },
-            { name = "arg", type = "S", description = "Optional argument" },
-        },
-        ret = { type = "S", description = "Script return" }
-    },
+    -- {
+    --     lua_func_name = "neb_command",
+    --     host_func_name = "NebCommand",
+    --     required = "true",
+    --     description = "Host calls arbitrary lua function. For internal use only.",
+    --     args =
+    --     {
+    --         { name = "cmd", type = "S", description = "Specific command" },
+    --         { name = "arg", type = "S", description = "Optional argument" },
+    --     },
+    --     ret = { type = "S", description = "Script return" }
+    -- },
 }
 
 ------------------------ Script => Host ------------------------

@@ -1171,6 +1171,15 @@
             <param name="name"></param>
             <param name="value"></param>
         </member>
+        <member name="M:Ephemera.NBagOfTricks.PNUT.TestSuite.UT_FAIL(System.String,System.String,System.Int32)">
+            <summary>
+            Always fail.
+            </summary>
+            <param name="message"></param>
+            <param name="file"></param>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
         <member name="M:Ephemera.NBagOfTricks.PNUT.TestSuite.UT_TRUE(System.Boolean,System.String,System.Int32)">
             <summary>
             Checks whether the given condition is true.
@@ -1291,6 +1300,16 @@
             <param name="value1"></param>
             <param name="value2"></param>
             <param name="tolerance">Absolute</param>
+            <param name="file"></param>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Ephemera.NBagOfTricks.PNUT.TestSuite.UT_STRING_CONTAINS(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Check for part of a string.
+            </summary>
+            <param name="value1"></param>
+            <param name="value2"></param>
             <param name="file"></param>
             <param name="line"></param>
             <returns></returns>
