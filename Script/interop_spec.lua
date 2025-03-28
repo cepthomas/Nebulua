@@ -14,7 +14,6 @@ M.script_funcs =
     {
         lua_func_name = "setup",
         host_func_name = "Setup",
-        required = "true",
         description = "Called to initialize script.",
         -- no args
         ret = { type = "S", description = "Script meta info if composition" }
@@ -23,7 +22,6 @@ M.script_funcs =
     {
         lua_func_name = "step",
         host_func_name = "Step",
-        required = "true",
         description = "Called every fast timer increment aka tick.",
         args =
         {
@@ -35,7 +33,6 @@ M.script_funcs =
     {
         lua_func_name = "receive_midi_note",
         host_func_name = "ReceiveMidiNote",
-        required = "false",
         description = "Called when midi input arrives.",
         args =
         {
@@ -49,7 +46,6 @@ M.script_funcs =
     {
         lua_func_name = "receive_midi_controller",
         host_func_name = "ReceiveMidiController",
-        required = "false",
         description = "Called when midi input arrives.",
         args =
         {

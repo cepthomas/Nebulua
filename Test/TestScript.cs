@@ -120,29 +120,13 @@ namespace Test
                         @"local api = require(""luainterop"")
                     this is a bad statement
                     end");
+
                     interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
                 {
                     UT_STRING_CONTAINS(e.Message, "syntax error near 'is'");
-                }
-            }
-
-            // Missing required C2L element - luainterop_Setup(_ltest, &iret);
-            {
-                try
-                {
-                    using Interop interop = new();
-                    File.WriteAllText(testFn,
-                        @"local api = require(""luainterop"")
-                    resx = 345 + 456");
-                    interop.Run(testFn, luaPath);
-                    UT_FAIL("did not throw");
-                }
-                catch (Exception e)
-                {
-                    UT_STRING_CONTAINS(e.Message, "????");
                 }
             }
 
@@ -153,16 +137,18 @@ namespace Test
                     using Interop interop = new();
                     File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
-                    function setup()
+                    local function setup()
                         api.no_good(95)
                         return 0
-                    end");
+                    end
+                    setup()");
+
                     interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
                 {
-                    UT_STRING_CONTAINS(e.Message, "????");
+                    UT_STRING_CONTAINS(e.Message, "attempt to call a nil value (field 'no_good')");
                 }
             }
 
@@ -173,16 +159,18 @@ namespace Test
                     using Interop interop = new();
                     File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
-                    function setup()
+                    local function setup()
                         error(""setup() raises error()"")
                         return 0
-                    end");
+                    end
+                    setup()");
+
                     interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
                 {
-                    UT_STRING_CONTAINS(e.Message, "????");
+                    UT_STRING_CONTAINS(e.Message, " setup() raises error()");
                 }
             }
 
@@ -193,16 +181,18 @@ namespace Test
                     using Interop interop = new();
                     File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
-                    function setup()
+                    local function setup()
                         local bad = 123 + ng
                         return 0
-                    end");
+                    end
+                    setup()");
+
                     interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
                 {
-                    UT_STRING_CONTAINS(e.Message, "????");
+                    UT_STRING_CONTAINS(e.Message, "attempt to perform arithmetic on a nil value (global 'ng')");
                 }
             }
         }
