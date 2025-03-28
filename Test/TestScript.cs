@@ -137,11 +137,7 @@ namespace Test
                     using Interop interop = new();
                     File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
-                    local function setup()
-                        api.no_good(95)
-                        return 0
-                    end
-                    setup()");
+                        api.no_good(95)");
 
                     interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
@@ -159,11 +155,7 @@ namespace Test
                     using Interop interop = new();
                     File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
-                    local function setup()
-                        error(""setup() raises error()"")
-                        return 0
-                    end
-                    setup()");
+                        error(""setup() raises error()"")");
 
                     interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
@@ -181,11 +173,7 @@ namespace Test
                     using Interop interop = new();
                     File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
-                    local function setup()
-                        local bad = 123 + ng
-                        return 0
-                    end
-                    setup()");
+                        local bad = 123 + ng");
 
                     interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
