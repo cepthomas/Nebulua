@@ -1,5 +1,5 @@
 
--- Mock the C lua_interop functions for testing.
+-- Mock the C luainterop functions for testing.
 
 -- Create the namespace/module.
 local M = {}
@@ -31,15 +31,15 @@ function M.log(level, msg)
 end
 
 
-function M.create_input_channel(dev_name, chan_num)
-    capture(string.format("create_input_channel: dev_name:%s chan_num:%d", dev_name, chan_num))
+function M.open_midi_input(dev_name, chan_num)
+    capture(string.format("open_midi_input: dev_name:%s chan_num:%d", dev_name, chan_num))
     local dev_index = 1 -- lower half
     return ((dev_index << 8) | (chan_num))
 end
 
 
-function M.create_output_channel(dev_name, chan_num, patch)
-    capture(string.format("create_output_channel: dev_name:%s chan_num:%d patch:%d", dev_name, chan_num, patch))
+function M.open_midi_output(dev_name, chan_num, patch)
+    capture(string.format("open_midi_output: dev_name:%s chan_num:%d patch:%d", dev_name, chan_num, patch))
     local dev_index = 7 -- upper half
     return ((dev_index << 8) | (chan_num))
 end
@@ -51,15 +51,15 @@ function M.set_tempo(bpm)
 end
 
 
-function M.send_note(chan_hnd, note_num, volume)
+function M.send_midi_note(chan_hnd, note_num, volume)
     -- If volume is 0 note_off else note_on.
-    capture(string.format("send_note: chan_hnd:%s note_num:%d volume:%0.1f", format_chan_hnd(chan_hnd), note_num, volume))
+    capture(string.format("send_midi_note: chan_hnd:%s note_num:%d volume:%0.1f", format_chan_hnd(chan_hnd), note_num, volume))
     return 0
 end
 
 
-function M.send_controller(chan_hnd, controller, value)
-    capture(string.format("send_controller: chan_hnd:%s controller:%d value:%d", format_chan_hnd(chan_hnd), controller, value))
+function M.send_midi_controller(chan_hnd, controller, value)
+    capture(string.format("send_midi_controller: chan_hnd:%s controller:%d value:%d", format_chan_hnd(chan_hnd), controller, value))
     return 0
 end
 

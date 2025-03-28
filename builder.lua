@@ -1,4 +1,4 @@
--- Used to build and test all parts of the Nebulua universe.
+-- Used to build and test all parts of the Nebulua universe. Probably a bit broken now...
 
 -- Fix up the lua path first.
 package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
@@ -87,7 +87,7 @@ elseif opt == 'gen_interop' then
     print('If you really need to do this, see https://github.com/cepthomas/Nebulua/blob/main/docs/tech_notes.md#updating-script.')
 
 elseif opt == 'dev' then
-    local exp_neb = {'lua_interop', 'setup', 'step', 'receive_midi_note', 'receive_midi_controller' }
+    local exp_neb = {'luainterop', 'setup', 'step', 'receive_midi_note', 'receive_midi_controller' }
     extra, missing = ut.check_globals(exp_neb)
     res = ut.dump_list(extra)
     _output_text('extra:'..res)

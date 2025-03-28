@@ -1,10 +1,10 @@
 
--- Unit tests for nebulua.lua. TODO1 all these lua tests.
+-- Unit tests for nebulua.
 
 local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("bar_time")
-local li = require("lua_interop") -- mock
+local li  = require("luainterop") -- mock
 local sx  = require("stringex")
 local api = require("script_api")
 

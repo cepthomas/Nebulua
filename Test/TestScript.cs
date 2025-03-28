@@ -68,7 +68,7 @@ namespace Test
             // Set up runtime lua environment.
             var testDir = MiscUtils.GetSourcePath();
             var luaPath = $"{testDir}\\?.lua;{testDir}\\..\\LBOT\\?.lua;{testDir}\\..\\lua\\?.lua;;";
-            var scriptFn = Path.Join(testDir, "script_happy.lua");
+            var scriptFn = Path.Join(testDir, "lua", "script_happy.lua");
 
             interop.Run(scriptFn, luaPath);
             var ret = interop.Setup();
@@ -108,23 +108,19 @@ namespace Test
             // Set up runtime lua environment.
             var testDir = MiscUtils.GetSourcePath();
             var luaPath = $"{testDir}\\?.lua;{testDir}\\..\\LBOT\\?.lua;;";
-            var scriptFn = Path.Join(testDir, "script_happy.lua");
-
-            // Program.MyInterop!.Dispose();
-            //var interop = Program.MyInterop!;
-
-            var tempfn = "_test_temp.lua";
+            var scriptFn = Path.Join(testDir, "lua", "script_happy.lua");
+            var testFn = "_test.lua";
 
             // General syntax error during load.
             {
                 try
                 {
                     using Interop interop = new();
-                    File.WriteAllText(tempfn,
+                    File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
                     this is a bad statement
                     end");
-                    interop.Run(tempfn, luaPath);
+                    interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
@@ -138,10 +134,10 @@ namespace Test
                 try
                 {
                     using Interop interop = new();
-                    File.WriteAllText(tempfn,
+                    File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
                     resx = 345 + 456");
-                    interop.Run(tempfn, luaPath);
+                    interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
@@ -155,13 +151,13 @@ namespace Test
                 try
                 {
                     using Interop interop = new();
-                    File.WriteAllText(tempfn,
+                    File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
                     function setup()
                         api.no_good(95)
                         return 0
                     end");
-                    interop.Run(tempfn, luaPath);
+                    interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
@@ -175,13 +171,13 @@ namespace Test
                 try
                 {
                     using Interop interop = new();
-                    File.WriteAllText(tempfn,
+                    File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
                     function setup()
                         error(""setup() raises error()"")
                         return 0
                     end");
-                    interop.Run(tempfn, luaPath);
+                    interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)
@@ -195,13 +191,13 @@ namespace Test
                 try
                 {
                     using Interop interop = new();
-                    File.WriteAllText(tempfn,
+                    File.WriteAllText(testFn,
                         @"local api = require(""luainterop"")
                     function setup()
                         local bad = 123 + ng
                         return 0
                     end");
-                    interop.Run(tempfn, luaPath);
+                    interop.Run(testFn, luaPath);
                     UT_FAIL("did not throw");
                 }
                 catch (Exception e)

@@ -42,7 +42,7 @@ local mtom = drum.HiMidTom
 
 -- Example of how to check for extraneous and missing globals.
 local function _gcheck()
-    local exp_neb = {'lua_interop', 'setup', 'step', 'receive_midi_note', 'receive_midi_controller'}
+    local exp_neb = {'luainterop', 'setup', 'step', 'receive_midi_note', 'receive_midi_controller'}
     local extra, missing = ut.check_globals(exp_neb)
     api.log_debug('extra:'..ut.dump_list(extra))
     api.log_debug('missing:'..ut.dump_list(missing))
@@ -197,7 +197,7 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     if valid then
-        -- Do something. TODO1 pattern matching like F#/C#? >>>
+        -- Do something. TODO1 switch/pattern matching like F#/C#? >>>
         -- https://stackoverflow.com/questions/37447704
         -- http://lua-users.org/wiki/SwitchStatement
 
@@ -228,12 +228,8 @@ function step(tick)
 end
 
 
-
-
-
 --[[
-
-TODO1   Patterns and Switch
+//Patterns and Switch
 //public static string GetInstrumentName(int which)
 string ret = which switch
 {

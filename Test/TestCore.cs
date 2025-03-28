@@ -46,7 +46,7 @@ namespace Test
             EventCollector ecoll = new();
 
             // Load the script. 
-            var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "script_happy.lua");
+            var scriptFn = Path.Join(MiscUtils.GetSourcePath(), "lua", "script_happy.lua");
             HostCore hostCore = new();
             hostCore.LoadScript(scriptFn); // may throw
 
