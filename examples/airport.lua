@@ -22,7 +22,7 @@ api.log_info('Loading airport.lua...')
 
 -- Specify midi channels.
 local midi_out = "VirtualMIDISynth #1"
-local chan_hnd = api.create_output_channel(midi_out, 1, mid.instruments.Pad2Warm)
+local chan_hnd = api.open_midi_output(midi_out, 1, mid.instruments.Pad2Warm)
 
 
 ------------------------- Variables -----------------------------------
@@ -79,7 +79,7 @@ function step(tick)
                 for _, note_num in ipairs(loop.notes) do
                     -- Send any note starts now.
                     -- print('on:'..step.note_num)
-                    api.send_note(chan_hnd, note_num, volume, loop.duration)
+                    api.send_midi_note(chan_hnd, note_num, volume, loop.duration)
                 end
                 -- Calculate next time.
                 loop.next_start = tick + loop.delay + loop.duration;

@@ -31,7 +31,7 @@ local _current_section = nil
 -- All the composition StepX. Key is tick aka when-to-play.
 local _steps = {}
 
--- Things that are executed once and disappear: NoteOffs, script send_note(). Same structure as _steps.
+-- Things that are executed once and disappear: NoteOffs, script send_midi_note(). Same structure as _steps.
 local _transients = {}
 
 -- Where we be.
@@ -74,15 +74,15 @@ M.set_tempo = li.set_tempo
 -- @param controller Specific controller 0 -> 127
 -- @param value Payload 0 -> 127
 -- @return status
-M.send_controller = li.send_controller
+M.send_midi_controller = li.send_midi_controller
 
 -----------------------------------------------------------------------------
 --- Create an input channel.
 -- @param dev_name system name
 -- @param chan_num channel number
 -- @return the new chan_hnd or 0 if invalid
-function M.create_input_channel(dev_name, chan_num)
-    local chan_hnd = li.create_input_channel(dev_name, chan_num)
+function M.open_midi_input(dev_name, chan_num)
+    local chan_hnd = li.open_midi_input(dev_name, chan_num)
     return chan_hnd
 end
 
@@ -92,8 +92,8 @@ end
 -- @param chan_num channel number
 -- @param patch send this patch number if >= 0
 -- @return the new chan_hnd
-function M.create_output_channel(dev_name, chan_num, patch)
-    local chan_hnd = li.create_output_channel(dev_name, chan_num, patch)
+function M.open_midi_output(dev_name, chan_num, patch)
+    local chan_hnd = li.open_midi_output(dev_name, chan_num, patch)
     _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
     return chan_hnd
 end
@@ -133,9 +133,9 @@ function M.process_step(tick)
                end
 
                 -- now send
-                li.send_note(step.chan_hnd, step.note_num, step.volume)
+                li.send_midi_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == "controller" then
-                li.send_controller(step.chan_hnd, step.controller, step.value)
+                li.send_midi_controller(step.chan_hnd, step.controller, step.value)
             elseif step.step_type == "function" then
                 step.func(_current_tick)
             end
@@ -147,7 +147,7 @@ function M.process_step(tick)
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
-               li.send_note(step.chan_hnd, step.note_num, step.volume)
+               li.send_midi_note(step.chan_hnd, step.note_num, step.volume)
             end
         end
         -- Disappear it from collection.
@@ -159,7 +159,7 @@ end
 
 -----------------------------------------------------------------------------
 -- Send note immediately. Manages corresponding note off.
-function M.send_note(chan_hnd, note_num, volume, dur)
+function M.send_midi_note(chan_hnd, note_num, volume, dur)
     if dur == nil then dur = 0 end
     -- M.log_debug(string.format("Send now hnd:%d note:%d vol:%f dur:%d", chan_hnd, note_num, volume, dur))
 
@@ -167,14 +167,14 @@ function M.send_note(chan_hnd, note_num, volume, dur)
         -- adjust volume
         volume = volume * _channel_volumes[chan_hnd]
         -- send note_on now
-        li.send_note(chan_hnd, note_num, volume)
+        li.send_midi_note(chan_hnd, note_num, volume)
         if dur > 0 then
             -- chase with noteoff
             local noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
             ut.table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
-       li.send_note(chan_hnd, note_num, 0)
+       li.send_midi_note(chan_hnd, note_num, 0)
    end
 end
 

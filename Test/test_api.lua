@@ -1,5 +1,5 @@
 
--- Unit tests for nebulua.lua.
+-- Unit tests for nebulua.lua. TODO1 all these lua tests.
 
 local ut  = require("lbot_utils")
 local st  = require("step_types")
@@ -135,8 +135,8 @@ function M.suite_process_script(pn)
     -- s = ut.dump_table_string(transients, 1, "transients")
     -- print(s)
 
-    local ok, ret = pcall(rcv_note, 10, 11, 0.3)
-    pn.UT_TRUE(ok, string.format("Script function rcv_note() failed:\n%s ", ret))
+    local ok, ret = pcall(receive_midi_note, 10, 11, 0.3)
+    pn.UT_TRUE(ok, string.format("Script function receive_midi_note() failed:\n%s ", ret))
 end
 
 -----------------------------------------------------------------------------

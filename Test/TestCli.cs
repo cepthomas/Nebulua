@@ -77,7 +77,7 @@ namespace Test
 
             st.ExecState = ExecState.Idle; // reset
             console.Reset();
-            //TODO1 this test is broken
+            //TODOF this case is broken
             //console.NextReadLine = "reload";
             //bret = cli.DoCommand();
             //UT_TRUE(bret);

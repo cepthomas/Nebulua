@@ -14,14 +14,8 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODO1 Tests are broken badly. Fix/replace?
-//[assembly: InternalsVisibleTo("Test")]
-
 // TODOF Running in VS debugger has slow startup. Running the exe or cli is ok.
-// TODO1 Big delay in playing notes with clickclack. May be VirtualMIDISynth? Try reaper.
-// TODO1 fix/tweak lsp lua:
-// C:/Dev/Apps/Nebulua/nebulua.sublime-project) has build, lsp options
-// C:\Users\cepth\AppData\Roaming\Sublime Text\Packages\User\LSP-lua.sublime-settings
+// TODO1 Delay in playing notes with clickclack. May be VirtualMIDISynth? Try reaper.
 
 
 namespace Nebulua

@@ -15,7 +15,7 @@ extern "C" {
 
 //============= C => Lua functions .h =============//
 
-// Call to initialize Nebulator and composition.
+// Called to initialize script.
 // @param[in] l Internal lua state.
 // @return const char* Script meta info if composition
 const char* luainterop_Setup(lua_State* l);
@@ -32,7 +32,7 @@ int luainterop_Step(lua_State* l, int tick);
 // @param[in] note_num Note number 0 => 127
 // @param[in] volume Volume 0.0 => 1.0
 // @return int Unused
-int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume);
+int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
 // Called when midi input arrives.
 // @param[in] l Internal lua state.
@@ -40,25 +40,25 @@ int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume);
 // @param[in] controller Specific controller id 0 => 127
 // @param[in] value Payload 0 => 127
 // @return int Unused
-int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int value);
+int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller, int value);
 
 
 //============= Lua => C callback functions .h =============//
 
-// Create an output midi channel.
+// Open a midi output channel.
 // @param[in] l Internal lua state.
 // @param[in] dev_name Midi device name
 // @param[in] chan_num Midi channel number 1 => 16
 // @param[in] patch Midi patch number 0 => 127
 // @return Channel handle or 0 if invalid
-int luainteropcb_CreateOutputChannel(lua_State* l, const char* dev_name, int chan_num, int patch);
+int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, int patch);
 
-// Create an input midi channel.
+// Open a midi input channel.
 // @param[in] l Internal lua state.
 // @param[in] dev_name Midi device name
 // @param[in] chan_num Midi channel number 1 => 16 or 0 => all
 // @return Channel handle or 0 if invalid
-int luainteropcb_CreateInputChannel(lua_State* l, const char* dev_name, int chan_num);
+int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num);
 
 // If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 // @param[in] l Internal lua state.
@@ -66,7 +66,7 @@ int luainteropcb_CreateInputChannel(lua_State* l, const char* dev_name, int chan
 // @param[in] note_num Note number
 // @param[in] volume Volume 0.0 => 1.0
 // @return Unused
-int luainteropcb_SendNote(lua_State* l, int chan_hnd, int note_num, double volume);
+int luainteropcb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
 // Send a controller immediately.
 // @param[in] l Internal lua state.
@@ -74,7 +74,7 @@ int luainteropcb_SendNote(lua_State* l, int chan_hnd, int note_num, double volum
 // @param[in] controller Specific controller 0 => 127
 // @param[in] value Payload 0 => 127
 // @return Unused
-int luainteropcb_SendController(lua_State* l, int chan_hnd, int controller, int value);
+int luainteropcb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value);
 
 // Script wants to log something.
 // @param[in] l Internal lua state.

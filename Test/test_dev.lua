@@ -66,8 +66,8 @@ function M.suite_1(pn)
     -- -- print(s)
 
 
-    local ok, ret = pcall(rcv_note, 10, 11, 0.3)
-    pn.UT_TRUE(ok, string.format("Script function rcv_note() failed:\n%s ", ret))
+    local ok, ret = pcall(receive_midi_note, 10, 11, 0.3)
+    pn.UT_TRUE(ok, string.format("Script function receive_midi_note() failed:\n%s ", ret))
 
 end
 

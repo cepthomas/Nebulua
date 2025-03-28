@@ -15,7 +15,7 @@ M.script_funcs =
         lua_func_name = "setup",
         host_func_name = "Setup",
         required = "true",
-        description = "Call to initialize Nebulator and composition.",
+        description = "Called to initialize script.",
         -- no args
         ret = { type = "S", description = "Script meta info if composition" }
     },
@@ -33,8 +33,8 @@ M.script_funcs =
     },
 
     {
-        lua_func_name = "rcv_note",
-        host_func_name = "RcvNote",
+        lua_func_name = "receive_midi_note",
+        host_func_name = "ReceiveMidiNote",
         required = "false",
         description = "Called when midi input arrives.",
         args =
@@ -47,8 +47,8 @@ M.script_funcs =
     },
 
     {
-        lua_func_name = "rcv_controller",
-        host_func_name = "RcvController",
+        lua_func_name = "receive_midi_controller",
+        host_func_name = "ReceiveMidiController",
         required = "false",
         description = "Called when midi input arrives.",
         args =
@@ -59,28 +59,15 @@ M.script_funcs =
         },
         ret = { type = "I", description = "Unused" }
     },
-
-    -- {
-    --     lua_func_name = "neb_command",
-    --     host_func_name = "NebCommand",
-    --     required = "true",
-    --     description = "Host calls arbitrary lua function. For internal use only.",
-    --     args =
-    --     {
-    --         { name = "cmd", type = "S", description = "Specific command" },
-    --         { name = "arg", type = "S", description = "Optional argument" },
-    --     },
-    --     ret = { type = "S", description = "Script return" }
-    -- },
 }
 
 ------------------------ Script => Host ------------------------
 M.host_funcs =
 {
     {
-        lua_func_name = "create_output_channel",
-        host_func_name = "CreateOutputChannel",
-        description = "Create an output midi channel.",
+        lua_func_name = "open_midi_output",
+        host_func_name = "OpenMidiOutput",
+        description = "Open a midi output channel.",
         args =
         {
             { name = "dev_name", type = "S", description = "Midi device name" },
@@ -91,9 +78,9 @@ M.host_funcs =
     },
 
     {
-        lua_func_name = "create_input_channel",
-        host_func_name = "CreateInputChannel",
-        description = "Create an input midi channel.",
+        lua_func_name = "open_midi_input",
+        host_func_name = "OpenMidiInput",
+        description = "Open a midi input channel.",
         args =
         {
             { name = "dev_name", type = "S", description = "Midi device name" },
@@ -103,8 +90,8 @@ M.host_funcs =
     },
 
     {
-        lua_func_name = "send_note",
-        host_func_name = "SendNote",
+        lua_func_name = "send_midi_note",
+        host_func_name = "SendMidiNote",
         description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).",
         args =
         {
@@ -116,8 +103,8 @@ M.host_funcs =
     },
 
     {
-        lua_func_name = "send_controller",
-        host_func_name = "SendController",
+        lua_func_name = "send_midi_controller",
+        host_func_name = "SendMidiController",
         description = "Send a controller immediately.",
         args =
         {

@@ -48,10 +48,10 @@ namespace Nebulua
         {
             // Hook script callbacks.
             Interop.Log += Interop_Log;
-            Interop.CreateInputChannel += Interop_CreateInputChannel;
-            Interop.CreateOutputChannel += Interop_CreateOutputChannel;
-            Interop.SendNote += Interop_SendNote;
-            Interop.SendController += Interop_SendController;
+            Interop.OpenMidiInput += Interop_OpenMidiInput;
+            Interop.OpenMidiOutput += Interop_OpenMidiOutput;
+            Interop.SendMidiNote += Interop_SendMidiNote;
+            Interop.SendMidiController += Interop_SendMidiController;
             Interop.SetTempo += Interop_SetTempo;
 
             // State change handler.
@@ -273,15 +273,15 @@ namespace Nebulua
                 switch (e)
                 {
                     case NoteOnEvent evt:
-                        _interop.RcvNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
+                        _interop.ReceiveMidiNote(chan_hnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
                         break;
 
                     case NoteEvent evt:
-                        _interop.RcvNote(chan_hnd, evt.NoteNumber, 0);
+                        _interop.ReceiveMidiNote(chan_hnd, evt.NoteNumber, 0);
                         break;
 
                     case ControlChangeEvent evt:
-                        _interop.RcvController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
+                        _interop.ReceiveMidiController(chan_hnd, (int)evt.Controller, evt.ControllerValue);
                         break;
 
                     default: // Ignore others for now.
@@ -308,7 +308,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_CreateInputChannel(object? _, CreateInputChannelArgs e)
+        void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
             try
             {
@@ -351,7 +351,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_CreateOutputChannel(object? _, CreateOutputChannelArgs e)
+        void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
             try
             {
@@ -392,9 +392,9 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_SendNote(object? _, SendNoteArgs e)
+        void Interop_SendMidiNote(object? _, SendMidiNoteArgs e)
         {
-            Utils.TimeIt("Interop_SendNote() enter");
+            Utils.TimeIt("Interop_SendMidiNote() enter");
             try
             {
                 e.ret = 0; // not used
@@ -428,7 +428,7 @@ namespace Nebulua
             {
                 CallbackError(ex);
             }
-            Utils.TimeIt("Interop_SendNote() exit");
+            Utils.TimeIt("Interop_SendMidiNote() exit");
         }
 
         /// <summary>
@@ -436,7 +436,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_SendController(object? _, SendControllerArgs e)
+        void Interop_SendMidiController(object? _, SendMidiControllerArgs e)
         {
             try
             {

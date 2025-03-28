@@ -19,10 +19,10 @@ local dev_out2 = "loopMIDI Port"
 local dev_in1  = "loopMIDI Port"
 
 -- Channels
-local hnd_piano = li.create_output_channel(dev_out1, 1, 2)
-local hnd_synth = li.create_output_channel(dev_out1, 2, 90)
-local hnd_drums = li.create_output_channel(dev_out1, 10, 8)
-local hnd_input = li.create_input_channel(dev_in1, 3)
+local hnd_piano = li.open_midi_output(dev_out1, 1, 2)
+local hnd_synth = li.open_midi_output(dev_out1, 2, 90)
+local hnd_drums = li.open_midi_output(dev_out1, 10, 8)
+local hnd_input = li.open_midi_input(dev_in1, 3)
 
 
 ------------------------- Vars ----------------------------------------
@@ -46,11 +46,11 @@ function step(tick)
 
     local bar, beat, sub = bt.tick_to_bt(tick)
     if beat == 0 and sub == 0 then
-        li.send_controller(hnd_synth, 50, 51)
+        li.send_midi_controller(hnd_synth, 50, 51)
     end
 
     if beat == 1 and sub == 4 then
-        li.send_controller(hnd_synth, 60, 61)
+        li.send_midi_controller(hnd_synth, 60, 61)
     end
 
     return 0
@@ -58,19 +58,19 @@ end
 
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
-function rcv_note(chan_hnd, note_num, volume)
+function receive_midi_note(chan_hnd, note_num, volume)
     local s = string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
     li.log(2, s)
 
     if chan_hnd == hnd_input then
-        li.send_note(hnd_synth, note_num + 1, volume * 0.5, 8)
+        li.send_midi_note(hnd_synth, note_num + 1, volume * 0.5, 8)
     end
     return 0
 end
 
 -----------------------------------------------------------------------------
 -- Handler for input controller events. Optional.
-function rcv_controller(chan_hnd, controller, value)
+function receive_midi_controller(chan_hnd, controller, value)
     local s = string.format("Script rcv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
     li.log(2, s)
     return 0

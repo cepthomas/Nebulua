@@ -62,6 +62,7 @@ namespace Test
             UT_STOP_ON_FAIL(true);
 
             EventCollector ecoll = new();
+            ecoll.AutoRet = true;
             using Interop interop = new();
 
             // Set up runtime lua environment.
@@ -72,25 +73,26 @@ namespace Test
             interop.Run(scriptFn, luaPath);
             var ret = interop.Setup();
 
-            //ret = interop.NebCommand("cmd", "arg");
-            //UT_EQUAL(ret, "122");
-
             // Run script steps.
-            for (int i = 0; i < 99; i++)
+            for (int i = 1; i < 100; i++)
             {
                 var stat = interop.Step(State.Instance.CurrentTick++);
 
                 // Inject some received midi events.
                 if (i % 20 == 0)
                 {
-                    stat = interop.RcvNote(0x0102, i, (double)i / 100);
-//???                    UT_EQUAL(stat, 99);
+                    stat = interop.ReceiveMidiNote(0x0102, i, (double)i / 100);
+                    UT_EQUAL(stat, 0);
+                    //C:\Dev\Apps\Nebulua\Test\Utils.cs:
+                    //Interop.SendMidiNote += CollectEvent;
+                    //SendMidiNoteArgs ne => $"SendMidiNote chan_hnd:{ne.chan_hnd} note_num:{ne.note_num} volume:{ne.volume}",
+
                 }
 
                 if (i % 20 == 5)
                 {
-                    stat = interop.RcvController(0x0102, i, i);
-//???                    UT_EQUAL(stat, 99);
+                    stat = interop.ReceiveMidiController(0x0102, i, i);
+                    UT_EQUAL(stat, 0);
                 }
             }
         }

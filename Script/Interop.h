@@ -9,7 +9,7 @@ using namespace System::Collections::Generic;
 //============= C => C# callback payload .h =============//
 
 //--------------------------------------------------------//
-public ref class CreateOutputChannelArgs : public EventArgs
+public ref class OpenMidiOutputArgs : public EventArgs
 {
 public:
     /// <summary>Midi device name</summary>
@@ -21,7 +21,7 @@ public:
     /// <summary>Channel handle or 0 if invalid</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    CreateOutputChannelArgs(const char* dev_name, int chan_num, int patch)
+    OpenMidiOutputArgs(const char* dev_name, int chan_num, int patch)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
@@ -30,7 +30,7 @@ public:
 };
 
 //--------------------------------------------------------//
-public ref class CreateInputChannelArgs : public EventArgs
+public ref class OpenMidiInputArgs : public EventArgs
 {
 public:
     /// <summary>Midi device name</summary>
@@ -40,7 +40,7 @@ public:
     /// <summary>Channel handle or 0 if invalid</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    CreateInputChannelArgs(const char* dev_name, int chan_num)
+    OpenMidiInputArgs(const char* dev_name, int chan_num)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
@@ -48,7 +48,7 @@ public:
 };
 
 //--------------------------------------------------------//
-public ref class SendNoteArgs : public EventArgs
+public ref class SendMidiNoteArgs : public EventArgs
 {
 public:
     /// <summary>Output channel handle</summary>
@@ -60,7 +60,7 @@ public:
     /// <summary>Unused</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    SendNoteArgs(int chan_hnd, int note_num, double volume)
+    SendMidiNoteArgs(int chan_hnd, int note_num, double volume)
     {
         this->chan_hnd = chan_hnd;
         this->note_num = note_num;
@@ -69,7 +69,7 @@ public:
 };
 
 //--------------------------------------------------------//
-public ref class SendControllerArgs : public EventArgs
+public ref class SendMidiControllerArgs : public EventArgs
 {
 public:
     /// <summary>Output channel handle</summary>
@@ -81,7 +81,7 @@ public:
     /// <summary>Unused</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    SendControllerArgs(int chan_hnd, int controller, int value)
+    SendMidiControllerArgs(int chan_hnd, int controller, int value)
     {
         this->chan_hnd = chan_hnd;
         this->controller = controller;
@@ -139,33 +139,33 @@ public:
     /// <returns>Script return</returns>
     int Step(int tick);
 
-    /// <summary>RcvNote</summary>
+    /// <summary>ReceiveMidiNote</summary>
     /// <param name="chan_hnd">Input channel handle</param>
     /// <param name="note_num">Note number 0 => 127</param>
     /// <param name="volume">Volume 0.0 => 1.0</param>
     /// <returns>Script return</returns>
-    int RcvNote(int chan_hnd, int note_num, double volume);
+    int ReceiveMidiNote(int chan_hnd, int note_num, double volume);
 
-    /// <summary>RcvController</summary>
+    /// <summary>ReceiveMidiController</summary>
     /// <param name="chan_hnd">Input channel handle</param>
     /// <param name="controller">Specific controller id 0 => 127</param>
     /// <param name="value">Payload 0 => 127</param>
     /// <returns>Script return</returns>
-    int RcvController(int chan_hnd, int controller, int value);
+    int ReceiveMidiController(int chan_hnd, int controller, int value);
 
 //============= C => C# callback functions =============//
 public:
-    static event EventHandler<CreateOutputChannelArgs^>^ CreateOutputChannel;
-    static void Notify(CreateOutputChannelArgs^ args) { CreateOutputChannel(nullptr, args); }
+    static event EventHandler<OpenMidiOutputArgs^>^ OpenMidiOutput;
+    static void Notify(OpenMidiOutputArgs^ args) { OpenMidiOutput(nullptr, args); }
 
-    static event EventHandler<CreateInputChannelArgs^>^ CreateInputChannel;
-    static void Notify(CreateInputChannelArgs^ args) { CreateInputChannel(nullptr, args); }
+    static event EventHandler<OpenMidiInputArgs^>^ OpenMidiInput;
+    static void Notify(OpenMidiInputArgs^ args) { OpenMidiInput(nullptr, args); }
 
-    static event EventHandler<SendNoteArgs^>^ SendNote;
-    static void Notify(SendNoteArgs^ args) { SendNote(nullptr, args); }
+    static event EventHandler<SendMidiNoteArgs^>^ SendMidiNote;
+    static void Notify(SendMidiNoteArgs^ args) { SendMidiNote(nullptr, args); }
 
-    static event EventHandler<SendControllerArgs^>^ SendController;
-    static void Notify(SendControllerArgs^ args) { SendController(nullptr, args); }
+    static event EventHandler<SendMidiControllerArgs^>^ SendMidiController;
+    static void Notify(SendMidiControllerArgs^ args) { SendMidiController(nullptr, args); }
 
     static event EventHandler<LogArgs^>^ Log;
     static void Notify(LogArgs^ args) { Log(nullptr, args); }

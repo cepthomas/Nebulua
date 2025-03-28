@@ -38,9 +38,9 @@ function step(tick)  [in my_lua_script.lua]
 
 Lua -> host
 ```
-neb.send_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
+neb.send_midi_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
     calls
-luainterop_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
+luainterop_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
     calls
  AppInterop::NotifySend(args)  [in interop\AppInterop.cpp]
     calls

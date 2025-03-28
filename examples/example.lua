@@ -26,18 +26,18 @@ api.log_info('Loading example.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels. Note that yours will be different!
-local hnd_ccin  = api.create_input_channel("ccMidiGen", 1)
-local hnd_lmin  = api.create_input_channel("loopMIDI Port", 7)
+local hnd_ccin  = api.open_midi_input("ccMidiGen", 1)
+local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
 
 -- DAW or VST host.
 -- local midi_out  = "loopMIDI Port"
 local midi_out  = "VirtualMIDISynth #1"
-local hnd_keys  = api.create_output_channel(midi_out, 1,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
-local hnd_bass  = api.create_output_channel(midi_out, 2,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
-local hnd_synth = api.create_output_channel(midi_out, 3,  ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
-local hnd_drums = api.create_output_channel(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
+local hnd_keys  = api.open_midi_output(midi_out, 1,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = api.open_midi_output(midi_out, 2,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
+local hnd_synth = api.open_midi_output(midi_out, 3,  ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
+local hnd_drums = api.open_midi_output(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
 
-local hnd_ccout = api.create_output_channel(midi_out, 6, ut.tern(use_host, mid.NO_PATCH, inst.StringEnsemble1))
+local hnd_ccout = api.open_midi_output(midi_out, 6, ut.tern(use_host, mid.NO_PATCH, inst.StringEnsemble1))
 
 ------------------------- Variables -----------------------------------
 
@@ -96,7 +96,7 @@ function step(tick)
     -- Other work you may want to do. Like do something every new bar.
         local bar, beat, sub = bt.tick_to_bt(tick)
         if beat == 2 and sub == 0 then
-            -- api.send_controller(hnd_synth, ctrl.Pan, 90)
+            -- api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
             _algo_func(tick)
         end
 
@@ -105,20 +105,20 @@ end
 
 ---------------------------------------------------------------------------
 -- Handler for input note events. Optional.
-function rcv_note(chan_hnd, note_num, volume)
+function receive_midi_note(chan_hnd, note_num, volume)
     api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
     api.log_debug(string.format(">>> chan_hnd:%d hnd_ccin:%d", chan_hnd, hnd_ccin))
 
     if chan_hnd == hnd_ccin then
         -- Play the note.
-        api.send_note(hnd_ccout, note_num, volume)--, 0)
+        api.send_midi_note(hnd_ccout, note_num, volume)--, 0)
     end
     return 0
 end
 
 ---------------------------------------------------------------------------
 -- Handlers for input controller events. Optional.
-function rcv_controller(chan_hnd, controller, value)
+function receive_midi_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_ccin then
         -- Do something.
         api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
@@ -133,7 +133,7 @@ end
 _algo_func = function(tick)
     if my_scale ~= nil then
         local note_num = math.random(1, #my_scale)
-        api.send_note(hnd_synth, my_scale[note_num], 0.8, 3)
+        api.send_midi_note(hnd_synth, my_scale[note_num], 0.8, 3)
     end
 end
 

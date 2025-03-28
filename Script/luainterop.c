@@ -78,7 +78,7 @@ int luainterop_Step(lua_State* l, int tick)
 }
 
 //--------------------------------------------------------//
-int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     _error = NULL;
     int stat = LUA_OK;
@@ -87,10 +87,10 @@ int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume)
     int ret = 0;
 
     // Get function.
-    int ltype = lua_getglobal(l, "rcv_note");
+    int ltype = lua_getglobal(l, "receive_midi_note");
     if (ltype != LUA_TFUNCTION)
     {
-        if (false) { _error = "Bad function name: rcv_note()"; }
+        if (false) { _error = "Bad function name: receive_midi_note()"; }
         return ret;
     }
 
@@ -108,7 +108,7 @@ int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume)
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Bad return type for rcv_note(): should be integer"; }
+        else { _error = "Bad return type for receive_midi_note(): should be integer"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -116,7 +116,7 @@ int luainterop_RcvNote(lua_State* l, int chan_hnd, int note_num, double volume)
 }
 
 //--------------------------------------------------------//
-int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int value)
+int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller, int value)
 {
     _error = NULL;
     int stat = LUA_OK;
@@ -125,10 +125,10 @@ int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int val
     int ret = 0;
 
     // Get function.
-    int ltype = lua_getglobal(l, "rcv_controller");
+    int ltype = lua_getglobal(l, "receive_midi_controller");
     if (ltype != LUA_TFUNCTION)
     {
-        if (false) { _error = "Bad function name: rcv_controller()"; }
+        if (false) { _error = "Bad function name: receive_midi_controller()"; }
         return ret;
     }
 
@@ -146,7 +146,7 @@ int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int val
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Bad return type for rcv_controller(): should be integer"; }
+        else { _error = "Bad return type for receive_midi_controller(): should be integer"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -157,14 +157,14 @@ int luainterop_RcvController(lua_State* l, int chan_hnd, int controller, int val
 //============= Lua => C callback functions .c =============//
 
 //--------------------------------------------------------//
-// Create an output midi channel.
+// Open a midi output channel.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
 // Lua arg: chan_num Midi channel number 1 => 16
 // Lua arg: patch Midi patch number 0 => 127
 // Lua return: int Channel handle or 0 if invalid
-static int luainterop_CreateOutputChannel(lua_State* l)
+static int luainterop_OpenMidiOutput(lua_State* l)
 {
     // Get arguments
     const char* dev_name;
@@ -178,19 +178,19 @@ static int luainterop_CreateOutputChannel(lua_State* l)
     else { luaL_error(l, "Bad arg type for: patch"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_CreateOutputChannel(l, dev_name, chan_num, patch);
+    int ret = luainteropcb_OpenMidiOutput(l, dev_name, chan_num, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
 
 //--------------------------------------------------------//
-// Create an input midi channel.
+// Open a midi input channel.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
 // Lua arg: chan_num Midi channel number 1 => 16 or 0 => all
 // Lua return: int Channel handle or 0 if invalid
-static int luainterop_CreateInputChannel(lua_State* l)
+static int luainterop_OpenMidiInput(lua_State* l)
 {
     // Get arguments
     const char* dev_name;
@@ -201,7 +201,7 @@ static int luainterop_CreateInputChannel(lua_State* l)
     else { luaL_error(l, "Bad arg type for: chan_num"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_CreateInputChannel(l, dev_name, chan_num);
+    int ret = luainteropcb_OpenMidiInput(l, dev_name, chan_num);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -214,7 +214,7 @@ static int luainterop_CreateInputChannel(lua_State* l)
 // Lua arg: note_num Note number
 // Lua arg: volume Volume 0.0 => 1.0
 // Lua return: int Unused
-static int luainterop_SendNote(lua_State* l)
+static int luainterop_SendMidiNote(lua_State* l)
 {
     // Get arguments
     int chan_hnd;
@@ -228,7 +228,7 @@ static int luainterop_SendNote(lua_State* l)
     else { luaL_error(l, "Bad arg type for: volume"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_SendNote(l, chan_hnd, note_num, volume);
+    int ret = luainteropcb_SendMidiNote(l, chan_hnd, note_num, volume);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -241,7 +241,7 @@ static int luainterop_SendNote(lua_State* l)
 // Lua arg: controller Specific controller 0 => 127
 // Lua arg: value Payload 0 => 127
 // Lua return: int Unused
-static int luainterop_SendController(lua_State* l)
+static int luainterop_SendMidiController(lua_State* l)
 {
     // Get arguments
     int chan_hnd;
@@ -255,7 +255,7 @@ static int luainterop_SendController(lua_State* l)
     else { luaL_error(l, "Bad arg type for: value"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_SendController(l, chan_hnd, controller, value);
+    int ret = luainteropcb_SendMidiController(l, chan_hnd, controller, value);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -307,10 +307,10 @@ static int luainterop_SetTempo(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
-    { "create_output_channel", luainterop_CreateOutputChannel },
-    { "create_input_channel", luainterop_CreateInputChannel },
-    { "send_note", luainterop_SendNote },
-    { "send_controller", luainterop_SendController },
+    { "open_midi_output", luainterop_OpenMidiOutput },
+    { "open_midi_input", luainterop_OpenMidiInput },
+    { "send_midi_note", luainterop_SendMidiNote },
+    { "send_midi_controller", luainterop_SendMidiController },
     { "log", luainterop_Log },
     { "set_tempo", luainterop_SetTempo },
     { NULL, NULL }

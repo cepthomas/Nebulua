@@ -80,7 +80,7 @@ Call these from your script.
 
 
 ```lua
-function api.create_output_channel(dev_name, chan_num, patch)
+function api.open_midi_output(dev_name, chan_num, patch)
 ```
 Register an output midi channel.
 
@@ -91,7 +91,7 @@ Register an output midi channel.
 
 
 ```lua
-function api.create_input_channel(dev_name, chan_num)
+function api.open_midi_input(dev_name, chan_num)
 ```
 Register an input midi channel.
 
@@ -101,7 +101,7 @@ Register an input midi channel.
 
 
 ```lua
-function api.send_note(chan_hnd, note_num, volume, dur)
+function api.send_midi_note(chan_hnd, note_num, volume, dur)
 ```
 Send a note on/off immediately. Adds a note off if dur is specified and tick clock is running.
 
@@ -112,7 +112,7 @@ Send a note on/off immediately. Adds a note off if dur is specified and tick clo
 
 
 ```lua
-function api.send_controller(chan_hnd, controller, value)
+function api.send_midi_controller(chan_hnd, controller, value)
 ```
 Send a controller immediately. Useful for things like panning and bank select.
 
@@ -201,7 +201,7 @@ Called every subbeat/tick. Required.
 
 
 ```lua
-function rcv_note(chan_hnd, note_num, volume)
+function receive_midi_note(chan_hnd, note_num, volume)
 ```
 Called when input note arrives. Optional.
 

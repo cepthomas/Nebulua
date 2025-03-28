@@ -29,20 +29,20 @@ int Interop::Step(int tick)
 }
 
 //--------------------------------------------------------//
-int Interop::RcvNote(int chan_hnd, int note_num, double volume)
+int Interop::ReceiveMidiNote(int chan_hnd, int note_num, double volume)
 {
     SCOPE();
-    int ret = luainterop_RcvNote(_l, chan_hnd, note_num, volume);
-    EvalLuaInteropStatus(luainterop_Error(), "RcvNote()");
+    int ret = luainterop_ReceiveMidiNote(_l, chan_hnd, note_num, volume);
+    EvalLuaInteropStatus(luainterop_Error(), "ReceiveMidiNote()");
     return ret; 
 }
 
 //--------------------------------------------------------//
-int Interop::RcvController(int chan_hnd, int controller, int value)
+int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 {
     SCOPE();
-    int ret = luainterop_RcvController(_l, chan_hnd, controller, value);
-    EvalLuaInteropStatus(luainterop_Error(), "RcvController()");
+    int ret = luainterop_ReceiveMidiController(_l, chan_hnd, controller, value);
+    EvalLuaInteropStatus(luainterop_Error(), "ReceiveMidiController()");
     return ret; 
 }
 
@@ -52,10 +52,10 @@ int Interop::RcvController(int chan_hnd, int controller, int value)
 
 //--------------------------------------------------------//
 
-int luainteropcb_CreateOutputChannel(lua_State* l, const char* dev_name, int chan_num, int patch)
+int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, int patch)
 {
     SCOPE();
-    CreateOutputChannelArgs^ args = gcnew CreateOutputChannelArgs(dev_name, chan_num, patch);
+    OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, patch);
     Interop::Notify(args);
     return args->ret;
 }
@@ -63,10 +63,10 @@ int luainteropcb_CreateOutputChannel(lua_State* l, const char* dev_name, int cha
 
 //--------------------------------------------------------//
 
-int luainteropcb_CreateInputChannel(lua_State* l, const char* dev_name, int chan_num)
+int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num)
 {
     SCOPE();
-    CreateInputChannelArgs^ args = gcnew CreateInputChannelArgs(dev_name, chan_num);
+    OpenMidiInputArgs^ args = gcnew OpenMidiInputArgs(dev_name, chan_num);
     Interop::Notify(args);
     return args->ret;
 }
@@ -74,10 +74,10 @@ int luainteropcb_CreateInputChannel(lua_State* l, const char* dev_name, int chan
 
 //--------------------------------------------------------//
 
-int luainteropcb_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainteropcb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     SCOPE();
-    SendNoteArgs^ args = gcnew SendNoteArgs(chan_hnd, note_num, volume);
+    SendMidiNoteArgs^ args = gcnew SendMidiNoteArgs(chan_hnd, note_num, volume);
     Interop::Notify(args);
     return args->ret;
 }
@@ -85,10 +85,10 @@ int luainteropcb_SendNote(lua_State* l, int chan_hnd, int note_num, double volum
 
 //--------------------------------------------------------//
 
-int luainteropcb_SendController(lua_State* l, int chan_hnd, int controller, int value)
+int luainteropcb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value)
 {
     SCOPE();
-    SendControllerArgs^ args = gcnew SendControllerArgs(chan_hnd, controller, value);
+    SendMidiControllerArgs^ args = gcnew SendMidiControllerArgs(chan_hnd, controller, value);
     Interop::Notify(args);
     return args->ret;
 }

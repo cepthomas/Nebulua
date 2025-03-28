@@ -17,7 +17,7 @@ namespace Test
         {
             UT_STOP_ON_FAIL(true);
 
-            //////// TODO1 some of HostCore api /////////////
+            //////// some of HostCore api /////////////
             // public HostCore()
             // public void Dispose()
             // public void LoadScript(string? scriptFn = null)
@@ -28,10 +28,10 @@ namespace Test
             // void State_ValueChangeEvent(object? _, string name)
             // void MmTimer_Callback(double totalElapsed, double periodElapsed)
             // void Midi_ReceiveEvent(object? sender, MidiEvent e)
-            // void Interop_CreateInputChannel(object? _, CreateInputChannelArgs e)
-            // void Interop_CreateOutputChannel(object? _, CreateOutputChannelArgs e)
-            // void Interop_SendNote(object? _, SendNoteArgs e)
-            // void Interop_SendController(object? _, SendControllerArgs e)
+            // void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
+            // void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
+            // void Interop_SendMidiNote(object? _, SendMidiNoteArgs e)
+            // void Interop_send_midi_controller(object? _, send_midi_controllerArgs e)
             // void Interop_SetTempo(object? _, SetTempoArgs e)
             // void Interop_Log(object? _, LogArgs e)
             // void ResetIo()
@@ -57,7 +57,7 @@ namespace Test
             //// Fake valid loaded script.
             //State.Instance.InitSectionInfo(interop.SectionInfo);
 
-            UT_EQUAL(ecoll.CollectedEvents.Count, 7);
+            UT_EQUAL(ecoll.Events.Count, 7);
         }
     }
 }
