@@ -1,5 +1,5 @@
 
--- Script for unit test - the happy path.
+-- Script for interop unit test - the happy path.
 
 local li = require("luainterop")
 local md = require("music_defs")
