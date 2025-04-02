@@ -11,6 +11,7 @@ local st  = require("step_types")
 local mid = require("midi_defs")
 local mus = require("music_defs")
 local sx  = require("stringex")
+local tx  = require("tableex")
 
 
 -- TODOF stress test and bulletproof this.
@@ -129,7 +130,7 @@ function M.process_step(tick)
                    local dur = math.max(step.duration, 1) -- (min for drum/hit)
                    -- chase with noteoff
                    local noteoff = st.note(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
-                   ut.table_add(_transients, noteoff.tick, noteoff)
+                   tx.table_add(_transients, noteoff.tick, noteoff)
                end
 
                 -- now send
@@ -171,7 +172,7 @@ function M.send_midi_note(chan_hnd, note_num, volume, dur)
         if dur > 0 then
             -- chase with noteoff
             local noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
-            ut.table_add(_transients, noteoff.tick, noteoff)
+            tx.table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
        li.send_midi_note(chan_hnd, note_num, 0)
@@ -205,15 +206,15 @@ function M.send_sequence_steps(seq_steps, tick)
                local dur = math.max(step.duration, 1) -- (min for drum/hit)
 
                local noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
-               ut.table_add(_transients, noteon.tick, noteon)
+               tx.table_add(_transients, noteon.tick, noteon)
 
                -- chase with noteoff
                local noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
-               ut.table_add(_transients, noteoff.tick, noteoff)
+               tx.table_add(_transients, noteoff.tick, noteoff)
 
            else -- note off
                local noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
-               ut.table_add(_transients, noteoff.tick, noteoff)
+               tx.table_add(_transients, noteoff.tick, noteoff)
            end
 
         end
@@ -435,7 +436,7 @@ function M.parse_section(section, start_tick)
                     local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
                     if seq_length ~= 0 then -- save the steps to master table
                         for _, step in ipairs(chunk_steps) do
-                            ut.table_add(_steps, step.tick, step)
+                            tx.table_add(_steps, step.tick, step)
                         end
                         seq_length_max = math.max(seq_length_max, seq_length)
                     else
