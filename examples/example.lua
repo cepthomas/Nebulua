@@ -117,7 +117,7 @@ function receive_midi_note(chan_hnd, note_num, volume)
     if chan_hnd == hnd_ccin then
         -- Play the note.
         api.send_midi_note(hnd_ccout, note_num, volume)--, 0)
-        -- api.log_debug(string.format("RCV hnd_ccin note:%d chan_hnd:%d vol:%f", note_num, chan_hnd, volume))
+        -- api.log_debug(string.format("RCV hnd_ccin note:%d chan_hnd:%d volume:%f", note_num, chan_hnd, volume))
     end
     return 0
 end
@@ -127,7 +127,7 @@ end
 function receive_midi_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_ccin then
         -- Do something.
-        -- api.log_debug(string.format("RCV controller:%d chan_hnd:%d val:%d", controller, chan_hnd, value))
+        -- api.log_debug(string.format("RCV controller:%d chan_hnd:%d value:%d", controller, chan_hnd, value))
     end
     return 0
 end

@@ -13,6 +13,11 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
+//TODOL:
+//"dur:295.510 tot:295.510 MainForm() enter"
+//"dur:1390.500 tot:1686.010 MainForm() exit"
+//"dur:035.980 tot:1721.990 OnLoad() entry"
+//"dur:284.873 tot:2006.863 OnLoad() exit"
 
 namespace Nebulua
 {
