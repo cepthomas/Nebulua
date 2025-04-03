@@ -14,10 +14,6 @@ using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
 
-// TODOF Running in VS debugger has slow startup. Running the exe or cli is ok.
-// TODO1 Delay in playing notes with clickclack. May be VirtualMIDISynth? Try reaper.
-
-
 namespace Nebulua
 {
     public partial class MainForm : Form
@@ -31,6 +27,8 @@ namespace Nebulua
 
         /// <summary>Current script. Null means none.</summary>
         string? _scriptFn = null;
+
+        TimeIt _timeIt = new();
         #endregion
 
         #region Lifecycle
@@ -39,6 +37,8 @@ namespace Nebulua
         /// </summary>
         public MainForm()
         {
+            _timeIt.Snap("MainForm() enter");
+
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
 
@@ -52,8 +52,6 @@ namespace Nebulua
             LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
             LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
-
-            Utils.TimeIt("MainForm() enter");
 
             // Main window.
             Location = UserSettings.Current.FormGeometry.Location;
@@ -143,7 +141,7 @@ namespace Nebulua
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-            Utils.TimeIt("MainForm() exit");
+            _timeIt.Snap("MainForm() exit");
         }
 
         /// <summary>
@@ -152,6 +150,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
+            _timeIt.Snap("OnLoad() entry");
             PopulateFileMenu();
 
             if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
@@ -160,6 +159,7 @@ namespace Nebulua
             }
 
             base.OnLoad(e);
+            _timeIt.Snap("OnLoad() exit");
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace Nebulua
             options.Add("Open...");
             if (_scriptFn is not null)
             {
-                options.Add("Reload"); // TODOF better ui way?
+                options.Add("Reload"); // TODOL better ui way?
             }
             if (UserSettings.Current.RecentFiles.Count > 0)
             {
@@ -390,12 +390,10 @@ namespace Nebulua
         {
             if (e.X is not null && e.Y is not null)
             {
-                Utils.TimeIt("CcMidiGen_MouseClickEvent() enter");
                 string name = ((ClickClack)sender!).Name;
                 int x = (int)e.X; // note
                 int y = (int)e.Y; // velocity
                 _hostCore.InjectReceiveEvent(name, 1, x, y);
-                Utils.TimeIt("CcMidiGen_MouseClickEvent() exit");
             }
         }
 
@@ -482,7 +480,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// The meaning of life. TODOF fights with github flavor a bit.
+        /// The meaning of life. This fights with github flavor a bit.
         /// </summary>
         void About_Click(object? sender, EventArgs e)
         {

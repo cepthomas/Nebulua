@@ -930,9 +930,25 @@
             <param name="range">Data range</param>
             <returns>Format specifier</returns>
         </member>
+        <member name="T:Ephemera.NBagOfTricks.TimeIt">
+            <summary>Simple/cheap profiling.</summary>
+        </member>
+        <member name="M:Ephemera.NBagOfTricks.TimeIt.Snap(System.String)">
+            <summary>
+            Measure one time.
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:Ephemera.NBagOfTricks.TimeIt.FormatTicks(System.Int64)">
+            <summary>
+            Conversion for stopwatch values.
+            </summary>
+            <param name="ticks"></param>
+            <returns></returns>
+        </member>
         <member name="T:Ephemera.NBagOfTricks.TimingAnalyzer">
             <summary>
-            Diagnostics for timing measurement.
+            Diagnostics for timing measurement and analysis.
             </summary>
         </member>
         <member name="F:Ephemera.NBagOfTricks.TimingAnalyzer._watch">

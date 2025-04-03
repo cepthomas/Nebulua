@@ -27,17 +27,24 @@ api.log_info('Loading example.lua...')
 
 -- Specify midi channels. Note that yours will be different!
 local hnd_ccin  = api.open_midi_input("ccMidiGen", 1)
-local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
+-- local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
 
--- DAW or VST host.
--- local midi_out  = "loopMIDI Port"
-local midi_out  = "VirtualMIDISynth #1"
-local hnd_keys  = api.open_midi_output(midi_out, 1,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
-local hnd_bass  = api.open_midi_output(midi_out, 2,  ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
-local hnd_synth = api.open_midi_output(midi_out, 3,  ut.tern(use_host, mid.NO_PATCH, inst.Lead1Square))
-local hnd_drums = api.open_midi_output(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
+-- DAW host.
+local midi_out  = "loopMIDI Port"
+local hnd_keys  = api.open_midi_output(midi_out, 1, mid.NO_PATCH)
+local hnd_bass  = api.open_midi_output(midi_out, 2, mid.NO_PATCH)
+local hnd_synth = api.open_midi_output(midi_out, 3, mid.NO_PATCH)
+local hnd_ccout = api.open_midi_output(midi_out, 4, mid.NO_PATCH)
+local hnd_drums = api.open_midi_output(midi_out, 10, mid.NO_PATCH)
 
-local hnd_ccout = api.open_midi_output(midi_out, 6, ut.tern(use_host, mid.NO_PATCH, inst.StringEnsemble1))
+-- Local VST host.
+-- local midi_out  = "VirtualMIDISynth #1"
+-- local hnd_keys  = api.open_midi_output(midi_out, 1, inst.AcousticGrandPiano)
+-- local hnd_bass  = api.open_midi_output(midi_out, 2, inst.AcousticBass)
+-- local hnd_synth = api.open_midi_output(midi_out, 3, inst.Lead1Square)
+-- local hnd_ccout = api.open_midi_output(midi_out, 4, inst.StringEnsemble1)
+-- local hnd_drums = api.open_midi_output(midi_out, 10, kit.Jazz)
+
 
 ------------------------- Variables -----------------------------------
 
@@ -63,7 +70,9 @@ local _algo_func
 
 -- dbg()
 
-------------------------- System Functions -----------------------------
+---------------------------------------------------------------------------
+------------------------- System Functions --------------------------------
+---------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
 -- Called once to initialize your script stuff. Required.
@@ -89,7 +98,6 @@ end
 -----------------------------------------------------------------------------
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
-
     -- Overhead.
     api.process_step(tick)
 
@@ -106,12 +114,10 @@ end
 ---------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function receive_midi_note(chan_hnd, note_num, volume)
-    api.log_debug(string.format("RCV note:%d hnd:%d vol:%f", note_num, chan_hnd, volume))
-    api.log_debug(string.format(">>> chan_hnd:%d hnd_ccin:%d", chan_hnd, hnd_ccin))
-
     if chan_hnd == hnd_ccin then
         -- Play the note.
         api.send_midi_note(hnd_ccout, note_num, volume)--, 0)
+        -- api.log_debug(string.format("RCV hnd_ccin note:%d chan_hnd:%d vol:%f", note_num, chan_hnd, volume))
     end
     return 0
 end
@@ -121,13 +127,14 @@ end
 function receive_midi_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_ccin then
         -- Do something.
-        api.log_debug(string.format("RCV controller:%d hnd:%d val:%d", controller, chan_hnd, value))
+        -- api.log_debug(string.format("RCV controller:%d chan_hnd:%d val:%d", controller, chan_hnd, value))
     end
     return 0
 end
 
-
------------------------ Local Functions ----------------------------------
+---------------------------------------------------------------------------
+----------------------- Local Functions -----------------------------------
+---------------------------------------------------------------------------
 
 -- Function called from sequence.
 _algo_func = function(tick)
@@ -137,8 +144,9 @@ _algo_func = function(tick)
     end
 end
 
-
-------------------------- Composition ---------------------------------------
+---------------------------------------------------------------------------
+------------------------- Composition -------------------------------------
+---------------------------------------------------------------------------
 
 -- Sequences -- each sequence is 8 beats = 2 bars, section is 8 bars
 

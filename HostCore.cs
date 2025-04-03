@@ -143,7 +143,6 @@ namespace Nebulua
         /// </summary>
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
-            Utils.TimeIt("InjectReceiveEvent() enter");
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
 
             if (input is not null)
@@ -158,7 +157,6 @@ namespace Nebulua
             {
                 CallbackError(new SyntaxException($"Invalid internal device:{devName}"));
             }
-            Utils.TimeIt("InjectReceiveEvent() exit");
         }
 
         /// <summary>
@@ -263,7 +261,6 @@ namespace Nebulua
         /// <param name="e"></param>
         void Midi_ReceiveEvent(object? sender, MidiEvent e)
         {
-            Utils.TimeIt("Midi_ReceiveEvent() enter");
             try
             {
                 int index = _inputs.IndexOf((MidiInput)sender!);
@@ -298,7 +295,6 @@ namespace Nebulua
             {
                 _logger.Exception(ex);
             }
-            Utils.TimeIt("Midi_ReceiveEvent() exit");
         }
         #endregion
 
@@ -394,7 +390,6 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_SendMidiNote(object? _, SendMidiNoteArgs e)
         {
-            Utils.TimeIt("Interop_SendMidiNote() enter");
             try
             {
                 e.ret = 0; // not used
@@ -428,7 +423,6 @@ namespace Nebulua
             {
                 CallbackError(ex);
             }
-            Utils.TimeIt("Interop_SendMidiNote() exit");
         }
 
         /// <summary>

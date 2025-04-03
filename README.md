@@ -9,16 +9,6 @@ It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulat
 
 ![logo](docs/marks.png)
 
-## Caveats
-
-- Currently this is a build-and-run-it-yourself configuration. Eventually an installer may be provided.
-- Building this solution requires [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks) in a folder named `LBOT`
-  at the top level. This can be done one of several ways:
-  - git submodule
-  - copy of pertinent parts
-  - symlink: `mklink /d some_path\Nebulua\LBOT other_path\LuaBagOfTricks`
-
-
 ## Usage
 
 If you pass it a script file name on the command line it runs as a command line application. If not the UI is started.
@@ -31,6 +21,18 @@ Since the built-in Windows GM player sounds terrible, there are a couple of opti
 - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
 - If you are using a DAW for sound generation, you can use a virtual midi loopback like
     [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to send to it.
+
+
+## Caveats
+
+- Currently this is a build-and-run-it-yourself configuration. Eventually an installer may be provided.
+- Building this solution requires [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks) in a folder named `LBOT`
+  at the top level. This can be done one of several ways:
+  - git submodule
+  - copy of pertinent parts
+  - symlink: `mklink /d some_path\Nebulua\LBOT other_path\LuaBagOfTricks`
+- VirtualMIDISynth has a significant delay after realtime midi inputs. This will not be a problem if you are just playing a midi file.
+- Running in VS debugger has a very slow startup. Running from the exe or cli is ok.
 
 
 ## Example Script Files

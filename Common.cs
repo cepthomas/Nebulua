@@ -16,8 +16,6 @@ namespace Nebulua
     public class Utils
     {
         static readonly Logger _logger = LogManager.CreateLogger("COM");
-        static long _startTick = 0;
-        static long _lastTick = 0;
 
         /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
@@ -54,28 +52,6 @@ namespace Nebulua
             }
 
             return (fatal, msg);
-        }
-
-        /// <summary>
-        /// Measure some times.
-        /// </summary>
-        /// <param name="msg"></param>
-        public static void TimeIt(string msg)
-        {
-            long tick = Stopwatch.GetTimestamp();
-
-            if (_startTick == 0)
-            {
-                _startTick = tick;
-                _lastTick = tick;
-            }
-
-            double durMsec = 1000.0 * (tick - _lastTick) / Stopwatch.Frequency;
-            double totMsec = 1000.0 * (tick - _startTick) / Stopwatch.Frequency;
-            var s = $"dur:{durMsec} tot:{totMsec} {msg}";
-            //_logger.Info(s);
-            // Console.WriteLine(s);
-            _lastTick = tick;
         }
     }
 
