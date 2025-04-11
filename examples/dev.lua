@@ -64,11 +64,11 @@ local hin = api.open_midi_input("ccMidiGen", 1)
 -- DAW or VST host.
 local use_host = false
 
-local midi_out = ut.tern(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
-local hnd_keys  = api.open_midi_output(midi_out, 1, ut.tern(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
-local hnd_bass  = api.open_midi_output(midi_out, 2, ut.tern(use_host, mid.NO_PATCH, inst.AcousticBass))
-local hnd_synth = api.open_midi_output(midi_out, 3, ut.tern(use_host, mid.NO_PATCH, inst.VoiceOohs))
-local hnd_drums = api.open_midi_output(midi_out, 10, ut.tern(use_host, mid.NO_PATCH, kit.Jazz))
+local midi_out = ut.ternary(use_host, "loopMIDI Port", "VirtualMIDISynth #1")
+local hnd_keys  = api.open_midi_output(midi_out, 1, ut.ternary(use_host, mid.NO_PATCH, inst.AcousticGrandPiano))
+local hnd_bass  = api.open_midi_output(midi_out, 2, ut.ternary(use_host, mid.NO_PATCH, inst.AcousticBass))
+local hnd_synth = api.open_midi_output(midi_out, 3, ut.ternary(use_host, mid.NO_PATCH, inst.VoiceOohs))
+local hnd_drums = api.open_midi_output(midi_out, 10, ut.ternary(use_host, mid.NO_PATCH, kit.Jazz))
 
 
 ------------------------- Variables -----------------------------------
