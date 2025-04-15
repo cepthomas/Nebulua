@@ -61,8 +61,11 @@
     </ItemGroup> -->
 
     <ItemGroup>
+        <None Remove=".gitignore" />
+        <None Remove="builder.lua" />
         <None Remove="nebulua.sublime-project" />
         <None Remove="nebulua.sublime-workspace" />
+        <None Remove="_notes.ntr" />
     </ItemGroup>
 
     <ItemGroup>

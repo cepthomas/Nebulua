@@ -6,9 +6,9 @@
 local dbg = require("debugger")
 
 local li  = require("luainterop")
-local ut  = require("lbot_utils")
+-- local ut  = require("lbot_utils")
 local st  = require("step_types")
-local mid = require("midi_defs")
+-- local mid = require("midi_defs")
 local mus = require("music_defs")
 local sx  = require("stringex")
 local tx  = require("tableex")
@@ -516,7 +516,7 @@ function M.dump_steps(fn, which)
         error('Invalid which '..which)
     end
 
-    local fp, err = io.open(fn, 'w+')
+    local fp, _ = io.open(fn, 'w+')
     for tick, sts in pairs(t) do
         for i, step in ipairs(sts) do
             fp:write(tostring(step)..'\n')
@@ -525,24 +525,6 @@ function M.dump_steps(fn, which)
     fp:close()
 end
 
--- -----------------------------------------------------------------------------
--- --- Global function for App interaction with script internals.
--- -- @param cmd specific command string
--- -- @param arg optional argument string
--- -- @return result string
--- function neb_command(cmd, arg)
---     -- M.log_info('neb_command '..cmd..' '..arg)
---     if cmd == 'section_info' then -- Return the collected section information.
---         local res = {}
---         for k, v in pairs(_section_info) do
---             table.insert(res, k..','..v)
---         end
---         return sx.strjoin('|', res)
---     else
---         M.log_info('Unknown cmd:'..cmd..' arg:'..arg)
---         return '1'
---     end
--- end
 
 -----------------------------------------------------------------------------
 -- Return module.

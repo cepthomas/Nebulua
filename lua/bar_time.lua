@@ -23,7 +23,7 @@ M.MAX_TICK = M.MAX_BAR * M.SUBS_PER_BAR
 
 -----------------------------------------------------------------------------
 --- Convert proper components to tick.
--- returns tick or nil
+-- returns tick or raises
 function M.bt_to_tick(bar, beat, sub)
     lt.val_integer(bar, 0, M.MAX_BAR)
     lt.val_integer(beat, 0, M.BEATS_PER_BAR-1)
@@ -35,7 +35,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Convert total beats and subs to tick.
--- returns tick or nil
+-- returns tick or raises
 function M.beats_to_tick(beats, sub)
     lt.val_integer(beats, 0, M.MAX_BEAT-1)
     lt.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
@@ -46,7 +46,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Convert string representation to tick.
--- returns tick or nil
+-- returns tick or raises
 function M.str_to_tick(str)
     lt.val_string(str)
     local tick = nil
@@ -54,15 +54,17 @@ function M.str_to_tick(str)
     local parts = sx.strsplit(str, '.', false)
     if #parts == 2 then
         -- Duration form.
-        local beat = ut.tointeger(parts[1])
-        local sub = ut.tointeger(parts[2])
+        local beat = lt.tointeger(parts[1])
+        local sub = lt.tointeger(parts[2])
         tick = M.beats_to_tick(beat, sub)
     elseif #parts == 3 then
         -- Absolute form.
-        local bar = ut.tointeger(parts[1])
-        local beat = ut.tointeger(parts[2])
-        local sub = ut.tointeger(parts[3])
+        local bar = lt.tointeger(parts[1])
+        local beat = lt.tointeger(parts[2])
+        local sub = lt.tointeger(parts[3])
         tick = M.bt_to_tick(bar, beat, sub)
+    else
+        error('Invalid form:'..tostring(str))
     end
 
     return tick
@@ -70,7 +72,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Convert tick to components.
--- returns bar,beat,sub or nil
+-- returns bar,beat,sub or raises
 function M.tick_to_bt(tick)
     lt.val_integer(tick, 0, M.MAX_TICK)
     local bar = math.floor(tick / M.SUBS_PER_BAR)
@@ -81,7 +83,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Convert tick to string representation
--- returns string or nil
+-- returns string or raises
 function M.tick_to_str(tick)
     lt.val_integer(tick, 0, M.MAX_TICK)
     local bar, beat, sub = M.tick_to_bt(tick)

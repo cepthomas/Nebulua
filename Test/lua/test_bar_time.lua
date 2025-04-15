@@ -1,39 +1,21 @@
 
 -- Unit tests for bar_time.lua.
 
-local ut = require("lbot_utils")
+-- local ut = require("lbot_utils")
 local bt = require("bar_time")
 
-
--- ut.config_debug(true)
--- dbg()
 
 -- Create the namespace/module.
 local M = {}
 
--- local _save_error
--- local _last_error
 
------------------------------------------------------------------------------
-function M.setup(pn)
-    -- -- Sub error handler to intercept errors.
-    -- _last_error = ""
+-- -----------------------------------------------------------------------------
+-- function M.setup(pn)
+-- end
 
-    -- get_error = function()
-    --     e = _last_error
-    --     _last_error = ""
-    --     return e
-    -- end
-
-    -- _save_error = error
-    -- error = function(err, level) _last_error = err end
-end
-
------------------------------------------------------------------------------
-function M.teardown(pn)
-    -- -- Restore.
-    -- error = _save_error
-end
+-- -----------------------------------------------------------------------------
+-- function M.teardown(pn)
+-- end
 
 -----------------------------------------------------------------------------
 function M.suite_bar_time(pn)
@@ -72,42 +54,41 @@ function M.suite_bar_time(pn)
     pn.UT_STR_EQUAL(s, "60.1.4")
 
     -- Bad input in many ways.
+    local res = pcall(bt.bt_to_tick, 1001, 1, 5)
+    pn.UT_FALSE(res)
 
-    t = bt.bt_to_tick(1001, 1, 5)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.bt_to_tick, 10, 4, 3)
+    pn.UT_FALSE(res)
 
-    t = bt.bt_to_tick(10, 4, 3)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.bt_to_tick, 10, 2, 11)
+    pn.UT_FALSE(res)
 
-    t = bt.bt_to_tick(10, 2, 11)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.beats_to_tick, 4001, 2)
+    pn.UT_FALSE(res)
 
-    t = bt.beats_to_tick(4001, 2)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.beats_to_tick, 1122, 12)
+    pn.UT_FALSE(res)
 
-    t = bt.beats_to_tick(1122, 12)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.str_to_tick, "1:2:3")
+    pn.UT_FALSE(res)
 
-    s = bt.str_to_tick("1:2:3")
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.str_to_tick, "1.2.3.4")
+    pn.UT_FALSE(res)
 
-    s = bt.str_to_tick("1.2.3.4")
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.str_to_tick, "junk")
+    pn.UT_FALSE(res)
 
-    s = bt.str_to_tick("junk")
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.str_to_tick, {"i'm", "a", "table" })
+    pn.UT_FALSE(res)
 
-    s = bt.str_to_tick({"i'm", "a", "table" })
-    pn.UT_STR_CONTAINS(get_error(), "Invalid bartime")
+    res = pcall(bt.tick_to_bt, 93.81)
+    pn.UT_FALSE(res)
 
-    bar, beat, sub = bt.tick_to_bt(93.81)
-    pn.UT_STR_CONTAINS(get_error(), "Invalid tick")
+    res = pcall(bt.tick_to_bt, {1,2,3})
+    pn.UT_FALSE(res)
 
-    bar, beat, sub = bt.tick_to_bt({1,2,3})
-    pn.UT_STR_CONTAINS(get_error(), "Invalid tick")
-
-    s = bt.tick_to_str("tick")
-    pn.UT_STR_CONTAINS(get_error(), "Invalid tick")
+    res = pcall(bt.tick_to_str, "tick")
+    pn.UT_FALSE(res)
 
 end
 

@@ -44,6 +44,7 @@ function M.suite_xxx(pn)
     local dumpfn = '_dump.txt'
     api.dump_steps(dumpfn, 's') -- diagnostic
 
+
     -- pn.UT_EQUAL(ut.table_count(_section_info), 4)
     -- pn.UT_EQUAL(_section_info['_LENGTH'], 768)
     -- print(ut.dump_table_string(_section_info, 0, '_section_info'))

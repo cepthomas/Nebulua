@@ -2,7 +2,7 @@
 -- Unit tests for music_defs.lua.
 
 local md = require("music_defs")
-local ut = require("lbot_utils")
+-- local ut = require("lbot_utils")
 -- local mid = require('midi_defs')
 
 
@@ -12,16 +12,16 @@ local M = {}
 -- ut.config_debug(true)
 
 
------------------------------------------------------------------------------
-function M.setup(pn)
-    -- pn.UT_INFO("setup()!!!")
-end
+-- -----------------------------------------------------------------------------
+-- function M.setup(pn)
+--     -- pn.UT_INFO("setup()!!!")
+-- end
 
 
------------------------------------------------------------------------------
-function M.teardown(pn)
-    -- pn.UT_INFO("teardown()!!!")
-end
+-- -----------------------------------------------------------------------------
+-- function M.teardown(pn)
+--     -- pn.UT_INFO("teardown()!!!")
+-- end
 
 
 -----------------------------------------------------------------------------

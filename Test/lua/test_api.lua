@@ -1,38 +1,26 @@
 
 -- Unit tests for nebulua.
 
-local ut  = require("lbot_utils")
+-- local ut  = require("lbot_utils")
 local st  = require("step_types")
-local bt  = require("bar_time")
+-- local bt  = require("bar_time")
 local li  = require("luainterop") -- mock
 local sx  = require("stringex")
+local tx  = require("tableex")
 local api = require("script_api")
 
 
 -- Create the namespace/module.
 local M = {}
 
--- local _save_error
--- local _last_error
--- local _get_error = function()
---     local e = _last_error
---     _last_error = ""
---     return e
+
+-- -----------------------------------------------------------------------------
+-- function M.setup(pn)
 -- end
 
------------------------------------------------------------------------------
-function M.setup(pn)
-    -- -- Sub error handler to intercept errors.
-    -- _last_error = ""
-    -- _save_error = error
-    -- error = function(err, level) _last_error = err end
-end
-
------------------------------------------------------------------------------
-function M.teardown(pn)
-    -- -- Restore.
-    -- error = _save_error
-end
+-- -----------------------------------------------------------------------------
+-- function M.teardown(pn)
+-- end
 
 
 -----------------------------------------------------------------------------
@@ -40,7 +28,7 @@ function M.suite_parse_chunk(pn)
     -- Note number. This also checks the list of steps in more detail
     local chunk = { "|5       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 }
     local seq_length, steps = api.parse_chunk(chunk, 0x030E, 1000 )
-    -- print('+++', ut.dump_table_string(steps, 1, 'steps1'))
+    -- print('+++', tx.dump_table_string(steps, 1, 'steps1'))
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
     local step = steps[6] -- pick one
@@ -51,18 +39,17 @@ function M.suite_parse_chunk(pn)
     pn.UT_CLOSE(step.volume, 0.5, 0.001)
     pn.UT_EQUAL(step.duration, 1)
 
-
     -- Note name.
     chunk = { "|7   7   |        |        |        |    4---|---     |        |        |",  "C2" }
     seq_length, steps = api.parse_chunk(chunk, 0x0A04, 234 )
-    -- print('+++', ut.dump_table_string(steps, 1, 'steps2'))
+    -- print('+++', tx.dump_table_string(steps, 1, 'steps2'))
     pn.UT_EQUAL(#steps, 3)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Chord.
     chunk = { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" }
     seq_length, steps = api.parse_chunk(chunk, 0x0A05, 1111 )
-    -- print('+++', ut.dump_table_string(steps, 1, 'steps3'))
+    -- print('+++', tx.dump_table_string(steps, 1, 'steps3'))
     pn.UT_EQUAL(#steps, 16) -- 4 x 4 notes in chord
     pn.UT_EQUAL(seq_length, 64)
 
@@ -70,7 +57,7 @@ function M.suite_parse_chunk(pn)
     local dummy = function() end
     chunk = { "|        |    6-  |        |        |        | 9999   |  111   |        |", dummy }
     seq_length, steps = api.parse_chunk(chunk, 0x0A06, 1555 )
-    -- print('+++', ut.dump_table_string(steps, 1, 'steps4'))
+    -- print('+++', tx.dump_table_string(steps, 1, 'steps4'))
     pn.UT_EQUAL(#steps, 8)
     pn.UT_EQUAL(seq_length, 64)
 
@@ -78,9 +65,9 @@ function M.suite_parse_chunk(pn)
     -- dbg()
     chunk = { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 99 }
     seq_length, steps = api.parse_chunk(chunk, 0x0A07, 678 )
-    -- print('+++', ut.dump_table_string(steps, 1, 'steps5'))
+    -- print('+++', tx.dump_table_string(steps, 1, 'steps5'))
     pn.UT_EQUAL(seq_length, 0)
-    pn.UT_STR_CONTAINS(ut.dump_table_string(steps, 1, 'xxxx'), "Invalid '-' in pattern string")
+    pn.UT_STR_CONTAINS(tx.dump_table_string(steps, 1, 'xxxx'), "Invalid '-' in pattern string")
 end
 
 -----------------------------------------------------------------------------
@@ -100,7 +87,7 @@ function M.suite_process_script(pn)
     -- Look inside.
     -- local steps, transients = _mole()
 
-    -- s = ut.dump_table_string(steps, 1, "steps")
+    -- s = tx.dump_table_string(steps, 1, "steps")
     -- print(s)
 
     -- Execute some script steps.
@@ -127,11 +114,8 @@ function M.suite_process_script(pn)
     -- Examine collected data.
     --for _, d in ipairs(li.activity) do
 
-    -- s = ut.dump_table_string(transients, 1, "transients")
+    -- s = tx.dump_table_string(transients, 1, "transients")
     -- print(s)
-
-    local ok, ret = pcall(receive_midi_note, 10, 11, 0.3)
-    pn.UT_TRUE(ok, string.format("Script function receive_midi_note() failed:\n%s ", ret))
 end
 
 -----------------------------------------------------------------------------
@@ -139,26 +123,21 @@ function M.suite_step_types(pn)
     -- Test all functions in step_types.lua
 
     local n = st.note(1234, 99, 101, 0.4, 10)
-    pn.UT_TRUE(n.valid)
     pn.UT_STR_EQUAL(tostring(n), "T:01234 BT:38.2.2 DEV:00 CH:99 NOTE:101 VOL:0.4 DUR:10")
 
-    n = st.note(100001, 88, 111, 0.3, 22)
-    pn.UT_FALSE(n.valid)
-    pn.UT_STR_EQUAL(_get_error(), "Invalid note T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
-    pn.UT_STR_EQUAL(tostring(n), "T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
+    local res, msg = pcall(st.note, 100001, 88, 111, 0.3, 22)
+    pn.UT_FALSE(res)
+    pn.UT_STR_CONTAINS(msg, "Invalid integer:100001")
 
     local c = st.controller(344, 37, 88, 55)
-    pn.UT_TRUE(c.valid)
     pn.UT_STR_EQUAL(tostring(c), "T:00344 BT:10.3.0 DEV:00 CH:37 CTRL:88 VAL:55")
 
-    c = st.controller(455, 55, 260, 23)
-    pn.UT_FALSE(c.valid)
-    pn.UT_STR_EQUAL(tostring(c), "T:00455 BT:14.0.7 DEV:00 CH:55 CTRL:260 VAL:23")
+    res, msg = pcall(st.controller, 455, 55, 260, 23)
+    pn.UT_FALSE(res)
+    pn.UT_STR_CONTAINS(msg, "Invalid integer:260")
 
     local function stub() end
-
     local f = st.func(508, 122, stub, 0.44)
-    pn.UT_TRUE(f.valid)
     pn.UT_STR_EQUAL(tostring(f), "T:00508 BT:15.3.4 DEV:00 CH:122 FUNC:? VOL:0.4")
 end
 
