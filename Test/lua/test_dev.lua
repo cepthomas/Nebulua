@@ -15,6 +15,19 @@ local api = require("script_api")
 local M = {}
 
 
+function M.fix_lua_path(s)
+    local _, _, dir = M.get_caller_info(3)
+    if not sx.contains(package.path, dir) then -- already there?
+        package.path = dir..s..';'..package.path
+        -- package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
+    end
+end
+
+    ut.fix_lua_path('/mypath')
+    -- print(package.path)
+    pn.UT_STR_CONTAINS(package.path, 'mypath')
+
+
 
 -----------------------------------------------------------------------------
 function M.suite_1(pn)
