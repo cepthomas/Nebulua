@@ -1,5 +1,4 @@
-
-local ut = require('lbot_utils')
+-- local ut = require('lbot_utils')
 local sx = require("stringex")
 
 -- Create the namespace/module.
@@ -101,7 +100,7 @@ local scale_defs =
 }
 
 --- All possible note names and aliases as offset from middle C.
-local note_names =
+local note_defs =
 {
     ["C"]=0,  ["Db"]=1, ["D"]=2, ["Eb"]=3, ["E"]=4,  ["F"]=5,  ["Gb"]=6, ["G"]=7, ["Ab"]=8, ["A"]=9,  ["Bb"]=10, ["B"]=11,
     ["B#"]=0, ["C#"]=1,          ["D#"]=3, ["Fb"]=4, ["E#"]=5, ["F#"]=6,          ["G#"]=8,           ["A#"]=10, ["Cb"]=11,
@@ -109,7 +108,7 @@ local note_names =
 }
 
 --- Intervals as used in chord and scale defs.
-local intervals =
+local interval_defs =
 {
     ["1"]=0,  ["#1"]=1, ["b2"]=1, ["2"]=2,  ["#2"]=3,  ["b3"]=3,  ["3"]=4, ["b4"]=4, ["4"]=5,
     ["#4"]=6,  ["b5"]=6,  ["5"]=7, ["#5"]=8, ["b6"]=8, ["6"]=9, ["bb7"]=9,
@@ -143,7 +142,7 @@ function M.create_definition(name, intervals)
         return nil, "Oops bad def: ".. name
     end
 
-    return iints   
+    return iints
 end
 
 -----------------------------------------------------------------------------
@@ -163,7 +162,7 @@ function M.get_notes_from_string(nstr)
     local snote = parts[1]
     local c_or_s = parts[2] -- chord-name or scale-name or nil
     if snote ~= nil then
-        -- Capture root (0-based) and octave (1-based). 
+        -- Capture root (0-based) and octave (1-based).
         local soct = snote:sub(#snote, -1)
         local octave = tonumber(soct)
         if not octave then -- not specified
@@ -221,7 +220,7 @@ function M.note_name_to_number(snote)
             dn = true
             snote = snote:sub(2)
         end
-        inote = note_names[snote]
+        inote = note_defs[snote]
         -- Adjust for octave shift.
         if inote and up then inote = inote + M.NOTES_PER_OCTAVE end
         if inote and dn then inote = inote - M.NOTES_PER_OCTAVE end
@@ -248,7 +247,7 @@ function M.interval_name_to_number(sinterval)
             dn = true
             sinterval = sinterval:sub(2)
         end
-        iinterval = intervals[sinterval]
+        iinterval = interval_defs[sinterval]
         -- Adjust for octave shift.
         if iinterval and up then iinterval = iinterval + M.NOTES_PER_OCTAVE end
         if iinterval and dn then iinterval = iinterval - M.NOTES_PER_OCTAVE end
@@ -268,7 +267,7 @@ function M.split_note_number(note_num)
     if note_num ~= nil then
         root = note_num % M.NOTES_PER_OCTAVE
         octave = (note_num // M.NOTES_PER_OCTAVE) + 1
-    end        
+    end
     return root, octave
 end
 
@@ -310,7 +309,7 @@ for _, coll in ipairs({ scale_defs, chord_defs }) do
         local parts = sx.strsplit(sc, "|", true)
         M.create_definition(parts[1], parts[2])
     end
-end    
+end
 
 -- Return the module.
 return M

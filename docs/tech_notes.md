@@ -65,8 +65,8 @@ Nebulua
 |   - standard C# project for the main app
 |   README.md - hello!
 |   *.cs
-|   Script.zip - see below
 |   etc...
++---Interop - .NET binding to C/Lua - see below
 +---lua - lua modules for application
 |       bar_time.lua
 |       midi_defs.lua
@@ -83,11 +83,11 @@ Nebulua
 ```
 
 
-## Updating Script
+## Updating Interop
 
 The Lua script interop should not need to be rebuilt after the api is finalized.
 If a change is required, do this:
-- Go to the `Script` folder.
+- Go to the `Interop` folder.
 - Edit `interop_spec.lua` with new changes.
 - Execute `gen_interop.cmd`. This generates the code files to support the interop.
 - Open `Nebulua.sln` and rebuild all.

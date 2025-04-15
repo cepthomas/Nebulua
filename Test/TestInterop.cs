@@ -10,7 +10,7 @@ using Nebulua;
 namespace Test
 {
     /// <summary>Utility functions.</summary>
-    public class SCRIPT_INTERNALS : TestSuite
+    public class INTEROP_INTERNALS : TestSuite
     {
         public override void RunSuite()
         {
@@ -55,7 +55,7 @@ namespace Test
     }
 
     /// <summary>All success operations.</summary>
-    public class SCRIPT_HAPPY : TestSuite
+    public class INTEROP_HAPPY : TestSuite
     {
         public override void RunSuite()
         {
@@ -99,7 +99,7 @@ namespace Test
     }
 
     /// <summary>Test basic failure modes.</summary>
-    public class SCRIPT_FAIL : TestSuite
+    public class INTEROP_FAIL : TestSuite
     {
         public override void RunSuite()
         {

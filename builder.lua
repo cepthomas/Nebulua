@@ -25,11 +25,11 @@ if opt == 'build_app' then
     -- -r = restore first
     -- -t:rebuild
     -- Verbosity levels: q[uiet], m[inimal], n[ormal] (default), d[etailed], and diag[nostic].
-    vrb = '-v:m'
+    local vrb = '-v:m'
 
     _output_text('Build: Building app...')
-    cmd = sx.strjoin(' ', { bld_exe, vrb, 'Nebulua.sln' } )
-    res = ut.execute_and_capture(cmd)
+    local cmd = sx.strjoin(' ', { bld_exe, vrb, 'Nebulua.sln' } )
+    local res = ut.execute_and_capture(cmd)
     _output_text(res)
 
     _output_text('Build: Building app tests...')
@@ -39,8 +39,8 @@ if opt == 'build_app' then
 
 elseif opt == 'test_app' then
     _output_text('Build: Running app tests...')
-    cmd = 'pushd "test/Cli/bin/x64/Debug/net8.0-windows" & TestCli.exe & popd'
-    res = ut.execute_and_capture(cmd)
+    local cmd = 'pushd "test/Cli/bin/x64/Debug/net8.0-windows" & TestCli.exe & popd'
+    local res = ut.execute_and_capture(cmd)
     _output_text(res)
 
     cmd = 'pushd "test/Core/bin/x64/Debug/net8.0-windows" & TestCore.exe & popd'
@@ -59,7 +59,7 @@ elseif opt == 'test_lua' then
     _output_text('Build: Running lua tests...')
     local pr = require('pnut_runner')
 
-    rep = pr.do_tests('test_defs', 'test_bar_time', 'test_api')
+    local rep = pr.do_tests('test_defs', 'test_bar_time', 'test_api')
     for _, s in ipairs(rep) do
         _output_text(s)
     end
@@ -67,13 +67,13 @@ elseif opt == 'test_lua' then
 elseif opt == 'gen_md' then
     _output_text('Build: Gen markdown from definition files...')
 
-    mus = require('music_defs')
-    mid = require('midi_defs')
+    local mus = require('music_defs')
+    local mid = require('midi_defs')
     sx  = require('stringex')
 
-    text = mus.gen_md()
-    content = sx.strjoin('\n', text)
-    f = io.open('docs/music_defs.md', 'w')
+    local text = mus.gen_md()
+    local content = sx.strjoin('\n', text)
+    local f = io.open('docs/music_defs.md', 'w')
     f:write(content)
     f:close()
 
@@ -88,15 +88,15 @@ elseif opt == 'gen_interop' then
 
 elseif opt == 'dev' then
     local exp_neb = {'luainterop', 'setup', 'step', 'receive_midi_note', 'receive_midi_controller' }
-    extra, missing = ut.check_globals(exp_neb)
-    res = ut.dump_list(extra)
+    local extra, missing = ut.check_globals(exp_neb)
+    local res = ut.dump_list(extra)
     _output_text('extra:'..res)
     res = ut.dump_list(missing)
     _output_text('missing:'..res)
 
 elseif opt == 'math' then
     local function do_one(name, func)
-        v = {}
+        local v = {}
         table.insert(v, name)
         for i = 0, 9 do table.insert(v, string.format("%.2f", func(i)))  end
         print(sx.strjoin(', ', v))

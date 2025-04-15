@@ -1,6 +1,7 @@
 -- Family of midi events.
 
-local ut = require('lbot_utils')
+-- local ut = require('lbot_utils')
+local lt = require('lbot_types')
 local bt = require('bar_time')
 local mid = require('midi_defs')
 
@@ -17,7 +18,6 @@ local _format_tick
 -----------------------------------------------------------------------------
 function M.note(tick, chan_hnd, note_num, volume, duration)
     local d = {}
-    d.valid = true
     d.step_type = "note"
     d.tick = tick
     d.chan_hnd = chan_hnd
@@ -26,21 +26,19 @@ function M.note(tick, chan_hnd, note_num, volume, duration)
     d.duration = duration
 
     -- Validate.
-    d.valid = d.valid and ut.val_integer(d.tick, 0, bt.MAX_TICK)
-    d.valid = d.valid and ut.val_integer(d.chan_hnd, 0, 0xFFFF)
-    d.valid = d.valid and ut.val_integer(d.note_num, 0, mid.MAX_MIDI)
-    d.valid = d.valid and ut.val_number(d.volume, 0.0, 1.0)
-    d.valid = d.valid and ut.val_integer(d.duration, 0, bt.MAX_TICK)
+    lt.val_integer(d.tick, 0, bt.MAX_TICK)
+    lt.val_integer(d.chan_hnd, 0, 0xFFFF)
+    lt.val_integer(d.note_num, 0, mid.MAX_MIDI)
+    lt.val_number(d.volume, 0.0, 1.0)
+    lt.val_integer(d.duration, 0, bt.MAX_TICK)
 
     setmetatable(d,
     {
         __tostring = function(self)
             return string.format('%s %s NOTE:%d VOL:%.1f DUR:%d',
-                _format_tick(d.tick), _format_chan_hnd(d.chan_hnd), d.note_num, d.volume, d.duration)
+                _format_tick(self.tick), _format_chan_hnd(self.chan_hnd), self.note_num, self.volume, self.duration)
         end
     })
-
-    if not d.valid then error('Invalid note '..tostring(d)) end
 
     return d
 end
@@ -50,7 +48,6 @@ end
 function M.controller(tick, chan_hnd, controller, value)
 
     local d = {}
-    d.valid = true
     d.step_type = "controller"
     d.tick = tick
     d.chan_hnd = chan_hnd
@@ -58,20 +55,18 @@ function M.controller(tick, chan_hnd, controller, value)
     d.value = value
 
     -- Validate.
-    d.valid = d.valid and ut.val_integer(d.tick, 0, bt.MAX_TICK)
-    d.valid = d.valid and ut.val_integer(d.chan_hnd, 0, 0xFFFF)
-    d.valid = d.valid and ut.val_integer(d.controller, 0, mid.MAX_MIDI)
-    d.valid = d.valid and ut.val_integer(d.value, 0, mid.MAX_MIDI)
+    lt.val_integer(d.tick, 0, bt.MAX_TICK)
+    lt.val_integer(d.chan_hnd, 0, 0xFFFF)
+    lt.val_integer(d.controller, 0, mid.MAX_MIDI)
+    lt.val_integer(d.value, 0, mid.MAX_MIDI)
 
     setmetatable(d,
     {
         __tostring = function(self)
             return string.format('%s %s CTRL:%d VAL:%d',
-                _format_tick(d.tick), _format_chan_hnd(d.chan_hnd), d.controller, d.value)
+                _format_tick(self.tick), _format_chan_hnd(self.chan_hnd), self.controller, self.value)
         end
     })
-
-    if not d.valid then error('Invalid controller '..tostring(d)) end
 
     return d
 end
@@ -80,7 +75,6 @@ end
 function M.func(tick, chan_hnd, func, volume)
 
     local d = {}
-    d.valid = true
     d.step_type = "function"
     d.tick = tick
     d.chan_hnd = chan_hnd
@@ -88,20 +82,18 @@ function M.func(tick, chan_hnd, func, volume)
     d.volume = volume
 
     -- Validate.
-    d.valid = d.valid and ut.val_integer(d.tick, 0, bt.MAX_TICK)
-    d.valid = d.valid and ut.val_integer(d.chan_hnd, 0, 0xFFFF)
-    d.valid = d.valid and ut.val_number(d.volume, 0.0, 1.0)
-    d.valid = d.valid and func ~= nil and type(func) == 'function'
+    lt.val_integer(d.tick, 0, bt.MAX_TICK)
+    lt.val_integer(d.chan_hnd, 0, 0xFFFF)
+    lt.val_number(d.volume, 0.0, 1.0)
+    lt.val_function(func)
 
     setmetatable(d,
     {
         __tostring = function(self)
             return string.format('%s %s FUNC:? VOL:%.1f',
-                _format_tick(d.tick), _format_chan_hnd(d.chan_hnd), d.volume)
+                _format_tick(self.tick), _format_chan_hnd(self.chan_hnd), self.volume)
         end
     })
-
-    if not d.valid then error('Invalid function '..d._format()) end
 
     return d
 end
@@ -114,7 +106,7 @@ end
 
 -----------------------------------------------------------------------------
 _format_tick = function(tick)
-    s = bt.tick_to_str(tick)
+    local s = bt.tick_to_str(tick)
     return string.format('T:%05d BT:%s', tick, s)
     -- unknow error like this: return string.format('T:%05d BT:%s', tick, bt.tick_to_str(tick))
 end

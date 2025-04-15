@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test.csproj", "{44DFD7B4-BA38-49AF-91BE-64B1E80D73A5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Script", "..\Script\Script.vcxproj", "{953F3806-EB5D-444E-A500-09B455E35E53}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Interop", "..\Interop\Interop.vcxproj", "{953F3806-EB5D-444E-A500-09B455E35E53}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

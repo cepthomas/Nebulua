@@ -4,7 +4,7 @@
 local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("bar_time")
--- local li = require("luainterop") -- mock
+local li  = require("luainterop") -- mock
 local api = require("script_api")
 
 
@@ -15,22 +15,22 @@ local api = require("script_api")
 local M = {}
 
 
-function M.fix_lua_path(s)
-    local _, _, dir = M.get_caller_info(3)
-    if not sx.contains(package.path, dir) then -- already there?
-        package.path = dir..s..';'..package.path
-        -- package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
-    end
-end
+-- function M.fix_lua_path(s)
+--     local _, _, dir = M.get_caller_info(3)
+--     if not sx.contains(package.path, dir) then -- already there?
+--         package.path = dir..s..';'..package.path
+--         -- package.path = './lua/?.lua;./test/lua/?.lua;'..package.path
+--     end
+-- end
 
-    ut.fix_lua_path('/mypath')
-    -- print(package.path)
-    pn.UT_STR_CONTAINS(package.path, 'mypath')
+-- ut.fix_lua_path('/mypath')
+-- -- print(package.path)
+-- pn.UT_STR_CONTAINS(package.path, 'mypath')
 
 
 
 -----------------------------------------------------------------------------
-function M.suite_1(pn)
+function M.suite_xxx(pn)
     -- Test loading script file.
 
     -- Load test file in protected mode.

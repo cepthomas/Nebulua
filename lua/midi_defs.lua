@@ -1,4 +1,4 @@
-local ut = require("lbot_utils")
+-- local ut = require("lbot_utils")
 
 -- Create the namespace/module.
 local M = {}
@@ -97,14 +97,14 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Instrument  |  Number")
     table.insert(docs, "----------  |  ------")
-    for i, v in ipairs(sort_by_value(M.instruments)) do table.insert(docs, v) end
+    for _, v in ipairs(sort_by_value(M.instruments)) do table.insert(docs, v) end
     table.insert(docs, "")
 
     table.insert(docs, "## Drums")
     table.insert(docs, "")
     table.insert(docs, "Drum   |  Number")
     table.insert(docs, "----   |  ------")
-    for i, v in ipairs(sort_by_value(M.drums)) do table.insert(docs, v) end
+    for _, v in ipairs(sort_by_value(M.drums)) do table.insert(docs, v) end
     table.insert(docs, "")
 
     table.insert(docs, "## Controllers")
@@ -114,7 +114,7 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Controller   |  Number")
     table.insert(docs, "----------   |  ------")
-    for i, v in ipairs(sort_by_value(M.controllers)) do table.insert(docs, v) end
+    for _, v in ipairs(sort_by_value(M.controllers)) do table.insert(docs, v) end
     table.insert(docs, "")
 
     table.insert(docs, "## Drum Kits")
@@ -123,7 +123,7 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Kit  |  Number")
     table.insert(docs, "---  |  ------")
-    for i, v in ipairs(sort_by_value(M.drum_kits)) do table.insert(docs, v) end
+    for _, v in ipairs(sort_by_value(M.drum_kits)) do table.insert(docs, v) end
     table.insert(docs, "")
 
     return docs;

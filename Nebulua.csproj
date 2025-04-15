@@ -31,17 +31,14 @@
 
     <ItemGroup>
         <Compile Remove="lib\**" />
-        <Compile Remove="Script\**" />
-        <Compile Remove="test\**" />
-        <Compile Remove="test_XXX\**" />
+        <Compile Remove="Interop\**" />
+        <Compile Remove="Test\**" />
         <EmbeddedResource Remove="lib\**" />
-        <EmbeddedResource Remove="Script\**" />
-        <EmbeddedResource Remove="test\**" />
-        <EmbeddedResource Remove="test_XXX\**" />
+        <EmbeddedResource Remove="Interop\**" />
+        <EmbeddedResource Remove="Test\**" />
         <None Remove="lib\**" />
-        <None Remove="Script\**" />
-        <None Remove="test\**" />
-        <None Remove="test_XXX\**" />
+        <None Remove="Interop\**" />
+        <None Remove="Test\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -78,7 +75,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="Script\Script.vcxproj" />
+        <ProjectReference Include="Interop\Interop.vcxproj" />
     </ItemGroup>
 
     <ItemGroup>

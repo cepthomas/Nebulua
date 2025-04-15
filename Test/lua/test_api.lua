@@ -9,34 +9,29 @@ local sx  = require("stringex")
 local api = require("script_api")
 
 
--- ut.config_debug(false)
-
-
 -- Create the namespace/module.
 local M = {}
 
-local _save_error
-local _last_error
+-- local _save_error
+-- local _last_error
+-- local _get_error = function()
+--     local e = _last_error
+--     _last_error = ""
+--     return e
+-- end
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
-    -- Sub error handler to intercept errors.
-    _last_error = ""
-
-    get_error = function()
-        e = _last_error
-        _last_error = ""
-        return e
-    end
-
-    _save_error = error
-    error = function(err, level) _last_error = err end
+    -- -- Sub error handler to intercept errors.
+    -- _last_error = ""
+    -- _save_error = error
+    -- error = function(err, level) _last_error = err end
 end
 
 -----------------------------------------------------------------------------
 function M.teardown(pn)
-    -- Restore.
-    error = _save_error
+    -- -- Restore.
+    -- error = _save_error
 end
 
 
@@ -149,7 +144,7 @@ function M.suite_step_types(pn)
 
     n = st.note(100001, 88, 111, 0.3, 22)
     pn.UT_FALSE(n.valid)
-    pn.UT_STR_EQUAL(get_error(), "Invalid note T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
+    pn.UT_STR_EQUAL(_get_error(), "Invalid note T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
     pn.UT_STR_EQUAL(tostring(n), "T:100001 BT:nil DEV:00 CH:88 NOTE:111 VOL:0.3 DUR:22")
 
     local c = st.controller(344, 37, 88, 55)

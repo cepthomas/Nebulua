@@ -11,28 +11,28 @@ local bt = require("bar_time")
 -- Create the namespace/module.
 local M = {}
 
-local _save_error
-local _last_error
+-- local _save_error
+-- local _last_error
 
 -----------------------------------------------------------------------------
 function M.setup(pn)
-    -- Sub error handler to intercept errors.
-    _last_error = ""
+    -- -- Sub error handler to intercept errors.
+    -- _last_error = ""
 
-    get_error = function()
-        e = _last_error
-        _last_error = ""
-        return e
-    end
+    -- get_error = function()
+    --     e = _last_error
+    --     _last_error = ""
+    --     return e
+    -- end
 
-    _save_error = error
-    error = function(err, level) _last_error = err end
+    -- _save_error = error
+    -- error = function(err, level) _last_error = err end
 end
 
 -----------------------------------------------------------------------------
 function M.teardown(pn)
-    -- Restore.
-    error = _save_error
+    -- -- Restore.
+    -- error = _save_error
 end
 
 -----------------------------------------------------------------------------
