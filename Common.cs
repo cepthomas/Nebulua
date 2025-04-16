@@ -15,8 +15,6 @@ namespace Nebulua
 
     public class Utils
     {
-        static readonly Logger _logger = LogManager.CreateLogger("COM");
-
         /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
@@ -53,6 +51,9 @@ namespace Nebulua
 
             return (fatal, msg);
         }
+
+        /// <summary>Diagnostics.</summary>
+        public TimeIt TimeIt = new();
     }
 
     #region Console abstraction to support testing

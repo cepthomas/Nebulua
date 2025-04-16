@@ -15,11 +15,14 @@ namespace Nebulua
         [STAThread]
         static void Main(string[] args)
         {
+            Utils.TimeIt.Snap("Main() entry");
+
             // Process cmd line args.
             switch (args.Length)
             {
                 case 0:
                     ApplicationConfiguration.Initialize();
+                    Utils.TimeIt.Snap("Application.Run()");
                     Application.Run(new MainForm());
                     break;
 

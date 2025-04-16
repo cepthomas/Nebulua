@@ -108,8 +108,8 @@ namespace Test
             // Set up runtime lua environment.
             var testDir = MiscUtils.GetSourcePath();
             var luaPath = $"{testDir}\\?.lua;{testDir}\\..\\LBOT\\?.lua;;";
-            var scriptFn = Path.Join(testDir, "lua", "script_happy.lua");
-            var testFn = "_test.lua";
+  xx          var scriptFn = Path.Join(testDir, "lua", "script_happy.lua");
+  xx          var testFn = "_test.lua";
 
             // General syntax error during load.
             {
