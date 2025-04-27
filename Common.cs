@@ -53,7 +53,7 @@ namespace Nebulua
         }
 
         /// <summary>Diagnostics.</summary>
-        public TimeIt TimeIt = new();
+        public static TimeIt TimeIt = new();
     }
 
     #region Console abstraction to support testing

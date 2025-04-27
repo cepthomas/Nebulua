@@ -44,6 +44,15 @@ local _channel_volumes = {}
 -- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
 local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
 
+-----------------------------------------------------------------------------
+-- Lazy add to collection.
+-- @param tbl the table
+-- @param key new entry key
+-- @param val new entry value
+local function _table_add(tbl, key, val)
+   if tbl[key] == nil then tbl[key] = {} end
+   table.insert(tbl[key], val)
+end
 
 -----------------------------------------------------------------------------
 ------------- Script calls host li and internal lua functions --------------
@@ -130,7 +139,7 @@ function M.process_step(tick)
                    local dur = math.max(step.duration, 1) -- (min for drum/hit)
                    -- chase with noteoff
                    local noteoff = st.note(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
-                   tx.table_add(_transients, noteoff.tick, noteoff)
+                   _table_add(_transients, noteoff.tick, noteoff)
                end
 
                 -- now send
@@ -172,7 +181,7 @@ function M.send_midi_note(chan_hnd, note_num, volume, dur)
         if dur > 0 then
             -- chase with noteoff
             local noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
-            tx.table_add(_transients, noteoff.tick, noteoff)
+            _table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
        li.send_midi_note(chan_hnd, note_num, 0)
@@ -206,15 +215,15 @@ function M.send_sequence_steps(seq_steps, tick)
                local dur = math.max(step.duration, 1) -- (min for drum/hit)
 
                local noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
-               tx.table_add(_transients, noteon.tick, noteon)
+               _table_add(_transients, noteon.tick, noteon)
 
                -- chase with noteoff
                local noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
-               tx.table_add(_transients, noteoff.tick, noteoff)
+               _table_add(_transients, noteoff.tick, noteoff)
 
            else -- note off
                local noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
-               tx.table_add(_transients, noteoff.tick, noteoff)
+               _table_add(_transients, noteoff.tick, noteoff)
            end
 
         end
@@ -436,7 +445,7 @@ function M.parse_section(section, start_tick)
                     local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
                     if seq_length ~= 0 then -- save the steps to master table
                         for _, step in ipairs(chunk_steps) do
-                            tx.table_add(_steps, step.tick, step)
+                            _table_add(_steps, step.tick, step)
                         end
                         seq_length_max = math.max(seq_length_max, seq_length)
                     else
@@ -497,10 +506,6 @@ function M.sect_chan(chan_hnd, ...)
         error("No section name in sect_start()", 2)
     end
 end
-
------------------------------------------------------------------------------
------------------ Internal functions ----------------------------------------
------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
 --- Diagnostic.

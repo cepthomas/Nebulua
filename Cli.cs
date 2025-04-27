@@ -70,7 +70,8 @@ namespace Nebulua
             LogManager.LogMessage += LogManager_LogMessage;
             LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
             LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
-            LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
+            var logfn = Path.Combine(appDir, "log.txt");
+            LogManager.Run(logfn, 50000);
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
             
@@ -111,6 +112,10 @@ namespace Nebulua
                     State.Instance.ExecState = ExecState.Idle;
                     _logger.Warn(msg);
                 }
+            }
+            finally
+            {
+                LogManager.Stop();
             }
         }
 
