@@ -3,9 +3,8 @@
 x64/
 bin/
 obj/
-# bincli/
-# objcli/
 *.vcxproj.user
 *.csproj.user
 /Properties/launchSettings.json
 /Test/Properties/launchSettings.json
+LINT/

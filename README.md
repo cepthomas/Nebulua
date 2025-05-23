@@ -14,9 +14,10 @@ It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulat
 If you pass it a script file name on the command line it runs as a command line application. If not the UI is started.
 
 The UI does have a terminal which can be used for debugging scripts using
-[Lua debugger](https://github.com/slembcke/debugger.lua/blob/master/README.md).
+[Lua debugger](https://github.com/cepthomas/LuaBagOfTricks/blob/main/debugex.lua).
 See [example](examples/example.lua) for how-to.
 
+Alternatively 'debugex.lua' can be used
 Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
 - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
 - If you are using a DAW for sound generation, you can use a virtual midi loopback like
@@ -26,11 +27,13 @@ Since the built-in Windows GM player sounds terrible, there are a couple of opti
 ## Caveats
 
 - Currently this is a build-and-run-it-yourself configuration. Eventually an installer may be provided.
-- Building this solution requires [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks) in a folder named `LBOT`
-  at the top level. This can be done one of several ways:
+- Building this solution requires at the top level:
+  - [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks) in a folder named `LBOT`
+  - [LuaInterop](https://github.com/cepthomas/LuaInterop) in a folder named `LINT`
+  This can be done one of several ways:
   - git submodule
   - copy of pertinent parts
-  - symlink: `mklink /d some_path\Nebulua\LBOT other_path\LuaBagOfTricks`
+  - symlinks: `mklink /d this_path\Nebulua\LBOT source_path\LuaBagOfTricks` and `mklink /d this_path\Nebulua\LINT source_path\LuaInterop`
 - VirtualMIDISynth has a significant delay after realtime midi inputs. This will not be a problem if you are just playing a midi file.
 - Running in VS debugger has a very slow startup. Running from the exe or cli is ok.
 

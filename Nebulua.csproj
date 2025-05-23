@@ -32,12 +32,15 @@
     <ItemGroup>
         <Compile Remove="lib\**" />
         <Compile Remove="Interop\**" />
+        <Compile Remove="LINT\**" />
         <Compile Remove="Test\**" />
         <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Interop\**" />
+        <EmbeddedResource Remove="LINT\**" />
         <EmbeddedResource Remove="Test\**" />
         <None Remove="lib\**" />
         <None Remove="Interop\**" />
+        <None Remove="LINT\**" />
         <None Remove="Test\**" />
     </ItemGroup>
 

@@ -51,9 +51,6 @@ namespace Nebulua
 
             return (fatal, msg);
         }
-
-        /// <summary>Diagnostics.</summary>
-        public static TimeIt TimeIt = new();
     }
 
     #region Console abstraction to support testing

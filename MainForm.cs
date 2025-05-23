@@ -32,6 +32,9 @@ namespace Nebulua
 
         /// <summary>Current script. Null means none.</summary>
         string? _scriptFn = null;
+
+        /// <summary>Diagnostic.</summary>
+        TimeIt _tt = new();
         #endregion
 
         #region Lifecycle
@@ -40,7 +43,7 @@ namespace Nebulua
         /// </summary>
         public MainForm()
         {
-            Utils.TimeIt.Snap("MainForm() enter");
+            _tt.Snap("MainForm() enter");
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
@@ -144,7 +147,7 @@ namespace Nebulua
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-            Utils.TimeIt.Snap("MainForm() exit");
+            _tt.Snap("MainForm() exit");
         }
 
         /// <summary>
@@ -153,7 +156,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            Utils.TimeIt.Snap("OnLoad() entry");
+            _tt.Snap("OnLoad() entry");
             PopulateFileMenu();
 
             if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
@@ -162,7 +165,7 @@ namespace Nebulua
             }
 
             base.OnLoad(e);
-            Utils.TimeIt.Snap("OnLoad() exit");
+            _tt.Snap("OnLoad() exit");
         }
 
         /// <summary>
@@ -171,9 +174,9 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnShown(EventArgs e)
         {
-            Utils.TimeIt.Snap("OnShown() entry");
+            _tt.Snap("OnShown() entry");
             base.OnLoad(e);
-            Utils.TimeIt.Snap("OnShown() exit");
+            _tt.Snap("OnShown() exit");
         }
 
         /// <summary>
