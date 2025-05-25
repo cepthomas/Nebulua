@@ -24,6 +24,7 @@ local ctrl = mid.controllers
 api.log_info('Loading example.lua...')
 
 
+
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels. Note that yours will be different!

@@ -33,6 +33,9 @@ namespace Nebulua
         /// <summary>Current script. Null means none.</summary>
         string? _scriptFn = null;
 
+        /// <summary>Test for edited.</summary>
+        DateTime _scriptTouch;
+
         /// <summary>Diagnostic.</summary>
         TimeIt _tt = new();
         #endregion
@@ -175,7 +178,7 @@ namespace Nebulua
         protected override void OnShown(EventArgs e)
         {
             _tt.Snap("OnShown() entry");
-            base.OnLoad(e);
+            base.OnShown(e);
             _tt.Snap("OnShown() exit");
         }
 
@@ -229,15 +232,18 @@ namespace Nebulua
         {
             List<string> options = [];
             options.Add("Open...");
+
             if (_scriptFn is not null)
             {
                 options.Add("Reload");
             }
+
             if (UserSettings.Current.RecentFiles.Count > 0)
             {
                 options.Add("");
                 UserSettings.Current.RecentFiles.ForEach(options.Add);
             }
+
             ddbtnFile.SetOptions(options);
         }
 
@@ -301,6 +307,8 @@ namespace Nebulua
                 if (_scriptFn is not null)
                 {
                     _hostCore.LoadScript(_scriptFn); // may throw
+
+                    _scriptTouch = File.GetLastWriteTime(_scriptFn);
 
                     // Everything ok.
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
@@ -371,6 +379,15 @@ namespace Nebulua
             {
                 if (chkPlay.Checked)
                 {
+                    if (UserSettings.Current.AutoReload)
+                    {
+                        var lastTouch = File.GetLastWriteTime(_scriptFn);
+                        if (lastTouch > _scriptTouch)
+                        {
+                            OpenScriptFile();
+                        }
+                    }
+
                     State.Instance.ExecState = ExecState.Run;
                 }
                 else
