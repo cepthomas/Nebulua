@@ -61,4 +61,3 @@ airport.lua | A take on Eno's Music for Airports - adapted from [this](https://g
 
 This application uses these FOSS components:
 - [NAudio](https://github.com/naudio/NAudio).
-- [Lua debugger](https://github.com/slembcke/debugger.lua/blob/master/README.md).

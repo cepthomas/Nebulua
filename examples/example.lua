@@ -1,8 +1,9 @@
 
 -- An example Nebulua composition file. 
 
--- Use the debugger, trigger with a dbg() statement. For color output set env var 'TERM'.
-local dbg = require("debugger")
+-- Use the debugger, trigger with a dbg() statement.
+-- See https://github.com/cepthomas/LuaBagOfTricks/blob/main/debugex.lua.
+local dbg = require("debugex")
 
 -- Import modules this needs.
 local api = require("script_api")

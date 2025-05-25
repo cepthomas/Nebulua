@@ -7,4 +7,3 @@ obj/
 *.csproj.user
 /Properties/launchSettings.json
 /Test/Properties/launchSettings.json
-LINT/
