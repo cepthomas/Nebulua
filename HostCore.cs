@@ -209,7 +209,7 @@ namespace Nebulua
             {
                 try
                 {
-                    // Do script. TODOF Handle solo and/or mute like nebulator.
+                    // Do script. TODO Handle solo and/or mute like nebulator.
                     //_tan?.Arm();
 
                     int ret = _interop.Step(State.Instance.CurrentTick);

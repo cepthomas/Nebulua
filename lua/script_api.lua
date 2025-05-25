@@ -14,7 +14,7 @@ local sx  = require("stringex")
 local tx  = require("tableex")
 
 
--- TODOF stress test and bulletproof this.
+-- TODO stress test and bulletproof this.
 
 local M = {}
 

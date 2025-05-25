@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
 
-// TODOF needs more tests.
+// TODO needs more tests.
 
 namespace Test
 {

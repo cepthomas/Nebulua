@@ -56,7 +56,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\LBOT;..\LINT\CppCli\internal;..\LBOT\lua54\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\LBOT;..\LBOT\csrc;..\LBOT\lua54\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>..\LBOT\lua54\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -69,7 +69,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\LBOT;..\LINT\CppCli\internal;..\LBOT\lua54\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\LBOT;..\LBOT\csrc;..\LBOT\lua54\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>..\LBOT\lua54\lua54.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -77,8 +77,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\LINT\CppCli\internal\InteropCore.cpp" />
-    <ClCompile Include="..\LINT\CppCli\internal\luaex.c">
+    <ClCompile Include="..\LBOT\csrc\InteropCore.cpp" />
+    <ClCompile Include="..\LBOT\csrc\luaex.c">
       <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="luainterop.c">
@@ -90,8 +90,8 @@
   <ItemGroup>
     <ClInclude Include="Interop.h" />
     <ClInclude Include="luainterop.h" />
-    <ClInclude Include="..\LINT\CppCli\internal\InteropCore.h" />
-    <ClInclude Include="..\LINT\CppCli\internal\luaex.h" />
+    <ClInclude Include="..\LBOT\csrc\InteropCore.h" />
+    <ClInclude Include="..\LBOT\csrc\luaex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

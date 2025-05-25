@@ -13,7 +13,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
 
-//TODOL slow startup:
+//TODO slow startup:
 //"dur:295.510 tot:295.510 MainForm() enter"
 //"dur:1390.500 tot:1686.010 MainForm() exit"
 //"dur:035.980 tot:1721.990 OnLoad() entry"
@@ -231,7 +231,7 @@ namespace Nebulua
             options.Add("Open...");
             if (_scriptFn is not null)
             {
-                options.Add("Reload"); // TODOL better ui way?
+                options.Add("Reload");
             }
             if (UserSettings.Current.RecentFiles.Count > 0)
             {

@@ -5,6 +5,15 @@ A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) 
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
 Windows only.
 
+Currently this is a build-and-run-it-yourself configuration. Eventually an installer may be provided.
+Note that running in VS debugger has a very slow startup. Running from the exe or cli is ok.
+
+Building this solution requires a folder named `LBOT` at the top level containing the contents of
+  [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks). This can be done one of several ways:
+  - git submodule
+  - copy of pertinent parts
+  - symlink: `mklink /d this_path\Nebulua\LBOT source_path\LuaBagOfTricks` and `mklink /d this_path\Nebulua\LINT source_path\LuaInterop`
+
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
 ![logo](docs/marks.png)
@@ -17,25 +26,11 @@ The UI does have a terminal which can be used for debugging scripts using
 [Lua debugger](https://github.com/cepthomas/LuaBagOfTricks/blob/main/debugex.lua).
 See [example](examples/example.lua) for how-to.
 
-Alternatively 'debugex.lua' can be used
 Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
 - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
+  Note that this app has a significant delay handling realtime midi inputs. This will not be a problem if you are just playing a midi file.
 - If you are using a DAW for sound generation, you can use a virtual midi loopback like
-    [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to send to it.
-
-
-## Caveats
-
-- Currently this is a build-and-run-it-yourself configuration. Eventually an installer may be provided.
-- Building this solution requires at the top level:
-  - [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks) in a folder named `LBOT`
-  - [LuaInterop](https://github.com/cepthomas/LuaInterop) in a folder named `LINT`
-  This can be done one of several ways:
-  - git submodule
-  - copy of pertinent parts
-  - symlinks: `mklink /d this_path\Nebulua\LBOT source_path\LuaBagOfTricks` and `mklink /d this_path\Nebulua\LINT source_path\LuaInterop`
-- VirtualMIDISynth has a significant delay after realtime midi inputs. This will not be a problem if you are just playing a midi file.
-- Running in VS debugger has a very slow startup. Running from the exe or cli is ok.
+    [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to connect to it.
 
 
 ## Example Script Files

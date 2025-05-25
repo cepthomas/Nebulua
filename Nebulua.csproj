@@ -32,43 +32,17 @@
     <ItemGroup>
         <Compile Remove="lib\**" />
         <Compile Remove="Interop\**" />
-        <Compile Remove="LINT\**" />
         <Compile Remove="Test\**" />
         <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Interop\**" />
-        <EmbeddedResource Remove="LINT\**" />
         <EmbeddedResource Remove="Test\**" />
         <None Remove="lib\**" />
         <None Remove="Interop\**" />
-        <None Remove="LINT\**" />
         <None Remove="Test\**" />
     </ItemGroup>
 
     <ItemGroup>
         <Content Include="Resources\app.ico" />
-    </ItemGroup>
-
-    <!-- <ItemGroup>
-        <None Include="lua\**">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Include="docs\**">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup> -->
-
-    <!-- <ItemGroup>
-        <None Update="README.md">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup> -->
-
-    <ItemGroup>
-        <None Remove=".gitignore" />
-        <None Remove="builder.lua" />
-        <None Remove="nebulua.sublime-project" />
-        <None Remove="nebulua.sublime-workspace" />
-        <None Remove="_notes.ntr" />
     </ItemGroup>
 
     <ItemGroup>
