@@ -28,7 +28,7 @@ function M.suite_parse_chunk(pn)
     -- Note number. This also checks the list of steps in more detail
     local chunk = { "|5       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 }
     local seq_length, steps = api.parse_chunk(chunk, 0x030E, 1000 )
-    -- print('+++', tx.dump_table_string(steps, 1, 'steps1'))
+    -- print('+++', tx.dump_table(steps, 'steps1', 1))
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
     local step = steps[6] -- pick one
@@ -42,14 +42,14 @@ function M.suite_parse_chunk(pn)
     -- Note name.
     chunk = { "|7   7   |        |        |        |    4---|---     |        |        |",  "C2" }
     seq_length, steps = api.parse_chunk(chunk, 0x0A04, 234 )
-    -- print('+++', tx.dump_table_string(steps, 1, 'steps2'))
+    -- print('+++', tx.dump_table(steps, 'steps2', 1))
     pn.UT_EQUAL(#steps, 3)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Chord.
     chunk = { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" }
     seq_length, steps = api.parse_chunk(chunk, 0x0A05, 1111 )
-    -- print('+++', tx.dump_table_string(steps, 1, 'steps3'))
+    -- print('+++', tx.dump_table(steps, 'steps3', 1))
     pn.UT_EQUAL(#steps, 16) -- 4 x 4 notes in chord
     pn.UT_EQUAL(seq_length, 64)
 
@@ -57,7 +57,7 @@ function M.suite_parse_chunk(pn)
     local dummy = function() end
     chunk = { "|        |    6-  |        |        |        | 9999   |  111   |        |", dummy }
     seq_length, steps = api.parse_chunk(chunk, 0x0A06, 1555 )
-    -- print('+++', tx.dump_table_string(steps, 1, 'steps4'))
+    -- print('+++', tx.dump_table(steps, 'steps4', 1))
     pn.UT_EQUAL(#steps, 8)
     pn.UT_EQUAL(seq_length, 64)
 
@@ -65,9 +65,9 @@ function M.suite_parse_chunk(pn)
     -- dbg()
     chunk = { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 99 }
     seq_length, steps = api.parse_chunk(chunk, 0x0A07, 678 )
-    -- print('+++', tx.dump_table_string(steps, 1, 'steps5'))
+    -- print('+++', tx.dump_table(steps, 'steps5', 1))
     pn.UT_EQUAL(seq_length, 0)
-    pn.UT_STR_CONTAINS(tx.dump_table_string(steps, 1, 'xxxx'), "Invalid '-' in pattern string")
+    pn.UT_STR_CONTAINS(tx.dump_table(steps, 'xxxx', 1), "Invalid '-' in pattern string")
 end
 
 -----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ function M.suite_process_script(pn)
     -- Look inside.
     -- local steps, transients = _mole()
 
-    -- s = tx.dump_table_string(steps, 1, "steps")
+    -- s = tx.dump_table(steps, "steps", 1)
     -- print(s)
 
     -- Execute some script steps.
@@ -114,7 +114,7 @@ function M.suite_process_script(pn)
     -- Examine collected data.
     --for _, d in ipairs(li.activity) do
 
-    -- s = tx.dump_table_string(transients, 1, "transients")
+    -- s = tx.dump_table(transients, "transients", 1)
     -- print(s)
 end
 
