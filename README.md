@@ -12,7 +12,7 @@ Building this solution requires a folder named `LBOT` at the top level containin
   [LuaBagOfTricks](https://github.com/cepthomas/LuaBagOfTricks). This can be done one of several ways:
   - git submodule
   - copy of pertinent parts
-  - symlink: `mklink /d this_path\Nebulua\LBOT source_path\LuaBagOfTricks` and `mklink /d this_path\Nebulua\LINT source_path\LuaInterop`
+  - symlink: `mklink /d <current_folder>\LBOT <lbot_source_folder>\LuaBagOfTricks`
 
 It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 

@@ -31,7 +31,7 @@ namespace Nebulua
         readonly HostCore _hostCore = new();
 
         /// <summary>Current script. Null means none.</summary>
-        string? _scriptFn = null;
+        string? _loadedScriptFn = null;
 
         /// <summary>Test for edited.</summary>
         DateTime _scriptTouch;
@@ -233,7 +233,7 @@ namespace Nebulua
             List<string> options = [];
             options.Add("Open...");
 
-            if (_scriptFn is not null)
+            if (_loadedScriptFn is not null)
             {
                 options.Add("Reload");
             }
@@ -292,27 +292,27 @@ namespace Nebulua
             {
                 if (scriptFn is not null)
                 {
-                    _scriptFn = scriptFn;
-                    _logger.Info($"Loading new script {_scriptFn}");
+                    _loadedScriptFn = scriptFn;
+                    _logger.Info($"Loading new script {_loadedScriptFn}");
                 }
-                else if (_scriptFn is not null)
+                else if (_loadedScriptFn is not null)
                 {
-                    _logger.Info($"Reloading script {_scriptFn}");
+                    _logger.Info($"Reloading script {_loadedScriptFn}");
                 }
                 else
                 {
                     _logger.Info($"No script loaded");
                 }
 
-                if (_scriptFn is not null)
+                if (_loadedScriptFn is not null)
                 {
-                    _hostCore.LoadScript(_scriptFn); // may throw
+                    _hostCore.LoadScript(_loadedScriptFn); // may throw
 
-                    _scriptTouch = File.GetLastWriteTime(_scriptFn);
+                    _scriptTouch = File.GetLastWriteTime(_loadedScriptFn);
 
                     // Everything ok.
-                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                    UserSettings.Current.UpdateMru(_scriptFn!);
+                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {_loadedScriptFn}";
+                    UserSettings.Current.UpdateMru(_loadedScriptFn!);
                 }
 
                 PopulateFileMenu();
@@ -375,13 +375,17 @@ namespace Nebulua
         /// <param name="e"></param>
         void Play_Click(object? sender, EventArgs e)
         {
-            if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
+            if (_loadedScriptFn is null)
+            {
+                _logger.Warn("No script file loaded");
+            }
+            else if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
             {
                 if (chkPlay.Checked)
                 {
                     if (UserSettings.Current.AutoReload)
                     {
-                        var lastTouch = File.GetLastWriteTime(_scriptFn);
+                        var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
                         if (lastTouch > _scriptTouch)
                         {
                             OpenScriptFile();
@@ -447,7 +451,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space)
+            if (e.KeyCode == Keys.Space && _loadedScriptFn is not null)
             {
                 chkPlay.Checked = !chkPlay.Checked;
                 Play_Click(null, new());
