@@ -81,11 +81,11 @@ namespace Nebulua
                 new("info",     'i',  "system information",            "",                      InfoCmd),
                 new("exit",     'q',  "exit the application",          "",                      ExitCmd),
                 new("run",      'r',  "toggle running the script",     "",                      RunCmd),
-                new("position", 'p',  "set position or tell current",  "(pos)",                 PositionCmd),
-                new("loop",     'l',  "set loop or tell current",      "(start end)",           LoopCmd),
+                new("position", 'p',  "set position or tell current",  "[pos]",                 PositionCmd),
+                new("loop",     'l',  "set loop or tell current",      "[start end]",           LoopCmd),
                 new("rewind",   'w',  "rewind loop",                   "",                      RewindCmd),
-                new("tempo",    't',  "get or set the tempo",          "(40-240)",              TempoCmd),
-                new("monitor",  'm',  "toggle monitor midi traffic",   "(r=rcv|s=snd|o=off)",   MonCmd),
+                new("tempo",    't',  "get or set the tempo",          "[40-240]",              TempoCmd),
+                new("monitor",  'm',  "toggle monitor midi traffic",   "[r=rcv|s=snd|o=off]",   MonCmd),
                 new("kill",     'k',  "stop all midi",                 "",                      KillCmd),
                 new("reload",   's',  "reload current script",         "",                      ReloadCmd)
             ];
