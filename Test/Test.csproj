@@ -7,28 +7,14 @@
     <Nullable>enable</Nullable>
     <StartupObject>Test.Program</StartupObject>
     <Platforms>x64</Platforms>
+    <NoWarn>CS1591;IDE0130</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <!-- <NoWarn>1701;1702;CA1416;CA1822</NoWarn> -->
-    <NoWarn></NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <!-- <NoWarn>1701;1702;CA1416;CA1822</NoWarn> -->
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="mock\**" />
-    <EmbeddedResource Remove="mock\**" />
-    <None Remove="mock\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Cli.cs" Link="Cli.cs" />
     <Compile Include="..\Common.cs" Link="Common.cs" />
     <Compile Include="..\HostCore.cs" Link="HostCore.cs" />
-    <!-- <Compile Include="..\Midi.cs" Link="Midi.cs" /> -->
     <Compile Include="..\State.cs" Link="State.cs" />
     <Compile Include="..\MusicTime.cs" Link="MusicTime.cs" />
   </ItemGroup>

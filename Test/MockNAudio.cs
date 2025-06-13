@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
 
 
 ///////////// Mock for entities in NAudio. See real class for doc. /////////////
@@ -36,9 +35,6 @@ namespace NAudio.Midi
 
         public static MidiEvent FromRawMessage(int rawMessage)
         {
-            MidiEvent me;
-
-
             long absoluteTime = 0;
             int b = rawMessage & 0xFF;
             int data1 = (rawMessage >> 8) & 0xFF;
@@ -57,23 +53,15 @@ namespace NAudio.Midi
                 channel = (b & 0x0F) + 1;
             }
 
-            switch (commandCode)
+            MidiEvent me = commandCode switch
             {
-                case MidiCommandCode.NoteOn:
-                case MidiCommandCode.NoteOff:
-                    me = (data2 > 0 && commandCode == MidiCommandCode.NoteOn) ?
-                        new NoteOnEvent(absoluteTime, channel, data1, data2, 0) :
-                        new NoteEvent(absoluteTime, channel, commandCode, data1, data2);
-                    break;
-                case MidiCommandCode.ControlChange:
-                    me = new ControlChangeEvent(absoluteTime, channel, (MidiController)data1, data2);
-                    break;
-                case MidiCommandCode.PatchChange:
-                    me = new PatchChangeEvent(absoluteTime, channel, data1);
-                    break;
-                default:
-                    throw new FormatException($"Unsupported MIDI Command Code for Raw Message {commandCode}");
-            }
+                MidiCommandCode.NoteOn or MidiCommandCode.NoteOff => (data2 > 0 && commandCode == MidiCommandCode.NoteOn) ?
+                                        new NoteOnEvent(absoluteTime, channel, data1, data2, 0) :
+                                        new NoteEvent(absoluteTime, channel, commandCode, data1, data2),
+                MidiCommandCode.ControlChange => new ControlChangeEvent(absoluteTime, channel, (MidiController)data1, data2),
+                MidiCommandCode.PatchChange => new PatchChangeEvent(absoluteTime, channel, data1),
+                _ => throw new FormatException($"Unsupported MIDI Command Code for Raw Message {commandCode}"),
+            };
             return me;
         }
     }

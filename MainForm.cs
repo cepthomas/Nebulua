@@ -10,14 +10,15 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
 using Ephemera.NBagOfUis;
+
 
 //TODO slow startup:
 //"dur:295.510 tot:295.510 MainForm() enter"
 //"dur:1390.500 tot:1686.010 MainForm() exit"
 //"dur:035.980 tot:1721.990 OnLoad() entry"
 //"dur:284.873 tot:2006.863 OnLoad() exit"
+
 
 namespace Nebulua
 {
@@ -37,7 +38,7 @@ namespace Nebulua
         DateTime _scriptTouch;
 
         /// <summary>Diagnostic.</summary>
-        TimeIt _tt = new();
+        readonly TimeIt _tt = new();
         #endregion
 
         #region Lifecycle
@@ -75,42 +76,42 @@ namespace Nebulua
             timeBar.ProgressColor = UserSettings.Current.ControlColor;
             timeBar.MarkerColor = Color.Black;
 
-            chkPlay.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.ForeColor);
+            chkPlay.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.ForeColor);
             chkPlay.BackColor = UserSettings.Current.BackColor;
             chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            chkLoop.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.ForeColor);
+            chkLoop.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.ForeColor);
             chkLoop.BackColor = UserSettings.Current.BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            chkMonRcv.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
+            chkMonRcv.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
             chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
 
             chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            chkMonSnd.Image = GraphicsUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
+            chkMonSnd.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
             chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
 
             btnRewind.BackColor = UserSettings.Current.BackColor;
-            btnRewind.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
+            btnRewind.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
             btnRewind.Click += Rewind_Click;
 
             btnAbout.BackColor = UserSettings.Current.BackColor;
-            btnAbout.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.ForeColor);
+            btnAbout.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.ForeColor);
             btnAbout.Click += About_Click;
 
             btnKill.BackColor = UserSettings.Current.BackColor;
-            btnKill.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
+            btnKill.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
             btnKill.Click += (_, __) => { _hostCore!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
-            btnSettings.Image = GraphicsUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
+            btnSettings.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
             btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = UserSettings.Current.BackColor;
@@ -140,7 +141,7 @@ namespace Nebulua
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
             
-            ddbtnFile.Image = GraphicsUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.ForeColor);
+            ddbtnFile.Image = BitmapUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.ForeColor);
             ddbtnFile.BackColor = UserSettings.Current.BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
@@ -559,7 +560,7 @@ namespace Nebulua
                 ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
-            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
+            var html = MiscUtils.MarkdownToHtml([.. ls], MiscUtils.MarkdownMode.DarkApi, false);
             var docfn = Path.Join(srcDir, "doc.html");
             File.WriteAllText(docfn, html);
             new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();

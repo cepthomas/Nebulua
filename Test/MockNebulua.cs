@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
 
 
 namespace Nebulua

@@ -7,7 +7,6 @@ using System.Threading;
 using System.Diagnostics;
 using NAudio.Midi;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.Slog;
 
 
 namespace Nebulua
@@ -366,7 +365,7 @@ namespace Nebulua
         {
             bool ret = true;
 
-            string Status()
+            static string Status()
             {
                 var srcv = "mon rcv " + (UserSettings.Current.MonitorRcv ? "on" : "off");
                 var ssnd = "mon snd " + (UserSettings.Current.MonitorSnd ? "on" : "off");
