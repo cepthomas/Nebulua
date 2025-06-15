@@ -499,7 +499,16 @@ namespace Nebulua
         {
             if (e.level >= (int)LogLevel.Trace && e.level <= (int)LogLevel.Error)
             {
-                _logger.Log((LogLevel)e.level, $"SCRIPT {e.msg}");
+                string s = $"SCRIPT {e.msg ?? "null"}";
+                switch ((LogLevel)e.level)
+                {
+                    case LogLevel.Trace: _logger.Trace(s); break;
+                    case LogLevel.Debug: _logger.Debug(s); break;
+                    case LogLevel.Info:  _logger.Info(s); break;
+                    case LogLevel.Warn:  _logger.Warn(s); break;
+                    case LogLevel.Error: _logger.Error(s); break;
+                }
+
                 e.ret = 0;
             }
             else

@@ -38,7 +38,7 @@ namespace Nebulua
         DateTime _scriptTouch;
 
         /// <summary>Diagnostic.</summary>
-        readonly TimeIt _tt = new();
+        readonly TimeIt _tmit = new();
         #endregion
 
         #region Lifecycle
@@ -47,7 +47,7 @@ namespace Nebulua
         /// </summary>
         public MainForm()
         {
-            _tt.Snap("MainForm() enter");
+            _tmit.Snap("MainForm() enter");
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
@@ -151,7 +151,7 @@ namespace Nebulua
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-            _tt.Snap("MainForm() exit");
+            _tmit.Snap("MainForm() exit");
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            _tt.Snap("OnLoad() entry");
+            _tmit.Snap("OnLoad() entry");
             PopulateFileMenu();
 
             if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
@@ -169,7 +169,7 @@ namespace Nebulua
             }
 
             base.OnLoad(e);
-            _tt.Snap("OnLoad() exit");
+            _tmit.Snap("OnLoad() exit");
         }
 
         /// <summary>
@@ -178,9 +178,9 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnShown(EventArgs e)
         {
-            _tt.Snap("OnShown() entry");
+            _tmit.Snap("OnShown() entry");
             base.OnShown(e);
-            _tt.Snap("OnShown() exit");
+            _tmit.Snap("OnShown() exit");
         }
 
         /// <summary>
@@ -560,7 +560,7 @@ namespace Nebulua
                 ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
-            var html = MiscUtils.MarkdownToHtml([.. ls], MiscUtils.MarkdownMode.DarkApi, false);
+            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
             var docfn = Path.Join(srcDir, "doc.html");
             File.WriteAllText(docfn, html);
             new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
