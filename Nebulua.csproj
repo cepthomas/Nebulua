@@ -82,8 +82,4 @@
         <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="copy /Y $(OutputPath)* C:\Dev\bin" />
-    </Target>
-
 </Project>
