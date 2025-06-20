@@ -76,42 +76,42 @@ namespace Nebulua
             timeBar.ProgressColor = UserSettings.Current.ControlColor;
             timeBar.MarkerColor = Color.Black;
 
-            chkPlay.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkPlay.Image!, UserSettings.Current.ForeColor);
+            chkPlay.Image = ((Bitmap)chkPlay.Image!).Colorize(UserSettings.Current.ForeColor);
             chkPlay.BackColor = UserSettings.Current.BackColor;
             chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            chkLoop.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkLoop.Image!, UserSettings.Current.ForeColor);
+            chkLoop.Image = ((Bitmap)(chkLoop.Image!)).Colorize(UserSettings.Current.ForeColor);
             chkLoop.BackColor = UserSettings.Current.BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            chkMonRcv.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkMonRcv.Image!, UserSettings.Current.ForeColor);
+            chkMonRcv.Image = ((Bitmap)(chkMonRcv.Image!)).Colorize(UserSettings.Current.ForeColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
             chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
 
             chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            chkMonSnd.Image = BitmapUtils.ColorizeBitmap((Bitmap)chkMonSnd.Image!, UserSettings.Current.ForeColor);
+            chkMonSnd.Image = ((Bitmap)(chkMonSnd.Image!)).Colorize(UserSettings.Current.ForeColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
             chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
 
             btnRewind.BackColor = UserSettings.Current.BackColor;
-            btnRewind.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnRewind.Image!, UserSettings.Current.ForeColor);
+            btnRewind.Image = ((Bitmap)(btnRewind.Image!)).Colorize(UserSettings.Current.ForeColor);
             btnRewind.Click += Rewind_Click;
 
             btnAbout.BackColor = UserSettings.Current.BackColor;
-            btnAbout.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnAbout.Image!, UserSettings.Current.ForeColor);
+            btnAbout.Image = ((Bitmap)(btnAbout.Image!)).Colorize(UserSettings.Current.ForeColor);
             btnAbout.Click += About_Click;
 
             btnKill.BackColor = UserSettings.Current.BackColor;
-            btnKill.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnKill.Image!, UserSettings.Current.ForeColor);
+            btnKill.Image = ((Bitmap)(btnKill.Image!)).Colorize(UserSettings.Current.ForeColor);
             btnKill.Click += (_, __) => { _hostCore!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
-            btnSettings.Image = BitmapUtils.ColorizeBitmap((Bitmap)btnSettings.Image!, UserSettings.Current.ForeColor);
+            btnSettings.Image = ((Bitmap)(btnSettings.Image!)).Colorize(UserSettings.Current.ForeColor);
             btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = UserSettings.Current.BackColor;
@@ -141,7 +141,7 @@ namespace Nebulua
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
             
-            ddbtnFile.Image = BitmapUtils.ColorizeBitmap((Bitmap)ddbtnFile.Image!, UserSettings.Current.ForeColor);
+            ddbtnFile.Image = ((Bitmap)(ddbtnFile.Image!)).Colorize(UserSettings.Current.ForeColor);
             ddbtnFile.BackColor = UserSettings.Current.BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
