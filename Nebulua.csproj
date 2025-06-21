@@ -29,6 +29,8 @@
         <!-- <PlatformName>windows</PlatformName> -->
         <!-- <Platforms>x64</Platforms> -->
         <!-- <RuntimeIdentifier>win-x64</RuntimeIdentifier> -->
+        <!-- need RuntimeIdentifier to prevent runtimes dir creation -->
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
     </PropertyGroup>
 
