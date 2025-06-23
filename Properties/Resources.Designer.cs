@@ -61,16 +61,6 @@ namespace Nebulua.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon app {
-            get {
-                object obj = ResourceManager.GetObject("app", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap glyphicons_137_cogwheel {
@@ -247,6 +237,16 @@ namespace Nebulua.Properties {
             get {
                 object obj = ResourceManager.GetObject("glyphicons-86-repeat", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] marks {
+            get {
+                object obj = ResourceManager.GetObject("marks", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }
