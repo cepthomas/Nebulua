@@ -21,7 +21,7 @@
         <Description>Play music with lua.</Description>
         <Copyright>MIT License</Copyright>
         <!-- <ProduceReferenceAssembly>True</ProduceReferenceAssembly> -->
-        <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+        <ApplicationIcon>Resources\marks.ico</ApplicationIcon>
 
     </PropertyGroup>
 
