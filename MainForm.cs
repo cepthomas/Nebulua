@@ -519,7 +519,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// The meaning of life. This fights with github flavor a bit.
+        /// The meaning of life. This fights with github flavor a bit. TODO1 update, link to github.
         /// </summary>
         void About_Click(object? sender, EventArgs e)
         {

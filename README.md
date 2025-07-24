@@ -1,5 +1,5 @@
 
-# Nebulua
+# Nebulua TODO combine/fix docs like Nebulator
 
 A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
