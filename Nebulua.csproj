@@ -75,4 +75,10 @@
         <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="gen_md.lua">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

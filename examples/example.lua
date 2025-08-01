@@ -32,20 +32,20 @@ local hnd_ccin  = api.open_midi_input("ccMidiGen", 1)
 -- local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
 
 -- DAW host.
-local midi_out  = "loopMIDI Port"
-local hnd_keys  = api.open_midi_output(midi_out, 1, mid.NO_PATCH)
-local hnd_bass  = api.open_midi_output(midi_out, 2, mid.NO_PATCH)
-local hnd_synth = api.open_midi_output(midi_out, 3, mid.NO_PATCH)
-local hnd_ccout = api.open_midi_output(midi_out, 4, mid.NO_PATCH)
-local hnd_drums = api.open_midi_output(midi_out, 10, mid.NO_PATCH)
+-- local midi_out  = "loopMIDI Port"
+-- local hnd_keys  = api.open_midi_output(midi_out, 1, mid.NO_PATCH)
+-- local hnd_bass  = api.open_midi_output(midi_out, 2, mid.NO_PATCH)
+-- local hnd_synth = api.open_midi_output(midi_out, 3, mid.NO_PATCH)
+-- local hnd_ccout = api.open_midi_output(midi_out, 4, mid.NO_PATCH)
+-- local hnd_drums = api.open_midi_output(midi_out, 10, mid.NO_PATCH)
 
 -- Local VST host.
--- local midi_out  = "VirtualMIDISynth #1"
--- local hnd_keys  = api.open_midi_output(midi_out, 1, inst.AcousticGrandPiano)
--- local hnd_bass  = api.open_midi_output(midi_out, 2, inst.AcousticBass)
--- local hnd_synth = api.open_midi_output(midi_out, 3, inst.Lead1Square)
--- local hnd_ccout = api.open_midi_output(midi_out, 4, inst.StringEnsemble1)
--- local hnd_drums = api.open_midi_output(midi_out, 10, kit.Jazz)
+local midi_out  = "VirtualMIDISynth #1"
+local hnd_keys  = api.open_midi_output(midi_out, 1, inst.AcousticGrandPiano)
+local hnd_bass  = api.open_midi_output(midi_out, 2, inst.AcousticBass)
+local hnd_synth = api.open_midi_output(midi_out, 3, inst.Lead1Square)
+local hnd_ccout = api.open_midi_output(midi_out, 4, inst.StringEnsemble1)
+local hnd_drums = api.open_midi_output(midi_out, 10, kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------

@@ -518,29 +518,21 @@ namespace Nebulua
             }
         }
 
-        /// <summary>
-        /// The meaning of life. This fights with github flavor a bit. TODO1 update, link to github.
-        /// </summary>
+        /// <summary>The meaning of life.</summary>
         void About_Click(object? sender, EventArgs e)
+        {
+            Tools.ShowReadme("Nebulator");
+
+            MidiInfo_Click(sender, e);
+        }
+
+        /// <summary>Show the builtin definitions and user devices.</summary>
+        void MidiInfo_Click(object? sender, EventArgs e)
         {
             // Consolidate docs.
             var srcDir = MiscUtils.GetSourcePath();
-            var files = new List<string>()
-            {
-                Path.Join(srcDir, "README.md"),
-                Path.Join(srcDir, "docs", "definitions.md"),
-                Path.Join(srcDir, "docs", "writing_scripts.md"),
-                Path.Join(srcDir, "docs", "midi_defs.md"),
-                Path.Join(srcDir, "docs", "music_defs.md"),
-                Path.Join(srcDir, "docs", "tech_notes.md"),
-            };
 
             List<string> ls = [];
-            foreach (var f in files)
-            {
-                ls.AddRange(File.ReadAllLines(f));
-                ls.Add($"");
-            }
 
             // Show them what they have.
             ls.Add($"# Your Midi Devices");
@@ -560,10 +552,55 @@ namespace Nebulua
                 ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
-            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
-            var docfn = Path.Join(srcDir, "doc.html");
-            File.WriteAllText(docfn, html);
-            new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
+            // Generate definition content. TODO1 hard coded path - also in gen_md.lua
+            ProcessStartInfo pinfo = new("lua", [@"C:\Dev\Apps\Nebulua\lua\gen_md.lua"])
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
+            using Process proc = new() { StartInfo = pinfo };
+            proc.Start();
+
+            // TIL: To avoid deadlocks, always read the output stream first and then wait.
+            var stdout = proc.StandardOutput.ReadToEnd();
+            var stderr = proc.StandardError.ReadToEnd();
+
+            proc.WaitForExit();
+
+            if (proc.ExitCode == 0)
+            {
+                ls.Add(stdout);
+                ls.Add($"");
+
+                var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
+                var docfn = Path.Join(srcDir, "doc.html");
+                File.WriteAllText(docfn, html);
+                new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
+            }
+            else
+            {
+                // Command failed. Capture everything useful.
+                List<string> lserr = [];
+                lserr.Add($"=== code: {proc.ExitCode}");
+
+                if (stdout.Length > 0)
+                {
+                    lserr.Add($"=== stdout:");
+                    lserr.Add($"{stdout}");
+                }
+
+                if (stderr.Length > 0)
+                {
+                    lserr.Add($"=== stderr:");
+                    lserr.Add($"{stderr}");
+                }
+
+                _logger.Error(string.Join(Environment.NewLine, lserr));
+            }
         }
         #endregion
     }
