@@ -19,6 +19,7 @@ using Ephemera.NBagOfUis;
 //"dur:035.980 tot:1721.990 OnLoad() entry"
 //"dur:284.873 tot:2006.863 OnLoad() exit"
 
+//TODO UI clean up. lblState  btnGo   abouts  
 
 namespace Nebulua
 {

@@ -207,13 +207,13 @@ namespace Nebulua
             // ccMidiGen
             // 
             ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            ccMidiGen.Location = new Point(12, 352);
+            ccMidiGen.Location = new Point(12, 328);
             ccMidiGen.MaxX = 100;
             ccMidiGen.MaxY = 100;
             ccMidiGen.MinX = 0;
             ccMidiGen.MinY = 0;
             ccMidiGen.Name = "ccMidiGen";
-            ccMidiGen.Size = new Size(375, 167);
+            ccMidiGen.Size = new Size(375, 191);
             ccMidiGen.TabIndex = 56;
             // 
             // ddbtnFile
