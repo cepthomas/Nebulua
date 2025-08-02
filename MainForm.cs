@@ -530,8 +530,6 @@ namespace Nebulua
         void MidiInfo_Click(object? sender, EventArgs e)
         {
             // Consolidate docs.
-            var srcDir = MiscUtils.GetSourcePath();
-
             List<string> ls = [];
 
             // Show them what they have.
@@ -552,28 +550,23 @@ namespace Nebulua
                 ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
             }
 
-            // Generate definition content. TODO1 hard coded path - also in gen_md.lua
-            ProcessStartInfo pinfo = new("lua", [@"C:\Dev\Apps\Nebulua\lua\gen_md.lua"])
+            // Generate definitions content.
+            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
+            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
+
+            string s =
+                $@"package.path = '{luaPath}' .. package.path
+                local mid = require('midi_defs')
+                local mus = require('music_defs')
+                for _,v in ipairs(mid.gen_md()) do print(v) end
+                for _,v in ipairs(mus.gen_md()) do print(v) end
+                ";
+
+            var res = ExecuteLuaCode(s);
+
+            if (res.retcode == 0)
             {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
-
-            using Process proc = new() { StartInfo = pinfo };
-            proc.Start();
-
-            // TIL: To avoid deadlocks, always read the output stream first and then wait.
-            var stdout = proc.StandardOutput.ReadToEnd();
-            var stderr = proc.StandardError.ReadToEnd();
-
-            proc.WaitForExit();
-
-            if (proc.ExitCode == 0)
-            {
-                ls.Add(stdout);
+                ls.Add(res.s);
                 ls.Add($"");
 
                 var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
@@ -585,23 +578,59 @@ namespace Nebulua
             {
                 // Command failed. Capture everything useful.
                 List<string> lserr = [];
-                lserr.Add($"=== code: {proc.ExitCode}");
-
-                if (stdout.Length > 0)
-                {
-                    lserr.Add($"=== stdout:");
-                    lserr.Add($"{stdout}");
-                }
-
-                if (stderr.Length > 0)
-                {
-                    lserr.Add($"=== stderr:");
-                    lserr.Add($"{stderr}");
-                }
+                lserr.Add($"=== code: {res.retcode}");
+                lserr.Add($"=== stderr:");
+                lserr.Add($"{res.s}");
 
                 _logger.Error(string.Join(Environment.NewLine, lserr));
             }
         }
         #endregion
+
+        /// <summary>Stopgap measure to execute a chunk of lua code (not file). TODO Incorporate properly in LBOT.</summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        (int retcode, string s) ExecuteLuaCode(string scode)
+        {
+            var fn = Path.GetTempFileName();
+            var code = 0;
+            var sret = "";
+
+            try
+            {
+                File.WriteAllText(fn, scode);
+                ProcessStartInfo pinfo = new("lua", [fn])
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+
+                using Process proc = new() { StartInfo = pinfo };
+                proc.Start();
+
+                // TIL: To avoid deadlocks, always read the output stream first and then wait.
+                var stdout = proc.StandardOutput.ReadToEnd();
+                var stderr = proc.StandardError.ReadToEnd();
+
+                proc.WaitForExit();
+
+                code = proc.ExitCode == 0 ? 0 : proc.ExitCode;
+                sret = proc.ExitCode == 0 ? stdout : stderr;
+            }
+            catch (Exception ex)
+            {
+                code = -1;
+                sret = $"Failed: {ex}";
+            }
+            finally
+            {
+                File.Delete(fn);
+            }
+
+            return (code, sret);
+        }
     }
 }

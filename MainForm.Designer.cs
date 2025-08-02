@@ -207,7 +207,7 @@ namespace Nebulua
             // ccMidiGen
             // 
             ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            ccMidiGen.Location = new Point(52, 343);
+            ccMidiGen.Location = new Point(12, 352);
             ccMidiGen.MaxX = 100;
             ccMidiGen.MaxY = 100;
             ccMidiGen.MinX = 0;
