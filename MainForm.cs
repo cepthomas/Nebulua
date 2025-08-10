@@ -13,13 +13,13 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-//TODO slow startup:
+//TODO1 slow startup:
 //"dur:295.510 tot:295.510 MainForm() enter"
 //"dur:1390.500 tot:1686.010 MainForm() exit"
 //"dur:035.980 tot:1721.990 OnLoad() entry"
 //"dur:284.873 tot:2006.863 OnLoad() exit"
 
-//TODO UI clean up. lblState  btnGo   abouts  
+//TODO1 UI clean up. lblState  btnGo   abouts  
 
 namespace Nebulua
 {
@@ -588,7 +588,7 @@ namespace Nebulua
         }
         #endregion
 
-        /// <summary>Stopgap measure to execute a chunk of lua code (not file). TODO Incorporate properly in LBOT.</summary>
+        /// <summary>Stopgap measure to execute a chunk of lua code (not file). TODO1 Incorporate properly in LBOT.</summary>
         /// <param name="s"></param>
         /// <returns></returns>
         (int retcode, string s) ExecuteLuaCode(string scode)

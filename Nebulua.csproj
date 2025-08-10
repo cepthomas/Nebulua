@@ -26,12 +26,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Remove="LBOT\**" />
         <Compile Remove="lib\**" />
         <Compile Remove="Interop\**" />
         <Compile Remove="Test\**" />
+        <EmbeddedResource Remove="LBOT\**" />
         <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Interop\**" />
         <EmbeddedResource Remove="Test\**" />
+        <None Remove="LBOT\**" />
         <None Remove="lib\**" />
         <None Remove="Interop\**" />
         <None Remove="Test\**" />
