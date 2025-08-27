@@ -8,6 +8,21 @@ namespace Nebulua
     public class SyntaxException(string message) : Exception(message) { }
     #endregion
 
+    public class Defs
+    {
+        /// <summary>Corresponds to midi velocity = 0.</summary>
+        public const double VOLUME_MIN = 0.0;
+
+        /// <summary>Corresponds to midi velocity = 127.</summary>
+        public const double VOLUME_MAX = 1.0;
+
+        /// <summary>Default value.</summary>
+        public const double VOLUME_DEFAULT = 0.8;
+
+        /// <summary>Allow UI controls some more headroom.</summary>
+        public const double MAX_GAIN = 2.0;
+    }
+
     public class Utils
     {
         /// <summary>Generic exception processor for callback threads that throw.</summary>
@@ -63,5 +78,4 @@ namespace Nebulua
         void SetCursorPosition(int left, int top);
     }
     #endregion
-
 }

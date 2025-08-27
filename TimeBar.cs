@@ -29,14 +29,10 @@ namespace Nebulua
         #endregion
 
         #region Backing fields
-        readonly SolidBrush _brush = new(Color.White);
         readonly Pen _penMarker = new(Color.Black, 1);
         #endregion
 
         #region Properties
-        /// <summary>For styling.</summary>
-        public Color ProgressColor { get { return _brush.Color; } set { _brush.Color = value; } }
-
         /// <summary>For styling.</summary>
         public Color MarkerColor { get { return _penMarker.Color; } set { _penMarker.Color = value; } }
 
@@ -68,7 +64,7 @@ namespace Nebulua
             if (disposing)
             {
                 _toolTip.Dispose();
-                _brush.Dispose();
+                //_brush.Dispose();
                 _penMarker.Dispose();
                 _format.Dispose();
             }
@@ -87,23 +83,47 @@ namespace Nebulua
 
             if (State.Instance.IsComposition)
             {
-                // Draw the progress bar.
-                int dcurrent = GetClientFromTick(State.Instance.CurrentTick);
-                pe.Graphics.FillRectangle(_brush, dcurrent - 1, 0, 2, Height);
+                var vpos = Height / 2;
 
-                // Draw start/end markers.
-                int mstart = GetClientFromTick(State.Instance.LoopStart);
-                int mend = GetClientFromTick(State.Instance.LoopEnd);
-                pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
-                pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
+                // Loop area.
+                int lstart = GetClientFromTick(State.Instance.LoopStart);
+                int lend = GetClientFromTick(State.Instance.LoopEnd);
+                pe.Graphics.DrawLine(_penMarker, lstart, 0, lstart, Height);
+                pe.Graphics.DrawLine(_penMarker, lend, 0, lend, Height);
+                pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(lstart, vpos - 5), new(lstart, vpos + 5), new(lstart + 10, vpos) });
+                pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(lend, vpos - 5), new(lend, vpos + 5), new(lend - 10, vpos) });
+
+                // Bars? vert line per bar or ?
+
+                // Sections.
+                var fsize = pe.Graphics.MeasureString("X", FontSmall).Height;
+                foreach (var (tick, name) in State.Instance.SectionInfo)
+                {
+                    int sect = GetClientFromTick(tick);
+                    pe.Graphics.DrawLine(_penMarker, sect, 0, sect, Height);
+                    _format.Alignment = StringAlignment.Center;
+                    _format.LineAlignment = StringAlignment.Center;
+                    pe.Graphics.DrawString(name, FontSmall, Brushes.Black, sect + 2, Height - fsize - 2);
+                }
+
+                // Current pos.
+                int cpos = GetClientFromTick(State.Instance.CurrentTick);
+                pe.Graphics.DrawLine(_penMarker, cpos, 0, cpos, Height);
+                pe.Graphics.FillPolygon(_penMarker.Brush, new PointF[] { new(cpos - 5, 0), new(cpos + 5, 0), new(cpos, 10) });
             }
+            // else free-running
 
-            // Text.
+            // Time text.
             _format.Alignment = StringAlignment.Center;
+            _format.LineAlignment = StringAlignment.Center;
             pe.Graphics.DrawString(MusicTime.Format(State.Instance.CurrentTick), FontLarge, Brushes.Black, ClientRectangle, _format);
+            
             _format.Alignment = StringAlignment.Near;
+            _format.LineAlignment = StringAlignment.Near;
             pe.Graphics.DrawString(MusicTime.Format(State.Instance.LoopStart), FontSmall, Brushes.Black, ClientRectangle, _format);
+            
             _format.Alignment = StringAlignment.Far;
+            _format.LineAlignment = StringAlignment.Near;
             pe.Graphics.DrawString(MusicTime.Format(State.Instance.LoopEnd), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion

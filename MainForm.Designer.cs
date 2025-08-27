@@ -33,11 +33,9 @@ namespace Nebulua
             chkLoop = new CheckBox();
             btnSettings = new Button();
             timeBar = new TimeBar();
-            lblState = new Label();
             ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
             ddbtnFile = new Ephemera.NBagOfUis.DropDownButton();
             toolTip1 = new ToolTip(components);
-            btnGo = new Button();
             SuspendLayout();
             // 
             // chkPlay
@@ -190,19 +188,9 @@ namespace Nebulua
             timeBar.Location = new Point(13, 66);
             timeBar.MarkerColor = Color.Black;
             timeBar.Name = "timeBar";
-            timeBar.ProgressColor = Color.White;
             timeBar.Size = new Size(835, 49);
             timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 52;
-            // 
-            // lblState
-            // 
-            lblState.BorderStyle = BorderStyle.FixedSingle;
-            lblState.Location = new Point(717, 10);
-            lblState.MinimumSize = new Size(20, 19);
-            lblState.Name = "lblState";
-            lblState.Size = new Size(80, 21);
-            lblState.TabIndex = 53;
             // 
             // ccMidiGen
             // 
@@ -227,25 +215,14 @@ namespace Nebulua
             toolTip1.SetToolTip(ddbtnFile, "Open new or recent script");
             ddbtnFile.UseVisualStyleBackColor = false;
             // 
-            // btnGo
-            // 
-            btnGo.Location = new Point(806, 8);
-            btnGo.Name = "btnGo";
-            btnGo.Size = new Size(47, 28);
-            btnGo.TabIndex = 58;
-            btnGo.Text = "Go!";
-            btnGo.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(865, 531);
-            Controls.Add(btnGo);
             Controls.Add(ddbtnFile);
             Controls.Add(ccMidiGen);
             Controls.Add(btnSettings);
-            Controls.Add(lblState);
             Controls.Add(timeBar);
             Controls.Add(chkLoop);
             Controls.Add(chkMonSnd);
@@ -276,11 +253,9 @@ namespace Nebulua
         private CheckBox chkMonSnd;
         private CheckBox chkLoop;
         private TimeBar timeBar;
-        private Label lblState;
         private Button btnSettings;
         private Ephemera.NBagOfUis.ClickClack ccMidiGen;
         private Ephemera.NBagOfUis.DropDownButton ddbtnFile;
         private ToolTip toolTip1;
-        private Button btnGo;
     }
 }

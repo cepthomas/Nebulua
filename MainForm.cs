@@ -13,13 +13,12 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-//TODO1 slow startup:
+//TODO slow startup:
 //"dur:295.510 tot:295.510 MainForm() enter"
 //"dur:1390.500 tot:1686.010 MainForm() exit"
 //"dur:035.980 tot:1721.990 OnLoad() entry"
 //"dur:284.873 tot:2006.863 OnLoad() exit"
 
-//TODO1 UI clean up. lblState  btnGo   abouts  
 
 namespace Nebulua
 {
@@ -40,6 +39,9 @@ namespace Nebulua
 
         /// <summary>Diagnostic.</summary>
         readonly TimeIt _tmit = new();
+
+        /// <summary>All the channel play controls.</summary>
+        readonly List<ChannelControl> _channelControls = [];
         #endregion
 
         #region Lifecycle
@@ -74,7 +76,6 @@ namespace Nebulua
             #region Init the controls
 
             timeBar.BackColor = UserSettings.Current.BackColor;
-            timeBar.ProgressColor = UserSettings.Current.ControlColor;
             timeBar.MarkerColor = Color.Black;
 
             chkPlay.Image = ((Bitmap)chkPlay.Image!).Colorize(UserSettings.Current.ForeColor);
@@ -142,12 +143,11 @@ namespace Nebulua
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
             
-            ddbtnFile.Image = ((Bitmap)(ddbtnFile.Image!)).Colorize(UserSettings.Current.ForeColor);
+            ddbtnFile.Image = ((Bitmap)ddbtnFile.Image!).Colorize(UserSettings.Current.ForeColor);
             ddbtnFile.BackColor = UserSettings.Current.BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
             ddbtnFile.Selected += File_Selected;
-
             #endregion
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
@@ -156,12 +156,13 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Inits control appearance. Opens script. Can throw.
+        /// Inits control appearance. Opens last script. Can throw.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
             _tmit.Snap("OnLoad() entry");
+
             PopulateFileMenu();
 
             if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
@@ -170,6 +171,7 @@ namespace Nebulua
             }
 
             base.OnLoad(e);
+
             _tmit.Snap("OnLoad() exit");
         }
 
@@ -180,7 +182,9 @@ namespace Nebulua
         protected override void OnShown(EventArgs e)
         {
             _tmit.Snap("OnShown() entry");
+
             base.OnShown(e);
+
             _tmit.Snap("OnShown() exit");
         }
 
@@ -219,12 +223,105 @@ namespace Nebulua
         {
             if (disposing)
             {
+                //// Wait a bit in case there are some lingering events.
+                //System.Threading.Thread.Sleep(100);
+
+                //DestroyDevices();
+
                 components?.Dispose();
                 _hostCore.Dispose();
             }
             base.Dispose(disposing);
         }
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void DestroyControls()
+        {
+            _hostCore.KillAll();
+
+            // Clean out our current elements.
+            _channelControls.ForEach(c =>
+            {
+                Controls.Remove(c);
+                c.Dispose();
+            });
+            _channelControls.Clear();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void CreateControls()
+        {
+            // Create channels and controls.
+            const int CONTROL_SPACING = 10;
+            int x = btnRewind.Left;
+            //int y = barBar.Bottom + CONTROL_SPACING;
+            int y = 0 + CONTROL_SPACING;
+
+            _hostCore._outputs.ForEach(op =>
+            {
+                //// Make new channel.
+                //Channel channel = new()
+                //{
+                //    ChannelName = name,
+                //    ChannelNumber = chnum,
+                //    DeviceId = devid,
+                //    Volume = _nppVals.GetDouble(name, "volume", MidiLibDefs.VOLUME_DEFAULT),
+                //    State = (ChannelState)_nppVals.GetInteger(name, "state", (int)ChannelState.Normal),
+                //    Patch = patch,
+                //    IsDrums = isDrums,
+                //    Selected = false,
+                //    Device = _outputDevices[devid],
+                //    AddNoteOff = true
+                //};
+
+                var devName = op.DeviceName;
+                var channels = op.Channels;
+
+                for (int i = 0; i < channels.Length; i++)
+                {
+                    if (channels[i])
+                    {
+                        // Make new control and bind to channel.
+                        ChannelControl control = new()
+                        {
+                            Location = new(x, y),
+                            BorderStyle = BorderStyle.FixedSingle,
+                            //                    ChannelNumber = op.Channels[0]
+                        };
+                        control.ChannelChange += Control_ChannelChange;
+                        Controls.Add(control);
+                        _channelControls.Add(control);
+
+                        // Adjust positioning for next iteration.
+                        y += control.Height + 5;
+                    }
+                }
+            });
+        }
+
+        void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
         #region File handling
         /// <summary>
@@ -308,8 +405,10 @@ namespace Nebulua
 
                 if (_loadedScriptFn is not null)
                 {
-                    _hostCore.LoadScript(_loadedScriptFn); // may throw
+//TODO destroy controls
 
+                    _hostCore.LoadScript(_loadedScriptFn); // may throw
+//TODO create controls
                     _scriptTouch = File.GetLastWriteTime(_loadedScriptFn);
 
                     // Everything ok.
@@ -360,7 +459,7 @@ namespace Nebulua
                         break;
 
                     case "ExecState":
-                        lblState.Text = State.Instance.ExecState.ToString();
+                        //lblState.Text = State.Instance.ExecState.ToString();
                         if (State.Instance.ExecState != ExecState.Run)
                         {
                             chkPlay.Checked = false;
@@ -588,7 +687,14 @@ namespace Nebulua
         }
         #endregion
 
-        /// <summary>Stopgap measure to execute a chunk of lua code (not file). TODO1 Incorporate properly in LBOT.</summary>
+
+
+
+
+
+
+
+        /// <summary>Stopgap measure to execute a chunk of lua code (not file).</summary>
         /// <param name="s"></param>
         /// <returns></returns>
         (int retcode, string s) ExecuteLuaCode(string scode)
@@ -633,5 +739,12 @@ namespace Nebulua
 
             return (code, sret);
         }
+
+
+
+
+
+
+
     }
 }

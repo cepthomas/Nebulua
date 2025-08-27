@@ -27,7 +27,7 @@ namespace Nebulua
         //readonly TimingAnalyzer? _tan = null;
 
         /// <summary>All midi devices to use for send.</summary>
-        readonly List<MidiOutput> _outputs = [];
+        public readonly List<MidiOutput> _outputs = [];
 
         /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
         readonly List<MidiInput> _inputs = [];
