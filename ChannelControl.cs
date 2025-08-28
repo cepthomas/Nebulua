@@ -83,45 +83,42 @@ namespace Nebulua
         /// </summary>
         public ChannelControl()
         {
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            Size = new Size(345, 38);
-
             lblChannelInfo = new()
             {
-                // AutoSize = true,
-                Location = new Point(2, 8),
-                Size = new Size(20, 20),
+                Location = new Point(2, 9),
+                Size = new Size(20, 30),
                 Text = "#"
             };
 
             lblSolo = new()
             {
-                Location = new Point(290, 7),
+                Location = new Point(lblChannelInfo.Right + 4, 9),
                 Size = new Size(20, 20),
                 Text = "S"
             };
 
             lblMute = new()
             {
-                Location = new Point(315, 7),
+                Location = new Point(lblSolo.Right + 4, 9),
                 Size = new Size(20, 20),
                 Text = "M"
             };
 
             sldVolume = new()
             {
-                Location = new Point(194, 3),
-                Size = new Size(83, 30),
+                Location = new Point(lblMute.Right + 4, 4),
+                Size = new Size(40, 30),
                 Orientation = Orientation.Horizontal,
                 BorderStyle = BorderStyle.FixedSingle,
-                //DrawColor = Color.White,
-                //Label = "",
                 Maximum = Defs.MAX_GAIN,
                 Minimum = Defs.VOLUME_MIN,
                 Value = Defs.VOLUME_DEFAULT,
                 Resolution = 0.1
             };
+
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            Size = new Size(sldVolume.Right + 5, 38);
 
             Controls.Add(sldVolume);
             Controls.Add(lblMute);
@@ -164,7 +161,7 @@ namespace Nebulua
 
 
         /// <summary>Handles solo and mute.</summary>
-        void SoloMute_Click(object? sender, EventArgs e)  // notify
+        void SoloMute_Click(object? sender, EventArgs e)
         {
             var lbl = sender as Label;
 

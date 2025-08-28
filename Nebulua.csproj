@@ -14,7 +14,7 @@
         <RootNamespace>Nebulua</RootNamespace>
         <Nullable>enable</Nullable>
         <ImplicitUsings>disable</ImplicitUsings>
-        <NoWarn>CA1816;CA1822</NoWarn>
+        <NoWarn>CA1816;CA1822;IDE0040</NoWarn>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <Company>Ephemera Inc</Company>
         <Product>Nebulua</Product>

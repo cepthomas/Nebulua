@@ -56,8 +56,6 @@ namespace Nebulua
         {
         }
     }
-
-
     
     ///////////// Mock settings. /////////////
     public class UserSettings : SettingsCore
@@ -81,8 +79,4 @@ namespace Nebulua
         public bool MonitorRcv { get; set; } = false;
         public bool MonitorSnd { get; set; } = false;
     }    
-
-
-
-
 }

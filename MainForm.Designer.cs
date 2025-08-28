@@ -98,12 +98,12 @@ namespace Nebulua
             // 
             traffic.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             traffic.BorderStyle = BorderStyle.FixedSingle;
-            traffic.Location = new Point(13, 130);
+            traffic.Location = new Point(13, 329);
             traffic.Margin = new Padding(4, 5, 4, 5);
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
             traffic.Prompt = "";
-            traffic.Size = new Size(835, 190);
+            traffic.Size = new Size(452, 190);
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
@@ -195,7 +195,7 @@ namespace Nebulua
             // ccMidiGen
             // 
             ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            ccMidiGen.Location = new Point(12, 328);
+            ccMidiGen.Location = new Point(478, 328);
             ccMidiGen.MaxX = 100;
             ccMidiGen.MaxY = 100;
             ccMidiGen.MinX = 0;

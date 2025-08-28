@@ -23,11 +23,11 @@ namespace Nebulua
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
 
-        ///// <summary>Diagnostics for timing measurement.</summary>
-        //readonly TimingAnalyzer? _tan = null;
-
         /// <summary>All midi devices to use for send.</summary>
-        public readonly List<MidiOutput> _outputs = [];
+        readonly List<MidiOutput> _outputs = [];
+
+        /// <summary>key = channel handle, value = play/silent.</summary>
+        readonly Dictionary<int, bool> _outputGates = [];
 
         /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
         readonly List<MidiInput> _inputs = [];
@@ -36,10 +36,10 @@ namespace Nebulua
         bool _disposed = false;
 
         /// <summary>Current script. Null means none.</summary>
-        string? _scriptFn = null;
+        string? _currentScriptFn = null;
 
-        /// <summary>key = channel handle, value = play/silent.</summary>
-        Dictionary<int, bool> _outputGates = [];
+        ///// <summary>Diagnostics for timing measurement.</summary>
+        //readonly TimingAnalyzer? _tan = null;
         #endregion
 
         #region Lifecycle
@@ -100,32 +100,31 @@ namespace Nebulua
             {
                 if (scriptFn.EndsWith(".lua") && Path.Exists(scriptFn))
                 {
-                    _scriptFn = scriptFn;
+                    _currentScriptFn = scriptFn;
                 }
                 else
                 {
                     throw new ArgumentException($"Invalid script file: {scriptFn}");
                 }
             }
-            else if (_scriptFn is null)
+            else if (_currentScriptFn is null)
             {
                 throw new ArgumentException("Can't reload, no current file");
             }
 
             // Load and run the new script.
-            _logger.Info($"Loading script file {_scriptFn}");
+            _logger.Info($"Loading script file {_currentScriptFn}");
 
             // Set up runtime lua environment. The lua lib files, the dir containing the script file.
             var srcDir = MiscUtils.GetSourcePath(); // The source dir.
-            var scriptDir = Path.GetDirectoryName(_scriptFn);
+            var scriptDir = Path.GetDirectoryName(_currentScriptFn);
             var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
 
-            _interop.Run(_scriptFn, luaPath);
+            _interop.Run(_currentScriptFn, luaPath);
             State.Instance.ExecState = ExecState.Idle;
 
             string smeta = _interop.Setup();
             // Get info about the script.
-            // string smeta = _interop.NebCommand("section_info", "");
             Dictionary<int, string> sectInfo = [];
             var chunks = smeta.SplitByToken("|");
             foreach (var chunk in chunks)
@@ -140,11 +139,37 @@ namespace Nebulua
             _mmTimer.Start();
         }
 
+        /// <summary>
+        /// Get a list of all valid dev/chan.
+        /// </summary>
+        /// <returns></returns>
+        public List<(int chanNum, int devNum)> ValidChannels()
+        {
+            List<(int channelNumber, int deviceNumber)> valchs = [];
 
+            for (int devNum = 0; devNum < _outputs.Count; devNum++)
+            {
+                var chs = _outputs[devNum].Channels;
+                for (int ch = 0; ch < chs.Length; ch++)
+                {
+                    if (chs[ch])
+                    {
+                        valchs.Add((devNum, ch + 1));
+                    }
+                }
+            }
 
+            return valchs;
+        }
 
-
-        public void EnableChannel(int devNum, int chanNum, bool enable) // TODO
+        /// <summary>
+        /// Enable/disable particular channel.
+        /// </summary>
+        /// <param name="devNum"></param>
+        /// <param name="chanNum"></param>
+        /// <param name="enable"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public void EnableChannel(int devNum, int chanNum, bool enable)
         {
             var chanHnd = MakeOutHandle(devNum, chanNum);
             if (_outputGates.ContainsKey(chanHnd))
@@ -156,75 +181,6 @@ namespace Nebulua
                 throw new ArgumentException($"Invalid channel handle: {devNum}:{chanNum}");
             }
         }
-
-
-
-//         public void SetOutputState(ChannelState state, int devNum, int chanNum)
-//         {
-
-// // _outputStates
-
-
-//                 // TODO check all outs for any solo(s)
-
-//                 bool anySolo = channels.Values.Where(c => c.State == ChannelState.Solo).Any();
-
-//                 // Process any sequence steps.
-//                 foreach (var ch in _channels.Values)
-//                 {
-//                     // Is it ok to play now?
-//                     bool play = ch.State == ChannelState.Solo || (ch.State == ChannelState.Normal && !anySolo);
-
-//                     if (play)
-//                     {
-//                         // Need exception handling here to protect from user script errors.
-//                         try
-//                         {
-//                             ch.DoStep(_stepTime.TotalSubs);
-//                         }
-//                         catch (Exception ex)
-//                         {
-//                             ProcessScriptRuntimeError(ex);
-//                         }
-//                     }
-//                 }
-
-//                 // var chanHnd = MakeOutHandle(_outputs.IndexOf(output), e.chan_num);
-//                 // _outputStates.Add(chanHnd, true) // throws if exists already!
-//                 // e.ret = chanHnd; // valid return
-
-
-
-//                 // // Check args for valid device and channel.
-//                 // var (devIndex, chanNum) = DeconstructHandle(e.chan_hnd);
-
-//                 // if (devIndex >= _outputs.Count ||
-//                 //     chanNum < 1 ||
-//                 //     chanNum > Defs.NUM_MIDI_CHANNELS ||
-//                 //     _outputs[devIndex].Channels[chanNum - 1] == false)
-//                 // {
-//                 //     throw new SyntaxException($"Script has invalid channel: {e.chan_hnd}");
-//                 // }
-
-//                 // // Sound or quiet?
-//                 // if (_outputStates[e.chan_hnd])
-//                 // {
-//                 //     int note_num = MathUtils.Constrain(e.note_num, 0, Defs.MIDI_VAL_MAX);
-
-//                 //     // Check for note off.
-//                 //     var vol = e.volume * State.Instance.Volume;
-//                 //     int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * Defs.MIDI_VAL_MAX), 0, Defs.MIDI_VAL_MAX);
-//                 //     MidiEvent evt = vel == 0?
-//                 //         new NoteEvent(0, chanNum, MidiCommandCode.NoteOff, note_num, 0) :
-//                 //         new NoteEvent(0, chanNum, MidiCommandCode.NoteOn, note_num, vel);
-
-//                 //     var output = _outputs[devIndex];
-//                 //     output.Send(evt);
-
-
-//         }
-
-
 
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.

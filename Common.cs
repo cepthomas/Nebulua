@@ -14,9 +14,13 @@ namespace Nebulua
     /// <summary>General definitions.</summary>
     public class Defs
     {
-        // Midi defs.
+        /// <summary>Midi constant.</summary>
         public const int MIDI_VAL_MIN = 0;
+
+        /// <summary>Midi constant.</summary>
         public const int MIDI_VAL_MAX = 127;
+
+        /// <summary>Per device.</summary>
         public const int NUM_MIDI_CHANNELS = 16;
 
         /// <summary>Corresponds to midi velocity = 0.</summary>

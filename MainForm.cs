@@ -74,7 +74,6 @@ namespace Nebulua
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             #region Init the controls
-
             timeBar.BackColor = UserSettings.Current.BackColor;
             timeBar.MarkerColor = Color.Black;
 
@@ -423,7 +422,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Rewind
+        /// Rewind.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -433,13 +432,6 @@ namespace Nebulua
             // Current tick may have been corrected for loop.
             //timeBar.Current = State.Instance.CurrentTick;
         }
-
-
-
-
-
-
-
 
         /// <summary>
         /// User clicked something.
@@ -521,7 +513,11 @@ namespace Nebulua
             }
         }
 
-        /// <summary>The meaning of life.</summary>
+        /// <summary>
+        /// The meaning of life.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void About_Click(object? sender, EventArgs e)
         {
             Tools.ShowReadme("Nebulator");
@@ -529,7 +525,11 @@ namespace Nebulua
             MidiInfo_Click(sender, e);
         }
 
-        /// <summary>Show the builtin definitions and user devices.</summary>
+        /// <summary>
+        /// Show the builtin definitions and user devices.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void MidiInfo_Click(object? sender, EventArgs e)
         {
             // Consolidate docs.
@@ -590,26 +590,21 @@ namespace Nebulua
         }
         #endregion
 
-
-
-
-
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-        ////////////////////////// stuff needs home ///////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-
-
-
-
+        #region Private stuff
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void ChannelControlChange(object? sender, ChannelControlEventArgs e)
         {
-
-            // TODO check all outs for any solo(s)
-
+            // Any solo(s)?
             bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
+
+            foreach (var c in _channelControls)
+            {
+                // if (c)
+            }
 
             // switch (chc.State)
             // {
@@ -630,7 +625,6 @@ namespace Nebulua
             //         break;
             // }
 
-
             // // Is it ok to play now?
             // bool play = ch.State == ChannelState.Solo || (ch.State == ChannelState.Normal && !anySolo);
 
@@ -649,14 +643,10 @@ namespace Nebulua
 
 
             // then >>>> public void EnableChannel(int devNum, int chanNum, bool enable)
-            
         }
 
-
-
-
         /// <summary>
-        /// 
+        /// Destroy controls.
         /// </summary>
         void DestroyControls()
         {
@@ -672,58 +662,36 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// 
+        /// Create controls.
         /// </summary>
         void CreateControls()
         {
+            DestroyControls();
+
             // Create channels and controls.
-            const int CONTROL_SPACING = 10;
-            int x = btnRewind.Left;
+            //const int CONTROL_SPACING = 10;
+            int x = timeBar.Left;
             //int y = barBar.Bottom + CONTROL_SPACING;
-            int y = 0 + CONTROL_SPACING;
+            int y = timeBar.Bottom + 5; // 0 + CONTROL_SPACING;
 
-            _hostCore._outputs.ForEach(op =>   // TODO fix interface
+            _hostCore.ValidChannels().ForEach(ch =>
             {
-                //// Make new channel.
-                //Channel channel = new()
-                //{
-                //    ChannelName = name,
-                //    ChannelNumber = chnum,
-                //    DeviceId = devid,
-                //    Volume = _nppVals.GetDouble(name, "volume", MidiLibDefs.VOLUME_DEFAULT),
-                //    State = (ChannelState)_nppVals.GetInteger(name, "state", (int)ChannelState.Normal),
-                //    Patch = patch,
-                //    IsDrums = isDrums,
-                //    Selected = false,
-                //    Device = _outputDevices[devid],
-                //    AddNoteOff = true
-                //};
-
-                var devName = op.DeviceName;
-                var channels = op.Channels;
-
-                for (int i = 0; i < channels.Length; i++)
+                // Make new control and bind to channel.
+                ChannelControl control = new(ch.chanNum, ch.devNum)
                 {
-                    if (channels[i])
-                    {
-                        // Make new control and bind to channel.
-                        ChannelControl control = new()
-                        {
-                            Location = new(x, y),
-                            BorderStyle = BorderStyle.FixedSingle,
-                            //                    ChannelNumber = op.Channels[0]
-                        };
-                        control.ChannelControlChange += ChannelControlChange;
-                        Controls.Add(control);
-                        _channelControls.Add(control);
+                    Location = new(x, y),
+                    BorderStyle = BorderStyle.FixedSingle,
+                    //BackColor = this.BackColor
+                };
 
-                        // Adjust positioning for next iteration.
-                        y += control.Height + 5;
-                    }
-                }
+                control.ChannelControlChange += ChannelControlChange;
+                Controls.Add(control);
+                _channelControls.Add(control);
+
+                // Adjust positioning for next iteration.
+                x += control.Width + 5;
             });
         }
-
 
         /// <summary>
         /// Capture bad events and display them to the user.
@@ -742,8 +710,6 @@ namespace Nebulua
                 }
             });
         }
-
-
 
         /// <summary>Stopgap measure to execute a chunk of lua code (not file).</summary>
         /// <param name="s"></param>
@@ -790,12 +756,6 @@ namespace Nebulua
 
             return (code, sret);
         }
-
-
-
-
-
-
-
+        #endregion
     }
 }
