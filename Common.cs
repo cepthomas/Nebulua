@@ -8,8 +8,17 @@ namespace Nebulua
     public class SyntaxException(string message) : Exception(message) { }
     #endregion
 
+    /// <summary>Channel state.</summary>
+    public enum ChannelState { Normal, Solo, Mute }
+
+    /// <summary>General definitions.</summary>
     public class Defs
     {
+        // Midi defs.
+        public const int MIDI_VAL_MIN = 0;
+        public const int MIDI_VAL_MAX = 127;
+        public const int NUM_MIDI_CHANNELS = 16;
+
         /// <summary>Corresponds to midi velocity = 0.</summary>
         public const double VOLUME_MIN = 0.0;
 
@@ -63,7 +72,7 @@ namespace Nebulua
         }
     }
 
-    #region Console abstraction to support testing
+    #region Console abstraction to support testing TODO ??
     public interface IConsole
     {
         bool KeyAvailable { get; }

@@ -233,95 +233,7 @@ namespace Nebulua
             }
             base.Dispose(disposing);
         }
-
-
-
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void DestroyControls()
-        {
-            _hostCore.KillAll();
-
-            // Clean out our current elements.
-            _channelControls.ForEach(c =>
-            {
-                Controls.Remove(c);
-                c.Dispose();
-            });
-            _channelControls.Clear();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void CreateControls()
-        {
-            // Create channels and controls.
-            const int CONTROL_SPACING = 10;
-            int x = btnRewind.Left;
-            //int y = barBar.Bottom + CONTROL_SPACING;
-            int y = 0 + CONTROL_SPACING;
-
-            _hostCore._outputs.ForEach(op =>
-            {
-                //// Make new channel.
-                //Channel channel = new()
-                //{
-                //    ChannelName = name,
-                //    ChannelNumber = chnum,
-                //    DeviceId = devid,
-                //    Volume = _nppVals.GetDouble(name, "volume", MidiLibDefs.VOLUME_DEFAULT),
-                //    State = (ChannelState)_nppVals.GetInteger(name, "state", (int)ChannelState.Normal),
-                //    Patch = patch,
-                //    IsDrums = isDrums,
-                //    Selected = false,
-                //    Device = _outputDevices[devid],
-                //    AddNoteOff = true
-                //};
-
-                var devName = op.DeviceName;
-                var channels = op.Channels;
-
-                for (int i = 0; i < channels.Length; i++)
-                {
-                    if (channels[i])
-                    {
-                        // Make new control and bind to channel.
-                        ChannelControl control = new()
-                        {
-                            Location = new(x, y),
-                            BorderStyle = BorderStyle.FixedSingle,
-                            //                    ChannelNumber = op.Channels[0]
-                        };
-                        control.ChannelChange += Control_ChannelChange;
-                        Controls.Add(control);
-                        _channelControls.Add(control);
-
-                        // Adjust positioning for next iteration.
-                        y += control.Height + 5;
-                    }
-                }
-            });
-        }
-
-        void Control_ChannelChange(object? sender, ChannelChangeEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
         #endregion
-
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-
-
-
-
 
         #region File handling
         /// <summary>
@@ -405,10 +317,12 @@ namespace Nebulua
 
                 if (_loadedScriptFn is not null)
                 {
-//TODO destroy controls
+                    DestroyControls();
 
                     _hostCore.LoadScript(_loadedScriptFn); // may throw
-//TODO create controls
+
+                    CreateControls();
+
                     _scriptTouch = File.GetLastWriteTime(_loadedScriptFn);
 
                     // Everything ok.
@@ -438,7 +352,7 @@ namespace Nebulua
         }
         #endregion
 
-        #region Event handlers
+        #region UI Event handlers
         /// <summary>
         /// Handler for state changes for ui display.
         /// </summary>
@@ -520,6 +434,13 @@ namespace Nebulua
             //timeBar.Current = State.Instance.CurrentTick;
         }
 
+
+
+
+
+
+
+
         /// <summary>
         /// User clicked something.
         /// </summary>
@@ -559,24 +480,6 @@ namespace Nebulua
                 e.Handled = true;
             }
             base.OnKeyDown(e);
-        }
-
-        /// <summary>
-        /// Capture bad events and display them to the user.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        {
-            this.InvokeIfRequired(_ =>
-            {
-                traffic.AppendLine(e.ShortMessage);
-                if (e.Level == LogLevel.Error)
-                {
-                    traffic.AppendLine("Fatal error - restart");
-                    State.Instance.ExecState = ExecState.Dead;
-                }
-            });
         }
 
         /// <summary>
@@ -691,6 +594,154 @@ namespace Nebulua
 
 
 
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+        ////////////////////////// stuff needs home ///////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+        void ChannelControlChange(object? sender, ChannelControlEventArgs e)
+        {
+
+            // TODO check all outs for any solo(s)
+
+            bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
+
+            // switch (chc.State)
+            // {
+            //     case ChannelState.Normal:
+            //         break;
+            //     case ChannelState.Solo:
+            //         // Mute any other non-solo channels.
+            //         _channels.Values.ForEach(ch =>
+            //         {
+            //             if (ch.ChannelName != chc.BoundChannel.ChannelName && chc.State != ChannelState.Solo)
+            //             {
+            //                 chc.BoundChannel.Kill();
+            //             }
+            //         });
+            //         break;
+            //     case ChannelState.Mute:
+            //         chc.BoundChannel.Kill();
+            //         break;
+            // }
+
+
+            // // Is it ok to play now?
+            // bool play = ch.State == ChannelState.Solo || (ch.State == ChannelState.Normal && !anySolo);
+
+            // if (play)
+            // {
+            //     // Need exception handling here to protect from user script errors.
+            //     try
+            //     {
+            //         ch.DoStep(_stepTime.TotalSubs);
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         ProcessScriptRuntimeError(ex);
+            //     }
+            // }
+
+
+            // then >>>> public void EnableChannel(int devNum, int chanNum, bool enable)
+            
+        }
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void DestroyControls()
+        {
+            _hostCore.KillAll();
+
+            // Clean out our current elements.
+            _channelControls.ForEach(c =>
+            {
+                Controls.Remove(c);
+                c.Dispose();
+            });
+            _channelControls.Clear();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void CreateControls()
+        {
+            // Create channels and controls.
+            const int CONTROL_SPACING = 10;
+            int x = btnRewind.Left;
+            //int y = barBar.Bottom + CONTROL_SPACING;
+            int y = 0 + CONTROL_SPACING;
+
+            _hostCore._outputs.ForEach(op =>   // TODO fix interface
+            {
+                //// Make new channel.
+                //Channel channel = new()
+                //{
+                //    ChannelName = name,
+                //    ChannelNumber = chnum,
+                //    DeviceId = devid,
+                //    Volume = _nppVals.GetDouble(name, "volume", MidiLibDefs.VOLUME_DEFAULT),
+                //    State = (ChannelState)_nppVals.GetInteger(name, "state", (int)ChannelState.Normal),
+                //    Patch = patch,
+                //    IsDrums = isDrums,
+                //    Selected = false,
+                //    Device = _outputDevices[devid],
+                //    AddNoteOff = true
+                //};
+
+                var devName = op.DeviceName;
+                var channels = op.Channels;
+
+                for (int i = 0; i < channels.Length; i++)
+                {
+                    if (channels[i])
+                    {
+                        // Make new control and bind to channel.
+                        ChannelControl control = new()
+                        {
+                            Location = new(x, y),
+                            BorderStyle = BorderStyle.FixedSingle,
+                            //                    ChannelNumber = op.Channels[0]
+                        };
+                        control.ChannelControlChange += ChannelControlChange;
+                        Controls.Add(control);
+                        _channelControls.Add(control);
+
+                        // Adjust positioning for next iteration.
+                        y += control.Height + 5;
+                    }
+                }
+            });
+        }
+
+
+        /// <summary>
+        /// Capture bad events and display them to the user.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            this.InvokeIfRequired(_ =>
+            {
+                traffic.AppendLine(e.ShortMessage);
+                if (e.Level == LogLevel.Error)
+                {
+                    traffic.AppendLine("Fatal error - restart");
+                    State.Instance.ExecState = ExecState.Dead;
+                }
+            });
+        }
 
 
 

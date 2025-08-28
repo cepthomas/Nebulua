@@ -8,14 +8,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
-    public class MidiDefs
-    {
-        // Midi defs.
-        public const int MIDI_VAL_MIN = 0;
-        public const int MIDI_VAL_MAX = 127;
-        public const int NUM_MIDI_CHANNELS = 16;
-    }
-
     /// <summary>
     /// A midi input device.
     /// </summary>
@@ -31,7 +23,7 @@ namespace Nebulua
         public string DeviceName { get; }
 
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
 
         /// <summary>Device capture on/off.</summary>
         public bool CaptureEnable
@@ -133,8 +125,11 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
+        // /// <summary>Channel state, index 0-based. Null if not registered/used by script.</summary>
+        // public ChannelState?[] Channels { get; } = new ChannelState?[MidiDefs.NUM_MIDI_CHANNELS];
+
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
         #endregion
 
         #region Lifecycle
@@ -186,8 +181,7 @@ namespace Nebulua
         public void Send(MidiEvent evt)
         {
             // Is it in our registered inputs?
-            int chan_num = evt.Channel;
-            if (Channels[chan_num - 1])
+            if (Channels[evt.Channel - 1])
             {
                 _midiOut?.Send(evt.GetAsShortMessage());
             }
