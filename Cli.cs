@@ -65,10 +65,10 @@ namespace Nebulua
             _console = console;
 
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            Common.Settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
-            LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
+            LogManager.MinLevelFile = Common.Settings.FileLogLevel;
+            LogManager.MinLevelNotif = Common.Settings.NotifLogLevel;
             var logfn = Path.Combine(appDir, "log.txt");
             LogManager.Run(logfn, 50000);
 
@@ -100,7 +100,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = Utils.ProcessException(ex);
+                var (fatal, msg) = Common.ProcessException(ex);
                 if (fatal)
                 {
                     _logger.Error(msg);
@@ -367,8 +367,8 @@ namespace Nebulua
 
             static string Status()
             {
-                var srcv = "mon rcv " + (UserSettings.Current.MonitorRcv ? "on" : "off");
-                var ssnd = "mon snd " + (UserSettings.Current.MonitorSnd ? "on" : "off");
+                var srcv = "mon rcv " + (Common.Settings.MonitorRcv ? "on" : "off");
+                var ssnd = "mon snd " + (Common.Settings.MonitorSnd ? "on" : "off");
                 return ($"{srcv} {ssnd}");
             }
 
@@ -382,18 +382,18 @@ namespace Nebulua
                     switch (args[1])
                     {
                         case "r":
-                            UserSettings.Current.MonitorRcv = !UserSettings.Current.MonitorRcv;
+                            Common.Settings.MonitorRcv = !Common.Settings.MonitorRcv;
                             Write(Status());
                             break;
 
                         case "s":
-                            UserSettings.Current.MonitorSnd = !UserSettings.Current.MonitorSnd;
+                            Common.Settings.MonitorSnd = !Common.Settings.MonitorSnd;
                             Write(Status());
                             break;
 
                         case "o":
-                            UserSettings.Current.MonitorRcv = false;
-                            UserSettings.Current.MonitorSnd = false;
+                            Common.Settings.MonitorRcv = false;
+                            Common.Settings.MonitorSnd = false;
                             Write(Status());
                             break;
 

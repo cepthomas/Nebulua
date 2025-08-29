@@ -3,17 +3,45 @@ using System;
 
 namespace Nebulua
 {
-    #region Exceptions
+    #region Types
     /// <summary>Lua script syntax error.</summary>
     public class SyntaxException(string message) : Exception(message) { }
-    #endregion
 
     /// <summary>Channel state.</summary>
     public enum ChannelState { Normal, Solo, Mute }
+    #endregion
+
+    /// <summary>Channel info.</summary>
+    public class ChannelSpec(ChannelSpec.ChannelDirection direction, int deviceId, int channelNumber)
+    {
+        /// <summary>Output or input.</summary>
+        public enum ChannelDirection { Output, Input }
+
+        /// <summary>Output or input.</summary>
+        public ChannelDirection Direction { get; init; } = direction;
+
+        /// <summary>Device identifier - internal.</summary>
+        public int DeviceId { get; init; } = deviceId;
+
+        /// <summary>Midi channel number 1-based.</summary>
+        public int ChannelNumber { get; init; } = channelNumber;
+
+        /// <summary>Corresponding handle.</summary>
+        public int Handle { get { return (DeviceId << 8) | ChannelNumber | (Direction == ChannelDirection.Output ? 0x8000 : 0x0000); }}
+
+        public static ChannelSpec FromHandle(int handle)
+        {
+            ChannelDirection direction = (handle & 0x8000) > 0 ? ChannelDirection.Output : ChannelDirection.Input;
+            int deviceId = ((handle & ~0x8000) >> 8) & 0xFF;
+            int channelNumber = (handle & ~0x8000) & 0xFF;
+            return new(direction, deviceId, channelNumber); 
+        }
+    }
 
     /// <summary>General definitions.</summary>
-    public class Defs
+    public class Common
     {
+        #region General definitions
         /// <summary>Midi constant.</summary>
         public const int MIDI_VAL_MIN = 0;
 
@@ -34,10 +62,14 @@ namespace Nebulua
 
         /// <summary>Allow UI controls some more headroom.</summary>
         public const double MAX_GAIN = 2.0;
-    }
+        #endregion
 
-    public class Utils
-    {
+        #region Globals
+        /// <summary>The current settings.</summary>
+        public static UserSettings Settings { get; set; } = new();
+        #endregion
+
+        #region Utils
         /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
@@ -74,6 +106,7 @@ namespace Nebulua
 
             return (fatal, msg);
         }
+        #endregion
     }
 
     #region Console abstraction to support testing TODO ??

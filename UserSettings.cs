@@ -13,9 +13,6 @@ namespace Nebulua
     [Serializable]
     public sealed class UserSettings : SettingsCore
     {
-        /// <summary>The current settings.</summary>
-        public static UserSettings Current { get; set; } = new();
-
         #region Properties - persisted editable
         [DisplayName("Script Path")]
         [Description("Default location for user scripts.")]
@@ -45,29 +42,35 @@ namespace Nebulua
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LogLevel NotifLogLevel { get; set; } = LogLevel.Debug;
 
-        [DisplayName("Foreground Color")]
-        [Description("The color used for button icons.")]
+        [DisplayName("Background Color")]
+        [Description("Overall background.")]
         [Browsable(true)]
         [JsonConverter(typeof(JsonColorConverter))]
-        public Color ForeColor { get; set; } = Color.Purple;
+        public Color BackColor { get; set; } = Color.LightYellow;
 
-        [DisplayName("Control Color")]
-        [Description("The color used for active control surfaces.")]
+        [DisplayName("Icon Color")]
+        [Description("Button icons.")]
         [Browsable(true)]
         [JsonConverter(typeof(JsonColorConverter))]
-        public Color ControlColor { get; set; } = Color.DodgerBlue;
+        public Color IconColor { get; set; } = Color.Purple;
+
+        [DisplayName("Default Pen Color")]
+        [Description("Pen color.")]
+        [Browsable(true)]
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color PenColor { get; set; } = Color.Black;
+
+        [DisplayName("Active Color")]
+        [Description("Active control surfaces.")]
+        [Browsable(true)]
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color ActiveColor { get; set; } = Color.DodgerBlue;
 
         [DisplayName("Selected Color")]
         [Description("The color used for selected controls.")]
         [Browsable(true)]
         [JsonConverter(typeof(JsonColorConverter))]
         public Color SelectedColor { get; set; } = Color.Moccasin;
-
-        [DisplayName("Background Color")]
-        [Description("The color used for overall background.")]
-        [Browsable(true)]
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color BackColor { get; set; } = Color.LightYellow;
         #endregion
 
         #region Properties - internal

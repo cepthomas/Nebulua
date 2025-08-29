@@ -15,7 +15,7 @@ namespace Nebulua
     public enum SnapType { Bar, Beat, Sub }
 
     /// <summary>The control.</summary>
-    public class TimeBar : UserControl
+    public class TimeBar : UserControl  // TODO zoom, drag, shift
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>
@@ -26,16 +26,12 @@ namespace Nebulua
 
         /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
-        #endregion
 
-        #region Backing fields
-        readonly Pen _penMarker = new(Color.Black, 1);
+        /// <summary>For drawing lines.</summary>
+        readonly Pen _penMarker = new(Color.Red, 1);
         #endregion
 
         #region Properties
-        /// <summary>For styling.</summary>
-        public Color MarkerColor { get { return _penMarker.Color; } set { _penMarker.Color = value; } }
-
         /// <summary>Big font.</summary>
         public Font FontLarge { get; set; } = new("Microsoft Sans Serif", 20, FontStyle.Regular, GraphicsUnit.Point, 0);
 
@@ -53,6 +49,17 @@ namespace Nebulua
         public TimeBar()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
+        }
+
+        /// <summary>
+        /// Later init.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnLoad(EventArgs e)
+        {
+            BackColor = Common.Settings.BackColor;
+            _penMarker.Color = Common.Settings.ActiveColor;
+            base.OnLoad(e);
         }
 
         /// <summary> 

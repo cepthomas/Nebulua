@@ -23,7 +23,7 @@ namespace Nebulua
         public string DeviceName { get; }
 
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
 
         /// <summary>Device capture on/off.</summary>
         public bool CaptureEnable
@@ -125,11 +125,14 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
+        /// <summary>Enable output.</summary>
+        public bool Enable { get; set; } = true;
+
         // /// <summary>Channel state, index 0-based. Null if not registered/used by script.</summary>
         // public ChannelState?[] Channels { get; } = new ChannelState?[MidiDefs.NUM_MIDI_CHANNELS];
 
         /// <summary>True if registered by script, 0-based.</summary>
-        public bool[] Channels { get; } = new bool[Defs.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
         #endregion
 
         #region Lifecycle

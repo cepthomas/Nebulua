@@ -14,11 +14,10 @@ using Ephemera.NBagOfUis;
 namespace Nebulua
 {
     /// <summary>Notify host of changes.</summary>
-    public class ChannelControlEventArgs : EventArgs
+    public class ChannelControlEventArgs(ChannelSpec channelSpec, ChannelState state) : EventArgs
     {
-        public ChannelState State { get; set; }
-        public int DeviceNumber { get; set; } = -1;
-        public int ChannelNumber { get; set; } = -1;
+        public ChannelState State { get; init; } = state;
+        public ChannelSpec ChannelSpec { get; init; } = channelSpec;
     }
 
     /// <summary>Channel events and other properties.</summary>
@@ -27,15 +26,18 @@ namespace Nebulua
         #region Fields
         readonly Container components = new();
 
-        readonly int _channelNumber = -1;
-        readonly int _deviceNumber = -1;
+        readonly ChannelSpec _channelSpec;
         ChannelState _state = ChannelState.Normal;
-        readonly double _volume = 0.8;
+
+        readonly Color _selColor = Color.Blue;
+        readonly Color _unselColor = Color.Red;
 
         readonly Label lblChannelInfo;
         readonly Label lblSolo;
         readonly Label lblMute;
         readonly Slider sldVolume;
+
+        readonly double _volume = 0.8;
         #endregion
 
         #region Events
@@ -52,30 +54,29 @@ namespace Nebulua
         }
 
         /// <summary>Current volume.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public double Volume
         {
             get { return sldVolume.Value; }
             set { sldVolume.Value = value; }
         }
-
-        /// <summary>Indicate user selected.</summary>
-        public Color SelectedColor { get; set; } = Color.Aquamarine;
-
-        /// <summary>Indicate user not selected.</summary>
-        public Color UnselectedColor { get; set; } = DefaultBackColor;
         #endregion
 
         #region Lifecycle
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        /// <param name="channelNumber"></param>
         /// <param name="deviceNumber"></param>
-        public ChannelControl(int channelNumber, int deviceNumber) : this()
+        /// <param name="channelNumber"></param>
+        public ChannelControl(ChannelSpec chspec) : this()
         {
-            _channelNumber = channelNumber;
-            _deviceNumber = deviceNumber;
+            _channelSpec = chspec;
+            _selColor = Common.Settings.SelectedColor;
+            _unselColor = Common.Settings.BackColor;
+            lblChannelInfo.BackColor = _unselColor;
+            lblSolo.BackColor = _unselColor;
+            lblMute.BackColor = _unselColor;
+            sldVolume.BackColor = _unselColor;
+            sldVolume.ForeColor = Common.Settings.ActiveColor;
         }
 
         /// <summary>
@@ -86,7 +87,7 @@ namespace Nebulua
             lblChannelInfo = new()
             {
                 Location = new Point(2, 9),
-                Size = new Size(20, 30),
+                Size = new Size(35, 20),
                 Text = "#"
             };
 
@@ -110,15 +111,16 @@ namespace Nebulua
                 Size = new Size(40, 30),
                 Orientation = Orientation.Horizontal,
                 BorderStyle = BorderStyle.FixedSingle,
-                Maximum = Defs.MAX_GAIN,
-                Minimum = Defs.VOLUME_MIN,
-                Value = Defs.VOLUME_DEFAULT,
+                Maximum = Common.MAX_GAIN,
+                Minimum = Common.VOLUME_MIN,
+                Value = Common.VOLUME_DEFAULT,
                 Resolution = 0.1
             };
 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             Size = new Size(sldVolume.Right + 5, 38);
+            BorderStyle = BorderStyle.FixedSingle;
 
             Controls.Add(sldVolume);
             Controls.Add(lblMute);
@@ -132,11 +134,10 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            lblChannelInfo.Text = $"{_deviceNumber}:{_channelNumber}";
-            lblChannelInfo.BackColor = UnselectedColor;
+            lblChannelInfo.Text = $"{_channelSpec.DeviceId}:{_channelSpec.ChannelNumber}";
+            lblChannelInfo.BackColor = _unselColor;
 
-            sldVolume.DrawColor = SelectedColor;
-            //sldVolume.ValueChanged += Volume_ValueChanged;
+            sldVolume.DrawColor = Common.Settings.ActiveColor;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
 
@@ -159,7 +160,6 @@ namespace Nebulua
         }
         #endregion
 
-
         /// <summary>Handles solo and mute.</summary>
         void SoloMute_Click(object? sender, EventArgs e)
         {
@@ -168,32 +168,25 @@ namespace Nebulua
             // Figure out state.
             if (sender == lblSolo)
             {
-                State = lblSolo.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Solo;
+                State = lblSolo.BackColor == _selColor ? ChannelState.Normal : ChannelState.Solo;
             }
             else if (sender == lblMute)
             {
-                State = lblMute.BackColor == SelectedColor ? ChannelState.Normal : ChannelState.Mute;
+                State = lblMute.BackColor == _selColor ? ChannelState.Normal : ChannelState.Mute;
             }
             else
             {
                 // ?????
             }
 
-            ChannelControlChange?.Invoke(this, new() { State = State, DeviceNumber = _deviceNumber, ChannelNumber = _channelNumber });
+            ChannelControlChange?.Invoke(this, new ChannelControlEventArgs(_channelSpec, State));
         }
 
         /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
-            lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  UnselectedColor;
-            lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor :  UnselectedColor;
-        }
-
-        /// <summary>Readable.</summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return $"ChannelControl: DeviceNumber:{_deviceNumber} ChannelNumber:{_channelNumber} State:{State}";
+            lblSolo.BackColor = _state == ChannelState.Solo ? _selColor :  _unselColor;
+            lblMute.BackColor = _state == ChannelState.Mute ? _selColor :  _unselColor;
         }
     }
 }

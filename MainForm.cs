@@ -59,78 +59,76 @@ namespace Nebulua
 
             KeyPreview = true; // for routing kbd strokes properly
 
+            // Settings.
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            Common.Settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
-            LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
+            LogManager.MinLevelFile = Common.Settings.FileLogLevel;
+            LogManager.MinLevelNotif = Common.Settings.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
             // Main window.
-            Location = UserSettings.Current.FormGeometry.Location;
-            Size = UserSettings.Current.FormGeometry.Size;
+            Location = Common.Settings.FormGeometry.Location;
+            Size = Common.Settings.FormGeometry.Size;
             WindowState = FormWindowState.Normal;
-            BackColor = UserSettings.Current.BackColor;
+            BackColor = Common.Settings.BackColor;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             #region Init the controls
-            timeBar.BackColor = UserSettings.Current.BackColor;
-            timeBar.MarkerColor = Color.Black;
-
-            chkPlay.Image = ((Bitmap)chkPlay.Image!).Colorize(UserSettings.Current.ForeColor);
-            chkPlay.BackColor = UserSettings.Current.BackColor;
-            chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkPlay.Image = ((Bitmap)chkPlay.Image!).Colorize(Common.Settings.IconColor);
+            chkPlay.BackColor = Common.Settings.BackColor;
+            chkPlay.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            chkLoop.Image = ((Bitmap)(chkLoop.Image!)).Colorize(UserSettings.Current.ForeColor);
-            chkLoop.BackColor = UserSettings.Current.BackColor;
-            chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkLoop.Image = ((Bitmap)(chkLoop.Image!)).Colorize(Common.Settings.IconColor);
+            chkLoop.BackColor = Common.Settings.BackColor;
+            chkLoop.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
-            chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            chkMonRcv.Image = ((Bitmap)(chkMonRcv.Image!)).Colorize(UserSettings.Current.ForeColor);
-            chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
-            chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
+            chkMonRcv.BackColor = Common.Settings.BackColor;
+            chkMonRcv.Image = ((Bitmap)(chkMonRcv.Image!)).Colorize(Common.Settings.IconColor);
+            chkMonRcv.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
+            chkMonRcv.Checked = Common.Settings.MonitorRcv;
+            chkMonRcv.Click += (_, __) => Common.Settings.MonitorRcv = chkMonRcv.Checked;
 
-            chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            chkMonSnd.Image = ((Bitmap)(chkMonSnd.Image!)).Colorize(UserSettings.Current.ForeColor);
-            chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
-            chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
+            chkMonSnd.BackColor = Common.Settings.BackColor;
+            chkMonSnd.Image = ((Bitmap)(chkMonSnd.Image!)).Colorize(Common.Settings.IconColor);
+            chkMonSnd.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
+            chkMonSnd.Checked = Common.Settings.MonitorSnd;
+            chkMonSnd.Click += (_, __) => Common.Settings.MonitorSnd = chkMonSnd.Checked;
 
-            btnRewind.BackColor = UserSettings.Current.BackColor;
-            btnRewind.Image = ((Bitmap)(btnRewind.Image!)).Colorize(UserSettings.Current.ForeColor);
+            btnRewind.BackColor = Common.Settings.BackColor;
+            btnRewind.Image = ((Bitmap)(btnRewind.Image!)).Colorize(Common.Settings.IconColor);
             btnRewind.Click += Rewind_Click;
 
-            btnAbout.BackColor = UserSettings.Current.BackColor;
-            btnAbout.Image = ((Bitmap)(btnAbout.Image!)).Colorize(UserSettings.Current.ForeColor);
+            btnAbout.BackColor = Common.Settings.BackColor;
+            btnAbout.Image = ((Bitmap)(btnAbout.Image!)).Colorize(Common.Settings.IconColor);
             btnAbout.Click += About_Click;
 
-            btnKill.BackColor = UserSettings.Current.BackColor;
-            btnKill.Image = ((Bitmap)(btnKill.Image!)).Colorize(UserSettings.Current.ForeColor);
+            btnKill.BackColor = Common.Settings.BackColor;
+            btnKill.Image = ((Bitmap)(btnKill.Image!)).Colorize(Common.Settings.IconColor);
             btnKill.Click += (_, __) => { _hostCore!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
-            btnSettings.BackColor = UserSettings.Current.BackColor;
-            btnSettings.Image = ((Bitmap)(btnSettings.Image!)).Colorize(UserSettings.Current.ForeColor);
+            btnSettings.BackColor = Common.Settings.BackColor;
+            btnSettings.Image = ((Bitmap)(btnSettings.Image!)).Colorize(Common.Settings.IconColor);
             btnSettings.Click += Settings_Click;
 
-            sldVolume.BackColor = UserSettings.Current.BackColor;
-            sldVolume.DrawColor = UserSettings.Current.ControlColor;
+            sldVolume.BackColor = Common.Settings.BackColor;
+            sldVolume.DrawColor = Common.Settings.ActiveColor;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
 
-            sldTempo.BackColor = UserSettings.Current.BackColor;
-            sldTempo.DrawColor = UserSettings.Current.ControlColor;
+            sldTempo.BackColor = Common.Settings.BackColor;
+            sldTempo.DrawColor = Common.Settings.ActiveColor;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
-            traffic.BackColor = UserSettings.Current.BackColor;
+            traffic.BackColor = Common.Settings.BackColor;
             traffic.MatchText.Add("ERR", Color.HotPink);
             traffic.MatchText.Add("WRN", Color.Coral);
             traffic.MatchText.Add("SND", Color.PaleGreen);
             traffic.MatchText.Add("RCV", Color.LightBlue);
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
-            traffic.WordWrap = UserSettings.Current.WordWrap;
+            traffic.WordWrap = Common.Settings.WordWrap;
 
             ccMidiGen.Name = "ccMidiGen";
             ccMidiGen.MinX = 24; // C0
@@ -142,9 +140,9 @@ namespace Nebulua
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
             
-            ddbtnFile.Image = ((Bitmap)ddbtnFile.Image!).Colorize(UserSettings.Current.ForeColor);
-            ddbtnFile.BackColor = UserSettings.Current.BackColor;
-            ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            ddbtnFile.Image = ((Bitmap)ddbtnFile.Image!).Colorize(Common.Settings.IconColor);
+            ddbtnFile.BackColor = Common.Settings.BackColor;
+            ddbtnFile.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
             ddbtnFile.Enabled = true;
             ddbtnFile.Selected += File_Selected;
             #endregion
@@ -164,9 +162,9 @@ namespace Nebulua
 
             PopulateFileMenu();
 
-            if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
+            if (Common.Settings.OpenLastFile && Common.Settings.RecentFiles.Count > 0)
             {
-                OpenScriptFile(UserSettings.Current.RecentFiles[0]);
+                OpenScriptFile(Common.Settings.RecentFiles[0]);
             }
 
             base.OnLoad(e);
@@ -201,15 +199,15 @@ namespace Nebulua
             LogManager.Stop();
 
             // Save user settings.
-            UserSettings.Current.FormGeometry = new()
+            Common.Settings.FormGeometry = new()
             {
                 X = Location.X,
                 Y = Location.Y,
                 Width = Width,
                 Height = Height
             };
-            UserSettings.Current.WordWrap = traffic.WordWrap;
-            UserSettings.Current.Save();
+            Common.Settings.WordWrap = traffic.WordWrap;
+            Common.Settings.Save();
 
             base.OnFormClosing(e);
         }
@@ -248,10 +246,10 @@ namespace Nebulua
                 options.Add("Reload");
             }
 
-            if (UserSettings.Current.RecentFiles.Count > 0)
+            if (Common.Settings.RecentFiles.Count > 0)
             {
                 options.Add("");
-                UserSettings.Current.RecentFiles.ForEach(options.Add);
+                Common.Settings.RecentFiles.ForEach(options.Add);
             }
 
             ddbtnFile.SetOptions(options);
@@ -272,7 +270,7 @@ namespace Nebulua
                         {
                             Filter = "Nebulua files | *.lua",
                             Title = "Select a Nebulua file",
-                            InitialDirectory = UserSettings.Current.ScriptPath,
+                            InitialDirectory = Common.Settings.ScriptPath,
                         };
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
@@ -326,7 +324,7 @@ namespace Nebulua
 
                     // Everything ok.
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_loadedScriptFn}";
-                    UserSettings.Current.UpdateMru(_loadedScriptFn!);
+                    Common.Settings.UpdateMru(_loadedScriptFn!);
                 }
 
                 PopulateFileMenu();
@@ -335,7 +333,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = Utils.ProcessException(ex);
+                var (fatal, msg) = Common.ProcessException(ex);
                 if (fatal)
                 {
                     // Logging an error will cause the app to exit.
@@ -397,7 +395,7 @@ namespace Nebulua
             {
                 if (chkPlay.Checked)
                 {
-                    if (UserSettings.Current.AutoReload)
+                    if (Common.Settings.AutoReload)
                     {
                         var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
                         if (lastTouch > _scriptTouch)
@@ -481,7 +479,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void Settings_Click(object? sender, EventArgs e)
         {
-            var changes = SettingsEditor.Edit(UserSettings.Current, "User Settings", 500);
+            var changes = SettingsEditor.Edit(Common.Settings, "User Settings", 500);
 
             // Detect changes of interest.
             bool restart = false;
@@ -490,19 +488,20 @@ namespace Nebulua
             {
                 switch (name)
                 {
-                    case "ControlColor":
-                    case "SelectedColor":
+                    case "ActiveColor":
                     case "BackColor":
-                    case "ForeColor":
+                    case "IconColor":
+                    case "PenColor":
+                    case "SelectedColor":
                         restart = true;
                         break;
 
                     case "FileLogLevel":
-                        LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
+                        LogManager.MinLevelFile = Common.Settings.FileLogLevel;
                         break;
 
                     case "NotifLogLevel":
-                        LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
+                        LogManager.MinLevelNotif = Common.Settings.NotifLogLevel;
                         break;
                 }
             }
@@ -596,7 +595,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControlChange(object? sender, ChannelControlEventArgs e)
+        void ChannelControlChange(object? sender, ChannelControlEventArgs e) // TODO !!
         {
             // Any solo(s)?
             bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
@@ -669,19 +668,14 @@ namespace Nebulua
             DestroyControls();
 
             // Create channels and controls.
-            //const int CONTROL_SPACING = 10;
             int x = timeBar.Left;
-            //int y = barBar.Bottom + CONTROL_SPACING;
             int y = timeBar.Bottom + 5; // 0 + CONTROL_SPACING;
 
-            _hostCore.ValidChannels().ForEach(ch =>
+            _hostCore.ValidOutputChannels().ForEach(ch =>
             {
-                // Make new control and bind to channel.
-                ChannelControl control = new(ch.chanNum, ch.devNum)
+                ChannelControl control = new(ch)
                 {
                     Location = new(x, y),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    //BackColor = this.BackColor
                 };
 
                 control.ChannelControlChange += ChannelControlChange;

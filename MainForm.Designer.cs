@@ -98,12 +98,12 @@ namespace Nebulua
             // 
             traffic.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             traffic.BorderStyle = BorderStyle.FixedSingle;
-            traffic.Location = new Point(13, 329);
+            traffic.Location = new Point(13, 177);
             traffic.Margin = new Padding(4, 5, 4, 5);
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
             traffic.Prompt = "";
-            traffic.Size = new Size(452, 190);
+            traffic.Size = new Size(576, 264);
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
@@ -182,26 +182,26 @@ namespace Nebulua
             // timeBar
             // 
             timeBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            timeBar.BackColor = Color.LightYellow;
             timeBar.BorderStyle = BorderStyle.FixedSingle;
             timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.Location = new Point(13, 66);
-            timeBar.MarkerColor = Color.Black;
             timeBar.Name = "timeBar";
-            timeBar.Size = new Size(835, 49);
+            timeBar.Size = new Size(828, 49);
             timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 52;
             // 
             // ccMidiGen
             // 
-            ccMidiGen.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            ccMidiGen.Location = new Point(478, 328);
+            ccMidiGen.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            ccMidiGen.Location = new Point(596, 176);
             ccMidiGen.MaxX = 100;
             ccMidiGen.MaxY = 100;
             ccMidiGen.MinX = 0;
             ccMidiGen.MinY = 0;
             ccMidiGen.Name = "ccMidiGen";
-            ccMidiGen.Size = new Size(375, 191);
+            ccMidiGen.Size = new Size(257, 265);
             ccMidiGen.TabIndex = 56;
             // 
             // ddbtnFile
@@ -219,7 +219,7 @@ namespace Nebulua
             // 
             AutoScaleDimensions = new SizeF(8F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(865, 531);
+            ClientSize = new Size(858, 446);
             Controls.Add(ddbtnFile);
             Controls.Add(ccMidiGen);
             Controls.Add(btnSettings);
