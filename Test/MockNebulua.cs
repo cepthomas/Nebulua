@@ -10,18 +10,11 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
-    public class MidiDefs
-    {
-        public const int MIDI_VAL_MIN = 0;
-        public const int MIDI_VAL_MAX = 127;
-        public const int NUM_MIDI_CHANNELS = 16;
-    }
-
     public class MidiInput //: IDisposable
     {
         public string DeviceName { get; } = "???";
-        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
-        public bool CaptureEnable { get; } = true;
+        public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
+        public bool CaptureEnable { get; set; } = true;
 
         public event EventHandler<MidiEvent>? ReceiveEvent;
 
@@ -29,7 +22,6 @@ namespace Nebulua
         {
             DeviceName = deviceName;
             Channels.ForEach(b => b = false);
-            CaptureEnable = true;
         }
 
         public void Dispose()
@@ -37,10 +29,11 @@ namespace Nebulua
         }
     }
 
-    public class MidiOutput : IDisposable
+    public class MidiOutput //: IDisposable
     {
-        public string DeviceName { get; }
-        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
+        public string DeviceName { get; } = "???";
+        public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
+        public bool Enable { get; set; } = true;
 
         public MidiOutput(string deviceName)
         {
@@ -61,22 +54,27 @@ namespace Nebulua
     public class UserSettings : SettingsCore
     {
         public static UserSettings Current { get; set; } = new();
+
         public string ScriptPath { get; set; } = "";
         public bool OpenLastFile { get; set; } = true;
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LogLevel FileLogLevel { get; set; } = LogLevel.Trace;
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LogLevel NotifLogLevel { get; set; } = LogLevel.Debug;
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color ForeColor { get; set; } = Color.Purple;
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color ControlColor { get; set; } = Color.DodgerBlue;
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color SelectedColor { get; set; } = Color.Moccasin;
+        
         [JsonConverter(typeof(JsonColorConverter))]
         public Color BackColor { get; set; } = Color.LightYellow;
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color IconColor { get; set; } = Color.Purple;
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color PenColor { get; set; } = Color.Black;
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color ActiveColor { get; set; } = Color.DodgerBlue;
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color SelectedColor { get; set; } = Color.Moccasin;
+
         public bool WordWrap { get; set; } = false;
         public bool MonitorRcv { get; set; } = false;
         public bool MonitorSnd { get; set; } = false;
-    }    
+    }
 }

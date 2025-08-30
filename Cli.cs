@@ -65,10 +65,10 @@ namespace Nebulua
             _console = console;
 
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            Common.Settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.MinLevelFile = Common.Settings.FileLogLevel;
-            LogManager.MinLevelNotif = Common.Settings.NotifLogLevel;
+            LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
+            LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
             var logfn = Path.Combine(appDir, "log.txt");
             LogManager.Run(logfn, 50000);
 
@@ -163,21 +163,7 @@ namespace Nebulua
                     int bar = MusicTime.BAR(tick);
                     int beat = MusicTime.BEAT(tick);
                     string st = $"{bar:D3}:{beat:D1}";
-
-                    bool inTab = true;
-                    if (inTab)
-                    {
-                        _console.Title = st;
-                    }
-                    else // superimpose
-                    {
-                        var (left, top) = _console.GetCursorPosition();
-                        _console.CursorVisible = false;
-                        _console.SetCursorPosition(0, 0);
-                        _console.Write(st.PadRight(_console.BufferWidth - 1));
-                        _console.SetCursorPosition(left, top);
-                        _console.CursorVisible = true;
-                    }
+                    _console.Title = st;
                 }
             }
         }
@@ -367,8 +353,8 @@ namespace Nebulua
 
             static string Status()
             {
-                var srcv = "mon rcv " + (Common.Settings.MonitorRcv ? "on" : "off");
-                var ssnd = "mon snd " + (Common.Settings.MonitorSnd ? "on" : "off");
+                var srcv = "mon rcv " + (UserSettings.Current.MonitorRcv ? "on" : "off");
+                var ssnd = "mon snd " + (UserSettings.Current.MonitorSnd ? "on" : "off");
                 return ($"{srcv} {ssnd}");
             }
 
@@ -382,18 +368,18 @@ namespace Nebulua
                     switch (args[1])
                     {
                         case "r":
-                            Common.Settings.MonitorRcv = !Common.Settings.MonitorRcv;
+                            UserSettings.Current.MonitorRcv = !UserSettings.Current.MonitorRcv;
                             Write(Status());
                             break;
 
                         case "s":
-                            Common.Settings.MonitorSnd = !Common.Settings.MonitorSnd;
+                            UserSettings.Current.MonitorSnd = !UserSettings.Current.MonitorSnd;
                             Write(Status());
                             break;
 
                         case "o":
-                            Common.Settings.MonitorRcv = false;
-                            Common.Settings.MonitorSnd = false;
+                            UserSettings.Current.MonitorRcv = false;
+                            UserSettings.Current.MonitorSnd = false;
                             Write(Status());
                             break;
 
@@ -603,14 +589,10 @@ namespace Nebulua
     public class RealConsole : IConsole
     {
         public bool KeyAvailable { get => Console.KeyAvailable; }
-        public bool CursorVisible { get => Console.CursorVisible; set => Console.CursorVisible = value; }
         public string Title { get => Console.Title; set => Console.Title = value; }
-        public int BufferWidth { get => Console.BufferWidth; set => Console.BufferWidth = value; }
         public string? ReadLine() { return Console.ReadLine(); }
         public ConsoleKeyInfo ReadKey(bool intercept) { return Console.ReadKey(intercept); }
         public void Write(string text) { Console.Write(text); }
         public void WriteLine(string text) { Console.WriteLine(text); }
-        public void SetCursorPosition(int left, int top) { Console.SetCursorPosition(left, top); }
-        public (int left, int top) GetCursorPosition() { return Console.GetCursorPosition(); }
     }
 }

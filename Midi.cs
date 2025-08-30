@@ -128,9 +128,6 @@ namespace Nebulua
         /// <summary>Enable output.</summary>
         public bool Enable { get; set; } = true;
 
-        // /// <summary>Channel state, index 0-based. Null if not registered/used by script.</summary>
-        // public ChannelState?[] Channels { get; } = new ChannelState?[MidiDefs.NUM_MIDI_CHANNELS];
-
         /// <summary>True if registered by script, 0-based.</summary>
         public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
         #endregion

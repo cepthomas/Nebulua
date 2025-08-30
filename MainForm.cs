@@ -13,11 +13,11 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-//TODO slow startup:
-//"dur:295.510 tot:295.510 MainForm() enter"
-//"dur:1390.500 tot:1686.010 MainForm() exit"
-//"dur:035.980 tot:1721.990 OnLoad() entry"
-//"dur:284.873 tot:2006.863 OnLoad() exit"
+// TODO slow startup:
+// "dur:295.510 tot:295.510 MainForm() enter"
+// "dur:1390.500 tot:1686.010 MainForm() exit"
+// "dur:035.980 tot:1721.990 OnLoad() entry"
+// "dur:284.873 tot:2006.863 OnLoad() exit"
 
 
 namespace Nebulua
@@ -61,74 +61,74 @@ namespace Nebulua
 
             // Settings.
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            Common.Settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.MinLevelFile = Common.Settings.FileLogLevel;
-            LogManager.MinLevelNotif = Common.Settings.NotifLogLevel;
+            LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
+            LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
             // Main window.
-            Location = Common.Settings.FormGeometry.Location;
-            Size = Common.Settings.FormGeometry.Size;
+            Location = UserSettings.Current.FormGeometry.Location;
+            Size = UserSettings.Current.FormGeometry.Size;
             WindowState = FormWindowState.Normal;
-            BackColor = Common.Settings.BackColor;
+            BackColor = UserSettings.Current.BackColor;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             #region Init the controls
-            chkPlay.Image = ((Bitmap)chkPlay.Image!).Colorize(Common.Settings.IconColor);
-            chkPlay.BackColor = Common.Settings.BackColor;
-            chkPlay.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
+            chkPlay.Image = ((Bitmap)chkPlay.Image!).Colorize(UserSettings.Current.IconColor);
+            chkPlay.BackColor = UserSettings.Current.BackColor;
+            chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            chkLoop.Image = ((Bitmap)(chkLoop.Image!)).Colorize(Common.Settings.IconColor);
-            chkLoop.BackColor = Common.Settings.BackColor;
-            chkLoop.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
+            chkLoop.Image = ((Bitmap)(chkLoop.Image!)).Colorize(UserSettings.Current.IconColor);
+            chkLoop.BackColor = UserSettings.Current.BackColor;
+            chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
-            chkMonRcv.BackColor = Common.Settings.BackColor;
-            chkMonRcv.Image = ((Bitmap)(chkMonRcv.Image!)).Colorize(Common.Settings.IconColor);
-            chkMonRcv.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
-            chkMonRcv.Checked = Common.Settings.MonitorRcv;
-            chkMonRcv.Click += (_, __) => Common.Settings.MonitorRcv = chkMonRcv.Checked;
+            chkMonRcv.BackColor = UserSettings.Current.BackColor;
+            chkMonRcv.Image = ((Bitmap)(chkMonRcv.Image!)).Colorize(UserSettings.Current.IconColor);
+            chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
+            chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
 
-            chkMonSnd.BackColor = Common.Settings.BackColor;
-            chkMonSnd.Image = ((Bitmap)(chkMonSnd.Image!)).Colorize(Common.Settings.IconColor);
-            chkMonSnd.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
-            chkMonSnd.Checked = Common.Settings.MonitorSnd;
-            chkMonSnd.Click += (_, __) => Common.Settings.MonitorSnd = chkMonSnd.Checked;
+            chkMonSnd.BackColor = UserSettings.Current.BackColor;
+            chkMonSnd.Image = ((Bitmap)(chkMonSnd.Image!)).Colorize(UserSettings.Current.IconColor);
+            chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
+            chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
 
-            btnRewind.BackColor = Common.Settings.BackColor;
-            btnRewind.Image = ((Bitmap)(btnRewind.Image!)).Colorize(Common.Settings.IconColor);
+            btnRewind.BackColor = UserSettings.Current.BackColor;
+            btnRewind.Image = ((Bitmap)(btnRewind.Image!)).Colorize(UserSettings.Current.IconColor);
             btnRewind.Click += Rewind_Click;
 
-            btnAbout.BackColor = Common.Settings.BackColor;
-            btnAbout.Image = ((Bitmap)(btnAbout.Image!)).Colorize(Common.Settings.IconColor);
+            btnAbout.BackColor = UserSettings.Current.BackColor;
+            btnAbout.Image = ((Bitmap)(btnAbout.Image!)).Colorize(UserSettings.Current.IconColor);
             btnAbout.Click += About_Click;
 
-            btnKill.BackColor = Common.Settings.BackColor;
-            btnKill.Image = ((Bitmap)(btnKill.Image!)).Colorize(Common.Settings.IconColor);
+            btnKill.BackColor = UserSettings.Current.BackColor;
+            btnKill.Image = ((Bitmap)(btnKill.Image!)).Colorize(UserSettings.Current.IconColor);
             btnKill.Click += (_, __) => { _hostCore!.KillAll(); State.Instance.ExecState = ExecState.Idle; };
 
-            btnSettings.BackColor = Common.Settings.BackColor;
-            btnSettings.Image = ((Bitmap)(btnSettings.Image!)).Colorize(Common.Settings.IconColor);
+            btnSettings.BackColor = UserSettings.Current.BackColor;
+            btnSettings.Image = ((Bitmap)(btnSettings.Image!)).Colorize(UserSettings.Current.IconColor);
             btnSettings.Click += Settings_Click;
 
-            sldVolume.BackColor = Common.Settings.BackColor;
-            sldVolume.DrawColor = Common.Settings.ActiveColor;
+            sldVolume.BackColor = UserSettings.Current.BackColor;
+            sldVolume.DrawColor = UserSettings.Current.ActiveColor;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
 
-            sldTempo.BackColor = Common.Settings.BackColor;
-            sldTempo.DrawColor = Common.Settings.ActiveColor;
+            sldTempo.BackColor = UserSettings.Current.BackColor;
+            sldTempo.DrawColor = UserSettings.Current.ActiveColor;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
-            traffic.BackColor = Common.Settings.BackColor;
+            traffic.BackColor = UserSettings.Current.BackColor;
             traffic.MatchText.Add("ERR", Color.HotPink);
             traffic.MatchText.Add("WRN", Color.Coral);
             traffic.MatchText.Add("SND", Color.PaleGreen);
             traffic.MatchText.Add("RCV", Color.LightBlue);
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
-            traffic.WordWrap = Common.Settings.WordWrap;
+            traffic.WordWrap = UserSettings.Current.WordWrap;
 
             ccMidiGen.Name = "ccMidiGen";
             ccMidiGen.MinX = 24; // C0
@@ -140,9 +140,9 @@ namespace Nebulua
             ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
             ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
             
-            ddbtnFile.Image = ((Bitmap)ddbtnFile.Image!).Colorize(Common.Settings.IconColor);
-            ddbtnFile.BackColor = Common.Settings.BackColor;
-            ddbtnFile.FlatAppearance.CheckedBackColor = Common.Settings.SelectedColor;
+            ddbtnFile.Image = ((Bitmap)ddbtnFile.Image!).Colorize(UserSettings.Current.IconColor);
+            ddbtnFile.BackColor = UserSettings.Current.BackColor;
+            ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
             ddbtnFile.Selected += File_Selected;
             #endregion
@@ -162,9 +162,9 @@ namespace Nebulua
 
             PopulateFileMenu();
 
-            if (Common.Settings.OpenLastFile && Common.Settings.RecentFiles.Count > 0)
+            if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
             {
-                OpenScriptFile(Common.Settings.RecentFiles[0]);
+                OpenScriptFile(UserSettings.Current.RecentFiles[0]);
             }
 
             base.OnLoad(e);
@@ -199,15 +199,15 @@ namespace Nebulua
             LogManager.Stop();
 
             // Save user settings.
-            Common.Settings.FormGeometry = new()
+            UserSettings.Current.FormGeometry = new()
             {
                 X = Location.X,
                 Y = Location.Y,
                 Width = Width,
                 Height = Height
             };
-            Common.Settings.WordWrap = traffic.WordWrap;
-            Common.Settings.Save();
+            UserSettings.Current.WordWrap = traffic.WordWrap;
+            UserSettings.Current.Save();
 
             base.OnFormClosing(e);
         }
@@ -246,10 +246,10 @@ namespace Nebulua
                 options.Add("Reload");
             }
 
-            if (Common.Settings.RecentFiles.Count > 0)
+            if (UserSettings.Current.RecentFiles.Count > 0)
             {
                 options.Add("");
-                Common.Settings.RecentFiles.ForEach(options.Add);
+                UserSettings.Current.RecentFiles.ForEach(options.Add);
             }
 
             ddbtnFile.SetOptions(options);
@@ -270,7 +270,7 @@ namespace Nebulua
                         {
                             Filter = "Nebulua files | *.lua",
                             Title = "Select a Nebulua file",
-                            InitialDirectory = Common.Settings.ScriptPath,
+                            InitialDirectory = UserSettings.Current.ScriptPath,
                         };
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
@@ -324,7 +324,7 @@ namespace Nebulua
 
                     // Everything ok.
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_loadedScriptFn}";
-                    Common.Settings.UpdateMru(_loadedScriptFn!);
+                    UserSettings.Current.UpdateMru(_loadedScriptFn!);
                 }
 
                 PopulateFileMenu();
@@ -395,7 +395,7 @@ namespace Nebulua
             {
                 if (chkPlay.Checked)
                 {
-                    if (Common.Settings.AutoReload)
+                    if (UserSettings.Current.AutoReload)
                     {
                         var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
                         if (lastTouch > _scriptTouch)
@@ -479,7 +479,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void Settings_Click(object? sender, EventArgs e)
         {
-            var changes = SettingsEditor.Edit(Common.Settings, "User Settings", 500);
+            var changes = SettingsEditor.Edit(UserSettings.Current, "User Settings", 500);
 
             // Detect changes of interest.
             bool restart = false;
@@ -497,11 +497,11 @@ namespace Nebulua
                         break;
 
                     case "FileLogLevel":
-                        LogManager.MinLevelFile = Common.Settings.FileLogLevel;
+                        LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
                         break;
 
                     case "NotifLogLevel":
-                        LogManager.MinLevelNotif = Common.Settings.NotifLogLevel;
+                        LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
                         break;
                 }
             }
@@ -591,57 +591,26 @@ namespace Nebulua
 
         #region Private stuff
         /// <summary>
-        /// 
+        /// Process UI change.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControlChange(object? sender, ChannelControlEventArgs e) // TODO !!
+        void ChannelControlChange(object? sender, ChannelControlEventArgs e)
         {
             // Any solo(s)?
             bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
 
             foreach (var c in _channelControls)
             {
-                // if (c)
+                if (anySolo) // only solo
+                {
+                    _hostCore.EnableChannel(c.ChannelSpec, c.State == ChannelState.Solo);
+                }
+                else // except mute
+                {
+                    _hostCore.EnableChannel(c.ChannelSpec, c.State != ChannelState.Mute);
+                }
             }
-
-            // switch (chc.State)
-            // {
-            //     case ChannelState.Normal:
-            //         break;
-            //     case ChannelState.Solo:
-            //         // Mute any other non-solo channels.
-            //         _channels.Values.ForEach(ch =>
-            //         {
-            //             if (ch.ChannelName != chc.BoundChannel.ChannelName && chc.State != ChannelState.Solo)
-            //             {
-            //                 chc.BoundChannel.Kill();
-            //             }
-            //         });
-            //         break;
-            //     case ChannelState.Mute:
-            //         chc.BoundChannel.Kill();
-            //         break;
-            // }
-
-            // // Is it ok to play now?
-            // bool play = ch.State == ChannelState.Solo || (ch.State == ChannelState.Normal && !anySolo);
-
-            // if (play)
-            // {
-            //     // Need exception handling here to protect from user script errors.
-            //     try
-            //     {
-            //         ch.DoStep(_stepTime.TotalSubs);
-            //     }
-            //     catch (Exception ex)
-            //     {
-            //         ProcessScriptRuntimeError(ex);
-            //     }
-            // }
-
-
-            // then >>>> public void EnableChannel(int devNum, int chanNum, bool enable)
         }
 
         /// <summary>

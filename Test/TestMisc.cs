@@ -30,10 +30,10 @@ namespace Test
             string sbt = MusicTime.Format(12345);
             UT_EQUAL(sbt, "385.3.1");
 
-            //string smidi = Utils.FormatMidiStatus(MMSYSERR_INVALFLAG);
+            //string smidi = Common.FormatMidiStatus(MMSYSERR_INVALFLAG);
             //UT_STR_EQUAL(smidi, "An invalid flag was passed to a system function.");
 
-            //smidi = Utils.FormatMidiStatus(90909);
+            //smidi = Common.FormatMidiStatus(90909);
             //UT_STR_EQUAL(smidi, "MidiStatus:90909");
         }
     }
@@ -45,28 +45,28 @@ namespace Test
         {
             {
                 var ex = new LuaException("message111");
-                var (fatal, msg) = Utils.ProcessException(ex);
+                var (fatal, msg) = Common.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_EQUAL(msg, "Lua/Interop Error: message111");
             }
 
             {
                 var ex = new SyntaxException("message222");
-                var (fatal, msg) = Utils.ProcessException(ex);
+                var (fatal, msg) = Common.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_EQUAL(msg, "Script Syntax Error: message222");
             }
 
             {
                 var ex = new ArgumentException("message333");
-                var (fatal, msg) = Utils.ProcessException(ex);
+                var (fatal, msg) = Common.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_EQUAL(msg, "Argument Error: message333");
             }
 
             {
                 var ex = new DuplicateNameException("message444");
-                var (fatal, msg) = Utils.ProcessException(ex);
+                var (fatal, msg) = Common.ProcessException(ex);
                 UT_TRUE(fatal);
                 UT_EQUAL(msg, "System.Data.DuplicateNameException: message444");
             }

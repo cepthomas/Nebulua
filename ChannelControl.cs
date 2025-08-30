@@ -14,11 +14,7 @@ using Ephemera.NBagOfUis;
 namespace Nebulua
 {
     /// <summary>Notify host of changes.</summary>
-    public class ChannelControlEventArgs(ChannelSpec channelSpec, ChannelState state) : EventArgs
-    {
-        public ChannelState State { get; init; } = state;
-        public ChannelSpec ChannelSpec { get; init; } = channelSpec;
-    }
+    public class ChannelControlEventArgs() : EventArgs;
 
     /// <summary>Channel events and other properties.</summary>
     public class ChannelControl : UserControl
@@ -26,7 +22,6 @@ namespace Nebulua
         #region Fields
         readonly Container components = new();
 
-        readonly ChannelSpec _channelSpec;
         ChannelState _state = ChannelState.Normal;
 
         readonly Color _selColor = Color.Blue;
@@ -36,8 +31,6 @@ namespace Nebulua
         readonly Label lblSolo;
         readonly Label lblMute;
         readonly Slider sldVolume;
-
-        readonly double _volume = 0.8;
         #endregion
 
         #region Events
@@ -46,6 +39,8 @@ namespace Nebulua
         #endregion
 
         #region Properties
+        public ChannelSpec ChannelSpec { get; init; }
+
         /// <summary>For muting/soloing.</summary>
         public ChannelState State
         {
@@ -69,14 +64,15 @@ namespace Nebulua
         /// <param name="channelNumber"></param>
         public ChannelControl(ChannelSpec chspec) : this()
         {
-            _channelSpec = chspec;
-            _selColor = Common.Settings.SelectedColor;
-            _unselColor = Common.Settings.BackColor;
+            ChannelSpec = chspec;
+            // Colors.
+            _selColor = UserSettings.Current.SelectedColor;
+            _unselColor = UserSettings.Current.BackColor;
             lblChannelInfo.BackColor = _unselColor;
             lblSolo.BackColor = _unselColor;
             lblMute.BackColor = _unselColor;
             sldVolume.BackColor = _unselColor;
-            sldVolume.ForeColor = Common.Settings.ActiveColor;
+            sldVolume.ForeColor = UserSettings.Current.ActiveColor;
         }
 
         /// <summary>
@@ -84,6 +80,9 @@ namespace Nebulua
         /// </summary>
         public ChannelControl()
         {
+            // Dummy to keep the designer happy.
+            ChannelSpec = ChannelSpec.FromHandle(0);
+
             lblChannelInfo = new()
             {
                 Location = new Point(2, 9),
@@ -134,10 +133,10 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            lblChannelInfo.Text = $"{_channelSpec.DeviceId}:{_channelSpec.ChannelNumber}";
+            lblChannelInfo.Text = $"{ChannelSpec.DeviceId}:{ChannelSpec.ChannelNumber}";
             lblChannelInfo.BackColor = _unselColor;
 
-            sldVolume.DrawColor = Common.Settings.ActiveColor;
+            sldVolume.DrawColor = UserSettings.Current.ActiveColor;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
 
@@ -179,7 +178,7 @@ namespace Nebulua
                 // ?????
             }
 
-            ChannelControlChange?.Invoke(this, new ChannelControlEventArgs(_channelSpec, State));
+            ChannelControlChange?.Invoke(this, new ChannelControlEventArgs());
         }
 
         /// <summary>Draw mode checkboxes etc.</summary>

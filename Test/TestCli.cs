@@ -22,6 +22,11 @@ namespace Test
 
             MockConsole console = new();
             var cli = new Cli("none", console);
+
+            // Set some test settings defaults.
+            UserSettings.Current.MonitorSnd = false;
+            UserSettings.Current.MonitorRcv = false;
+
             string prompt = ">";
 
             ///// Fat fingers.
@@ -234,8 +239,6 @@ namespace Test
     {
         #region Fields
         readonly StringBuilder _capture = new();
-        int _left = 0;
-        int _top = 0;
         #endregion
 
         #region Internals
@@ -246,9 +249,7 @@ namespace Test
 
         #region IConsole implementation
         public bool KeyAvailable { get => NextReadLine.Length > 0; }
-        public bool CursorVisible { get; set; } = true;
         public string Title { get; set; } = "";
-        public int BufferWidth { get; set; }
 
         public string? ReadLine()
         {
@@ -263,6 +264,7 @@ namespace Test
                 return ret;
             }
         }
+
         public ConsoleKeyInfo ReadKey(bool intercept)
         {
             if (KeyAvailable)
@@ -280,10 +282,6 @@ namespace Test
         public void Write(string text) => _capture.Append(text);
 
         public void WriteLine(string text) => _capture.Append(text + Environment.NewLine);
-
-        public void SetCursorPosition(int left, int top) { _left = left; _top = top; }
-
-        public (int left, int top) GetCursorPosition() { return (_left, _top); }
         #endregion
     }
 

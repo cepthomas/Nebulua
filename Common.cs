@@ -64,11 +64,6 @@ namespace Nebulua
         public const double MAX_GAIN = 2.0;
         #endregion
 
-        #region Globals
-        /// <summary>The current settings.</summary>
-        public static UserSettings Settings { get; set; } = new();
-        #endregion
-
         #region Utils
         /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
@@ -109,19 +104,15 @@ namespace Nebulua
         #endregion
     }
 
-    #region Console abstraction to support testing TODO ??
+    #region Console abstraction to support testing
     public interface IConsole
     {
         bool KeyAvailable { get; }
-        bool CursorVisible { get; set; }
         string Title { get; set; }
-        int BufferWidth { get; set; }
         void Write(string text);
         void WriteLine(string text);
         string? ReadLine();
         ConsoleKeyInfo ReadKey(bool intercept);
-        (int left, int top) GetCursorPosition();
-        void SetCursorPosition(int left, int top);
     }
     #endregion
 }

@@ -1,7 +1,6 @@
 
 -- Script for interop and lua unit test - the happy path.
 
-local li = require("luainterop")
 local api = require("script_api")
 local md = require("music_defs")
 local bt = require("bar_time")
@@ -9,7 +8,7 @@ local ut = require("lbot_utils")
 
 
 -- info = 2
-li.log(2, "======== script_happy.lua is a beautiful thing ==========")
+api.log_info("======== script_happy.lua is a beautiful thing ==========")
 
 
 ------------------------- Config ----------------------------------------
@@ -20,10 +19,10 @@ local dev_out2 = "loopMIDI Port"
 local dev_in1  = "loopMIDI Port"
 
 -- Channels
-local hnd_piano = li.open_midi_output(dev_out1, 1, 2)
-local hnd_synth = li.open_midi_output(dev_out1, 2, 90)
-local hnd_drums = li.open_midi_output(dev_out1, 10, 8)
-local hnd_input = li.open_midi_input(dev_in1, 3)
+local hnd_piano = api.open_midi_output(dev_out1, 1, 2)
+local hnd_synth = api.open_midi_output(dev_out1, 2, 90)
+local hnd_drums = api.open_midi_output(dev_out1, 10, 8)
+local hnd_input = api.open_midi_input(dev_in1, 3)
 
 
 ------------------------- Vars ----------------------------------------
@@ -70,10 +69,10 @@ end
 -- Handler for input note events. Optional.
 function receive_midi_note(chan_hnd, note_num, volume)
     local s = string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
-    li.log(2, s)
+    api.log_trace(s)
 
     if chan_hnd == hnd_input then
-        li.send_midi_note(hnd_synth, note_num + 1, volume * 0.5, 8)
+        api.send_midi_note(hnd_synth, note_num + 1, volume * 0.5, 8)
     end
     return 0
 end
@@ -82,7 +81,7 @@ end
 -- Handler for input controller events. Optional.
 function receive_midi_controller(chan_hnd, controller, value)
     local s = string.format("Script rcv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
-    li.log(2, s)
+    api.log_trace(s)
     return 0
 end
 
@@ -92,7 +91,7 @@ end
 -- Called from sequence.
 local function my_seq_func(tick)
     local note_num = math.random(0, #alg_scale)
-    api.send_note(hnd_synth, alg_scale[note_num], 0.7, 1)
+    api.send_midi_note(hnd_synth, alg_scale[note_num], 0.7, 1)
 end
 
 -----------------------------------------------------------------------------
@@ -110,7 +109,7 @@ local function boing(note_num)
     if note_num == 0 then
         note_num = math.random(30, 80)
         boinged = true
-        api.send_note(hnd_synth, note_num, 0.7, 8)
+        api.send_midi_note(hnd_synth, note_num, 0.7, 8)
     end
     return boinged
 end

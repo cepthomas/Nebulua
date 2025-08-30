@@ -170,6 +170,11 @@ namespace Nebulua
         {
             var output = _outputs[chspec.DeviceId];
             output.Enable = enable;
+            if (!enable)
+            {
+                // Kill just in case.
+                _outputs[chspec.DeviceId].Send(new ControlChangeEvent(0, chspec.ChannelNumber, MidiController.AllNotesOff, 0));
+            }
         }
 
         /// <summary>
@@ -321,7 +326,7 @@ namespace Nebulua
                         break;
                 }
 
-                if (logit && Common.Settings.MonitorRcv)
+                if (logit && UserSettings.Current.MonitorRcv)
                 {
                     _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chanHnd)}");
                 }
@@ -460,7 +465,7 @@ namespace Nebulua
 
                     output.Send(evt);
 
-                    if (Common.Settings.MonitorSnd)
+                    if (UserSettings.Current.MonitorSnd)
                     {
                         _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
                     }
@@ -504,7 +509,7 @@ namespace Nebulua
 
                 output.Send(evt);
 
-                if (Common.Settings.MonitorSnd)
+                if (UserSettings.Current.MonitorSnd)
                 {
                     _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
                 }

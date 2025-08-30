@@ -17,8 +17,8 @@ namespace Test
         static void Main(string[] _)
         {
             TestRunner runner = new(OutputFormat.Readable);
-            // "SCRIPT"  "CLI"  "MISC"
-            var cases = new[] { "SCRIPT", "CLI", "MISC" };
+            // "INTEROP"  "CLI"  "MISC"
+            var cases = new[] { "INTEROP", "CLI", "MISC" };
             runner.RunSuites(cases);
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
