@@ -39,7 +39,7 @@ namespace Nebulua
         #endregion
 
         #region Properties
-        public ChannelSpec ChannelSpec { get; init; }
+        public ChannelSpec Spec { get; init; }
 
         /// <summary>For muting/soloing.</summary>
         public ChannelState State
@@ -64,7 +64,7 @@ namespace Nebulua
         /// <param name="channelNumber"></param>
         public ChannelControl(ChannelSpec chspec) : this()
         {
-            ChannelSpec = chspec;
+            Spec = chspec;
             // Colors.
             _selColor = UserSettings.Current.SelectedColor;
             _unselColor = UserSettings.Current.BackColor;
@@ -80,8 +80,8 @@ namespace Nebulua
         void LblChannelInfo_Click(object? sender, EventArgs e)
         {
             List<string> info = [];
-            info.Add(ChannelSpec.DeviceName);
-            info.Add($"patch: {ChannelSpec.Patch}");
+            info.Add("TODO");// Spec.DeviceName);
+            info.Add("TODO");// $"patch: {ChannelSpec.Patch}");
             MessageBox.Show(string.Join(Environment.NewLine, info));
         }
 
@@ -91,7 +91,7 @@ namespace Nebulua
         public ChannelControl()
         {
             // Dummy to keep the designer happy.
-            ChannelSpec = ChannelSpec.FromHandle(0);
+            Spec = new(ChannelDirection.Input, -1, -1);
 
             lblChannelInfo = new()
             {
@@ -148,7 +148,7 @@ namespace Nebulua
             //lblSolo.BorderStyle = BorderStyle.FixedSingle;
             //lblMute.BorderStyle = BorderStyle.FixedSingle;
 
-            lblChannelInfo.Text = $"{ChannelSpec.DeviceId}:{ChannelSpec.ChannelNumber}";
+            lblChannelInfo.Text = $"{Spec.DeviceId}:{Spec.ChannelNumber}";
             lblChannelInfo.BackColor = _unselColor;
 
             sldVolume.DrawColor = UserSettings.Current.ActiveColor;

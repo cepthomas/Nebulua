@@ -9,6 +9,8 @@ using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 
 
+// TODO get output.DeviceName, patch
+
 namespace Nebulua
 {
     public class HostCore : IDisposable
@@ -152,7 +154,7 @@ namespace Nebulua
                 {
                     if (chs[ch])
                     {
-                        valchs.Add(new(ChannelSpec.ChannelDirection.Output, devNum, output.DeviceName, ch + 1, 8888));
+                        valchs.Add(new(ChannelDirection.Output, devNum, ch + 1));
                     }
                 }
             }
@@ -304,8 +306,8 @@ namespace Nebulua
             try
             {
                 var input = (MidiInput)sender!;
-                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Input, _inputs.IndexOf(input), input.DeviceName, e.Channel, 7777);
-                int chanHnd = chspec.Handle;
+                ChannelSpec chspec = new(ChannelDirection.Input, _inputs.IndexOf(input), e.Channel);
+                int chanHnd = chspec;
                 bool logit = true;
 
                 switch (e)
@@ -375,8 +377,8 @@ namespace Nebulua
                     input.Channels[e.chan_num - 1] = true;
                 }
 
-                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Input, _inputs.Count - 1, e.dev_name, e.chan_num, 6666);
-                e.ret = chspec.Handle;
+                ChannelSpec chspec = new(ChannelDirection.Input, _inputs.Count - 1, e.chan_num);
+                e.ret = chspec;
             }
             catch (Exception ex)
             {
@@ -412,8 +414,8 @@ namespace Nebulua
                 // Add specific channel.
                 output.Channels[e.chan_num - 1] = true;
 
-                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Output, _outputs.Count - 1, e.dev_name, e.chan_num, e.patch);
-                var chanHnd = chspec.Handle;
+                ChannelSpec chspec = new(ChannelDirection.Output, _outputs.Count - 1, e.chan_num);
+                var chanHnd = chspec;
                 e.ret = chanHnd; // valid return
 
                 if (e.patch >= 0)
@@ -441,7 +443,7 @@ namespace Nebulua
                 e.ret = 0; // not used
 
                 // Check args for valid device and channel.
-                ChannelSpec chspec = ChannelSpec.FromHandle(e.chan_hnd);
+                ChannelSpec chspec = new(e.chan_hnd);
 
                 if (chspec.DeviceId >= _outputs.Count ||
                     chspec.ChannelNumber < 1 ||
@@ -490,7 +492,7 @@ namespace Nebulua
                 e.ret = 0; // not used
 
                 // Check args.
-                ChannelSpec chspec = ChannelSpec.FromHandle(e.chan_hnd);
+                ChannelSpec chspec = new(e.chan_hnd);
 
                 if (chspec.DeviceId >= _outputs.Count ||
                     chspec.ChannelNumber < 1 ||
@@ -635,7 +637,7 @@ namespace Nebulua
         string FormatMidiEvent(MidiEvent evt, int tick, int chanHnd)
         {
             // Common part.
-            ChannelSpec chspec = ChannelSpec.FromHandle(chanHnd); //.ChannelDirection.Output, devIndex, chanNum);
+            ChannelSpec chspec = new(chanHnd);
 
             string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{chspec.DeviceId} Ch:{chspec.ChannelNumber} ";
 

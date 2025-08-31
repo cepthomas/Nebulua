@@ -9,40 +9,67 @@ namespace Nebulua
 
     /// <summary>Channel state.</summary>
     public enum ChannelState { Normal, Solo, Mute }
+
+    /// <summary>Output or input.</summary>
+    public enum ChannelDirection { Output, Input }
     #endregion
 
-    /// <summary>Channel info.</summary>
-    public class ChannelSpec(ChannelSpec.ChannelDirection direction, int deviceId, string deviceName, int channelNumber, int patch)
+    /// <summary>Defines one channel.</summary>
+    /// <param name="Direction"></param>
+    /// <param name="DeviceId"></param>
+    /// <param name="ChannelNumber"></param>
+    public record struct ChannelSpec(ChannelDirection Direction, int DeviceId, int ChannelNumber)
+    // public record struct ChannelSpec(ChannelSpec.ChannelDirection direction, int deviceId, string deviceName, int channelNumber, int patch);
     {
-        /// <summary>Output or input.</summary>
-        public enum ChannelDirection { Output, Input }
-
-        /// <summary>Output or input.</summary>
-        public ChannelDirection Direction { get; init; } = direction;
-
-        /// <summary>Device identifier - internal.</summary>
-        public int DeviceId { get; init; } = deviceId;
-
-        /// <summary>Device name from system.</summary>
-        public string DeviceName { get; init; } = deviceName;
-
-        /// <summary>Midi channel number 1-based.</summary>
-        public int ChannelNumber { get; init; } = channelNumber;
-
-        /// <summary>Optional patch.</summary>
-        public int Patch { get; init; } = patch;
-
-        /// <summary>Corresponding handle.</summary>
-        public int Handle { get { return (DeviceId << 8) | ChannelNumber | (Direction == ChannelDirection.Output ? 0x8000 : 0x0000); }}
-
-        public static ChannelSpec FromHandle(int handle)
+        /// <summary>Create from handle.</summary>
+        /// <param name="handle"></param>
+        public ChannelSpec(int handle) : this(ChannelDirection.Output, -1, -1)
         {
-            ChannelDirection direction = (handle & 0x8000) > 0 ? ChannelDirection.Output : ChannelDirection.Input;
-            int deviceId = ((handle & ~0x8000) >> 8) & 0xFF;
-            int channelNumber = (handle & ~0x8000) & 0xFF;
-            return new(direction, deviceId, "TODO", channelNumber, 9999); 
+            Direction = (handle & 0x8000) > 0 ? ChannelDirection.Output : ChannelDirection.Input;
+            DeviceId = ((handle & ~0x8000) >> 8) & 0xFF;
+            ChannelNumber = (handle & ~0x8000) & 0xFF;
+        }
+
+        /// <summary>Operator to convert to int handle.</summary>
+        /// <param name="d"></param>
+        public static implicit operator int(ChannelSpec d)// => d.Handle();
+        {
+            return (d.DeviceId << 8) | d.ChannelNumber | (d.Direction == ChannelDirection.Output ? 0x8000 : 0x0000);
         }
     }
+
+    // /// <summary>Channel info.</summary
+    // public class ChannelSpec(ChannelSpec.ChannelDirection direction, int deviceId, string deviceName, int channelNumber, int patch)
+    // {
+    //     /// <summary>Output or input.</summary>
+    //     public enum ChannelDirection { Output, Input }
+
+    //     /// <summary>Output or input.</summary>
+    //     public ChannelDirection Direction { get; init; } = direction;
+
+    //     /// <summary>Device identifier - internal.</summary>
+    //     public int DeviceId { get; init; } = deviceId;
+
+    //     /// <summary>Device name from system.</summary>
+    //     public string DeviceName { get; init; } = deviceName;
+
+    //     /// <summary>Midi channel number 1-based.</summary>
+    //     public int ChannelNumber { get; init; } = channelNumber;
+
+    //     /// <summary>Optional patch.</summary>
+    //     public int Patch { get; init; } = patch;
+
+    //     /// <summary>Corresponding handle.</summary>
+    //     public int Handle { get { return (DeviceId << 8) | ChannelNumber | (Direction == ChannelDirection.Output ? 0x8000 : 0x0000); }}
+
+    //     public static ChannelSpec FromHandle(int handle)
+    //     {
+    //         ChannelDirection direction = (handle & 0x8000) > 0 ? ChannelDirection.Output : ChannelDirection.Input;
+    //         int deviceId = ((handle & ~0x8000) >> 8) & 0xFF;
+    //         int channelNumber = (handle & ~0x8000) & 0xFF;
+    //         return new(direction, deviceId, "TODO", channelNumber, 9999); 
+    //     }
+    // }
 
     /// <summary>General definitions.</summary>
     public class Common

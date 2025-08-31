@@ -604,11 +604,11 @@ namespace Nebulua
             {
                 if (anySolo) // only solo
                 {
-                    _hostCore.EnableOutputChannel(c.ChannelSpec, c.State == ChannelState.Solo);
+                    _hostCore.EnableOutputChannel(c.Spec, c.State == ChannelState.Solo);
                 }
                 else // except mute
                 {
-                    _hostCore.EnableOutputChannel(c.ChannelSpec, c.State != ChannelState.Mute);
+                    _hostCore.EnableOutputChannel(c.Spec, c.State != ChannelState.Mute);
                 }
             }
         }
