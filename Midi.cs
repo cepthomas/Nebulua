@@ -128,7 +128,7 @@ namespace Nebulua
         /// <summary>Enable output.</summary>
         public bool Enable { get; set; } = true;
 
-        /// <summary>True if registered by script, 0-based.</summary>
+        /// <summary>True if registered by script, 0-based.</summary> TODO1 null/enable/disable
         public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
         #endregion
 

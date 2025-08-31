@@ -146,12 +146,13 @@ namespace Nebulua
 
             for (int devNum = 0; devNum < _outputs.Count; devNum++)
             {
-                var chs = _outputs[devNum].Channels;
+                var output = _outputs[devNum];
+                var chs = output.Channels;
                 for (int ch = 0; ch < chs.Length; ch++)
                 {
                     if (chs[ch])
                     {
-                        valchs.Add(new(ChannelSpec.ChannelDirection.Output, devNum, ch + 1));
+                        valchs.Add(new(ChannelSpec.ChannelDirection.Output, devNum, output.DeviceName, ch + 1, 8888));
                     }
                 }
             }
@@ -166,7 +167,7 @@ namespace Nebulua
         /// <param name="chanNum"></param>
         /// <param name="enable"></param>
         /// <exception cref="ArgumentException"></exception>
-        public void EnableChannel(ChannelSpec chspec, bool enable)
+        public void EnableOutputChannel(ChannelSpec chspec, bool enable)
         {
             var output = _outputs[chspec.DeviceId];
             output.Enable = enable;
@@ -302,8 +303,8 @@ namespace Nebulua
         {
             try
             {
-                int index = _inputs.IndexOf((MidiInput)sender!);
-                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Input, index, e.Channel);
+                var input = (MidiInput)sender!;
+                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Input, _inputs.IndexOf(input), input.DeviceName, e.Channel, 7777);
                 int chanHnd = chspec.Handle;
                 bool logit = true;
 
@@ -374,7 +375,7 @@ namespace Nebulua
                     input.Channels[e.chan_num - 1] = true;
                 }
 
-                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Input, _inputs.Count - 1, e.chan_num);
+                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Input, _inputs.Count - 1, e.dev_name, e.chan_num, 6666);
                 e.ret = chspec.Handle;
             }
             catch (Exception ex)
@@ -411,7 +412,7 @@ namespace Nebulua
                 // Add specific channel.
                 output.Channels[e.chan_num - 1] = true;
 
-                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Output, _outputs.Count - 1, e.chan_num);
+                ChannelSpec chspec = new(ChannelSpec.ChannelDirection.Output, _outputs.Count - 1, e.dev_name, e.chan_num, e.patch);
                 var chanHnd = chspec.Handle;
                 e.ret = chanHnd; // valid return
 

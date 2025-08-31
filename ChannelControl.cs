@@ -73,6 +73,16 @@ namespace Nebulua
             lblMute.BackColor = _unselColor;
             sldVolume.BackColor = _unselColor;
             sldVolume.ForeColor = UserSettings.Current.ActiveColor;
+
+            lblChannelInfo.Click += LblChannelInfo_Click;
+        }
+
+        void LblChannelInfo_Click(object? sender, EventArgs e)
+        {
+            List<string> info = [];
+            info.Add(ChannelSpec.DeviceName);
+            info.Add($"patch: {ChannelSpec.Patch}");
+            MessageBox.Show(string.Join(Environment.NewLine, info));
         }
 
         /// <summary>
@@ -86,8 +96,9 @@ namespace Nebulua
             lblChannelInfo = new()
             {
                 Location = new Point(2, 9),
-                Size = new Size(35, 20),
-                Text = "#"
+                Size = new Size(40, 20),
+                //AutoSize = false,
+                Text = "?"
             };
 
             lblSolo = new()
@@ -133,6 +144,10 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
+            //lblChannelInfo.BorderStyle = BorderStyle.FixedSingle;
+            //lblSolo.BorderStyle = BorderStyle.FixedSingle;
+            //lblMute.BorderStyle = BorderStyle.FixedSingle;
+
             lblChannelInfo.Text = $"{ChannelSpec.DeviceId}:{ChannelSpec.ChannelNumber}";
             lblChannelInfo.BackColor = _unselColor;
 

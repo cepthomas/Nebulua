@@ -12,7 +12,7 @@ namespace Nebulua
     #endregion
 
     /// <summary>Channel info.</summary>
-    public class ChannelSpec(ChannelSpec.ChannelDirection direction, int deviceId, int channelNumber)
+    public class ChannelSpec(ChannelSpec.ChannelDirection direction, int deviceId, string deviceName, int channelNumber, int patch)
     {
         /// <summary>Output or input.</summary>
         public enum ChannelDirection { Output, Input }
@@ -23,8 +23,14 @@ namespace Nebulua
         /// <summary>Device identifier - internal.</summary>
         public int DeviceId { get; init; } = deviceId;
 
+        /// <summary>Device name from system.</summary>
+        public string DeviceName { get; init; } = deviceName;
+
         /// <summary>Midi channel number 1-based.</summary>
         public int ChannelNumber { get; init; } = channelNumber;
+
+        /// <summary>Optional patch.</summary>
+        public int Patch { get; init; } = patch;
 
         /// <summary>Corresponding handle.</summary>
         public int Handle { get { return (DeviceId << 8) | ChannelNumber | (Direction == ChannelDirection.Output ? 0x8000 : 0x0000); }}
@@ -34,7 +40,7 @@ namespace Nebulua
             ChannelDirection direction = (handle & 0x8000) > 0 ? ChannelDirection.Output : ChannelDirection.Input;
             int deviceId = ((handle & ~0x8000) >> 8) & 0xFF;
             int channelNumber = (handle & ~0x8000) & 0xFF;
-            return new(direction, deviceId, channelNumber); 
+            return new(direction, deviceId, "TODO", channelNumber, 9999); 
         }
     }
 
