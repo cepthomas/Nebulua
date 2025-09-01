@@ -9,13 +9,15 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 
 
+
+// ? zoom, drag, shift
 namespace Nebulua
 {
     /// <summary>User selection options.</summary>
     public enum SnapType { Bar, Beat, Sub }
 
     /// <summary>The control.</summary>
-    public class TimeBar : UserControl  // TODO? zoom, drag, shift
+    public class TimeBar : UserControl
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>
@@ -27,7 +29,7 @@ namespace Nebulua
         /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
 
-        /// <summary>For drawing lines.</summary>
+        /// <summary>For drawing lines etc.</summary>
         readonly Pen _penMarker = new(Color.Red, 1);
         #endregion
 

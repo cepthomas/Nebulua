@@ -220,7 +220,7 @@ namespace Nebulua
         {
             if (disposing)
             {
-                //// Wait a bit in case there are some lingering events.
+                // Wait a bit in case there are some lingering events.
                 //System.Threading.Thread.Sleep(100);
 
                 //DestroyDevices();

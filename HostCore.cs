@@ -73,7 +73,7 @@ namespace Nebulua
                 // Destroy devices
                 ResetIo();
 
-                // Release unmanaged resources. https://stackoverflow.com/a/4935448
+                // Release unmanaged resources.
                 _interop.Dispose();
 
                 _disposed = true;
@@ -148,13 +148,6 @@ namespace Nebulua
             {
                 var output = _outputs[devNum];
                 output.ChannelStates.ForEach(ch => { valchs.Add(new(devNum, ch.Key)); });
-                //for (int ch = 0; ch < chs.Length; ch++)
-                //{
-                //    if (chs[ch])
-                //    {
-                //        valchs.Add(new(Direction.Output, devNum, ch + 1));
-                //    }
-                //}
             }
 
             return valchs;
@@ -186,30 +179,10 @@ namespace Nebulua
                 // Kill just in case.
                 _outputs[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
             }
-
-
-            //var chanHnd = MakeOutHandle(devNum, chanNum);
-            //if (_outputGates.ContainsKey(chanHnd))
-            //{
-            //    _outputGates[chanHnd] = enable;
-            //}
-            //else
-            //{
-            //    throw new ArgumentException($"Invalid channel: {devNum}:{chanNum}");
-            //}
-
-
-            //var output = _outputs[ch.DeviceId];
-            //output.Enable = enable;
-            //if (!enable)
-            //{
-            //    // Kill just in case.
-            //    _outputs[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
-            //}
         }
 
         /// <summary>
-        /// 
+        /// Readable string.
         /// </summary>
         /// <param name="ch"></param>
         /// <returns></returns>
@@ -239,17 +212,14 @@ namespace Nebulua
         /// 
         /// </summary>
         /// <param name="ch"></param>
-        /// <returns></returns>
+        /// <returns>The patch number or -1 if not set.</returns>
         public int GetPatch(ChannelDef ch)
         {
             int patch = -1;
 
-            if (ch.Output)
+            if (ch.Output && ch.DeviceId < _outputs.Count)
             {
-                if (ch.DeviceId < _outputs.Count)
-                {
-                    _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
-                }
+                _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
             }
 
             return patch;
@@ -281,12 +251,9 @@ namespace Nebulua
         /// </summary>
         public void KillAll()
         {
-            //var allOrderIds = _outputs.SelectMany(op => op.ChannelState);
-           //TODO? linq-y _outputs.SelectMany(op => op.ChannelState).ForEach(ch => op.Send(new ControlChangeEvent(0, ch + 1, MidiController.AllNotesOff, 0))); ;
-
             _outputs.ForEach(op =>
             {
-                Enumerable.Range(0, Common.NUM_MIDI_CHANNELS).ForEach(ch => op.Send(new ControlChangeEvent(0, ch + 1, MidiController.AllNotesOff, 0)));
+ xxx               Enumerable.Range(0, Common.NUM_MIDI_CHANNELS).ForEach(ch => op.Send(new ControlChangeEvent(0, ch + 1, MidiController.AllNotesOff, 0)));
             });
 
             // Hard reset.
@@ -570,8 +537,7 @@ namespace Nebulua
 
                 if (ch.DeviceId >= _outputs.Count ||
                     ch.ChannelNumber < 1 ||
-                    ch.ChannelNumber > Common.NUM_MIDI_CHANNELS ||
-                    !_outputs[ch.DeviceId].ChannelStates[ch.ChannelNumber])
+                    ch.ChannelNumber > Common.NUM_MIDI_CHANNELS)
                 {
                     throw new SyntaxException($"Invalid channel: {e.chan_hnd}");
                 }

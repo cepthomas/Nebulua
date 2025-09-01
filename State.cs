@@ -122,9 +122,7 @@ namespace Nebulua
 
         #region Lifecycle
         /// <summary>Prevent client multiple instantiation.</summary>
-        State()
-        {
-        }
+        State() { }
 
         /// <summary>The singleton instance.</summary>
         public static State Instance

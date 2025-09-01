@@ -94,7 +94,6 @@ namespace Nebulua
             {
                 Location = new Point(2, 9),
                 Size = new Size(40, 20),
-                //AutoSize = false,
                 Text = "?"
             };
 
@@ -163,9 +162,9 @@ namespace Nebulua
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                components?.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -185,10 +184,7 @@ namespace Nebulua
             {
                 State = lblMute.BackColor == _selColor ? PlayState.Normal : PlayState.Mute;
             }
-            else
-            {
-                // ?????
-            }
+            //else ??
 
             ChannelControlEvent?.Invoke(this, new ChannelControlEventArgs());
         }

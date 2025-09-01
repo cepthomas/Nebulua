@@ -22,19 +22,8 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-        /// <summary>Key is channel number, 1-based. Value is enabled.</summary>
+        /// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
         public Dictionary<int, bool> ChannelStates = [];
-
-        /// <summary>T=enabled F=disabled null=unused.</summary>
-    //    /*public*/  bool?[] ChannelState { get; } = new bool?[Common.NUM_MIDI_CHANNELS];
-
-        // /// <summary>Device capture on/off.</summary>
-        // public bool Enable
-        // {
-        //     get { return _enable; }
-        //     set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); _enable = value; }
-        // }
-        // bool _enable = false;
         #endregion
 
         #region Events
@@ -52,9 +41,7 @@ namespace Nebulua
         {
             bool realInput = false;
             DeviceName = deviceName;
-    //        ChannelState.ForEach(b => b = null);
             ChannelStates.Clear();
-            //CaptureEnable = true;
 
             // Figure out which midi input device.
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
@@ -102,16 +89,6 @@ namespace Nebulua
                 ReceiveEvent?.Invoke(this, evt);
             }
             // else ignore.
-
-
-            //// Is it in our registered inputs?
-            //int chan_num = evt.Channel;
-            //if (Channels[chan_num - 1]) //-> ChannelState
-            //{
-            //    // Invoke takes care of cross-thread issues.
-            //    ReceiveEvent?.Invoke(this, evt);
-            //}
-            //// else ignore.
         }
 
         /// <summary>
@@ -138,27 +115,11 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-        // /// <summary>Enable output.</summary>
-        // public bool Enable { get; set; } = true;
-
-        /// <summary>T=enabled F=disabled null=unused.</summary>
-   //     /*public*/ bool?[] ChannelState { get; } = new bool?[Common.NUM_MIDI_CHANNELS];
-
-        /// <summary>Current patch. null=unknown.</summary>
-//        /*public*/ int?[] Patch { get; } = new int?[Common.NUM_MIDI_CHANNELS];
-
-
-        /// <summary>Key is channel number, 1-based. Value is enabled.</summary>
+        /// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
         public Dictionary<int, bool> ChannelStates = [];
 
         /// <summary>Key is channel number, 1-based. Value is current patch.</summary>
         public Dictionary<int, int> Patches = [];
-
-
-
-        // /// <summary>Key is channel number, 1-based. Value is current patch.</summary>
-        // public bool?[] ChannelState { get; } = new bool?[Common.NUM_MIDI_CHANNELS];
-        // public Dictionary<int, int> Patch = [];
         #endregion
 
         #region Lifecycle
@@ -170,7 +131,6 @@ namespace Nebulua
         public MidiOutput(string deviceName)
         {
             DeviceName = deviceName;
-            //Channels.ForEach(b => b = false);
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
@@ -214,16 +174,6 @@ namespace Nebulua
             {
                 _midiOut?.Send(evt.GetAsShortMessage());
             }
-            // else ignore.
-
-
-
-
-            //// Is it in our registered inputs?
-            //if (Channels[evt.Channel - 1])
-            //{
-            //    _midiOut?.Send(evt.GetAsShortMessage());
-            //}
         }
         #endregion
     }
