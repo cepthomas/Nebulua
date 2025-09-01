@@ -7,34 +7,33 @@ namespace Nebulua
     /// <summary>Lua script syntax error.</summary>
     public class SyntaxException(string message) : Exception(message) { }
 
-    /// <summary>Channel state.</summary>
-    public enum ChannelState { Normal, Solo, Mute }
+    /// <summary>Channel playing.</summary>
+    public enum PlayState { Normal, Solo, Mute }
 
-    /// <summary>Output or input.</summary>
-    public enum ChannelDirection { Output, Input }
+    // /// <summary>Output or input.</summary>
+    // public enum Direction { Output, Input }
     #endregion
 
-    /// <summary>Defines one channel.</summary>
-    /// <param name="Direction"></param>
+    /// <summary>Defines one channel - static properties.</summary>
+    ///// <param name="Direction"></param>
     /// <param name="DeviceId"></param>
     /// <param name="ChannelNumber"></param>
-    public record struct ChannelSpec(ChannelDirection Direction, int DeviceId, int ChannelNumber)
-    // public record struct ChannelSpec(ChannelSpec.ChannelDirection direction, int deviceId, string deviceName, int channelNumber, int patch);
+    public record struct ChannelDef(int DeviceId, int ChannelNumber, bool Output = true)
     {
         /// <summary>Create from handle.</summary>
         /// <param name="handle"></param>
-        public ChannelSpec(int handle) : this(ChannelDirection.Output, -1, -1)
+        public ChannelDef(int handle) : this(-1, -1)
         {
-            Direction = (handle & 0x8000) > 0 ? ChannelDirection.Output : ChannelDirection.Input;
+            Output = (handle & 0x8000) > 0;
             DeviceId = ((handle & ~0x8000) >> 8) & 0xFF;
             ChannelNumber = (handle & ~0x8000) & 0xFF;
         }
 
         /// <summary>Operator to convert to int handle.</summary>
         /// <param name="d"></param>
-        public static implicit operator int(ChannelSpec d)// => d.Handle();
+        public static implicit operator int(ChannelDef d)// => d.Handle();
         {
-            return (d.DeviceId << 8) | d.ChannelNumber | (d.Direction == ChannelDirection.Output ? 0x8000 : 0x0000);
+            return (d.DeviceId << 8) | d.ChannelNumber | (d.Output ? 0x8000 : 0x0000);
         }
     }
 
@@ -67,7 +66,7 @@ namespace Nebulua
     //         ChannelDirection direction = (handle & 0x8000) > 0 ? ChannelDirection.Output : ChannelDirection.Input;
     //         int deviceId = ((handle & ~0x8000) >> 8) & 0xFF;
     //         int channelNumber = (handle & ~0x8000) & 0xFF;
-    //         return new(direction, deviceId, "TODO", channelNumber, 9999); 
+    //         return new(direction, deviceId, "???", channelNumber, 9999); 
     //     }
     // }
 

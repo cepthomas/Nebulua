@@ -595,21 +595,35 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControlChange(object? sender, ChannelControlEventArgs e)
+        void ChannelControlEvent(object? sender, ChannelControlEventArgs e)
         {
-            // Any solo(s)?
-            bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
-
-            foreach (var c in _channelControls)
+            ChannelControl control = (ChannelControl)sender!;
+            switch (e.EventType)
             {
-                if (anySolo) // only solo
-                {
-                    _hostCore.EnableOutputChannel(c.Spec, c.State == ChannelState.Solo);
-                }
-                else // except mute
-                {
-                    _hostCore.EnableOutputChannel(c.Spec, c.State != ChannelState.Mute);
-                }
+                case ChannelControlEventType.InfoRequest:
+                    List<string> info = [];
+                    info.Add($"device: {_hostCore.GetDeviceName(control.Def)}");
+                    info.Add($"patch: {_hostCore.GetPatch(control.Def)}");
+                    MessageBox.Show(string.Join(Environment.NewLine, info));
+                    break;
+
+                case ChannelControlEventType.PlayState:
+                    // Update all channel enables.
+                    bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
+
+                    foreach (var c in _channelControls)
+                    {
+                        if (anySolo) // only solo
+                        {
+                            _hostCore.EnableOutputChannel(c.Def, c.State == PlayState.Solo);
+                        }
+                        else // except mute
+                        {
+                            _hostCore.EnableOutputChannel(c.Def, c.State != PlayState.Mute);
+                        }
+                    }
+
+                    break;
             }
         }
 
@@ -647,7 +661,7 @@ namespace Nebulua
                     Location = new(x, y),
                 };
 
-                control.ChannelControlChange += ChannelControlChange;
+                control.ChannelControlEvent += ChannelControlEvent;
                 Controls.Add(control);
                 _channelControls.Add(control);
 

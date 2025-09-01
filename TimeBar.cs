@@ -15,7 +15,7 @@ namespace Nebulua
     public enum SnapType { Bar, Beat, Sub }
 
     /// <summary>The control.</summary>
-    public class TimeBar : UserControl  // TODO zoom, drag, shift
+    public class TimeBar : UserControl  // TODO? zoom, drag, shift
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>

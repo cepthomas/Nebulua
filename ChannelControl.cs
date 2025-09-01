@@ -14,7 +14,12 @@ using Ephemera.NBagOfUis;
 namespace Nebulua
 {
     /// <summary>Notify host of changes.</summary>
-    public class ChannelControlEventArgs() : EventArgs;
+    public class ChannelControlEventArgs() : EventArgs
+    {
+        public ChannelControlEventType EventType { get; set; } = ChannelControlEventType.PlayState;
+    }
+    public enum ChannelControlEventType { PlayState, InfoRequest }
+
 
     /// <summary>Channel events and other properties.</summary>
     public class ChannelControl : UserControl
@@ -22,7 +27,7 @@ namespace Nebulua
         #region Fields
         readonly Container components = new();
 
-        ChannelState _state = ChannelState.Normal;
+        PlayState _state = PlayState.Normal;
 
         readonly Color _selColor = Color.Blue;
         readonly Color _unselColor = Color.Red;
@@ -34,15 +39,15 @@ namespace Nebulua
         #endregion
 
         #region Events
-        /// <summary>Notify host of asynchronous changes from user.</summary>
-        public event EventHandler<ChannelControlEventArgs>? ChannelControlChange;
+        /// <summary>Notify host of user changes.</summary>
+        public event EventHandler<ChannelControlEventArgs>? ChannelControlEvent;
         #endregion
 
         #region Properties
-        public ChannelSpec Spec { get; init; }
+        public ChannelDef Def { get; init; }
 
         /// <summary>For muting/soloing.</summary>
-        public ChannelState State
+        public PlayState State
         {
             get { return _state; }
             set { _state = value; UpdateUi(); }
@@ -62,9 +67,9 @@ namespace Nebulua
         /// </summary>
         /// <param name="deviceNumber"></param>
         /// <param name="channelNumber"></param>
-        public ChannelControl(ChannelSpec chspec) : this()
+        public ChannelControl(ChannelDef ch) : this()
         {
-            Spec = chspec;
+            Def = ch;
             // Colors.
             _selColor = UserSettings.Current.SelectedColor;
             _unselColor = UserSettings.Current.BackColor;
@@ -74,15 +79,7 @@ namespace Nebulua
             sldVolume.BackColor = _unselColor;
             sldVolume.ForeColor = UserSettings.Current.ActiveColor;
 
-            lblChannelInfo.Click += LblChannelInfo_Click;
-        }
-
-        void LblChannelInfo_Click(object? sender, EventArgs e)
-        {
-            List<string> info = [];
-            info.Add("TODO");// Spec.DeviceName);
-            info.Add("TODO");// $"patch: {ChannelSpec.Patch}");
-            MessageBox.Show(string.Join(Environment.NewLine, info));
+            lblChannelInfo.Click += (_, __) => ChannelControlEvent?.Invoke(this, new ChannelControlEventArgs() { EventType = ChannelControlEventType.InfoRequest });
         }
 
         /// <summary>
@@ -91,7 +88,7 @@ namespace Nebulua
         public ChannelControl()
         {
             // Dummy to keep the designer happy.
-            Spec = new(ChannelDirection.Input, -1, -1);
+            Def = new(-1, -1, true);
 
             lblChannelInfo = new()
             {
@@ -148,7 +145,7 @@ namespace Nebulua
             //lblSolo.BorderStyle = BorderStyle.FixedSingle;
             //lblMute.BorderStyle = BorderStyle.FixedSingle;
 
-            lblChannelInfo.Text = $"{Spec.DeviceId}:{Spec.ChannelNumber}";
+            lblChannelInfo.Text = $"{Def.DeviceId}:{Def.ChannelNumber}";
             lblChannelInfo.BackColor = _unselColor;
 
             sldVolume.DrawColor = UserSettings.Current.ActiveColor;
@@ -182,25 +179,25 @@ namespace Nebulua
             // Figure out state.
             if (sender == lblSolo)
             {
-                State = lblSolo.BackColor == _selColor ? ChannelState.Normal : ChannelState.Solo;
+                State = lblSolo.BackColor == _selColor ? PlayState.Normal : PlayState.Solo;
             }
             else if (sender == lblMute)
             {
-                State = lblMute.BackColor == _selColor ? ChannelState.Normal : ChannelState.Mute;
+                State = lblMute.BackColor == _selColor ? PlayState.Normal : PlayState.Mute;
             }
             else
             {
                 // ?????
             }
 
-            ChannelControlChange?.Invoke(this, new ChannelControlEventArgs());
+            ChannelControlEvent?.Invoke(this, new ChannelControlEventArgs());
         }
 
         /// <summary>Draw mode checkboxes etc.</summary>
         void UpdateUi()
         {
-            lblSolo.BackColor = _state == ChannelState.Solo ? _selColor :  _unselColor;
-            lblMute.BackColor = _state == ChannelState.Mute ? _selColor :  _unselColor;
+            lblSolo.BackColor = _state == PlayState.Solo ? _selColor :  _unselColor;
+            lblMute.BackColor = _state == PlayState.Mute ? _selColor :  _unselColor;
         }
     }
 }
