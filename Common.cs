@@ -11,13 +11,13 @@ namespace Nebulua
     public enum PlayState { Normal, Solo, Mute }
     #endregion
 
-    /// <summary>Defines one channel - static properties.</summary>
-    ///// <param name="Direction"></param>
+    /// <summary>Defines one channel. Supports translation to/from script int handle.</summary>
     /// <param name="DeviceId"></param>
     /// <param name="ChannelNumber"></param>
+    /// <param name="Output"></param>
     public record struct ChannelDef(int DeviceId, int ChannelNumber, bool Output = true)
     {
-        /// <summary>Create from handle.</summary>
+        /// <summary>Create from int handle.</summary>
         /// <param name="handle"></param>
         public ChannelDef(int handle) : this(-1, -1)
         {
@@ -27,10 +27,10 @@ namespace Nebulua
         }
 
         /// <summary>Operator to convert to int handle.</summary>
-        /// <param name="d"></param>
-        public static implicit operator int(ChannelDef d)
+        /// <param name="ch"></param>
+        public static implicit operator int(ChannelDef ch)
         {
-            return (d.DeviceId << 8) | d.ChannelNumber | (d.Output ? 0x8000 : 0x0000);
+            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? 0x8000 : 0x0000);
         }
     }
 
