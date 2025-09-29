@@ -147,7 +147,7 @@ namespace Nebulua
             for (int devNum = 0; devNum < _outputs.Count; devNum++)
             {
                 var output = _outputs[devNum];
-                output.ChannelStates.ForEach(ch => { valchs.Add(new(devNum, ch.Key)); });
+                output.ChannelStates.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
             }
 
             return valchs;
@@ -190,7 +190,7 @@ namespace Nebulua
         {
             string? devName = null;
 
-            if (ch.Output)
+            if (ch.Direction == Direction.Output)
             {
                 if (ch.DeviceId < _outputs.Count)
                 {
@@ -217,7 +217,7 @@ namespace Nebulua
         {
             int patch = -1;
 
-            if (ch.Output && ch.DeviceId < _outputs.Count)
+            if (ch.Direction == Direction.Output && ch.DeviceId < _outputs.Count)
             {
                 _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
             }
@@ -347,7 +347,7 @@ namespace Nebulua
             try
             {
                 var input = (MidiInput)sender!;
-                ChannelDef ch = new(_inputs.IndexOf(input), e.Channel, false);
+                ChannelDef ch = new(_inputs.IndexOf(input), e.Channel, Direction.Input);
                 int chanHnd = ch;
                 bool logit = true;
 
@@ -418,7 +418,7 @@ namespace Nebulua
                     input.ChannelStates[e.chan_num] = true;
                 }
 
-                ChannelDef ch = new(_inputs.Count - 1, e.chan_num, true);
+                ChannelDef ch = new(_inputs.Count - 1, e.chan_num, Direction.Input);
                 e.ret = ch;
             }
             catch (Exception ex)
@@ -455,7 +455,7 @@ namespace Nebulua
                 // Add specific channel.
                 output.ChannelStates[e.chan_num] = true;
 
-                ChannelDef ch = new(_outputs.Count - 1, e.chan_num);
+                ChannelDef ch = new(_outputs.Count - 1, e.chan_num, Direction.Output);
                 var chanHnd = ch;
                 e.ret = chanHnd; // valid return
 

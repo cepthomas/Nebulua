@@ -101,7 +101,7 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     -- Overhead.
-    api.process_step(tick)
+    api.process_step(tick) 
 
     -- Other work you may want to do. Like do something every new bar.
         local bar, beat, sub = bt.tick_to_bt(tick)

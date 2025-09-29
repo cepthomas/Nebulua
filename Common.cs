@@ -9,28 +9,33 @@ namespace Nebulua
 
     /// <summary>Channel playing.</summary>
     public enum PlayState { Normal, Solo, Mute }
+
+    /// <summary>Channel direction.</summary>
+    public enum Direction { None, Input, Output }
     #endregion
 
     /// <summary>Defines one channel. Supports translation to/from script int handle.</summary>
     /// <param name="DeviceId"></param>
     /// <param name="ChannelNumber"></param>
     /// <param name="Output"></param>
-    public record struct ChannelDef(int DeviceId, int ChannelNumber, bool Output = true)
+    public record struct ChannelDef(int DeviceId, int ChannelNumber, Direction Direction)
     {
+        const int OUTPUT_FLAG = 0x8000;
+
         /// <summary>Create from int handle.</summary>
         /// <param name="handle"></param>
-        public ChannelDef(int handle) : this(-1, -1)
+        public ChannelDef(int handle) : this(-1, -1, Direction.None)
         {
-            Output = (handle & 0x8000) > 0;
-            DeviceId = ((handle & ~0x8000) >> 8) & 0xFF;
-            ChannelNumber = (handle & ~0x8000) & 0xFF;
+            Direction = (handle & OUTPUT_FLAG) > 0 ? Direction.Output : Direction.Input;
+            DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
+            ChannelNumber = (handle & ~OUTPUT_FLAG) & 0xFF;
         }
 
         /// <summary>Operator to convert to int handle.</summary>
         /// <param name="ch"></param>
         public static implicit operator int(ChannelDef ch)
         {
-            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Output ? 0x8000 : 0x0000);
+            return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Direction == Direction.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
     }
 

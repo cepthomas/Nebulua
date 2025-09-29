@@ -88,7 +88,7 @@ namespace Nebulua
         public ChannelControl()
         {
             // Dummy to keep the designer happy.
-            Def = new(-1, -1, true);
+            Def = new(-1, -1, Direction.None);
 
             lblChannelInfo = new()
             {
