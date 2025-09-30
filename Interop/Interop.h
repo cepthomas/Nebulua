@@ -16,15 +16,18 @@ public:
     property String^ dev_name;
     /// <summary>Midi channel number 1 => 16</summary>
     property int chan_num;
+    /// <summary>User channel name</summary>
+    property String^ chan_name;
     /// <summary>Midi patch number 0 => 127</summary>
     property int patch;
     /// <summary>Channel handle or 0 if invalid</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    OpenMidiOutputArgs(const char* dev_name, int chan_num, int patch)
+    OpenMidiOutputArgs(const char* dev_name, int chan_num, const char* chan_name, int patch)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
+        this->chan_name = gcnew String(chan_name);
         this->patch = patch;
     }
 };
@@ -37,13 +40,16 @@ public:
     property String^ dev_name;
     /// <summary>Midi channel number 1 => 16 or 0 => all</summary>
     property int chan_num;
+    /// <summary>User channel name</summary>
+    property String^ chan_name;
     /// <summary>Channel handle or 0 if invalid</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    OpenMidiInputArgs(const char* dev_name, int chan_num)
+    OpenMidiInputArgs(const char* dev_name, int chan_num, const char* chan_name)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
+        this->chan_name = gcnew String(chan_name);
     }
 };
 

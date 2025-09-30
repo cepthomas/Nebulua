@@ -52,10 +52,10 @@ int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 
 //--------------------------------------------------------//
 
-int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, int patch)
+int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch)
 {
     SCOPE();
-    OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, patch);
+    OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, chan_name, patch);
     Interop::Notify(args);
     return args->ret;
 }
@@ -63,10 +63,10 @@ int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num
 
 //--------------------------------------------------------//
 
-int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num)
+int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name)
 {
     SCOPE();
-    OpenMidiInputArgs^ args = gcnew OpenMidiInputArgs(dev_name, chan_num);
+    OpenMidiInputArgs^ args = gcnew OpenMidiInputArgs(dev_name, chan_num, chan_name);
     Interop::Notify(args);
     return args->ret;
 }

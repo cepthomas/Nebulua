@@ -35,7 +35,7 @@ namespace Nebulua
             timeBar = new TimeBar();
             ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
             ddbtnFile = new Ephemera.NBagOfUis.DropDownButton();
-            toolTip1 = new ToolTip(components);
+            toolTip = new ToolTip(components);
             SuspendLayout();
             // 
             // chkPlay
@@ -48,7 +48,7 @@ namespace Nebulua
             chkPlay.Name = "chkPlay";
             chkPlay.Size = new Size(40, 38);
             chkPlay.TabIndex = 0;
-            toolTip1.SetToolTip(chkPlay, "Play toggle");
+            toolTip.SetToolTip(chkPlay, "Play toggle");
             chkPlay.UseVisualStyleBackColor = false;
             // 
             // btnRewind
@@ -59,7 +59,7 @@ namespace Nebulua
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(40, 38);
             btnRewind.TabIndex = 1;
-            toolTip1.SetToolTip(btnRewind, "Rewind");
+            toolTip.SetToolTip(btnRewind, "Rewind");
             btnRewind.UseVisualStyleBackColor = false;
             // 
             // sldVolume
@@ -115,7 +115,7 @@ namespace Nebulua
             btnAbout.Name = "btnAbout";
             btnAbout.Size = new Size(40, 38);
             btnAbout.TabIndex = 44;
-            toolTip1.SetToolTip(btnAbout, "About");
+            toolTip.SetToolTip(btnAbout, "About");
             btnAbout.UseVisualStyleBackColor = false;
             // 
             // btnKill
@@ -126,7 +126,7 @@ namespace Nebulua
             btnKill.Name = "btnKill";
             btnKill.Size = new Size(40, 38);
             btnKill.TabIndex = 47;
-            toolTip1.SetToolTip(btnKill, "Kill all outputs");
+            toolTip.SetToolTip(btnKill, "Kill all outputs");
             btnKill.UseVisualStyleBackColor = false;
             // 
             // chkMonRcv
@@ -139,7 +139,7 @@ namespace Nebulua
             chkMonRcv.Name = "chkMonRcv";
             chkMonRcv.Size = new Size(40, 38);
             chkMonRcv.TabIndex = 48;
-            toolTip1.SetToolTip(chkMonRcv, "Monitor receive events");
+            toolTip.SetToolTip(chkMonRcv, "Monitor receive events");
             chkMonRcv.UseVisualStyleBackColor = false;
             // 
             // chkMonSnd
@@ -152,7 +152,7 @@ namespace Nebulua
             chkMonSnd.Name = "chkMonSnd";
             chkMonSnd.Size = new Size(40, 38);
             chkMonSnd.TabIndex = 49;
-            toolTip1.SetToolTip(chkMonSnd, "Monitor send events");
+            toolTip.SetToolTip(chkMonSnd, "Monitor send events");
             chkMonSnd.UseVisualStyleBackColor = false;
             // 
             // chkLoop
@@ -165,7 +165,7 @@ namespace Nebulua
             chkLoop.Name = "chkLoop";
             chkLoop.Size = new Size(40, 38);
             chkLoop.TabIndex = 50;
-            toolTip1.SetToolTip(chkLoop, "Enable looping");
+            toolTip.SetToolTip(chkLoop, "Enable looping");
             chkLoop.UseVisualStyleBackColor = false;
             // 
             // btnSettings
@@ -176,7 +176,7 @@ namespace Nebulua
             btnSettings.Name = "btnSettings";
             btnSettings.Size = new Size(40, 38);
             btnSettings.TabIndex = 55;
-            toolTip1.SetToolTip(btnSettings, "User settings");
+            toolTip.SetToolTip(btnSettings, "User settings");
             btnSettings.UseVisualStyleBackColor = false;
             // 
             // timeBar
@@ -212,7 +212,7 @@ namespace Nebulua
             ddbtnFile.Name = "ddbtnFile";
             ddbtnFile.Size = new Size(40, 38);
             ddbtnFile.TabIndex = 57;
-            toolTip1.SetToolTip(ddbtnFile, "Open new or recent script");
+            toolTip.SetToolTip(ddbtnFile, "Open new or recent script");
             ddbtnFile.UseVisualStyleBackColor = false;
             // 
             // MainForm
@@ -256,6 +256,6 @@ namespace Nebulua
         private Button btnSettings;
         private Ephemera.NBagOfUis.ClickClack ccMidiGen;
         private Ephemera.NBagOfUis.DropDownButton ddbtnFile;
-        private ToolTip toolTip1;
+        private ToolTip toolTip;
     }
 }

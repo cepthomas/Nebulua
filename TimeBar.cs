@@ -166,7 +166,6 @@ namespace Nebulua
                 var sdef = GetTimeDefString(bs);
 
                 _toolTip.SetToolTip(this, $"{MusicTime.Format(bs)} {sdef}");
-                //_toolTip.SetToolTip(this, $"{State.Instance.CurrentTick}: 0 {State.Instance.LoopStart} {State.Instance.LoopEnd} {State.Instance.Length} ");
 
                 _lastXPos = e.X;
 

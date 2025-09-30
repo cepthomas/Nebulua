@@ -14,11 +14,12 @@ using Ephemera.NBagOfUis;
 namespace Nebulua
 {
     /// <summary>Notify host of changes.</summary>
-    public class ChannelControlEventArgs() : EventArgs
-    {
-        public ChannelControlEventType EventType { get; set; } = ChannelControlEventType.PlayState;
-    }
-    public enum ChannelControlEventType { PlayState, InfoRequest }
+    public class ChannelControlEventArgs() : EventArgs;
+    // public class ChannelControlEventArgs() : EventArgs
+    // {
+    //     public ChannelControlEventType EventType { get; set; } = ChannelControlEventType.PlayState;
+    // }
+    // public enum ChannelControlEventType { PlayState, InfoRequest }
 
 
     /// <summary>Channel events and other properties.</summary>
@@ -37,6 +38,14 @@ namespace Nebulua
         readonly Label lblMute;
         readonly Slider sldVolume;
         #endregion
+
+
+
+        ToolTip toolTip;// = new ToolTip(components);
+
+        public List<string> Info { get; set; } = ["???"];
+
+
 
         #region Events
         /// <summary>Notify host of user changes.</summary>
@@ -79,7 +88,15 @@ namespace Nebulua
             sldVolume.BackColor = _unselColor;
             sldVolume.ForeColor = UserSettings.Current.ActiveColor;
 
-            lblChannelInfo.Click += (_, __) => ChannelControlEvent?.Invoke(this, new ChannelControlEventArgs() { EventType = ChannelControlEventType.InfoRequest });
+
+
+
+
+            // lblChannelInfo.Click += (_, __) => 
+            //     ChannelControlEvent?.Invoke(this, new ChannelControlEventArgs()
+            //     {
+            //         EventType = ChannelControlEventType.InfoRequest
+            //     });
         }
 
         /// <summary>
@@ -132,6 +149,8 @@ namespace Nebulua
             Controls.Add(lblMute);
             Controls.Add(lblSolo);
             Controls.Add(lblChannelInfo);
+
+            toolTip = new(components);
         }
 
         /// <summary>
@@ -140,12 +159,14 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            //lblChannelInfo.BorderStyle = BorderStyle.FixedSingle;
+            lblChannelInfo.BorderStyle = BorderStyle.FixedSingle;
             //lblSolo.BorderStyle = BorderStyle.FixedSingle;
             //lblMute.BorderStyle = BorderStyle.FixedSingle;
 
             lblChannelInfo.Text = $"{Def.DeviceId}:{Def.ChannelNumber}";
             lblChannelInfo.BackColor = _unselColor;
+
+            toolTip.SetToolTip(lblChannelInfo, string.Join(Environment.NewLine, Info));
 
             sldVolume.DrawColor = UserSettings.Current.ActiveColor;
             lblSolo.Click += SoloMute_Click;

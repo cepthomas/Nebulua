@@ -181,20 +181,26 @@ namespace Nebulua
             }
         }
 
+
         /// <summary>
         /// Readable string.
         /// </summary>
         /// <param name="ch"></param>
         /// <returns></returns>
-        public string? GetDeviceName(ChannelDef ch)
+        public List<string> GetInfo(ChannelDef ch)
         {
             string? devName = null;
+            string? chanName = null;
+            int patch = -1;
+            string? patchName = null;
 
             if (ch.Direction == Direction.Output)
             {
                 if (ch.DeviceId < _outputs.Count)
                 {
                     devName = _outputs[ch.DeviceId].DeviceName;
+                    //patch = _outputs[ch.DeviceId].Patches[ch.ChannelNumber];
+                    _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
                 }
             }
             else
@@ -202,32 +208,78 @@ namespace Nebulua
                 if (ch.DeviceId < _inputs.Count)
                 {
                     devName = _inputs[ch.DeviceId].DeviceName;
+                    chanName = _inputs[ch.DeviceId].ChannelStates=;
                 }
             }
 
-            return devName;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ch"></param>
-        /// <returns>The patch number or -1 if not set.</returns>
-        public int GetPatch(ChannelDef ch)
-        {
-            int patch = -1;
-
-            if (ch.Direction == Direction.Output && ch.DeviceId < _outputs.Count)
+            List<string> ret = [];
+            ret.Append($"{(ch.Direction == Direction.Output ? "output" : "input")}:{"TODO1 add channel name"}");
+            ret.Append($"device: {devName ?? "unknown"}");
+            if (patch != -1)
             {
-                _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
+                ret.Append($"patch:{patch}");
             }
 
-            return patch;
+
+            //     int patch = -1;
+
+            //     if (ch.Direction == Direction.Output && ch.DeviceId < _outputs.Count)
+            //     {
+            //         _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
+            //     }
+
+            //     return patch;
+
+            return ret;
         }
 
-        /// <summary>
-        /// Input from internal non-midi device. Doesn't throw.
-        /// </summary>
+        // /// <summary>
+        // /// Readable string.
+        // /// </summary>
+        // /// <param name="ch"></param>
+        // /// <returns></returns>
+        // public string? GetDeviceName(ChannelDef ch)
+        // {
+        //     string? devName = null;
+
+            //     if (ch.Direction == Direction.Output)
+            //     {
+            //         if (ch.DeviceId < _outputs.Count)
+            //         {
+            //             devName = _outputs[ch.DeviceId].DeviceName;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         if (ch.DeviceId < _inputs.Count)
+            //         {
+            //             devName = _inputs[ch.DeviceId].DeviceName;
+            //         }
+            //     }
+
+            //     return devName;
+            // }
+
+            // /// <summary>
+            // /// 
+            // /// </summary>
+            // /// <param name="ch"></param>
+            // /// <returns>The patch number or -1 if not set.</returns>
+            // public int GetPatch(ChannelDef ch)
+            // {
+            //     int patch = -1;
+
+            //     if (ch.Direction == Direction.Output && ch.DeviceId < _outputs.Count)
+            //     {
+            //         _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
+            //     }
+
+            //     return patch;
+            // }
+
+            /// <summary>
+            /// Input from internal non-midi device. Doesn't throw.
+            /// </summary>
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);

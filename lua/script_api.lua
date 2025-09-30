@@ -91,8 +91,8 @@ M.send_midi_controller = li.send_midi_controller
 -- @param dev_name system name
 -- @param chan_num channel number
 -- @return the new chan_hnd or 0 if invalid
-function M.open_midi_input(dev_name, chan_num)
-    local chan_hnd = li.open_midi_input(dev_name, chan_num)
+function M.open_midi_input(dev_name, chan_num, chan_name)
+    local chan_hnd = li.open_midi_input(dev_name, chan_num, chan_name)
     return chan_hnd
 end
 
@@ -102,8 +102,8 @@ end
 -- @param chan_num channel number
 -- @param patch send this patch number if >= 0
 -- @return the new chan_hnd
-function M.open_midi_output(dev_name, chan_num, patch)
-    local chan_hnd = li.open_midi_output(dev_name, chan_num, patch)
+function M.open_midi_output(dev_name, chan_num, chan_name, patch)
+    local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch)
     _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
     return chan_hnd
 end

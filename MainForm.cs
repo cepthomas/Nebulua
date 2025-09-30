@@ -571,7 +571,7 @@ namespace Nebulua
                 ls.Add(res.s);
                 ls.Add($"");
 
-                var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
+                var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false); //TODO1 ?? consolidate all
                 var docfn = Path.Join(srcDir, "doc.html");
                 File.WriteAllText(docfn, html);
                 new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
@@ -598,33 +598,52 @@ namespace Nebulua
         void ChannelControlEvent(object? sender, ChannelControlEventArgs e)
         {
             ChannelControl control = (ChannelControl)sender!;
-            switch (e.EventType)
+
+            // Update all channel enables.
+            bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
+
+            foreach (var c in _channelControls)
             {
-                case ChannelControlEventType.InfoRequest:
-                    List<string> info = [];
-                    info.Add($"device: {_hostCore.GetDeviceName(control.Def)}");
-                    info.Add($"patch: {_hostCore.GetPatch(control.Def)}");
-                    MessageBox.Show(string.Join(Environment.NewLine, info));
-                    break;
-
-                case ChannelControlEventType.PlayState:
-                    // Update all channel enables.
-                    bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
-
-                    foreach (var c in _channelControls)
-                    {
-                        if (anySolo) // only solo
-                        {
-                            _hostCore.EnableOutputChannel(c.Def, c.State == PlayState.Solo);
-                        }
-                        else // except mute
-                        {
-                            _hostCore.EnableOutputChannel(c.Def, c.State != PlayState.Mute);
-                        }
-                    }
-
-                    break;
+                if (anySolo) // only solo
+                {
+                    _hostCore.EnableOutputChannel(c.Def, c.State == PlayState.Solo);
+                }
+                else // except mute
+                {
+                    _hostCore.EnableOutputChannel(c.Def, c.State != PlayState.Mute);
+                }
             }
+
+            
+
+
+            // switch (e.EventType)
+            // {
+            //     case ChannelControlEventType.InfoRequest: // TODO1 tooltip instead? patch? channel number? ???
+            //         List<string> info = [];
+            //         info.Add($"device: {_hostCore.GetDeviceName(control.Def)}");
+            //         info.Add($"patch: {_hostCore.GetPatch(control.Def)}");
+            //         MessageBox.Show(string.Join(Environment.NewLine, info));
+            //         break;
+
+            //     case ChannelControlEventType.PlayState:
+            //         // Update all channel enables.
+            //         bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
+
+            //         foreach (var c in _channelControls)
+            //         {
+            //             if (anySolo) // only solo
+            //             {
+            //                 _hostCore.EnableOutputChannel(c.Def, c.State == PlayState.Solo);
+            //             }
+            //             else // except mute
+            //             {
+            //                 _hostCore.EnableOutputChannel(c.Def, c.State != PlayState.Mute);
+            //             }
+            //         }
+
+            //         break;
+            // }
         }
 
         /// <summary>
@@ -656,9 +675,19 @@ namespace Nebulua
 
             _hostCore.ValidOutputChannels().ForEach(ch =>
             {
+
+
+
+List<string> info = [];
+info.Add($"device: {ch}");
+info.Add($"patch: {ch}");
+
+
+
                 ChannelControl control = new(ch)
                 {
                     Location = new(x, y),
+                    Info = info
                 };
 
                 control.ChannelControlEvent += ChannelControlEvent;

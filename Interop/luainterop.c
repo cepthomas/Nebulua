@@ -162,6 +162,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
 // Lua arg: chan_num Midi channel number 1 => 16
+// Lua arg: chan_name User channel name
 // Lua arg: patch Midi patch number 0 => 127
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_OpenMidiOutput(lua_State* l)
@@ -173,12 +174,15 @@ static int luainterop_OpenMidiOutput(lua_State* l)
     int chan_num;
     if (lua_isinteger(l, 2)) { chan_num = lua_tointeger(l, 2); }
     else { luaL_error(l, "Invalid arg type for: chan_num"); }
+    const char* chan_name;
+    if (lua_isstring(l, 3)) { chan_name = lua_tostring(l, 3); }
+    else { luaL_error(l, "Invalid arg type for: chan_name"); }
     int patch;
-    if (lua_isinteger(l, 3)) { patch = lua_tointeger(l, 3); }
+    if (lua_isinteger(l, 4)) { patch = lua_tointeger(l, 4); }
     else { luaL_error(l, "Invalid arg type for: patch"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_OpenMidiOutput(l, dev_name, chan_num, patch);
+    int ret = luainteropcb_OpenMidiOutput(l, dev_name, chan_num, chan_name, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -189,6 +193,7 @@ static int luainterop_OpenMidiOutput(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: dev_name Midi device name
 // Lua arg: chan_num Midi channel number 1 => 16 or 0 => all
+// Lua arg: chan_name User channel name
 // Lua return: int Channel handle or 0 if invalid
 static int luainterop_OpenMidiInput(lua_State* l)
 {
@@ -199,9 +204,12 @@ static int luainterop_OpenMidiInput(lua_State* l)
     int chan_num;
     if (lua_isinteger(l, 2)) { chan_num = lua_tointeger(l, 2); }
     else { luaL_error(l, "Invalid arg type for: chan_num"); }
+    const char* chan_name;
+    if (lua_isstring(l, 3)) { chan_name = lua_tostring(l, 3); }
+    else { luaL_error(l, "Invalid arg type for: chan_name"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_OpenMidiInput(l, dev_name, chan_num);
+    int ret = luainteropcb_OpenMidiInput(l, dev_name, chan_num, chan_name);
     lua_pushinteger(l, ret);
     return 1;
 }

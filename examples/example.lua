@@ -28,7 +28,8 @@ api.log_info('Loading example.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels. Note that yours will be different!
-local hnd_ccin  = api.open_midi_input("ccMidiGen", 1)
+local midi_in  = "ccMidiGen"
+local hnd_ccin  = api.open_midi_input(midi_in, 1, "click-clack")
 -- local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
 
 -- DAW host.
@@ -36,16 +37,16 @@ local hnd_ccin  = api.open_midi_input("ccMidiGen", 1)
 -- local hnd_keys  = api.open_midi_output(midi_out, 1, mid.NO_PATCH)
 -- local hnd_bass  = api.open_midi_output(midi_out, 2, mid.NO_PATCH)
 -- local hnd_synth = api.open_midi_output(midi_out, 3, mid.NO_PATCH)
--- local hnd_ccout = api.open_midi_output(midi_out, 4, mid.NO_PATCH)
+-- local hnd_strings = api.open_midi_output(midi_out, 4, mid.NO_PATCH)
 -- local hnd_drums = api.open_midi_output(midi_out, 10, mid.NO_PATCH)
 
 -- Local VST host.
-local midi_out  = "VirtualMIDISynth #1"
-local hnd_keys  = api.open_midi_output(midi_out, 1, inst.AcousticGrandPiano)
-local hnd_bass  = api.open_midi_output(midi_out, 2, inst.AcousticBass)
-local hnd_synth = api.open_midi_output(midi_out, 3, inst.Lead1Square)
-local hnd_ccout = api.open_midi_output(midi_out, 4, inst.StringEnsemble1)
-local hnd_drums = api.open_midi_output(midi_out, 10, kit.Jazz)
+local midi_out    = "VirtualMIDISynth #1"
+local hnd_keys    = api.open_midi_output(midi_out, 1, "keys", inst.AcousticGrandPiano)
+local hnd_bass    = api.open_midi_output(midi_out, 2, "bass", inst.AcousticBass)
+local hnd_synth   = api.open_midi_output(midi_out, 3, "synth", inst.Lead1Square)
+local hnd_strings = api.open_midi_output(midi_out, 4, "strings", inst.StringEnsemble1)
+local hnd_drums   = api.open_midi_output(midi_out, 10, "drums", kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
@@ -89,7 +90,7 @@ function setup()
     api.set_volume(hnd_bass, 0.9)
     api.set_volume(hnd_synth, 0.6)
     api.set_volume(hnd_drums, 0.9)
-    api.set_volume(hnd_ccout, 0.9)
+    api.set_volume(hnd_strings, 0.9)
 
     -- dbg()
 
@@ -118,7 +119,7 @@ end
 function receive_midi_note(chan_hnd, note_num, volume)
     if chan_hnd == hnd_ccin then
         -- Play the note.
-        api.send_midi_note(hnd_ccout, note_num, volume)--, 0)
+        api.send_midi_note(hnd_strings, note_num, volume)--, 0)
         -- api.log_debug(string.format("RCV hnd_ccin note:%d chan_hnd:%d volume:%f", note_num, chan_hnd, volume))
     end
     return 0
