@@ -14,17 +14,17 @@ namespace Nebulua
     public enum Direction { None, Input, Output }
     #endregion
 
-    /// <summary>Defines one channel. Supports translation to/from script int handle.</summary>
-    /// <param name="DeviceId"></param>
-    /// <param name="ChannelNumber"></param>
-    /// <param name="Output"></param>
-    public record struct ChannelDef(int DeviceId, int ChannelNumber, Direction Direction)
+    /// <summary>Defines one channel. Supports translation to/from script unique int handle.</summary>
+    /// <param name="DeviceId">Index in internal list</param>
+    /// <param name="ChannelNumber">Midi channel 1-based</param>
+    /// <param name="Output">T or F</param>
+    public record struct ChannelHandle(int DeviceId, int ChannelNumber, Direction Direction)
     {
         const int OUTPUT_FLAG = 0x8000;
 
         /// <summary>Create from int handle.</summary>
         /// <param name="handle"></param>
-        public ChannelDef(int handle) : this(-1, -1, Direction.None)
+        public ChannelHandle(int handle) : this(-1, -1, Direction.None)
         {
             Direction = (handle & OUTPUT_FLAG) > 0 ? Direction.Output : Direction.Input;
             DeviceId = ((handle & ~OUTPUT_FLAG) >> 8) & 0xFF;
@@ -33,7 +33,7 @@ namespace Nebulua
 
         /// <summary>Operator to convert to int handle.</summary>
         /// <param name="ch"></param>
-        public static implicit operator int(ChannelDef ch)
+        public static implicit operator int(ChannelHandle ch)
         {
             return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Direction == Direction.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }

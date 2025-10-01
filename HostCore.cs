@@ -24,10 +24,11 @@ namespace Nebulua
         readonly MmTimerEx _mmTimer = new();
 
         /// <summary>All midi devices to use for send.</summary>
-        readonly List<MidiOutput> _outputs = [];
+        //readonly Dictionary<int, MidiOutput> _outputs = [];
+        readonly List<MidiOutputDevice> _outputs = [];
 
         /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
-        readonly List<MidiInput> _inputs = [];
+        readonly List<MidiInputDevice> _inputs = [];
 
         /// <summary>Resource management.</summary>
         bool _disposed = false;
@@ -137,17 +138,17 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Get a list of all valid dev/chan.
+        /// Get a list of all valid device channels.
         /// </summary>
         /// <returns></returns>
-        public List<ChannelDef> ValidOutputChannels()
+        public List<ChannelHandle> ValidOutputChannels()
         {
-            List<ChannelDef> valchs = [];
+            List<ChannelHandle> valchs = [];
 
             for (int devNum = 0; devNum < _outputs.Count; devNum++)
             {
                 var output = _outputs[devNum];
-                output.ChannelStates.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
+                output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
             }
 
             return valchs;
@@ -160,7 +161,7 @@ namespace Nebulua
         /// <param name="chanNum"></param>
         /// <param name="enable"></param>
         /// <exception cref="ArgumentException"></exception>
-        public void EnableOutputChannel(ChannelDef ch, bool enable)
+        public void EnableOutputChannel(ChannelHandle ch, bool enable)
         {
             if (ch.DeviceId >= _outputs.Count)
             {
@@ -168,12 +169,12 @@ namespace Nebulua
             }
 
             var output = _outputs[ch.DeviceId];
-            if (!output.ChannelStates.ContainsKey(ch.ChannelNumber))
+            if (!output.Channels.ContainsKey(ch.ChannelNumber))
             {
                 throw new ArgumentException($"Invalid channel: {ch.ChannelNumber}");
             }
 
-            output.ChannelStates[ch.ChannelNumber] = enable;
+            output.Channels[ch.ChannelNumber].Enable = enable;
             if (!enable)
             {
                 // Kill just in case.
@@ -183,52 +184,45 @@ namespace Nebulua
 
 
         /// <summary>
-        /// Readable string.
+        /// Readable strings.
         /// </summary>
         /// <param name="ch"></param>
         /// <returns></returns>
-        public List<string> GetInfo(ChannelDef ch)
+        public List<string> GetInfo(ChannelHandle ch)
         {
-            string? devName = null;
-            string? chanName = null;
+            string devName = "unknown";
+            string chanName = "unknown";
             int patch = -1;
-            string? patchName = null;
+            string patchName = "TODO1";
 
             if (ch.Direction == Direction.Output)
             {
                 if (ch.DeviceId < _outputs.Count)
                 {
-                    devName = _outputs[ch.DeviceId].DeviceName;
-                    //patch = _outputs[ch.DeviceId].Patches[ch.ChannelNumber];
-                    _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
+                    var dev = _outputs[ch.DeviceId];
+                    devName = dev.DeviceName;
+                    chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+                    patch = dev.Channels[ch.ChannelNumber].Patch;
+                    // TODO1 patch name
                 }
             }
             else
             {
                 if (ch.DeviceId < _inputs.Count)
                 {
-                    devName = _inputs[ch.DeviceId].DeviceName;
-                    chanName = _inputs[ch.DeviceId].ChannelStates=;
+                    var dev = _inputs[ch.DeviceId];
+                    devName = dev.DeviceName;
+                    chanName = dev.Channels[ch.ChannelNumber].ChannelName;
                 }
             }
 
             List<string> ret = [];
-            ret.Append($"{(ch.Direction == Direction.Output ? "output" : "input")}:{"TODO1 add channel name"}");
-            ret.Append($"device: {devName ?? "unknown"}");
+            ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
+            ret.Add($"device: {devName}");
             if (patch != -1)
             {
-                ret.Append($"patch:{patch}");
+                ret.Add($"patch: {patch} {patchName}");
             }
-
-
-            //     int patch = -1;
-
-            //     if (ch.Direction == Direction.Output && ch.DeviceId < _outputs.Count)
-            //     {
-            //         _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
-            //     }
-
-            //     return patch;
 
             return ret;
         }
@@ -305,7 +299,9 @@ namespace Nebulua
         {
             _outputs.ForEach(op =>
             {
-                Enumerable.Range(0, Common.NUM_MIDI_CHANNELS).ForEach(ch => op.Send(new ControlChangeEvent(0, ch + 1, MidiController.AllNotesOff, 0)));
+                op.Channels.ForEach(ch => op.Send(new ControlChangeEvent(0, ch.Key, MidiController.AllNotesOff, 0)));
+
+                //Enumerable.Range(0, Common.NUM_MIDI_CHANNELS).ForEach(ch => op.Send(new ControlChangeEvent(0, ch + 1, MidiController.AllNotesOff, 0)));
             });
 
             // Hard reset.
@@ -398,8 +394,8 @@ namespace Nebulua
         {
             try
             {
-                var input = (MidiInput)sender!;
-                ChannelDef ch = new(_inputs.IndexOf(input), e.Channel, Direction.Input);
+                var input = (MidiInputDevice)sender!;
+                ChannelHandle ch = new(_inputs.IndexOf(input), e.Channel, Direction.Input);
                 int chanHnd = ch;
                 bool logit = true;
 
@@ -461,17 +457,11 @@ namespace Nebulua
                     _inputs.Add(input);
                 }
 
-                if (e.chan_num == 0) // listen to all
-                {
-                    Enumerable.Range(0, Common.NUM_MIDI_CHANNELS).ForEach(ch => input.ChannelStates[ch + 1] = true);
-                }
-                else
-                {
-                    input.ChannelStates[e.chan_num] = true;
-                }
+                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true };
+                input.Channels.Add(e.chan_num, ch);
 
-                ChannelDef ch = new(_inputs.Count - 1, e.chan_num, Direction.Input);
-                e.ret = ch;
+                ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
+                e.ret = chHnd;
             }
             catch (Exception ex)
             {
@@ -493,7 +483,7 @@ namespace Nebulua
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > Common.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid input midi device: {e.dev_name}");
+                    throw new SyntaxException($"Invalid output midi device: {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -505,18 +495,18 @@ namespace Nebulua
                 }
 
                 // Add specific channel.
-                output.ChannelStates[e.chan_num] = true;
+                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true, Patch =  e.patch };
+                output.Channels.Add(e.chan_num, ch);
 
-                ChannelDef ch = new(_outputs.Count - 1, e.chan_num, Direction.Output);
-                var chanHnd = ch;
-                e.ret = chanHnd; // valid return
+                ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
+                e.ret = chHnd;
 
                 if (e.patch >= 0)
                 {
                     // Send the patch now.
                     PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
                     output.Send(pevt);
-                    output.Patches[e.chan_num] = e.patch;
+                    output.Channels[e.chan_num].Patch = e.patch;
                 }
             }
             catch (Exception ex)
@@ -537,7 +527,7 @@ namespace Nebulua
                 e.ret = 0; // not used
 
                 // Check args for valid device and channel.
-                ChannelDef ch = new(e.chan_hnd);
+                ChannelHandle ch = new(e.chan_hnd);
 
                 if (ch.DeviceId >= _outputs.Count ||
                     ch.ChannelNumber < 1 ||
@@ -548,7 +538,7 @@ namespace Nebulua
 
                 // Sound or quiet?
                 var output = _outputs[ch.DeviceId];
-                if (output.ChannelStates[ch.ChannelNumber])
+                if (output.Channels[ch.ChannelNumber].Enable)
                 {
                     int note_num = MathUtils.Constrain(e.note_num, 0, Common.MIDI_VAL_MAX);
 
@@ -585,7 +575,7 @@ namespace Nebulua
                 e.ret = 0; // not used
 
                 // Check args.
-                ChannelDef ch = new(e.chan_hnd);
+                ChannelHandle ch = new(e.chan_hnd);
 
                 if (ch.DeviceId >= _outputs.Count ||
                     ch.ChannelNumber < 1 ||
@@ -729,7 +719,7 @@ namespace Nebulua
         string FormatMidiEvent(MidiEvent evt, int tick, int chanHnd)
         {
             // Common part.
-            ChannelDef ch = new(chanHnd);
+            ChannelHandle ch = new(chanHnd);
 
             string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{ch.DeviceId} Ch:{ch.ChannelNumber} ";
 

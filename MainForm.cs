@@ -606,11 +606,11 @@ namespace Nebulua
             {
                 if (anySolo) // only solo
                 {
-                    _hostCore.EnableOutputChannel(c.Def, c.State == PlayState.Solo);
+                    _hostCore.EnableOutputChannel(c.ChHandle, c.State == PlayState.Solo);
                 }
                 else // except mute
                 {
-                    _hostCore.EnableOutputChannel(c.Def, c.State != PlayState.Mute);
+                    _hostCore.EnableOutputChannel(c.ChHandle, c.State != PlayState.Mute);
                 }
             }
 
@@ -675,19 +675,10 @@ namespace Nebulua
 
             _hostCore.ValidOutputChannels().ForEach(ch =>
             {
-
-
-
-List<string> info = [];
-info.Add($"device: {ch}");
-info.Add($"patch: {ch}");
-
-
-
                 ChannelControl control = new(ch)
                 {
                     Location = new(x, y),
-                    Info = info
+                    Info = _hostCore.GetInfo(ch)
                 };
 
                 control.ChannelControlEvent += ChannelControlEvent;

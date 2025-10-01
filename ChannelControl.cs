@@ -27,6 +27,7 @@ namespace Nebulua
     {
         #region Fields
         readonly Container components = new();
+        readonly ToolTip toolTip;
 
         PlayState _state = PlayState.Normal;
 
@@ -39,21 +40,17 @@ namespace Nebulua
         readonly Slider sldVolume;
         #endregion
 
-
-
-        ToolTip toolTip;// = new ToolTip(components);
-
-        public List<string> Info { get; set; } = ["???"];
-
-
-
         #region Events
         /// <summary>Notify host of user changes.</summary>
         public event EventHandler<ChannelControlEventArgs>? ChannelControlEvent;
         #endregion
 
         #region Properties
-        public ChannelDef Def { get; init; }
+        /// <summary>Handle.</summary>
+        public ChannelHandle ChHandle { get; init; }
+
+        /// <summary>For display.</summary>
+        public List<string> Info { get; set; } = ["???"];
 
         /// <summary>For muting/soloing.</summary>
         public PlayState State
@@ -76,9 +73,9 @@ namespace Nebulua
         /// </summary>
         /// <param name="deviceNumber"></param>
         /// <param name="channelNumber"></param>
-        public ChannelControl(ChannelDef ch) : this()
+        public ChannelControl(ChannelHandle ch) : this()
         {
-            Def = ch;
+            ChHandle = ch;
             // Colors.
             _selColor = UserSettings.Current.SelectedColor;
             _unselColor = UserSettings.Current.BackColor;
@@ -88,7 +85,7 @@ namespace Nebulua
             sldVolume.BackColor = _unselColor;
             sldVolume.ForeColor = UserSettings.Current.ActiveColor;
 
-
+            toolTip.SetToolTip(this, string.Join(Environment.NewLine, Info));
 
 
 
@@ -105,7 +102,7 @@ namespace Nebulua
         public ChannelControl()
         {
             // Dummy to keep the designer happy.
-            Def = new(-1, -1, Direction.None);
+            ChHandle = new(-1, -1, Direction.None);
 
             lblChannelInfo = new()
             {
@@ -163,7 +160,7 @@ namespace Nebulua
             //lblSolo.BorderStyle = BorderStyle.FixedSingle;
             //lblMute.BorderStyle = BorderStyle.FixedSingle;
 
-            lblChannelInfo.Text = $"{Def.DeviceId}:{Def.ChannelNumber}";
+            lblChannelInfo.Text = $"{ChHandle.DeviceId}:{ChHandle.ChannelNumber}";
             lblChannelInfo.BackColor = _unselColor;
 
             toolTip.SetToolTip(lblChannelInfo, string.Join(Environment.NewLine, Info));

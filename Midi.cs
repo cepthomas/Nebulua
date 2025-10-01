@@ -8,10 +8,26 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
+    /// <summary>One channel in a midi device - in or out.</summary>
+    public class MidiChannel
+    {
+        /// <summary>Channel name as defined by the script.</summary>
+        public string ChannelName { get; set; } = "ZZZ";
+
+        /// <summary>True if channel is active.</summary>
+        public bool Enable { get; set; } = true;
+
+        /// <summary>Current patch number. Only used for outputs.</summary>
+        public int Patch { get; set; } = -1;
+    }
+
+
+
+
     /// <summary>
     /// A midi input device.
     /// </summary>
-    public class MidiInput : IDisposable
+    public class MidiInputDevice : IDisposable
     {
         #region Fields
         /// <summary>NAudio midi input device.</summary>
@@ -22,8 +38,24 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-        /// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
-        public Dictionary<int, bool> ChannelStates = [];
+
+
+        /// <summary>Info about device channels. null means not used.</summary>
+   //     public MidiChannel?[] Channels { get; } = new MidiChannel?[Common.NUM_MIDI_CHANNELS];
+
+        /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
+        public Dictionary<int, MidiChannel> Channels = [];
+
+        // /// <summary>Device capture on/off.</summary>
+        // public bool Enable
+        // {
+        //     get { return _enable; }
+        //     set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); _enable = value; }
+        // }
+        // bool _enable = false;
+
+        ///// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
+        //public Dictionary<int, bool> ChannelStates = [];
         #endregion
 
         #region Events
@@ -37,11 +69,12 @@ namespace Nebulua
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
         /// <exception cref="SyntaxException"></exception>
-        public MidiInput(string deviceName)
+        public MidiInputDevice(string deviceName)
         {
             bool realInput = false;
             DeviceName = deviceName;
-            ChannelStates.Clear();
+            // Clear.
+            //for (int i = 0; i < Common.NUM_MIDI_CHANNELS; i++) Channels[i] = null;
 
             // Figure out which midi input device.
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
@@ -82,8 +115,9 @@ namespace Nebulua
             // Decode the message. We only care about a few.
             MidiEvent evt = MidiEvent.FromRawMessage(e.RawMessage);
 
-            // Is it in our registered inputs?
-            if (ChannelStates.TryGetValue(evt.Channel, out bool chst) && chst)
+            // Is it in our registered inputs and enabled?
+            var ch = Channels[evt.Channel - 1];
+            if (ch is not null && ch.Enable)
             {
                 // Invoke takes care of cross-thread issues.
                 ReceiveEvent?.Invoke(this, evt);
@@ -104,7 +138,7 @@ namespace Nebulua
     /// <summary>
     /// A midi output device.
     /// </summary>
-    public class MidiOutput : IDisposable
+    public class MidiOutputDevice : IDisposable
     {
         #region Fields
         /// <summary>NAudio midi output device.</summary>
@@ -115,11 +149,20 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-        /// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
-        public Dictionary<int, bool> ChannelStates = [];
 
-        /// <summary>Key is channel number, 1-based. Value is current patch.</summary>
-        public Dictionary<int, int> Patches = [];
+        /// <summary>Info about device channels. null means not used.</summary>
+
+        //public MidiChannel?[] Channels { get; } = new MidiChannel?[Common.NUM_MIDI_CHANNELS];
+
+        /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
+        public Dictionary<int, MidiChannel> Channels = [];
+
+
+        ///// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
+        //public Dictionary<int, bool> ChannelStates = [];
+
+        ///// <summary>Key is channel number, 1-based. Value is current patch.</summary>
+        //public Dictionary<int, int> Patches = [];
         #endregion
 
         #region Lifecycle
@@ -128,9 +171,11 @@ namespace Nebulua
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
         /// <exception cref="SyntaxException"></exception>
-        public MidiOutput(string deviceName)
+        public MidiOutputDevice(string deviceName)
         {
             DeviceName = deviceName;
+            // Clear.
+            //for (int i = 0; i < Common.NUM_MIDI_CHANNELS; i++) Channels[i] = null;
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
@@ -169,8 +214,9 @@ namespace Nebulua
         /// </summary>
         public void Send(MidiEvent evt)
         {
-            // Is it in our registered outputs?
-            if (ChannelStates.TryGetValue(evt.Channel, out bool chst) && chst)
+            // Is it in our registered outputs and enabled?
+            var ch = Channels[evt.Channel];
+            if (ch is not null && ch.Enable)
             {
                 _midiOut?.Send(evt.GetAsShortMessage());
             }

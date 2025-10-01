@@ -56,7 +56,7 @@ airport.lua | A take on Eno's Music for Airports - adapted from [this](https://g
 
 Name       | Type   | Description                                     |
 -------    | ------ | ---------------------------                     |
-chan_num   | int    | midi channel number                             |
+chan_num   | int    | midi channel number 1 -> 16                     |
 dev_index  | int    | index into windows midi device table            |
 dev_name   | char*  | from windows midi device table                  |
 chan_hnd   | int    | internal opaque handle for channel id           |
@@ -84,7 +84,7 @@ tick       | int    | absolute time, see ##Timing, same length as sub |
 ## Standard Note Syntax
 
 - Scales and chords are specified by strings like `"1 4 6 b13"`.
-- There are many builtin scales and chords defined [here](music_defs.lua).
+- There are many builtin scales and chords which you can see by clicking '?'.
 - Users can add their own by using `function create_definition("FOO", "1 4 6 b13")`.
 
 Notes, chords, and scales can be specified in several ways:
@@ -181,23 +181,25 @@ Call these from your script.
 
 
 ```lua
-function api.open_midi_output(dev_name, chan_num, patch)
+function api.open_midi_output(dev_name, chan_num, chan_name, _patch)
 ```
 Register an output midi channel.
 
 - dev_name: The system name.
 - chan_num: Specific channel number.
-- patch: Send this patch number or mid.NO_PATCH. Use NO_PATCH if your host manages its own patches.
+- chan_name: Name for channel.
+- patch: Send this patch number or `mid.NO_PATCH`. Use NO_PATCH if your host manages its own patches.
 - return: A channel handle to use in subsequent functions.
 
 
 ```lua
-function api.open_midi_input(dev_name, chan_num)
+function api.open_midi_input(dev_name, chan_num, chan_name)
 ```
 Register an input midi channel.
 
 - dev_name: The system name.
 - chan_num: Specific channel number.
+- chan_name: Name for channel.
 - return: A channel handle to use in subsequent functions.
 
 
