@@ -14,10 +14,10 @@ using Ephemera.NBagOfUis;
 
 
 // TODO slow startup:
-// "dur:295.510 tot:295.510 MainForm() enter"
-// "dur:1390.500 tot:1686.010 MainForm() exit"
-// "dur:035.980 tot:1721.990 OnLoad() entry"
-// "dur:284.873 tot:2006.863 OnLoad() exit"
+// dur:295.510 tot:295.510 MainForm() enter
+// dur:1390.500 tot:1686.010 MainForm() exit
+// dur:035.980 tot:1721.990 OnLoad() entry
+// dur:284.873 tot:2006.863 OnLoad() exit
 
 
 namespace Nebulua
@@ -159,6 +159,8 @@ namespace Nebulua
         protected override void OnLoad(EventArgs e)
         {
             _tmit.Snap("OnLoad() entry");
+
+            ReadMidiDefs();
 
             PopulateFileMenu();
 
@@ -333,7 +335,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = Common.ProcessException(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
                 if (fatal)
                 {
                     // Logging an error will cause the app to exit.
@@ -519,17 +521,15 @@ namespace Nebulua
         /// <param name="e"></param>
         void About_Click(object? sender, EventArgs e)
         {
-            Tools.ShowReadme("Nebulator");
+            Tools.ShowReadme("Nebulua");
 
-            MidiInfo_Click(sender, e);
+            MidiInfo();
         }
 
         /// <summary>
         /// Show the builtin definitions and user devices.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void MidiInfo_Click(object? sender, EventArgs e)
+        void MidiInfo()
         {
             // Consolidate docs.
             List<string> ls = [];
@@ -556,35 +556,33 @@ namespace Nebulua
             var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
             var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
 
-            string s =
-                $@"package.path = '{luaPath}' .. package.path
-                local mid = require('midi_defs')
-                local mus = require('music_defs')
-                for _,v in ipairs(mid.gen_md()) do print(v) end
-                for _,v in ipairs(mus.gen_md()) do print(v) end
-                ";
+            List<string> s = [
+                "local mid = require('midi_defs')",
+                "local mus = require('music_defs')",
+                "for _,v in ipairs(mid.gen_md()) do print(v) end",
+                "for _,v in ipairs(mus.gen_md()) do print(v) end",
+                ];
 
-            var res = ExecuteLuaCode(s);
+            var (_, sres) = ExeLuaChunk(s);
 
-            if (res.retcode == 0)
+            ls.Add(sres);
+            ls.Add($"");
+
+            // Show readme.
+            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
+
+            // Show midi stuff.
+            string docfn = Path.GetTempFileName() + ".html";
+            try
             {
-                ls.Add(res.s);
-                ls.Add($"");
-
-                var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false); //TODO1 ?? consolidate all
-                var docfn = Path.Join(srcDir, "doc.html");
                 File.WriteAllText(docfn, html);
-                new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } }.Start();
-            }
-            else
-            {
-                // Command failed. Capture everything useful.
-                List<string> lserr = [];
-                lserr.Add($"=== code: {res.retcode}");
-                lserr.Add($"=== stderr:");
-                lserr.Add($"{res.s}");
+                var proc = new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } };
 
-                _logger.Error(string.Join(Environment.NewLine, lserr));
+                proc.Exited += (_, __) => File.Delete(docfn);
+                proc.Start();
+            }
+            catch
+            {
             }
         }
         #endregion
@@ -613,37 +611,6 @@ namespace Nebulua
                     _hostCore.EnableOutputChannel(c.ChHandle, c.State != PlayState.Mute);
                 }
             }
-
-            
-
-
-            // switch (e.EventType)
-            // {
-            //     case ChannelControlEventType.InfoRequest: // TODO1 tooltip instead? patch? channel number? ???
-            //         List<string> info = [];
-            //         info.Add($"device: {_hostCore.GetDeviceName(control.Def)}");
-            //         info.Add($"patch: {_hostCore.GetPatch(control.Def)}");
-            //         MessageBox.Show(string.Join(Environment.NewLine, info));
-            //         break;
-
-            //     case ChannelControlEventType.PlayState:
-            //         // Update all channel enables.
-            //         bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
-
-            //         foreach (var c in _channelControls)
-            //         {
-            //             if (anySolo) // only solo
-            //             {
-            //                 _hostCore.EnableOutputChannel(c.Def, c.State == PlayState.Solo);
-            //             }
-            //             else // except mute
-            //             {
-            //                 _hostCore.EnableOutputChannel(c.Def, c.State != PlayState.Mute);
-            //             }
-            //         }
-
-            //         break;
-            // }
         }
 
         /// <summary>
@@ -708,50 +675,62 @@ namespace Nebulua
             });
         }
 
-        /// <summary>Stopgap measure to execute a chunk of lua code (not file).</summary>
-        /// <param name="s"></param>
-        /// <returns></returns>
-        (int retcode, string s) ExecuteLuaCode(string scode)
+        /// <summary>
+        /// Read the lua midi definitions for internal consumption.
+        /// </summary>
+        void ReadMidiDefs()
         {
-            var fn = Path.GetTempFileName();
-            var code = 0;
-            var sret = "";
+            //var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
+            //var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
 
-            try
+            List<string> s = [
+                "local mid = require('midi_defs')",
+                "for _,v in ipairs(mid.gen_list()) do print(v) end"
+                ];
+
+            var r = ExeLuaChunk(s);// Tools.ExecuteLuaCode(s);
+
+            if (r.ecode == 0)
             {
-                File.WriteAllText(fn, scode);
-                ProcessStartInfo pinfo = new("lua", [fn])
+                foreach (var line in r.sres.SplitByToken(Environment.NewLine))
                 {
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                };
+                    var parts = line.SplitByToken(",");
 
-                using Process proc = new() { StartInfo = pinfo };
-                proc.Start();
-
-                // TIL: To avoid deadlocks, always read the output stream first and then wait.
-                var stdout = proc.StandardOutput.ReadToEnd();
-                var stderr = proc.StandardError.ReadToEnd();
-
-                proc.WaitForExit();
-
-                code = proc.ExitCode == 0 ? 0 : proc.ExitCode;
-                sret = proc.ExitCode == 0 ? stdout : stderr;
+                    switch (parts[0])
+                    {
+                        case "instrument": MidiDefs.Instruments.Add(int.Parse(parts[2]), parts[1]); break;
+                        case "drum": MidiDefs.Drums.Add(int.Parse(parts[2]), parts[1]); break;
+                        case "controller": MidiDefs.Controllers.Add(int.Parse(parts[2]), parts[1]); break;
+                        case "kit": MidiDefs.DrumKits.Add(int.Parse(parts[2]), parts[1]); break;
+                    }
+                }
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// Execute a chunk of lua code. Fixes up lua path and handles errors.
+        /// </summary>
+        /// <param name="scode"></param>
+        /// <returns></returns>
+        (int ecode, string sres) ExeLuaChunk(List<string> scode) // ExecuteLuaCode
+        {
+            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
+            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
+            scode.Insert(0, $"package.path = '{luaPath}' .. package.path");
+
+            var r = Tools.ExecuteLuaCode(string.Join(Environment.NewLine, scode));
+
+            if (r.ecode != 0)
             {
-                code = -1;
-                sret = $"Failed: {ex}";
-            }
-            finally
-            {
-                File.Delete(fn);
-            }
+                // Command failed. Capture everything useful.
+                List<string> lserr = [];
+                lserr.Add($"=== code: {r.ecode}");
+                lserr.Add($"=== stderr:");
+                lserr.Add($"{r.sret}");
 
-            return (code, sret);
+                _logger.Error(string.Join(Environment.NewLine, lserr));
+            }
+            return (r.ecode, r.sret);
         }
         #endregion
     }

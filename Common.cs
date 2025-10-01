@@ -39,33 +39,9 @@ namespace Nebulua
         }
     }
 
-    /// <summary>General definitions.</summary>
-    public class Common
+    /// <summary>General stuff.</summary>
+    public class Utils
     {
-        #region General definitions
-        /// <summary>Midi constant.</summary>
-        public const int MIDI_VAL_MIN = 0;
-
-        /// <summary>Midi constant.</summary>
-        public const int MIDI_VAL_MAX = 127;
-
-        /// <summary>Per device.</summary>
-        public const int NUM_MIDI_CHANNELS = 16;
-
-        /// <summary>Corresponds to midi velocity = 0.</summary>
-        public const double VOLUME_MIN = 0.0;
-
-        /// <summary>Corresponds to midi velocity = 127.</summary>
-        public const double VOLUME_MAX = 1.0;
-
-        /// <summary>Default value.</summary>
-        public const double VOLUME_DEFAULT = 0.8;
-
-        /// <summary>Allow UI controls some more headroom.</summary>
-        public const double MAX_GAIN = 2.0;
-        #endregion
-
-        #region Utils
         /// <summary>Generic exception processor for callback threads that throw.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
@@ -102,10 +78,9 @@ namespace Nebulua
 
             return (fatal, msg);
         }
-        #endregion
     }
 
-    #region Console abstraction to support testing
+    #region Console abstraction to support testing TODO?
     public interface IConsole
     {
         bool KeyAvailable { get; }

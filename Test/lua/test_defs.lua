@@ -2,26 +2,14 @@
 -- Unit tests for music_defs.lua.
 
 local md = require("music_defs")
--- local ut = require("lbot_utils")
--- local mid = require('midi_defs')
+local tx = require("tableex")
+local mid = require('midi_defs')
 
 
 -- Create the namespace/module.
 local M = {}
 
 -- ut.config_debug(true)
-
-
--- -----------------------------------------------------------------------------
--- function M.setup(pn)
---     -- pn.UT_INFO("setup()!!!")
--- end
-
-
--- -----------------------------------------------------------------------------
--- function M.teardown(pn)
---     -- pn.UT_INFO("teardown()!!!")
--- end
 
 
 -----------------------------------------------------------------------------
@@ -106,8 +94,12 @@ function M.suite_music_defs(pn)
 
     ----- gen_md().
     tres = md.gen_md()
-    -- print(ut.dump_table_string(tres, 0, 'ddd'))
+    -- print(tx.dump_table(tres, 'gen_md', 0))
     pn.UT_EQUAL(#tres, 87)
+
+    ----- gen_list().
+    -- tres = mid.gen_list()
+    -- for _,v in ipairs(tres) do print(v) end
 
 end
 

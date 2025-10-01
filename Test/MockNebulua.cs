@@ -13,7 +13,7 @@ namespace Nebulua
     public class MidiInput //: IDisposable
     {
         public string DeviceName { get; } = "???";
-        public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
         public bool CaptureEnable { get; set; } = true;
 
         public event EventHandler<MidiEvent>? ReceiveEvent;
@@ -32,7 +32,7 @@ namespace Nebulua
     public class MidiOutput //: IDisposable
     {
         public string DeviceName { get; } = "???";
-        public bool[] Channels { get; } = new bool[Common.NUM_MIDI_CHANNELS];
+        public bool[] Channels { get; } = new bool[MidiDefs.NUM_MIDI_CHANNELS];
         public bool Enable { get; set; } = true;
 
         public MidiOutput(string deviceName)

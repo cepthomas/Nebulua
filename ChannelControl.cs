@@ -15,12 +15,6 @@ namespace Nebulua
 {
     /// <summary>Notify host of changes.</summary>
     public class ChannelControlEventArgs() : EventArgs;
-    // public class ChannelControlEventArgs() : EventArgs
-    // {
-    //     public ChannelControlEventType EventType { get; set; } = ChannelControlEventType.PlayState;
-    // }
-    // public enum ChannelControlEventType { PlayState, InfoRequest }
-
 
     /// <summary>Channel events and other properties.</summary>
     public class ChannelControl : UserControl
@@ -86,14 +80,6 @@ namespace Nebulua
             sldVolume.ForeColor = UserSettings.Current.ActiveColor;
 
             toolTip.SetToolTip(this, string.Join(Environment.NewLine, Info));
-
-
-
-            // lblChannelInfo.Click += (_, __) => 
-            //     ChannelControlEvent?.Invoke(this, new ChannelControlEventArgs()
-            //     {
-            //         EventType = ChannelControlEventType.InfoRequest
-            //     });
         }
 
         /// <summary>
@@ -131,9 +117,9 @@ namespace Nebulua
                 Size = new Size(40, 30),
                 Orientation = Orientation.Horizontal,
                 BorderStyle = BorderStyle.FixedSingle,
-                Maximum = Common.MAX_GAIN,
-                Minimum = Common.VOLUME_MIN,
-                Value = Common.VOLUME_DEFAULT,
+                Maximum = MidiDefs.MAX_GAIN,
+                Minimum = MidiDefs.VOLUME_MIN,
+                Value = MidiDefs.VOLUME_DEFAULT,
                 Resolution = 0.1
             };
 
@@ -156,7 +142,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            lblChannelInfo.BorderStyle = BorderStyle.FixedSingle;
+            //lblChannelInfo.BorderStyle = BorderStyle.FixedSingle;
             //lblSolo.BorderStyle = BorderStyle.FixedSingle;
             //lblMute.BorderStyle = BorderStyle.FixedSingle;
 

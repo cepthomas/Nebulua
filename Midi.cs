@@ -8,6 +8,45 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
+    public class MidiDefs
+    {
+        /// <summary>Midi constant.</summary>
+        public const int MIDI_VAL_MIN = 0;
+
+        /// <summary>Midi constant.</summary>
+        public const int MIDI_VAL_MAX = 127;
+
+        /// <summary>Per device.</summary>
+        public const int NUM_MIDI_CHANNELS = 16;
+
+        /// <summary>Corresponds to midi velocity = 0.</summary>
+        public const double VOLUME_MIN = 0.0;
+
+        /// <summary>Corresponds to midi velocity = 127.</summary>
+        public const double VOLUME_MAX = 1.0;
+
+        /// <summary>Default value.</summary>
+        public const double VOLUME_DEFAULT = 0.8;
+
+        /// <summary>Allow UI controls some more headroom.</summary>
+        public const double MAX_GAIN = 2.0;
+
+        /// <summary>The normal drum channel.</summary>
+        public const int DEFAULT_DRUM_CHANNEL = 10;
+
+        /// <summary>Definitions from midi_defs.lua.</summary>
+        public static Dictionary<int, string> Instruments { get; set; } = [];
+
+        /// <summary>Definitions from midi_defs.lua.</summary>
+        public static Dictionary<int, string> Drums { get; set; } = [];
+
+        /// <summary>Definitions from midi_defs.lua.</summary>
+        public static Dictionary<int, string> Controllers { get; set; } = [];
+
+        /// <summary>Definitions from midi_defs.lua.</summary>
+        public static Dictionary<int, string> DrumKits { get; set; } = [];
+    }
+
     /// <summary>One channel in a midi device - in or out.</summary>
     public class MidiChannel
     {
@@ -20,9 +59,6 @@ namespace Nebulua
         /// <summary>Current patch number. Only used for outputs.</summary>
         public int Patch { get; set; } = -1;
     }
-
-
-
 
     /// <summary>
     /// A midi input device.
@@ -38,24 +74,8 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-
-
-        /// <summary>Info about device channels. null means not used.</summary>
-   //     public MidiChannel?[] Channels { get; } = new MidiChannel?[Common.NUM_MIDI_CHANNELS];
-
         /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
         public Dictionary<int, MidiChannel> Channels = [];
-
-        // /// <summary>Device capture on/off.</summary>
-        // public bool Enable
-        // {
-        //     get { return _enable; }
-        //     set { if (value) _midiIn?.Start(); else _midiIn?.Stop(); _enable = value; }
-        // }
-        // bool _enable = false;
-
-        ///// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
-        //public Dictionary<int, bool> ChannelStates = [];
         #endregion
 
         #region Events
@@ -73,8 +93,6 @@ namespace Nebulua
         {
             bool realInput = false;
             DeviceName = deviceName;
-            // Clear.
-            //for (int i = 0; i < Common.NUM_MIDI_CHANNELS; i++) Channels[i] = null;
 
             // Figure out which midi input device.
             for (int i = 0; i < MidiIn.NumberOfDevices; i++)
@@ -149,20 +167,8 @@ namespace Nebulua
         /// <summary>Device name as defined by the system.</summary>
         public string DeviceName { get; }
 
-
-        /// <summary>Info about device channels. null means not used.</summary>
-
-        //public MidiChannel?[] Channels { get; } = new MidiChannel?[Common.NUM_MIDI_CHANNELS];
-
         /// <summary>Info about device channels. Key is channel number, 1-based.</summary>
         public Dictionary<int, MidiChannel> Channels = [];
-
-
-        ///// <summary>Key is channel number, 1-based. Value is T=enabled.</summary>
-        //public Dictionary<int, bool> ChannelStates = [];
-
-        ///// <summary>Key is channel number, 1-based. Value is current patch.</summary>
-        //public Dictionary<int, int> Patches = [];
         #endregion
 
         #region Lifecycle
@@ -174,8 +180,6 @@ namespace Nebulua
         public MidiOutputDevice(string deviceName)
         {
             DeviceName = deviceName;
-            // Clear.
-            //for (int i = 0; i < Common.NUM_MIDI_CHANNELS; i++) Channels[i] = null;
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)

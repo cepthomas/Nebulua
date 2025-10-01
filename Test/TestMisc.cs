@@ -45,28 +45,28 @@ namespace Test
         {
             {
                 var ex = new LuaException("message111");
-                var (fatal, msg) = Common.ProcessException(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_EQUAL(msg, "Lua/Interop Error: message111");
             }
 
             {
                 var ex = new SyntaxException("message222");
-                var (fatal, msg) = Common.ProcessException(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_EQUAL(msg, "Script Syntax Error: message222");
             }
 
             {
                 var ex = new ArgumentException("message333");
-                var (fatal, msg) = Common.ProcessException(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_EQUAL(msg, "Argument Error: message333");
             }
 
             {
                 var ex = new DuplicateNameException("message444");
-                var (fatal, msg) = Common.ProcessException(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
                 UT_TRUE(fatal);
                 UT_EQUAL(msg, "System.Data.DuplicateNameException: message444");
             }

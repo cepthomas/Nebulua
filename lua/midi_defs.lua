@@ -130,5 +130,20 @@ function M.gen_md()
 end
 
 
+-----------------------------------------------------------------------------
+--- Make csv list of the definitions for consumption by code.
+-- @return list of strings - type,name,number
+function M.gen_list()
+    local docs = {}
+
+    for k, v in pairs(M.instruments) do table.insert(docs, 'instrument,'..k..','..v) end
+    for k, v in pairs(M.drums) do table.insert(docs, 'drum,'..k..','..v) end
+    for k, v in pairs(M.controllers) do table.insert(docs, 'controller,'..k..','..v) end
+    for k, v in pairs(M.drum_kits) do table.insert(docs, 'kit,'..k..','..v) end
+
+    return docs;
+end
+
+
 -- Return the module.
 return M

@@ -104,6 +104,10 @@ namespace NAudio.Midi
     {
         public static int NumberOfDevices { get; set; } = 3;
 
+        public event EventHandler<MidiInMessageEventArgs> MessageReceived;
+
+        public event EventHandler<MidiInMessageEventArgs> ErrorReceived;
+
         public MidiIn(int i)
         {
         }

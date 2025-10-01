@@ -24,7 +24,6 @@ namespace Nebulua
         readonly MmTimerEx _mmTimer = new();
 
         /// <summary>All midi devices to use for send.</summary>
-        //readonly Dictionary<int, MidiOutput> _outputs = [];
         readonly List<MidiOutputDevice> _outputs = [];
 
         /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
@@ -182,9 +181,8 @@ namespace Nebulua
             }
         }
 
-
         /// <summary>
-        /// Readable strings.
+        /// Human readable strings.
         /// </summary>
         /// <param name="ch"></param>
         /// <returns></returns>
@@ -192,8 +190,7 @@ namespace Nebulua
         {
             string devName = "unknown";
             string chanName = "unknown";
-            int patch = -1;
-            string patchName = "TODO1";
+            int patchNum = -1;
 
             if (ch.Direction == Direction.Output)
             {
@@ -202,8 +199,7 @@ namespace Nebulua
                     var dev = _outputs[ch.DeviceId];
                     devName = dev.DeviceName;
                     chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-                    patch = dev.Channels[ch.ChannelNumber].Patch;
-                    // TODO1 patch name
+                    patchNum = dev.Channels[ch.ChannelNumber].Patch;
                 }
             }
             else
@@ -219,68 +215,44 @@ namespace Nebulua
             List<string> ret = [];
             ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
             ret.Add($"device: {devName}");
-            if (patch != -1)
+
+            if (patchNum != -1)
             {
-                ret.Add($"patch: {patch} {patchName}");
+                // Determine patch name.
+                string sname;
+                if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
+                {
+                    sname = $"kit: {patchNum}";
+                    if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
+                    {
+                        sname += ($" {kitName}");
+                    }
+                }
+                else
+                {
+                    sname = $"patch: {patchNum}";
+                    if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
+                    {
+                        sname += ($" {patchName}");
+                    }
+                }
+
+                ret.Add(sname);
             }
 
             return ret;
         }
 
-        // /// <summary>
-        // /// Readable string.
-        // /// </summary>
-        // /// <param name="ch"></param>
-        // /// <returns></returns>
-        // public string? GetDeviceName(ChannelDef ch)
-        // {
-        //     string? devName = null;
-
-            //     if (ch.Direction == Direction.Output)
-            //     {
-            //         if (ch.DeviceId < _outputs.Count)
-            //         {
-            //             devName = _outputs[ch.DeviceId].DeviceName;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         if (ch.DeviceId < _inputs.Count)
-            //         {
-            //             devName = _inputs[ch.DeviceId].DeviceName;
-            //         }
-            //     }
-
-            //     return devName;
-            // }
-
-            // /// <summary>
-            // /// 
-            // /// </summary>
-            // /// <param name="ch"></param>
-            // /// <returns>The patch number or -1 if not set.</returns>
-            // public int GetPatch(ChannelDef ch)
-            // {
-            //     int patch = -1;
-
-            //     if (ch.Direction == Direction.Output && ch.DeviceId < _outputs.Count)
-            //     {
-            //         _outputs[ch.DeviceId].Patches.TryGetValue(ch.ChannelNumber, out patch);
-            //     }
-
-            //     return patch;
-            // }
-
-            /// <summary>
-            /// Input from internal non-midi device. Doesn't throw.
-            /// </summary>
+        /// <summary>
+        /// Input from internal non-midi device. Doesn't throw.
+        /// </summary>
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
 
             if (input is not null)
             {
-                velocity = MathUtils.Constrain(velocity, Common.MIDI_VAL_MIN, Common.MIDI_VAL_MAX);
+                velocity = MathUtils.Constrain(velocity, MidiDefs.MIDI_VAL_MIN, MidiDefs.MIDI_VAL_MAX);
                 NoteEvent nevt = velocity > 0 ?
                     new NoteOnEvent(0, channel, noteNum, velocity, 0) :
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
@@ -300,8 +272,6 @@ namespace Nebulua
             _outputs.ForEach(op =>
             {
                 op.Channels.ForEach(ch => op.Send(new ControlChangeEvent(0, ch.Key, MidiController.AllNotesOff, 0)));
-
-                //Enumerable.Range(0, Common.NUM_MIDI_CHANNELS).ForEach(ch => op.Send(new ControlChangeEvent(0, ch + 1, MidiController.AllNotesOff, 0)));
             });
 
             // Hard reset.
@@ -402,7 +372,7 @@ namespace Nebulua
                 switch (e)
                 {
                     case NoteOnEvent evt:
-                        _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, (double)evt.Velocity / Common.MIDI_VAL_MAX);
+                        _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
                         break;
 
                     case NoteEvent evt:
@@ -443,7 +413,7 @@ namespace Nebulua
                 e.ret = 0;
 
                 // Check args.
-                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > Common.NUM_MIDI_CHANNELS)
+                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
                     throw new SyntaxException($"Invalid input midi device: {e.dev_name}");
                 }
@@ -481,7 +451,7 @@ namespace Nebulua
                 e.ret = 0; // chanHnd default means invalid
 
                 // Check args.
-                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > Common.NUM_MIDI_CHANNELS)
+                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
                     throw new SyntaxException($"Invalid output midi device: {e.dev_name}");
                 }
@@ -531,7 +501,7 @@ namespace Nebulua
 
                 if (ch.DeviceId >= _outputs.Count ||
                     ch.ChannelNumber < 1 ||
-                    ch.ChannelNumber > Common.NUM_MIDI_CHANNELS)
+                    ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
                     throw new SyntaxException($"Invalid channel: {e.chan_hnd}");
                 }
@@ -540,11 +510,11 @@ namespace Nebulua
                 var output = _outputs[ch.DeviceId];
                 if (output.Channels[ch.ChannelNumber].Enable)
                 {
-                    int note_num = MathUtils.Constrain(e.note_num, 0, Common.MIDI_VAL_MAX);
+                    int note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
 
                     // Check for note off.
                     var vol = e.volume * State.Instance.Volume;
-                    int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * Common.MIDI_VAL_MAX), 0, Common.MIDI_VAL_MAX);
+                    int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MIDI_VAL_MAX), 0, MidiDefs.MIDI_VAL_MAX);
                     MidiEvent evt = vel == 0?
                         new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOff, note_num, 0) :
                         new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOn, note_num, vel);
@@ -579,13 +549,13 @@ namespace Nebulua
 
                 if (ch.DeviceId >= _outputs.Count ||
                     ch.ChannelNumber < 1 ||
-                    ch.ChannelNumber > Common.NUM_MIDI_CHANNELS)
+                    ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
                     throw new SyntaxException($"Invalid channel: {e.chan_hnd}");
                 }
 
-                int controller = MathUtils.Constrain(e.controller, 0, Common.MIDI_VAL_MAX);
-                int value = MathUtils.Constrain(e.value, 0, Common.MIDI_VAL_MAX);
+                int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
+                int value = MathUtils.Constrain(e.value, 0, MidiDefs.MIDI_VAL_MAX);
 
                 var output = _outputs[ch.DeviceId];
                 MidiEvent evt;
@@ -694,7 +664,7 @@ namespace Nebulua
         /// <param name="ex">The exception</param>
         void CallbackError(Exception ex)
         {
-            var (fatal, msg) = Common.ProcessException(ex);
+            var (fatal, msg) = Utils.ProcessException(ex);
             if (fatal)
             {
                 State.Instance.ExecState = ExecState.Dead;

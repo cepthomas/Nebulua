@@ -18,6 +18,7 @@
     <Compile Include="..\Cli.cs" Link="Cli.cs" />
     <Compile Include="..\Common.cs" Link="Common.cs" />
     <Compile Include="..\HostCore.cs" Link="HostCore.cs" />
+    <Compile Include="..\Midi.cs" Link="Midi.cs" />
     <Compile Include="..\State.cs" Link="State.cs" />
     <Compile Include="..\MusicTime.cs" Link="MusicTime.cs" />
   </ItemGroup>
