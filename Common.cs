@@ -1,4 +1,6 @@
+using Ephemera.NBagOfTricks;
 using System;
+using System.Linq;
 
 
 namespace Nebulua
@@ -52,22 +54,42 @@ namespace Nebulua
 
             switch (e)
             {
-                case SyntaxException ex:
-                    msg = $"Script Syntax Error: {ex.Message}";
+                case SyntaxException ex: // from script
+                    // TODO1 Make a synopsis - dissect the stack from luaLerror().
+                    // msg:
+                    //ScriptRunError
+                    //Execute script failed.
+                    //C:\Dev\Apps\Nebulua\lua\script_api.lua:95: Invalid arg type for chan_name
+                    //stack traceback:
+                    //	[C]: in function 'luainterop.open_midi_input'
+                    //	C:\Dev\Apps\Nebulua\lua\script_api.lua:95: in function 'script_api.open_midi_input'
+                    //	C:\Dev\Apps\Nebulua\examples\example.lua:33: in main chunk
+                    // ==>
+                    // C:\Dev\Apps\Nebulua\examples\example.lua:33 Execute script failed. Invalid arg type for: chan_name.
+                    var parts = e.Message.SplitByTokens("\r\n\t");
+
+                    var src = parts.Last().SplitByToken(":");
+                    //	C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
+                    var api = parts[2].SplitByToken(":");
+                    //  C  \Dev\Apps\Nebulua\lua\script_api.lua  95  Invalid arg type for chan_name
+                    var err1 = parts[0];
+                    // ScriptRunError
+                    var err2 = parts[1];
+                    // Execute script failed.
+
+                    msg = $"Script Syntax Error {ex.Message}";
                     break;
 
-                case ArgumentException ex:
-                    msg = $"Argument Error: {ex.Message}";
-                    //? fatal = true;
+                case ArgumentException ex: // from app
+                    msg = $"Argument Error {ex.Message}";
                     break;
 
-                case LuaException ex:
-                    msg = $"Lua/Interop Error: {ex.Message}";
-                    //? fatal = true;
+                case LuaException ex: // from interop
+                    msg = $"Lua Error {ex.Message}";
                     break;
 
                 default: // other, probably fatal
-                    msg = $"{e.GetType()}: {e.Message}";
+                    msg = $"{e.GetType()} {e.Message}";
                     if (e.StackTrace is not null)
                     {
                         msg += $"{Environment.NewLine}{e.StackTrace}";

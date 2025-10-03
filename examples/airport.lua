@@ -21,8 +21,8 @@ api.log_info('Loading airport.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Specify midi channels.
-local midi_out = "VirtualMIDISynth #1"
-local chan_hnd = api.open_midi_output(midi_out, 1, mid.instruments.Pad2Warm)
+local midi_device_out = "VirtualMIDISynth #1"
+local chan_hnd = api.open_midi_output(midi_device_out, 1, "voices", mid.instruments.Pad2Warm)
 
 
 ------------------------- Variables -----------------------------------
@@ -36,7 +36,6 @@ local loops = {}
 
 -- Forward refs.
 local add_loop
--- local tot
 
 
 ------------------------- System Functions -----------------------------
@@ -121,13 +120,3 @@ add_loop = function(snote, duration, delay)
     end
 end
 
-
------------------------------------------------------------------------------
---- Convert beat/sub to tick.
---   beat: which beat
---   sub: which subbeat
---   return: tick
--- tot = function(beat, sub)
---     local tick = beat * mid.SUBS_PER_BEAT + sub
---     return tick
--- end

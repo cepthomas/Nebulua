@@ -6,12 +6,12 @@
 local dbg = require("debugex")
 
 local li  = require("luainterop")
--- local ut  = require("lbot_utils")
-local st  = require("step_types")
--- local mid = require("midi_defs")
-local mus = require("music_defs")
+local ut  = require("lbot_utils")
 local sx  = require("stringex")
 local tx  = require("tableex")
+local st  = require("step_types")
+local mid = require("midi_defs")
+local mus = require("music_defs")
 
 
 -- TODO stress test and bulletproof this.

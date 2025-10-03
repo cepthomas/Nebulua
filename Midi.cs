@@ -193,12 +193,7 @@ namespace Nebulua
 
             if (_midiOut is null)
             {
-                List<string> devs = ["Valid midi outputs:"];
-                for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-                {
-                    devs.Add($"[{MidiOut.DeviceInfo(i).ProductName}]");
-                }
-                throw new SyntaxException($"Invalid output device name: {deviceName}. {string.Join(" ", devs)}");
+                throw new SyntaxException($"Invalid output device name {deviceName}");
             }
         }
 

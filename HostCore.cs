@@ -101,7 +101,7 @@ namespace Nebulua
                 }
                 else
                 {
-                    throw new ArgumentException($"Invalid script file: {scriptFn}");
+                    throw new ArgumentException($"Invalid script file {scriptFn}");
                 }
             }
             else if (_currentScriptFn is null)
@@ -164,13 +164,13 @@ namespace Nebulua
         {
             if (ch.DeviceId >= _outputs.Count)
             {
-                throw new ArgumentException($"Invalid device id: {ch.DeviceId}");
+                throw new ArgumentException($"Invalid device id {ch.DeviceId}");
             }
 
             var output = _outputs[ch.DeviceId];
             if (!output.Channels.ContainsKey(ch.ChannelNumber))
             {
-                throw new ArgumentException($"Invalid channel: {ch.ChannelNumber}");
+                throw new ArgumentException($"Invalid channel {ch.ChannelNumber}");
             }
 
             output.Channels[ch.ChannelNumber].Enable = enable;
@@ -260,7 +260,7 @@ namespace Nebulua
             }
             else
             {
-                CallbackError(new SyntaxException($"Invalid device: {devName}"));
+                CallbackError(new SyntaxException($"Invalid device {devName}"));
             }
         }
 
@@ -415,7 +415,7 @@ namespace Nebulua
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid input midi device: {e.dev_name}");
+                    throw new SyntaxException($"Invalid input midi device {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -453,7 +453,7 @@ namespace Nebulua
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid output midi device: {e.dev_name}");
+                    throw new SyntaxException($"Invalid output midi device {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -503,7 +503,7 @@ namespace Nebulua
                     ch.ChannelNumber < 1 ||
                     ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid channel: {e.chan_hnd}");
+                    throw new SyntaxException($"Invalid channel {e.chan_hnd}");
                 }
 
                 // Sound or quiet?
@@ -551,7 +551,7 @@ namespace Nebulua
                     ch.ChannelNumber < 1 ||
                     ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid channel: {e.chan_hnd}");
+                    throw new SyntaxException($"Invalid channel {e.chan_hnd}");
                 }
 
                 int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
@@ -595,7 +595,7 @@ namespace Nebulua
             else
             {
                 SetTimer(0);
-                CallbackError(new SyntaxException($"Invalid tempo: {e.bpm}"));
+                CallbackError(new SyntaxException($"Invalid tempo {e.bpm}"));
             }
         }
 
@@ -622,7 +622,7 @@ namespace Nebulua
             }
             else
             {
-                CallbackError(new SyntaxException($"Invalid log level: {e.level}"));
+                CallbackError(new SyntaxException($"Invalid log level {e.level}"));
             }
         }
         #endregion

@@ -1,5 +1,5 @@
 
--- An example Nebulua composition file. 
+-- An example Nebulua composition file.
 
 -- Use the debugger, trigger with a dbg() statement.
 -- See https://github.com/cepthomas/LuaBagOfTricks/blob/main/debugex.lua.
@@ -14,7 +14,7 @@ local ut  = require("lbot_utils")
 local sx  = require("stringex")
 
 
--- Aliases for imports - easier typing.
+-- Aliases for imports - less typing.
 local inst = mid.instruments
 local drum = mid.drums
 local kit  = mid.drum_kits
@@ -27,30 +27,22 @@ api.log_info('Loading example.lua...')
 
 ------------------------- Configuration -------------------------------
 
--- Specify midi channels. Note that yours will be different!
-local midi_in  = "ccMidiGen"
-local hnd_ccin  = api.open_midi_input(midi_in, 1, "click-clack")
--- local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
+-- Midi channels. Adjust for your configuration.
+local midi_device_in  = "ccMidiGen"
+local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "click-clack")
+local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
 
--- DAW host.
--- local midi_out  = "loopMIDI Port"
--- local hnd_keys  = api.open_midi_output(midi_out, 1, mid.NO_PATCH)
--- local hnd_bass  = api.open_midi_output(midi_out, 2, mid.NO_PATCH)
--- local hnd_synth = api.open_midi_output(midi_out, 3, mid.NO_PATCH)
--- local hnd_strings = api.open_midi_output(midi_out, 4, mid.NO_PATCH)
--- local hnd_drums = api.open_midi_output(midi_out, 10, mid.NO_PATCH)
+local midi_device_out    = "VirtualMIDISynth #1"  -- VST host
+-- local midi_device_out  = "loopMIDI Port"  -- DAW host
 
--- Local VST host.
-local midi_out    = "VirtualMIDISynth #1"
-local hnd_keys    = api.open_midi_output(midi_out, 1, "keys", inst.AcousticGrandPiano)
-local hnd_bass    = api.open_midi_output(midi_out, 2, "bass", inst.AcousticBass)
-local hnd_synth   = api.open_midi_output(midi_out, 3, "synth", inst.Lead1Square)
-local hnd_strings = api.open_midi_output(midi_out, 4, "strings", inst.StringEnsemble1)
-local hnd_drums   = api.open_midi_output(midi_out, 10, "drums", kit.Jazz)
+local hnd_keys    = api.open_midi_output(midi_device_out, 1, "keys", inst.AcousticGrandPiano)
+local hnd_bass    = api.open_midi_output(midi_device_out, 2, "bass", inst.AcousticBass)
+local hnd_synth   = api.open_midi_output(midi_device_out, 3, "synth", inst.Lead1Square)
+local hnd_strings = api.open_midi_output(midi_device_out, 4, "strings", inst.StringEnsemble1)
+local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums", kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
-
 
 -- Get some stock chords and scales.
 local my_scale = mus.get_notes_from_string("C4.o7")
@@ -102,7 +94,7 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     -- Overhead.
-    api.process_step(tick) 
+    api.process_step(tick)
 
     -- Other work you may want to do. Like do something every new bar.
         local bar, beat, sub = bt.tick_to_bt(tick)
@@ -188,7 +180,8 @@ local keys_verse =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|7-------|--      |        |        |7-------|--      |        |        |", "G4.m7" },
-    { "|        |        |        |5---    |        |        |        |5-8---  |", "G4.m6" },
+    { "|        |        |        |5---    |        |        |        |5-      |", "G4.m6" },
+    { "|        |        |        |5---    |        |        |        |  8---  |", "B4.MY_CHORD" },
 }
 
 local keys_chorus =
@@ -204,14 +197,14 @@ local bass_verse =
 {
     -- |........|........|........|........|........|........|........|........|
     { "|9-------|        |        |        |        |        |        |        |", "C2" },
-    { "|        |        |        |    9---|        |        |        |        |", "E2" },
+    { "|        |        |        |    7---|        |        |        |        |", "E2" },
     { "|        |        |        |        |        |        |        |    9---|", "A#2" },
 }
 
 local bass_chorus =
 {
     -- |........|........|........|........|........|........|........|........|
-    { "|5   5   |        |5   5   |        |5   5   |        |5   5   |        |", "C2" },
+    { "|5   8   |        |5   8   |        |5   8   |        |5   8   |        |", "C2" },
 }
 
 

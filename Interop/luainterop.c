@@ -24,7 +24,7 @@ const char* luainterop_Setup(lua_State* l)
     int ltype = lua_getglobal(l, "setup");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name: setup()";
+        _error = "Invalid function name setup()";
         return ret;
     }
 
@@ -36,7 +36,7 @@ const char* luainterop_Setup(lua_State* l)
     {
         // Get the results from the stack.
         if (lua_isstring(l, -1)) { ret = lua_tostring(l, -1); }
-        else { _error = "Invalid return type for setup(): should be string"; }
+        else { _error = "Invalid return type for setup() should be string"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -56,7 +56,7 @@ int luainterop_Step(lua_State* l, int tick)
     int ltype = lua_getglobal(l, "step");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name: step()";
+        _error = "Invalid function name step()";
         return ret;
     }
 
@@ -70,7 +70,7 @@ int luainterop_Step(lua_State* l, int tick)
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Invalid return type for step(): should be integer"; }
+        else { _error = "Invalid return type for step() should be integer"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -90,7 +90,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     int ltype = lua_getglobal(l, "receive_midi_note");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name: receive_midi_note()";
+        _error = "Invalid function name receive_midi_note()";
         return ret;
     }
 
@@ -108,7 +108,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Invalid return type for receive_midi_note(): should be integer"; }
+        else { _error = "Invalid return type for receive_midi_note() should be integer"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -128,7 +128,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     int ltype = lua_getglobal(l, "receive_midi_controller");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name: receive_midi_controller()";
+        _error = "Invalid function name receive_midi_controller()";
         return ret;
     }
 
@@ -146,7 +146,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Invalid return type for receive_midi_controller(): should be integer"; }
+        else { _error = "Invalid return type for receive_midi_controller() should be integer"; }
     }
     else { _error = lua_tostring(l, -1); }
     lua_pop(l, num_ret); // Clean up results.
@@ -170,16 +170,16 @@ static int luainterop_OpenMidiOutput(lua_State* l)
     // Get arguments
     const char* dev_name;
     if (lua_isstring(l, 1)) { dev_name = lua_tostring(l, 1); }
-    else { luaL_error(l, "Invalid arg type for: dev_name"); }
+    else { luaL_error(l, "Invalid arg type for dev_name"); }
     int chan_num;
     if (lua_isinteger(l, 2)) { chan_num = lua_tointeger(l, 2); }
-    else { luaL_error(l, "Invalid arg type for: chan_num"); }
+    else { luaL_error(l, "Invalid arg type for chan_num"); }
     const char* chan_name;
     if (lua_isstring(l, 3)) { chan_name = lua_tostring(l, 3); }
-    else { luaL_error(l, "Invalid arg type for: chan_name"); }
+    else { luaL_error(l, "Invalid arg type for chan_name"); }
     int patch;
     if (lua_isinteger(l, 4)) { patch = lua_tointeger(l, 4); }
-    else { luaL_error(l, "Invalid arg type for: patch"); }
+    else { luaL_error(l, "Invalid arg type for patch"); }
 
     // Do the work. One result.
     int ret = luainteropcb_OpenMidiOutput(l, dev_name, chan_num, chan_name, patch);
@@ -200,13 +200,13 @@ static int luainterop_OpenMidiInput(lua_State* l)
     // Get arguments
     const char* dev_name;
     if (lua_isstring(l, 1)) { dev_name = lua_tostring(l, 1); }
-    else { luaL_error(l, "Invalid arg type for: dev_name"); }
+    else { luaL_error(l, "Invalid arg type for dev_name"); }
     int chan_num;
     if (lua_isinteger(l, 2)) { chan_num = lua_tointeger(l, 2); }
-    else { luaL_error(l, "Invalid arg type for: chan_num"); }
+    else { luaL_error(l, "Invalid arg type for chan_num"); }
     const char* chan_name;
     if (lua_isstring(l, 3)) { chan_name = lua_tostring(l, 3); }
-    else { luaL_error(l, "Invalid arg type for: chan_name"); }
+    else { luaL_error(l, "Invalid arg type for chan_name"); }
 
     // Do the work. One result.
     int ret = luainteropcb_OpenMidiInput(l, dev_name, chan_num, chan_name);
@@ -227,13 +227,13 @@ static int luainterop_SendMidiNote(lua_State* l)
     // Get arguments
     int chan_hnd;
     if (lua_isinteger(l, 1)) { chan_hnd = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Invalid arg type for: chan_hnd"); }
+    else { luaL_error(l, "Invalid arg type for chan_hnd"); }
     int note_num;
     if (lua_isinteger(l, 2)) { note_num = lua_tointeger(l, 2); }
-    else { luaL_error(l, "Invalid arg type for: note_num"); }
+    else { luaL_error(l, "Invalid arg type for note_num"); }
     double volume;
     if (lua_isnumber(l, 3)) { volume = lua_tonumber(l, 3); }
-    else { luaL_error(l, "Invalid arg type for: volume"); }
+    else { luaL_error(l, "Invalid arg type for volume"); }
 
     // Do the work. One result.
     int ret = luainteropcb_SendMidiNote(l, chan_hnd, note_num, volume);
@@ -254,13 +254,13 @@ static int luainterop_SendMidiController(lua_State* l)
     // Get arguments
     int chan_hnd;
     if (lua_isinteger(l, 1)) { chan_hnd = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Invalid arg type for: chan_hnd"); }
+    else { luaL_error(l, "Invalid arg type for chan_hnd"); }
     int controller;
     if (lua_isinteger(l, 2)) { controller = lua_tointeger(l, 2); }
-    else { luaL_error(l, "Invalid arg type for: controller"); }
+    else { luaL_error(l, "Invalid arg type for controller"); }
     int value;
     if (lua_isinteger(l, 3)) { value = lua_tointeger(l, 3); }
-    else { luaL_error(l, "Invalid arg type for: value"); }
+    else { luaL_error(l, "Invalid arg type for value"); }
 
     // Do the work. One result.
     int ret = luainteropcb_SendMidiController(l, chan_hnd, controller, value);
@@ -280,10 +280,10 @@ static int luainterop_Log(lua_State* l)
     // Get arguments
     int level;
     if (lua_isinteger(l, 1)) { level = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Invalid arg type for: level"); }
+    else { luaL_error(l, "Invalid arg type for level"); }
     const char* msg;
     if (lua_isstring(l, 2)) { msg = lua_tostring(l, 2); }
-    else { luaL_error(l, "Invalid arg type for: msg"); }
+    else { luaL_error(l, "Invalid arg type for msg"); }
 
     // Do the work. One result.
     int ret = luainteropcb_Log(l, level, msg);
@@ -302,7 +302,7 @@ static int luainterop_SetTempo(lua_State* l)
     // Get arguments
     int bpm;
     if (lua_isinteger(l, 1)) { bpm = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Invalid arg type for: bpm"); }
+    else { luaL_error(l, "Invalid arg type for bpm"); }
 
     // Do the work. One result.
     int ret = luainteropcb_SetTempo(l, bpm);
