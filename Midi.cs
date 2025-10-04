@@ -180,6 +180,7 @@ namespace Nebulua
         public MidiOutputDevice(string deviceName)
         {
             DeviceName = deviceName;
+throw new SyntaxException($"TODO1 just a test - delete me 300");
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)

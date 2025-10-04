@@ -122,7 +122,7 @@ namespace Nebulua
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             traffic.BackColor = UserSettings.Current.BackColor;
-            traffic.MatchText.Add("ERR", Color.Red);
+            traffic.MatchText.Add("ERR", Color.HotPink);
             traffic.MatchText.Add("WRN", Color.Yellow);
             traffic.MatchText.Add("SND", Color.PaleGreen);
             traffic.MatchText.Add("RCV", Color.LightBlue);

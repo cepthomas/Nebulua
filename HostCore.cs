@@ -87,7 +87,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="scriptFn">The script file or null to reload current.</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="AppException"></exception>
         public void LoadScript(string? scriptFn = null)
         {
             ResetIo();
@@ -101,12 +101,12 @@ namespace Nebulua
                 }
                 else
                 {
-                    throw new ArgumentException($"Invalid script file {scriptFn}");
+                    throw new AppException($"Invalid script file {scriptFn}");
                 }
             }
             else if (_currentScriptFn is null)
             {
-                throw new ArgumentException("Can't reload, no current file");
+                throw new AppException("Can't reload, no current file");
             }
 
             // Load and run the new script.
@@ -159,18 +159,18 @@ namespace Nebulua
         /// <param name="devNum"></param>
         /// <param name="chanNum"></param>
         /// <param name="enable"></param>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="AppException"></exception>
         public void EnableOutputChannel(ChannelHandle ch, bool enable)
         {
             if (ch.DeviceId >= _outputs.Count)
             {
-                throw new ArgumentException($"Invalid device id {ch.DeviceId}");
+                throw new AppException($"Invalid device id {ch.DeviceId}");
             }
 
             var output = _outputs[ch.DeviceId];
             if (!output.Channels.ContainsKey(ch.ChannelNumber))
             {
-                throw new ArgumentException($"Invalid channel {ch.ChannelNumber}");
+                throw new AppException($"Invalid channel {ch.ChannelNumber}");
             }
 
             output.Channels[ch.ChannelNumber].Enable = enable;
@@ -249,6 +249,7 @@ namespace Nebulua
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
+CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
 
             if (input is not null)
             {
@@ -411,6 +412,7 @@ namespace Nebulua
             try
             {
                 e.ret = 0;
+//throw new SyntaxException($"TODO1 just a test - delete me 200");
 
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)

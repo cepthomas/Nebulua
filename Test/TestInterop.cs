@@ -18,39 +18,6 @@ namespace Test
 
             EventCollector ecoll = new();
             using Interop interop = new();
-
-            // Checks lua status and throws exception if it failed.
-            // interop.EvalLuaStatus(0, "Hello");
-            // #define LUA_OK      0
-            // #define LUA_YIELD   1
-            // #define LUA_ERRRUN  2  "ScriptRunError"
-            // #define LUA_ERRSYNTAX   3   "ScriptSyntaxError"
-            // #define LUA_ERRMEM  4
-            // #define LUA_ERRERR  5
-            // #define LUA_ERRFILE LUA_ERRERR+1  "ScriptFileError"
-            // default: "AppInteropError"
-
-
-            // Checks lua interop error and throws exception if it failed.
-            // interop.EvalLuaInteropStatus(new string("const char* err"), "const char* info");
-
-
-            // var c = interop.ToCString("input");
-            // interop.Collect();
-            // public class Scope
-            // {
-            // public:
-            //     Scope();
-            //     virtual ~Scope();
-            // };
-            // #define SCOPE() Scope _scope;
-            // static CRITICAL_SECTION _critsect;
-            // Scope::Scope() { EnterCriticalSection(&_critsect); }
-            // Scope::~Scope() { Collect(); LeaveCriticalSection(&_critsect); }
-
-
-            // Exception used for all interop errors.
-            // LuaException(String^ message) : Exception(message) {}
         }
     }
 

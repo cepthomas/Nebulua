@@ -9,6 +9,9 @@ namespace Nebulua
     /// <summary>Lua script syntax error.</summary>
     public class SyntaxException(string message) : Exception(message) { }
 
+    /// <summary>Application error. Includes ArgumentException etc.</summary>
+    public class AppException(string message) : Exception(message) { }
+
     /// <summary>Channel playing.</summary>
     public enum PlayState { Normal, Solo, Mute }
 
@@ -72,16 +75,16 @@ namespace Nebulua
                     //	C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
                     var api = parts[2].SplitByToken(":");
                     //  C  \Dev\Apps\Nebulua\lua\script_api.lua  95  Invalid arg type for chan_name
-                    var err1 = parts[0];
-                    // ScriptRunError
-                    var err2 = parts[1];
+                    var lerr = parts[0];
+                    // LUA_ERRRUN
+                    var info = parts[1];
                     // Execute script failed.
 
                     msg = $"Script Syntax Error {ex.Message}";
                     break;
 
-                case ArgumentException ex: // from app
-                    msg = $"Argument Error {ex.Message}";
+                case AppException ex: // from app
+                    msg = $"App Error {ex.Message}";
                     break;
 
                 case LuaException ex: // from interop

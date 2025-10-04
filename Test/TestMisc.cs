@@ -58,10 +58,10 @@ namespace Test
             }
 
             {
-                var ex = new ArgumentException("message333");
+                var ex = new AppException("message333");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
-                UT_EQUAL(msg, "Argument Error: message333");
+                UT_EQUAL(msg, "App Error: message333");
             }
 
             {
