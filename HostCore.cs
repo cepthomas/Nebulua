@@ -249,7 +249,7 @@ namespace Nebulua
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
-CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
+CallbackError(new LuaException($"Invalid TODO1 {devName}"));
 
             if (input is not null)
             {
@@ -261,7 +261,7 @@ CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
             }
             else
             {
-                CallbackError(new SyntaxException($"Invalid device {devName}"));
+                CallbackError(new LuaException($"Invalid device {devName}"));
             }
         }
 
@@ -412,12 +412,12 @@ CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
             try
             {
                 e.ret = 0;
-//throw new SyntaxException($"TODO1 just a test - delete me 200");
+throw new LuaException($"TODO1 just a test - delete me 200");
 
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid input midi device {e.dev_name}");
+                    throw new LuaException($"Invalid input midi device {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -455,7 +455,7 @@ CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid output midi device {e.dev_name}");
+                    throw new LuaException($"Invalid output midi device {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -505,7 +505,7 @@ CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
                     ch.ChannelNumber < 1 ||
                     ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid channel {e.chan_hnd}");
+                    throw new LuaException($"Invalid channel {e.chan_hnd}");
                 }
 
                 // Sound or quiet?
@@ -553,7 +553,7 @@ CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
                     ch.ChannelNumber < 1 ||
                     ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new SyntaxException($"Invalid channel {e.chan_hnd}");
+                    throw new LuaException($"Invalid channel {e.chan_hnd}");
                 }
 
                 int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
@@ -597,7 +597,7 @@ CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
             else
             {
                 SetTimer(0);
-                CallbackError(new SyntaxException($"Invalid tempo {e.bpm}"));
+                CallbackError(new LuaException($"Invalid tempo {e.bpm}"));
             }
         }
 
@@ -624,7 +624,7 @@ CallbackError(new SyntaxException($"Invalid TODO1 {devName}"));
             }
             else
             {
-                CallbackError(new SyntaxException($"Invalid log level {e.level}"));
+                CallbackError(new LuaException($"Invalid log level {e.level}"));
             }
         }
         #endregion

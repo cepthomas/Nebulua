@@ -15,8 +15,9 @@ String^ Interop::Setup()
 {
     SCOPE();
     String^ ret = gcnew String(luainterop_Setup(_l));
+EvalLuaInteropStatus("TODO1 delete me", "Setup()");
     EvalLuaInteropStatus(luainterop_Error(), "Setup()");
-    return ret; 
+    return ret;
 }
 
 //--------------------------------------------------------//

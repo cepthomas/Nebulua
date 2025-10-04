@@ -7,9 +7,9 @@ namespace Nebulua
 {
     #region Types
     /// <summary>Lua script syntax error.</summary>
-    public class SyntaxException(string message) : Exception(message) { }
+    //public class SyntaxException(string message) : Exception(message) { }
 
-    /// <summary>Application error. Includes ArgumentException etc.</summary>
+    /// <summary>Application error. Includes function args etc.</summary>
     public class AppException(string message) : Exception(message) { }
 
     /// <summary>Channel playing.</summary>
@@ -57,7 +57,7 @@ namespace Nebulua
 
             switch (e)
             {
-                case SyntaxException ex: // from script
+                case LuaException ex: // script errors but could originate anywhwere
                     // TODO1 Make a synopsis - dissect the stack from luaLerror().
                     // msg:
                     //ScriptRunError
@@ -87,9 +87,9 @@ namespace Nebulua
                     msg = $"App Error {ex.Message}";
                     break;
 
-                case LuaException ex: // from interop
-                    msg = $"Lua Error {ex.Message}";
-                    break;
+                //case LuaException ex: // from interop
+                //    msg = $"Lua Error {ex.Message}";
+                //    break;
 
                 default: // other, probably fatal
                     msg = $"{e.GetType()} {e.Message}";
