@@ -88,7 +88,7 @@ namespace Nebulua
         /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        /// <exception cref="SyntaxException"></exception>
+        /// <exception cref="LuaException">TODO1</exception>
         public MidiInputDevice(string deviceName)
         {
             bool realInput = false;
@@ -176,11 +176,11 @@ namespace Nebulua
         /// Normal constructor. OK to throw in here.
         /// </summary>
         /// <param name="deviceName">Client must supply name of device.</param>
-        /// <exception cref="SyntaxException"></exception>
+        /// <exception cref="LuaException"></exception>
         public MidiOutputDevice(string deviceName)
         {
             DeviceName = deviceName;
-throw new LuaException($"TODO1 just a test - delete me 300");
+throw new LuaException(LuaStatus.DEBUG, $"TODO1 just a test - delete me");
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
@@ -194,7 +194,7 @@ throw new LuaException($"TODO1 just a test - delete me 300");
 
             if (_midiOut is null)
             {
-                throw new LuaException($"Invalid output device name {deviceName}");
+                throw new LuaException(LuaStatus.ERRARG, $"Invalid output device name {deviceName}");
             }
         }
 

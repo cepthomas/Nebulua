@@ -86,6 +86,10 @@ function setup()
 
     -- dbg()
 
+    -- force error
+    api.send_midi_note(hnd_synth, 100000, 0.8, 3)
+    api.send_midi_note(-999, my_scale[note_num], 0.8, 3)
+
     -- This file uses static composition so you must call this!
     return api.process_comp()
 end

@@ -108,7 +108,6 @@ end
 _format_tick = function(tick)
     local s = bt.tick_to_str(tick)
     return string.format('T:%05d BT:%s', tick, s)
-    -- unknow error like this: return string.format('T:%05d BT:%s', tick, bt.tick_to_str(tick))
 end
 
 

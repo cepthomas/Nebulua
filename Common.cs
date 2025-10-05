@@ -6,9 +6,6 @@ using System.Linq;
 namespace Nebulua
 {
     #region Types
-    /// <summary>Lua script syntax error.</summary>
-    //public class SyntaxException(string message) : Exception(message) { }
-
     /// <summary>Application error. Includes function args etc.</summary>
     public class AppException(string message) : Exception(message) { }
 
@@ -57,39 +54,74 @@ namespace Nebulua
 
             switch (e)
             {
-                case LuaException ex: // script errors but could originate anywhwere
-                    // TODO1 Make a synopsis - dissect the stack from luaLerror().
-                    // msg:
-                    //ScriptRunError
-                    //Execute script failed.
-                    //C:\Dev\Apps\Nebulua\lua\script_api.lua:95: Invalid arg type for chan_name
-                    //stack traceback:
-                    //	[C]: in function 'luainterop.open_midi_input'
-                    //	C:\Dev\Apps\Nebulua\lua\script_api.lua:95: in function 'script_api.open_midi_input'
-                    //	C:\Dev\Apps\Nebulua\examples\example.lua:33: in main chunk
-                    // ==>
-                    // C:\Dev\Apps\Nebulua\examples\example.lua:33 Execute script failed. Invalid arg type for: chan_name.
-                    var parts = e.Message.SplitByTokens("\r\n\t");
+                case LuaException ex: // script or lua errors but could originate anywhwere
 
-                    var src = parts.Last().SplitByToken(":");
-                    //	C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
-                    var api = parts[2].SplitByToken(":");
-                    //  C  \Dev\Apps\Nebulua\lua\script_api.lua  95  Invalid arg type for chan_name
-                    var lerr = parts[0];
-                    // LUA_ERRRUN
-                    var info = parts[1];
-                    // Execute script failed.
+                    // Common stuff.
+                    msg = ex.Message; // default
+                    //Console.WriteLine($"status:{ex.Status} info:{ex.Info}] context:[{ex.Context}]");
 
-                    msg = $"Script Syntax Error {ex.Message}";
+                    if (ex.Context.Length > 0)
+                    {
+                        // Make a synopsis - dissect the stack from luaLerror().
+                        var parts = ex.Context.SplitByTokens("\r\n\t");
+
+                        if (parts[1] == "stack traceback:")
+                        {
+                            //C:\Dev\Apps\Nebulua\lua\script_api.lua:95: Invalid arg type for chan_name
+                            var errdesc = parts[0].SplitByToken(":").Last();
+                            //  C  \Dev\Apps\Nebulua\lua\script_api.lua  95  Invalid arg type for chan_name
+
+                            //	C:\Dev\Apps\Nebulua\examples\example.lua:33: in main chunk
+                            var src = parts.Last().SplitByToken(":");
+                            //	C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
+                            var srcfile = $"{src[0]}:{src[1]}({src[2]})";
+
+                            msg = $"{ex.Status} {errdesc} => {src[0]}:{src[1]}({src[2]})";
+                        }
+                        else
+                        {
+                            msg = $"{ex.Status} {ex.Message}";
+                        }
+                    }
+
+                    switch (ex.Status)
+                    {
+                        case LuaStatus.ERRRUN:
+                        case LuaStatus.ERRMEM:
+                        case LuaStatus.ERRERR:
+                            State.Instance.ExecState = ExecState.Dead;
+                            fatal = true;
+                            break;
+
+                        case LuaStatus.ERRSYNTAX:
+                            State.Instance.ExecState = ExecState.Dead;
+                            break;
+
+                        case LuaStatus.ERRFILE:
+                            State.Instance.ExecState = ExecState.Dead;
+                            break;
+
+                        case LuaStatus.ERRARG:
+                            State.Instance.ExecState = ExecState.Dead;
+                            break;
+
+                        case LuaStatus.INTEROP:
+                            State.Instance.ExecState = ExecState.Dead;
+                            break;
+
+                        case LuaStatus.DEBUG:
+                            break;
+
+                        case LuaStatus.OK:
+                        case LuaStatus.YIELD:
+                            // Normal, ignore.
+                            break;
+                    }
                     break;
 
-                case AppException ex: // from app
-                    msg = $"App Error {ex.Message}";
+                case AppException ex: // from app 
+                    msg = $"TODO1 App Error {ex.Message}";
                     break;
-
-                //case LuaException ex: // from interop
-                //    msg = $"Lua Error {ex.Message}";
-                //    break;
 
                 default: // other, probably fatal
                     msg = $"{e.GetType()} {e.Message}";

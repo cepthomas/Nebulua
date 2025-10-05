@@ -122,10 +122,10 @@ namespace Nebulua
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             traffic.BackColor = UserSettings.Current.BackColor;
-            traffic.MatchText.Add("ERR", Color.HotPink);
-            traffic.MatchText.Add("WRN", Color.Yellow);
-            traffic.MatchText.Add("SND", Color.PaleGreen);
-            traffic.MatchText.Add("RCV", Color.LightBlue);
+            traffic.MatchText.Add("ERR ", Color.HotPink);
+            traffic.MatchText.Add("WRN ", Color.Yellow);
+            traffic.MatchText.Add("SND ", Color.PaleGreen);
+            traffic.MatchText.Add("RCV ", Color.LightBlue);
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
@@ -304,6 +304,7 @@ namespace Nebulua
                 {
                     _loadedScriptFn = scriptFn;
                     _logger.Info($"Loading new script {_loadedScriptFn}");
+                    _scriptTouch = File.GetLastWriteTime(_loadedScriptFn);
                 }
                 else if (_loadedScriptFn is not null)
                 {
@@ -322,8 +323,6 @@ namespace Nebulua
 
                     CreateControls();
 
-                    _scriptTouch = File.GetLastWriteTime(_loadedScriptFn);
-
                     // Everything ok.
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_loadedScriptFn}";
                     UserSettings.Current.UpdateMru(_loadedScriptFn!);
@@ -336,10 +335,6 @@ namespace Nebulua
             catch (Exception ex)
             {
                 var (fatal, msg) = Utils.ProcessException(ex);
-
-
-
-
 
                 if (fatal)
                 {
@@ -394,6 +389,13 @@ namespace Nebulua
         /// <param name="e"></param>
         void Play_Click(object? sender, EventArgs e)
         {
+            if (chkPlay.Checked && State.Instance.ExecState == ExecState.Dead)
+            {
+                chkPlay.Checked = false;
+                _logger.Warn("Script is dead");
+                return;
+            }
+
             if (_loadedScriptFn is null)
             {
                 _logger.Warn("No script file loaded");

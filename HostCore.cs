@@ -249,7 +249,7 @@ namespace Nebulua
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
-CallbackError(new LuaException($"Invalid TODO1 {devName}"));
+CallbackError(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
 
             if (input is not null)
             {
@@ -261,7 +261,7 @@ CallbackError(new LuaException($"Invalid TODO1 {devName}"));
             }
             else
             {
-                CallbackError(new LuaException($"Invalid device {devName}"));
+                CallbackError(new LuaException(LuaStatus.ERRARG, $"Invalid device {devName}"));
             }
         }
 
@@ -412,12 +412,12 @@ CallbackError(new LuaException($"Invalid TODO1 {devName}"));
             try
             {
                 e.ret = 0;
-throw new LuaException($"TODO1 just a test - delete me 200");
+throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
 
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new LuaException($"Invalid input midi device {e.dev_name}");
+                    throw new LuaException(LuaStatus.ERRARG, $"Invalid input midi device {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -455,7 +455,7 @@ throw new LuaException($"TODO1 just a test - delete me 200");
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new LuaException($"Invalid output midi device {e.dev_name}");
+                    throw new LuaException(LuaStatus.ERRARG, $"Invalid output midi device {e.dev_name}");
                 }
 
                 // Locate or create the device.
@@ -505,7 +505,7 @@ throw new LuaException($"TODO1 just a test - delete me 200");
                     ch.ChannelNumber < 1 ||
                     ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new LuaException($"Invalid channel {e.chan_hnd}");
+                    throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
                 }
 
                 // Sound or quiet?
@@ -553,7 +553,7 @@ throw new LuaException($"TODO1 just a test - delete me 200");
                     ch.ChannelNumber < 1 ||
                     ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
                 {
-                    throw new LuaException($"Invalid channel {e.chan_hnd}");
+                    throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
                 }
 
                 int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
@@ -582,7 +582,6 @@ throw new LuaException($"TODO1 just a test - delete me 200");
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        /// <exception cref="SyntaxException"></exception>
         void Interop_SetTempo(object? _, SetTempoArgs e)
         {
             if (e.bpm >= 30 && e.bpm <= 240)
@@ -597,7 +596,7 @@ throw new LuaException($"TODO1 just a test - delete me 200");
             else
             {
                 SetTimer(0);
-                CallbackError(new LuaException($"Invalid tempo {e.bpm}"));
+                CallbackError(new LuaException(LuaStatus.ERRARG, $"Invalid tempo {e.bpm}"));
             }
         }
 
@@ -624,7 +623,7 @@ throw new LuaException($"TODO1 just a test - delete me 200");
             }
             else
             {
-                CallbackError(new LuaException($"Invalid log level {e.level}"));
+                CallbackError(new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}"));
             }
         }
         #endregion

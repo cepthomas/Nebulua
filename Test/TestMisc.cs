@@ -44,17 +44,10 @@ namespace Test
         public override void RunSuite()
         {
             {
-                var ex = new LuaException("message111");
+                var ex = new LuaException(LUA_DEBUG, "message111");
                 var (fatal, msg) = Utils.ProcessException(ex);
                 UT_FALSE(fatal);
                 UT_EQUAL(msg, "Lua/Interop Error: message111");
-            }
-
-            {
-                var ex = new SyntaxException("message222");
-                var (fatal, msg) = Utils.ProcessException(ex);
-                UT_FALSE(fatal);
-                UT_EQUAL(msg, "Script Syntax Error: message222");
             }
 
             {
