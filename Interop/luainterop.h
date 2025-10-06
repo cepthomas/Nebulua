@@ -13,7 +13,7 @@ extern "C" {
 #include "luaex.h"
 #endif
 
-//============= C => Lua functions .h =============//
+//============= interop C => Lua functions =============//
 
 // Called to initialize script.
 // @param[in] l Internal lua state.
@@ -43,7 +43,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
 int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller, int value);
 
 
-//============= Lua => C callback functions .h =============//
+//============= Lua => interop C callback functions =============//
 
 // Open a midi output channel.
 // @param[in] l Internal lua state.
@@ -91,10 +91,10 @@ int luainteropcb_Log(lua_State* l, int level, const char* msg);
 // @return Unused
 int luainteropcb_SetTempo(lua_State* l, int bpm);
 
-//============= Infrastructure .h =============//
+//============= Infrastructure =============//
 
 /// Load Lua C lib.
 void luainterop_Load(lua_State* l);
 
-/// Return operation error or NULL if ok.
+/// Operation result: lua traceback OR error info string OR NULL if OK. 
 const char* luainterop_Error();

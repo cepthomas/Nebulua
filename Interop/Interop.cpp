@@ -1,3 +1,4 @@
+///// Generated cpp and h files that bind Cpp/CLI to C interop code.   /////
 ///// Warning - this file is created by gen_interop.lua - do not edit. /////
 
 #include <windows.h>
@@ -8,16 +9,15 @@ using namespace System;
 using namespace System::Collections::Generic;
 
 
-//============= C# => C functions .cpp =============//
+//============= Cpp/CLI => interop C functions =============//
 
 //--------------------------------------------------------//
 String^ Interop::Setup()
 {
     SCOPE();
     String^ ret = gcnew String(luainterop_Setup(_l));
-EvalLuaInteropStatus("TODO1 delete me", "Setup()");
-    EvalLuaInteropStatus(luainterop_Error(), "Setup()");
-    return ret;
+    EvalInterop(luainterop_Error(), "Setup()");
+    return ret; 
 }
 
 //--------------------------------------------------------//
@@ -25,7 +25,7 @@ int Interop::Step(int tick)
 {
     SCOPE();
     int ret = luainterop_Step(_l, tick);
-    EvalLuaInteropStatus(luainterop_Error(), "Step()");
+    EvalInterop(luainterop_Error(), "Step()");
     return ret; 
 }
 
@@ -34,7 +34,7 @@ int Interop::ReceiveMidiNote(int chan_hnd, int note_num, double volume)
 {
     SCOPE();
     int ret = luainterop_ReceiveMidiNote(_l, chan_hnd, note_num, volume);
-    EvalLuaInteropStatus(luainterop_Error(), "ReceiveMidiNote()");
+    EvalInterop(luainterop_Error(), "ReceiveMidiNote()");
     return ret; 
 }
 
@@ -43,12 +43,12 @@ int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 {
     SCOPE();
     int ret = luainterop_ReceiveMidiController(_l, chan_hnd, controller, value);
-    EvalLuaInteropStatus(luainterop_Error(), "ReceiveMidiController()");
+    EvalInterop(luainterop_Error(), "ReceiveMidiController()");
     return ret; 
 }
 
 
-//============= C => C# callback functions .cpp =============//
+//============= interop C => Cpp/CLI callback functions =============//
 
 
 //--------------------------------------------------------//
@@ -117,7 +117,7 @@ int luainteropcb_SetTempo(lua_State* l, int bpm)
 }
 
 
-//============= Infrastructure .cpp =============//
+//============= Infrastructure =============//
 
 //--------------------------------------------------------//
 void Interop::Run(String^ scriptFn, String^ luaPath)

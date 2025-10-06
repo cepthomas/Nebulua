@@ -1,3 +1,4 @@
+///// Generated C and h files that bind interop C to lua C code.       /////
 ///// Warning - this file is created by gen_interop.lua - do not edit. /////
 
 #include "luainterop.h"
@@ -9,7 +10,7 @@
 
 static const char* _error;
 
-//============= C => Lua functions .c =============//
+//============= interop C => Lua functions =============//
 
 //--------------------------------------------------------//
 const char* luainterop_Setup(lua_State* l)
@@ -24,7 +25,7 @@ const char* luainterop_Setup(lua_State* l)
     int ltype = lua_getglobal(l, "setup");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name setup()";
+        _error = "Script does not implement required function setup()";
         return ret;
     }
 
@@ -36,9 +37,13 @@ const char* luainterop_Setup(lua_State* l)
     {
         // Get the results from the stack.
         if (lua_isstring(l, -1)) { ret = lua_tostring(l, -1); }
-        else { _error = "Invalid return type for setup() should be string"; }
+        else { _error = "Script function setup() returned wrong type - should be string"; }
     }
-    else { _error = lua_tostring(l, -1); }
+    else
+    {
+        // Get the traceback from the stack.
+         _error = lua_tostring(l, -1);
+    }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
@@ -56,7 +61,7 @@ int luainterop_Step(lua_State* l, int tick)
     int ltype = lua_getglobal(l, "step");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name step()";
+        _error = "Script does not implement required function step()";
         return ret;
     }
 
@@ -70,9 +75,13 @@ int luainterop_Step(lua_State* l, int tick)
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Invalid return type for step() should be integer"; }
+        else { _error = "Script function step() returned wrong type - should be integer"; }
     }
-    else { _error = lua_tostring(l, -1); }
+    else
+    {
+        // Get the traceback from the stack.
+         _error = lua_tostring(l, -1);
+    }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
@@ -90,7 +99,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     int ltype = lua_getglobal(l, "receive_midi_note");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name receive_midi_note()";
+        _error = "Script does not implement required function receive_midi_note()";
         return ret;
     }
 
@@ -108,9 +117,13 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Invalid return type for receive_midi_note() should be integer"; }
+        else { _error = "Script function receive_midi_note() returned wrong type - should be integer"; }
     }
-    else { _error = lua_tostring(l, -1); }
+    else
+    {
+        // Get the traceback from the stack.
+         _error = lua_tostring(l, -1);
+    }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
@@ -128,7 +141,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     int ltype = lua_getglobal(l, "receive_midi_controller");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Invalid function name receive_midi_controller()";
+        _error = "Script does not implement required function receive_midi_controller()";
         return ret;
     }
 
@@ -146,15 +159,19 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
-        else { _error = "Invalid return type for receive_midi_controller() should be integer"; }
+        else { _error = "Script function receive_midi_controller() returned wrong type - should be integer"; }
     }
-    else { _error = lua_tostring(l, -1); }
+    else
+    {
+        // Get the traceback from the stack.
+         _error = lua_tostring(l, -1);
+    }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
 }
 
 
-//============= Lua => C callback functions .c =============//
+//============= Lua => interop C callback functions =============//
 
 //--------------------------------------------------------//
 // Open a midi output channel.
@@ -311,7 +328,7 @@ static int luainterop_SetTempo(lua_State* l)
 }
 
 
-//============= Infrastructure .c =============//
+//============= Infrastructure =============//
 
 static const luaL_Reg function_map[] =
 {

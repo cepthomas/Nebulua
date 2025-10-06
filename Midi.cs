@@ -180,7 +180,7 @@ namespace Nebulua
         public MidiOutputDevice(string deviceName)
         {
             DeviceName = deviceName;
-throw new LuaException(LuaStatus.DEBUG, $"TODO1 just a test - delete me");
+//throw new LuaException(LuaStatus.DEBUG, $"TODO1 just a test - delete me");
 
             // Figure out which midi output device.
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)

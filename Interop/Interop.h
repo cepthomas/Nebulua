@@ -6,7 +6,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-//============= C => C# callback payload .h =============//
+//============= interop C => Cpp/CLI callback payload =============//
 
 //--------------------------------------------------------//
 public ref class OpenMidiOutputArgs : public EventArgs
@@ -133,7 +133,7 @@ public:
 public ref class Interop : CliEx
 {
 
-//============= C# => C functions .h =============//
+//============= Cpp/CLI => interop C functions =============//
 public:
 
     /// <summary>Setup</summary>
@@ -159,7 +159,7 @@ public:
     /// <returns>Script return</returns>
     int ReceiveMidiController(int chan_hnd, int controller, int value);
 
-//============= C => C# callback functions =============//
+//============= interop C => Cpp/CLI callback functions =============//
 public:
     static event EventHandler<OpenMidiOutputArgs^>^ OpenMidiOutput;
     static void Notify(OpenMidiOutputArgs^ args) { OpenMidiOutput(nullptr, args); }
@@ -180,7 +180,7 @@ public:
     static void Notify(SetTempoArgs^ args) { SetTempo(nullptr, args); }
 
 
-//============= Infrastructure .h =============//
+//============= Infrastructure =============//
 public:
     /// <summary>Initialize and execute.</summary>
     /// <param name="scriptFn">The script to load.</param>

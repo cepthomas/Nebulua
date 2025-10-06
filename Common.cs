@@ -16,7 +16,7 @@ namespace Nebulua
     public enum Direction { None, Input, Output }
     #endregion
 
-    /// <summary>Defines one channel. Supports translation to/from script unique int handle.</summary>
+    /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
     /// <param name="DeviceId">Index in internal list</param>
     /// <param name="ChannelNumber">Midi channel 1-based</param>
     /// <param name="Output">T or F</param>
@@ -44,13 +44,15 @@ namespace Nebulua
     /// <summary>General stuff.</summary>
     public class Utils
     {
-        /// <summary>Generic exception processor for callback threads that throw.</summary>
+        /// <summary>Generic exception processor for other threads that throw.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
-        public static (bool fatal, string msg) ProcessException(Exception e)
+        public static (bool fatal, string msg) ProcessException_XXX(Exception e)
         {
             bool fatal = false;
             string msg;
+
+
 
             switch (e)
             {
@@ -74,7 +76,7 @@ namespace Nebulua
                             //	C:\Dev\Apps\Nebulua\examples\example.lua:33: in main chunk
                             var src = parts.Last().SplitByToken(":");
                             //	C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
-                            var srcfile = $"{src[0]}:{src[1]}({src[2]})";
+                            //var srcfile = $"{src[0]}:{src[1]}({src[2]})";
 
                             msg = $"{ex.Status} {errdesc} => {src[0]}:{src[1]}({src[2]})";
                         }
@@ -89,24 +91,24 @@ namespace Nebulua
                         case LuaStatus.ERRRUN:
                         case LuaStatus.ERRMEM:
                         case LuaStatus.ERRERR:
-                            State.Instance.ExecState = ExecState.Dead;
+                            State.Instance.ExecState = ExecState.Dead_XXX;
                             fatal = true;
                             break;
 
                         case LuaStatus.ERRSYNTAX:
-                            State.Instance.ExecState = ExecState.Dead;
+                            State.Instance.ExecState = ExecState.Dead_XXX;
                             break;
 
                         case LuaStatus.ERRFILE:
-                            State.Instance.ExecState = ExecState.Dead;
+                            State.Instance.ExecState = ExecState.Dead_XXX;
                             break;
 
                         case LuaStatus.ERRARG:
-                            State.Instance.ExecState = ExecState.Dead;
+                            State.Instance.ExecState = ExecState.Dead_XXX;
                             break;
 
                         case LuaStatus.INTEROP:
-                            State.Instance.ExecState = ExecState.Dead;
+                            State.Instance.ExecState = ExecState.Dead_XXX;
                             break;
 
                         case LuaStatus.DEBUG:

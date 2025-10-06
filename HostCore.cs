@@ -39,6 +39,8 @@ namespace Nebulua
         //readonly TimingAnalyzer? _tan = null;
         #endregion
 
+bool i = false;
+
         #region Lifecycle
         /// <summary>
         /// Constructor inits static stuff.
@@ -182,7 +184,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Human readable strings.
+        /// Human readable strings about the channel.
         /// </summary>
         /// <param name="ch"></param>
         /// <returns></returns>
@@ -249,7 +251,7 @@ namespace Nebulua
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
-CallbackError(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
+ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
 
             if (input is not null)
             {
@@ -261,7 +263,7 @@ CallbackError(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
             }
             else
             {
-                CallbackError(new LuaException(LuaStatus.ERRARG, $"Invalid device {devName}"));
+                ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid device {devName}"));
             }
         }
 
@@ -307,6 +309,13 @@ CallbackError(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
         /// <param name="periodElapsed"></param>
         void MmTimer_Callback(double totalElapsed, double periodElapsed)
         {
+            if (!i)
+            {
+                _logger.Info($"MmTimer_Callback thread:{Environment.CurrentManagedThreadId}");
+                i = true;
+            }
+
+
             if (State.Instance.ExecState == ExecState.Run)
             {
                 try
@@ -412,7 +421,7 @@ CallbackError(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
             try
             {
                 e.ret = 0;
-throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
+//throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
 
                 // Check args.
                 if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
@@ -437,7 +446,7 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
             }
             catch (Exception ex)
             {
-                CallbackError(ex);
+                ProcessException(ex);
             }
         }
 
@@ -483,7 +492,7 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
             }
             catch (Exception ex)
             {
-                CallbackError(ex);
+                ProcessException(ex);
             }
         }
 
@@ -531,7 +540,7 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
             }
             catch (Exception ex)
             {
-                CallbackError(ex);
+                ProcessException(ex);
             }
         }
 
@@ -573,7 +582,7 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
             }
             catch (Exception ex)
             {
-                CallbackError(ex);
+                ProcessException(ex);
             }
         }
 
@@ -596,7 +605,7 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
             else
             {
                 SetTimer(0);
-                CallbackError(new LuaException(LuaStatus.ERRARG, $"Invalid tempo {e.bpm}"));
+                ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid tempo {e.bpm}"));
             }
         }
 
@@ -609,7 +618,7 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
         {
             if (e.level >= (int)LogLevel.Trace && e.level <= (int)LogLevel.Error)
             {
-                string s = $"SCRIPT {e.msg ?? "null"}";
+                string s = $"Script log: {e.msg ?? "null"}";
                 switch ((LogLevel)e.level)
                 {
                     case LogLevel.Trace: _logger.Trace(s); break;
@@ -623,7 +632,7 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
             }
             else
             {
-                CallbackError(new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}"));
+                ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}"));
             }
         }
         #endregion
@@ -660,22 +669,33 @@ throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
         }
 
         /// <summary>
-        /// General purpose handler for errors in callback functions/threads that can't throw exceptions.
+        /// General purpose handler for errors in callback functions.
+        /// Typically they are running on a different thread so can't simply throw.
+        /// TODO1 could use Task<>? https://stackoverflow.com/questions/5983779/catch-exception-that-is-thrown-in-different-thread
         /// </summary>
         /// <param name="ex">The exception</param>
-        void CallbackError(Exception ex)
+        void ProcessException(Exception ex)
         {
-            var (fatal, msg) = Utils.ProcessException(ex);
+            var (fatal, msg) = Utils.ProcessException_XXX(ex);
+            State.Instance.ExecState = ExecState.Dead_XXX;
+
+
+            /////////////////////////////////////////////////////
+
+            _logger.Info($"ProcessException thread:{Environment.CurrentManagedThreadId}");
+
+            throw ex;
+
+
+
             if (fatal)
             {
-                State.Instance.ExecState = ExecState.Dead;
                 // Logging an error will cause the app to exit.
                 _logger.Error(msg);
             }
             else
             {
                 // User can decide what to do with this. They may be recoverable so use warn.
-                State.Instance.ExecState = ExecState.Dead;
                 _logger.Warn(msg);
             }
         }

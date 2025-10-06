@@ -160,6 +160,9 @@ namespace Nebulua
         {
             _tmit.Snap("OnLoad() entry");
 
+            _logger.Info($"MainForm thread:{Environment.CurrentManagedThreadId}");
+
+
             ReadMidiDefs();
 
             PopulateFileMenu();
@@ -334,7 +337,9 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = Utils.ProcessException(ex);
+                _logger.Info($"OpenScriptFile exception thread:{Environment.CurrentManagedThreadId}");
+
+                var (fatal, msg) = Utils.ProcessException_XXX(ex);
 
                 if (fatal)
                 {
@@ -389,43 +394,85 @@ namespace Nebulua
         /// <param name="e"></param>
         void Play_Click(object? sender, EventArgs e)
         {
-            if (chkPlay.Checked && State.Instance.ExecState == ExecState.Dead)
-            {
-                chkPlay.Checked = false;
-                _logger.Warn("Script is dead");
-                return;
-            }
-
             if (_loadedScriptFn is null)
             {
                 _logger.Warn("No script file loaded");
+                return;
             }
-            else if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
-            {
-                if (chkPlay.Checked)
-                {
-                    if (UserSettings.Current.AutoReload)
-                    {
-                        var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
-                        if (lastTouch > _scriptTouch)
-                        {
-                            OpenScriptFile();
-                        }
-                    }
 
+
+//if (chkPlay.Checked && State.Instance.ExecState == ExecState.Dead)
+//{
+//chkPlay.Checked = false;
+//_logger.Warn("Script is dead");
+//return;
+//}
+
+            switch (State.Instance.ExecState, chkPlay.Checked)
+            {
+                case (ExecState.Idle, true):
+                    MaybeReload();
                     State.Instance.ExecState = ExecState.Run;
-                }
-                else
-                {
+                    break;
+
+                case (ExecState.Idle, false):
+                    //
+                    break;
+
+                case (ExecState.Run, true):
+                    //
+                    break;
+
+                case (ExecState.Run, false):
                     State.Instance.ExecState = ExecState.Idle;
                     _hostCore.KillAll();
+                    break;
 
+                case (ExecState.Dead_XXX, true):
+
+                    break;
+
+                case (ExecState.Dead_XXX, false):
+
+                    break;
+            };
+
+            void MaybeReload()
+            {
+                if (UserSettings.Current.AutoReload)
+                {
+                    var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
+                    if (lastTouch > _scriptTouch)
+                    {
+                        OpenScriptFile();
+                    }
                 }
             }
-            else // something wrong
-            {
-                // State.Instance.ExecState = ExecState.Dead;
-            }
+
+            //if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
+            //{
+            //    if (chkPlay.Checked)
+            //    {
+            //        if (UserSettings.Current.AutoReload)
+            //        {
+            //            var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
+            //            if (lastTouch > _scriptTouch)
+            //            {
+            //                OpenScriptFile();
+            //            }
+            //        }
+            //        State.Instance.ExecState = ExecState.Run;
+            //    }
+            //    else
+            //    {
+            //        State.Instance.ExecState = ExecState.Idle;
+            //        _hostCore.KillAll();
+            //    }
+            //}
+            //else // something wrong
+            //{
+            //    // State.Instance.ExecState = ExecState.Dead;
+            //}
         }
 
         /// <summary>
@@ -677,7 +724,7 @@ namespace Nebulua
                 if (e.Level == LogLevel.Error)
                 {
                     traffic.AppendLine("Fatal error - restart");
-                    State.Instance.ExecState = ExecState.Dead;
+                    State.Instance.ExecState = ExecState.Dead_XXX;
                 }
             });
         }
