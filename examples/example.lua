@@ -28,18 +28,19 @@ api.log_info('Loading example.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Midi channels. Adjust for your configuration.
-local midi_device_in  = "ccMidiGen"
-local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "click-clack")
-local hnd_lmin  = api.open_midi_input("loopMIDI Port", 7)
+local midi_device_in1  = "ccMidiGen"
+local midi_device_in2  = "loopMIDI Port"
+local hnd_ccin  = api.open_midi_input(midi_device_in1, 1, "click-clack")
+local hnd_lmin  = api.open_midi_input(midi_device_in2, 1, "akai-kbd")
 
 local midi_device_out    = "VirtualMIDISynth #1"  -- VST host
 -- local midi_device_out  = "loopMIDI Port"  -- DAW host
 
-local hnd_keys    = api.open_midi_output(midi_device_out, 1, "keys", inst.AcousticGrandPiano)
-local hnd_bass    = api.open_midi_output(midi_device_out, 2, "bass", inst.AcousticBass)
-local hnd_synth   = api.open_midi_output(midi_device_out, 3, "synth", inst.Lead1Square)
-local hnd_strings = api.open_midi_output(midi_device_out, 4, "strings", inst.StringEnsemble1)
-local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums", kit.Jazz)
+local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",    inst.AcousticGrandPiano)
+local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",    inst.AcousticBass)
+local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",   inst.Lead1Square)
+local hnd_strings = api.open_midi_output(midi_device_out, 4,  "strings", inst.StringEnsemble1)
+local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",   kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
@@ -85,10 +86,6 @@ function setup()
     api.set_volume(hnd_strings, 0.9)
 
     -- dbg()
-
-    -- force error
-    api.send_midi_note(hnd_synth, 100000, 0.8, 3)
-    api.send_midi_note(-999, my_scale[note_num], 0.8, 3)
 
     -- This file uses static composition so you must call this!
     return api.process_comp()

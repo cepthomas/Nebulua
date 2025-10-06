@@ -52,7 +52,74 @@ namespace Nebulua
             bool fatal = false;
             string msg;
 
+            switch (e)
+            {
+                case LuaException ex: // script or lua errors but could originate anywhwere
 
+                    // Common stuff.
+                    msg = ex.Message; // default
+                    //Console.WriteLine($"status:{ex.Status} info:{ex.Info}] context:[{ex.Context}]");
+
+                    switch (ex.Status)
+                    {
+                        case LuaStatus.ERRRUN:
+                        case LuaStatus.ERRMEM:
+                        case LuaStatus.ERRERR:
+                            State.Instance.ExecState = ExecState.Dead_XXX;
+                            fatal = true;
+                            break;
+
+                        case LuaStatus.ERRSYNTAX:
+                            State.Instance.ExecState = ExecState.Dead_XXX;
+                            break;
+
+                        case LuaStatus.ERRFILE:
+                            State.Instance.ExecState = ExecState.Dead_XXX;
+                            break;
+
+                        case LuaStatus.ERRARG:
+                            State.Instance.ExecState = ExecState.Dead_XXX;
+                            break;
+
+                        case LuaStatus.INTEROP:
+                            State.Instance.ExecState = ExecState.Dead_XXX;
+                            break;
+
+                        case LuaStatus.DEBUG:
+                            break;
+
+                        case LuaStatus.OK:
+                        case LuaStatus.YIELD:
+                            // Normal, ignore.
+                            break;
+                    }
+                    break;
+
+                case AppException ex: // from app 
+                    msg = $"TODO1 App Error {ex.Message}";
+                    break;
+
+                default: // other - assume fatal
+                    msg = $"{e.GetType()} {e.Message}";
+                    if (e.StackTrace is not null)
+                    {
+                        msg += $"{Environment.NewLine}{e.StackTrace}";
+                    }
+                    fatal = true;
+                    break;
+            }
+
+            return (fatal, msg);
+        }
+
+
+        /// <summary>Generic exception processor for other threads that throw.</summary>
+        /// <param name="e"></param>
+        /// <returns>(bool fatal, string msg)</returns>
+        public static (bool fatal, string msg) ProcessException_TODO1_orig(Exception e)
+        {
+            bool fatal = false;
+            string msg;
 
             switch (e)
             {
@@ -64,25 +131,30 @@ namespace Nebulua
 
                     if (ex.Context.Length > 0)
                     {
-                        // Make a synopsis - dissect the stack from luaLerror().
+                        // Make a synopsis.
                         var parts = ex.Context.SplitByTokens("\r\n\t");
 
-                        if (parts[1] == "stack traceback:")
+                        int tbindex = parts.IndexOf("stack traceback:");
+
+                        //if (parts[1] == "stack traceback:")
+                        if (tbindex >= 0)
                         {
+                            // Dissect the stack from luaLerror().
                             //C:\Dev\Apps\Nebulua\lua\script_api.lua:95: Invalid arg type for chan_name
                             var errdesc = parts[0].SplitByToken(":").Last();
                             //  C  \Dev\Apps\Nebulua\lua\script_api.lua  95  Invalid arg type for chan_name
 
-                            //	C:\Dev\Apps\Nebulua\examples\example.lua:33: in main chunk
+                            //  C:\Dev\Apps\Nebulua\examples\example.lua:33: in main chunk
                             var src = parts.Last().SplitByToken(":");
-                            //	C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
+                            //  C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
                             //var srcfile = $"{src[0]}:{src[1]}({src[2]})";
 
                             msg = $"{ex.Status} {errdesc} => {src[0]}:{src[1]}({src[2]})";
                         }
                         else
                         {
-                            msg = $"{ex.Status} {ex.Message}";
+                            // Use the whole thing.
+                            msg = $"{ex.Status} {ex.Context}";
                         }
                     }
 
@@ -122,7 +194,7 @@ namespace Nebulua
                     break;
 
                 case AppException ex: // from app 
-                    msg = $"TODO1 App Error {ex.Message}";
+                    msg = $"App Error {ex.Message}";
                     break;
 
                 default: // other, probably fatal

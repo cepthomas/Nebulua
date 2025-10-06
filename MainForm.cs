@@ -160,9 +160,6 @@ namespace Nebulua
         {
             _tmit.Snap("OnLoad() entry");
 
-            _logger.Info($"MainForm thread:{Environment.CurrentManagedThreadId}");
-
-
             ReadMidiDefs();
 
             PopulateFileMenu();
@@ -337,8 +334,6 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                _logger.Info($"OpenScriptFile exception thread:{Environment.CurrentManagedThreadId}");
-
                 var (fatal, msg) = Utils.ProcessException_XXX(ex);
 
                 if (fatal)
@@ -401,14 +396,14 @@ namespace Nebulua
             }
 
 
-//if (chkPlay.Checked && State.Instance.ExecState == ExecState.Dead)
-//{
-//chkPlay.Checked = false;
-//_logger.Warn("Script is dead");
-//return;
-//}
+            //if (chkPlay.Checked && State.Instance.ExecState == ExecState.Dead)
+            //{
+            //chkPlay.Checked = false;
+            //_logger.Warn("Script is dead");
+            //return;
+            //}
 
-            switch (State.Instance.ExecState, chkPlay.Checked)
+            switch (State.Instance.ExecState, chkPlay.Checked) // TODO1
             {
                 case (ExecState.Idle, true):
                     MaybeReload();
@@ -448,31 +443,6 @@ namespace Nebulua
                     }
                 }
             }
-
-            //if (State.Instance.ExecState == ExecState.Idle || State.Instance.ExecState == ExecState.Run)
-            //{
-            //    if (chkPlay.Checked)
-            //    {
-            //        if (UserSettings.Current.AutoReload)
-            //        {
-            //            var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
-            //            if (lastTouch > _scriptTouch)
-            //            {
-            //                OpenScriptFile();
-            //            }
-            //        }
-            //        State.Instance.ExecState = ExecState.Run;
-            //    }
-            //    else
-            //    {
-            //        State.Instance.ExecState = ExecState.Idle;
-            //        _hostCore.KillAll();
-            //    }
-            //}
-            //else // something wrong
-            //{
-            //    // State.Instance.ExecState = ExecState.Dead;
-            //}
         }
 
         /// <summary>
@@ -723,7 +693,7 @@ namespace Nebulua
                 traffic.AppendLine(e.ShortMessage);
                 if (e.Level == LogLevel.Error)
                 {
-                    traffic.AppendLine("Fatal error - restart");
+                    traffic.AppendLine("Fatal error - please restart");
                     State.Instance.ExecState = ExecState.Dead_XXX;
                 }
             });

@@ -17,6 +17,9 @@ namespace Nebulua
         /// <summary>App logger.</summary>
         readonly Logger _logger = LogManager.CreateLogger("COR");
 
+        /// <summary>Script logger.</summary>
+        readonly Logger _loggerScr = LogManager.CreateLogger("SCR");
+
         /// <summary>The interop.</summary>
         readonly Interop _interop = new();
 
@@ -38,8 +41,6 @@ namespace Nebulua
         ///// <summary>Diagnostics for timing measurement.</summary>
         //readonly TimingAnalyzer? _tan = null;
         #endregion
-
-bool i = false;
 
         #region Lifecycle
         /// <summary>
@@ -251,7 +252,6 @@ bool i = false;
         public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
-ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
 
             if (input is not null)
             {
@@ -261,10 +261,7 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
                 Midi_ReceiveEvent(input, nevt);
             }
-            else
-            {
-                ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid device {devName}"));
-            }
+            //else TODO1 do I care?
         }
 
         /// <summary>
@@ -309,13 +306,6 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
         /// <param name="periodElapsed"></param>
         void MmTimer_Callback(double totalElapsed, double periodElapsed)
         {
-            if (!i)
-            {
-                _logger.Info($"MmTimer_Callback thread:{Environment.CurrentManagedThreadId}");
-                i = true;
-            }
-
-
             if (State.Instance.ExecState == ExecState.Run)
             {
                 try
@@ -418,36 +408,28 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
         /// <param name="e"></param>
         void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
-            try
+            e.ret = 0;
+
+            // Check args.
+            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                e.ret = 0;
-//throw new LuaException(LuaStatus.DEBUG, "just a test - delete me");
-
-                // Check args.
-                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
-                {
-                    throw new LuaException(LuaStatus.ERRARG, $"Invalid input midi device {e.dev_name}");
-                }
-
-                // Locate or create the device.
-                var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-                if (input is null)
-                {
-                    input = new(e.dev_name); // throws if invalid
-                    input.ReceiveEvent += Midi_ReceiveEvent;
-                    _inputs.Add(input);
-                }
-
-                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true };
-                input.Channels.Add(e.chan_num, ch);
-
-                ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
-                e.ret = chHnd;
+                throw new LuaException(LuaStatus.ERRARG, $"Invalid input midi device {e.dev_name}");
             }
-            catch (Exception ex)
+
+            // Locate or create the device.
+            var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+            if (input is null)
             {
-                ProcessException(ex);
+                input = new(e.dev_name); // throws if invalid
+                input.ReceiveEvent += Midi_ReceiveEvent;
+                _inputs.Add(input);
             }
+
+            MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true };
+            input.Channels.Add(e.chan_num, ch);
+
+            ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
+            e.ret = chHnd;
         }
 
         /// <summary>
@@ -457,42 +439,35 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
         /// <param name="e"></param>
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
-            try
+            e.ret = 0; // chanHnd default means invalid
+
+            // Check args.
+            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                e.ret = 0; // chanHnd default means invalid
-
-                // Check args.
-                if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
-                {
-                    throw new LuaException(LuaStatus.ERRARG, $"Invalid output midi device {e.dev_name}");
-                }
-
-                // Locate or create the device.
-                var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-                if (output is null)
-                {
-                    output = new(e.dev_name); // throws if invalid
-                    _outputs.Add(output);
-                }
-
-                // Add specific channel.
-                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true, Patch =  e.patch };
-                output.Channels.Add(e.chan_num, ch);
-
-                ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
-                e.ret = chHnd;
-
-                if (e.patch >= 0)
-                {
-                    // Send the patch now.
-                    PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
-                    output.Send(pevt);
-                    output.Channels[e.chan_num].Patch = e.patch;
-                }
+                throw new LuaException(LuaStatus.ERRARG, $"Invalid output midi device {e.dev_name}");
             }
-            catch (Exception ex)
+
+            // Locate or create the device.
+            var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+            if (output is null)
             {
-                ProcessException(ex);
+                output = new(e.dev_name); // throws if invalid
+                _outputs.Add(output);
+            }
+
+            // Add specific channel.
+            MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true, Patch =  e.patch };
+            output.Channels.Add(e.chan_num, ch);
+
+            ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
+            e.ret = chHnd;
+
+            if (e.patch >= 0)
+            {
+                // Send the patch now.
+                PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
+                output.Send(pevt);
+                output.Channels[e.chan_num].Patch = e.patch;
             }
         }
 
@@ -503,44 +478,37 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
         /// <param name="e"></param>
         void Interop_SendMidiNote(object? _, SendMidiNoteArgs e)
         {
-            try
+            e.ret = 0; // not used
+
+            // Check args for valid device and channel.
+            ChannelHandle ch = new(e.chan_hnd);
+
+            if (ch.DeviceId >= _outputs.Count ||
+                ch.ChannelNumber < 1 ||
+                ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                e.ret = 0; // not used
-
-                // Check args for valid device and channel.
-                ChannelHandle ch = new(e.chan_hnd);
-
-                if (ch.DeviceId >= _outputs.Count ||
-                    ch.ChannelNumber < 1 ||
-                    ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
-                {
-                    throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
-                }
-
-                // Sound or quiet?
-                var output = _outputs[ch.DeviceId];
-                if (output.Channels[ch.ChannelNumber].Enable)
-                {
-                    int note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
-
-                    // Check for note off.
-                    var vol = e.volume * State.Instance.Volume;
-                    int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MIDI_VAL_MAX), 0, MidiDefs.MIDI_VAL_MAX);
-                    MidiEvent evt = vel == 0?
-                        new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOff, note_num, 0) :
-                        new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOn, note_num, vel);
-
-                    output.Send(evt);
-
-                    if (UserSettings.Current.MonitorSnd)
-                    {
-                        _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
-                    }
-                }
+                throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
             }
-            catch (Exception ex)
+
+            // Sound or quiet?
+            var output = _outputs[ch.DeviceId];
+            if (output.Channels[ch.ChannelNumber].Enable)
             {
-                ProcessException(ex);
+                int note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
+
+                // Check for note off.
+                var vol = e.volume * State.Instance.Volume;
+                int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MIDI_VAL_MAX), 0, MidiDefs.MIDI_VAL_MAX);
+                MidiEvent evt = vel == 0?
+                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOff, note_num, 0) :
+                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOn, note_num, vel);
+
+                output.Send(evt);
+
+                if (UserSettings.Current.MonitorSnd)
+                {
+                    _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                }
             }
         }
 
@@ -551,38 +519,31 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
         /// <param name="e"></param>
         void Interop_SendMidiController(object? _, SendMidiControllerArgs e)
         {
-            try
+            e.ret = 0; // not used
+
+            // Check args.
+            ChannelHandle ch = new(e.chan_hnd);
+
+            if (ch.DeviceId >= _outputs.Count ||
+                ch.ChannelNumber < 1 ||
+                ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                e.ret = 0; // not used
-
-                // Check args.
-                ChannelHandle ch = new(e.chan_hnd);
-
-                if (ch.DeviceId >= _outputs.Count ||
-                    ch.ChannelNumber < 1 ||
-                    ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
-                {
-                    throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
-                }
-
-                int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
-                int value = MathUtils.Constrain(e.value, 0, MidiDefs.MIDI_VAL_MAX);
-
-                var output = _outputs[ch.DeviceId];
-                MidiEvent evt;
-
-                evt = new ControlChangeEvent(0, ch.ChannelNumber, (MidiController)controller, value);
-
-                output.Send(evt);
-
-                if (UserSettings.Current.MonitorSnd)
-                {
-                    _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
-                }
+                throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
             }
-            catch (Exception ex)
+
+            int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
+            int value = MathUtils.Constrain(e.value, 0, MidiDefs.MIDI_VAL_MAX);
+
+            var output = _outputs[ch.DeviceId];
+            MidiEvent evt;
+
+            evt = new ControlChangeEvent(0, ch.ChannelNumber, (MidiController)controller, value);
+
+            output.Send(evt);
+
+            if (UserSettings.Current.MonitorSnd)
             {
-                ProcessException(ex);
+                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
             }
         }
 
@@ -605,7 +566,7 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
             else
             {
                 SetTimer(0);
-                ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid tempo {e.bpm}"));
+                throw new LuaException(LuaStatus.ERRARG, $"Invalid tempo {e.bpm}", "TODO1 context");
             }
         }
 
@@ -618,21 +579,22 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
         {
             if (e.level >= (int)LogLevel.Trace && e.level <= (int)LogLevel.Error)
             {
-                string s = $"Script log: {e.msg ?? "null"}";
+                string s = $"{e.msg ?? "null"}";
                 switch ((LogLevel)e.level)
                 {
-                    case LogLevel.Trace: _logger.Trace(s); break;
-                    case LogLevel.Debug: _logger.Debug(s); break;
-                    case LogLevel.Info:  _logger.Info(s); break;
-                    case LogLevel.Warn:  _logger.Warn(s); break;
-                    case LogLevel.Error: _logger.Error(s); break;
+                    case LogLevel.Trace: _loggerScr.Trace(s); break;
+                    case LogLevel.Debug: _loggerScr.Debug(s); break;
+                    case LogLevel.Info:  _loggerScr.Info(s); break;
+                    case LogLevel.Warn:  _loggerScr.Warn(s); break;
+                    case LogLevel.Error: _loggerScr.Error(s); break;
                 }
 
                 e.ret = 0;
             }
             else
             {
-                ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}"));
+                //ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}"));
+                throw new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}", "TODO1 context");
             }
         }
         #endregion
@@ -665,38 +627,6 @@ ProcessException(new LuaException(LuaStatus.DEBUG, "TODO1", devName));
             else // stop
             {
                 _mmTimer.SetTimer(0, MmTimer_Callback);
-            }
-        }
-
-        /// <summary>
-        /// General purpose handler for errors in callback functions.
-        /// Typically they are running on a different thread so can't simply throw.
-        /// TODO1 could use Task<>? https://stackoverflow.com/questions/5983779/catch-exception-that-is-thrown-in-different-thread
-        /// </summary>
-        /// <param name="ex">The exception</param>
-        void ProcessException(Exception ex)
-        {
-            var (fatal, msg) = Utils.ProcessException_XXX(ex);
-            State.Instance.ExecState = ExecState.Dead_XXX;
-
-
-            /////////////////////////////////////////////////////
-
-            _logger.Info($"ProcessException thread:{Environment.CurrentManagedThreadId}");
-
-            throw ex;
-
-
-
-            if (fatal)
-            {
-                // Logging an error will cause the app to exit.
-                _logger.Error(msg);
-            }
-            else
-            {
-                // User can decide what to do with this. They may be recoverable so use warn.
-                _logger.Warn(msg);
             }
         }
 
