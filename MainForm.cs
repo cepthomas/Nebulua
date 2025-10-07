@@ -712,7 +712,7 @@ namespace Nebulua
                 "for _,v in ipairs(mid.gen_list()) do print(v) end"
                 ];
 
-            var r = ExeLuaChunk(s);// Tools.ExecuteLuaCode(s);
+            var r = ExeLuaChunk(s);
 
             if (r.ecode == 0)
             {
@@ -736,7 +736,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="scode"></param>
         /// <returns></returns>
-        (int ecode, string sres) ExeLuaChunk(List<string> scode) // ExecuteLuaCode
+        (int ecode, string sres) ExeLuaChunk(List<string> scode)
         {
             var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
             var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";

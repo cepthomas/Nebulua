@@ -55,29 +55,9 @@ namespace Nebulua
             switch (e)
             {
                 case LuaException ex:
+                    //Console.WriteLine($"status:{ex.Status} info:{ex.Info}] context:[{ex.Context}]");
 
                     msg = ex.Message; // default
-                    //Console.WriteLine($"status:{ex.Status} info:{ex.Info}] context:[{ex.Context}]");
-// /// <summary>No error.</summary>
-// OK = LUA_OK,
-// /// <summary>Not an error.</summary>
-// YIELD = LUA_YIELD,
-// /// <summary>Runtime error e.g bad arg type.</summary>
-// ERRRUN = LUA_ERRRUN,
-// /// <summary>Syntax error during pre-compilation (file load not runtime - e.g. language violation).</summary>
-// ERRSYNTAX = LUA_ERRSYNTAX,
-// /// <summary>Memory allocation error.</summary>
-// ERRMEM = LUA_ERRMEM,
-// /// <summary>Error while running the error handler function.</summary>
-// ERRERR = LUA_ERRERR,
-// /// <summary>Couldn't open the given file.</summary>
-// ERRFILE = LUA_ERRFILE,
-// /// <summary>Script calls api function with invalid argument.</summary>
-// ERRARG = 10,
-// /// <summary>Interop internal.</summary>
-// ERRINTEROP = 11,
-// /// <summary>Debug flag.</summary>
-// DEBUG = 99,
 
                     switch (ex.Status)
                     {
