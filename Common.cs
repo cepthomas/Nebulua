@@ -44,7 +44,7 @@ namespace Nebulua
     /// <summary>General stuff.</summary>
     public class Utils
     {
-        /// <summary>Generic exception processor for other threads that throw.</summary>
+        /// <summary>Generic exception processor.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
         public static (bool fatal, string msg) ProcessException_XXX(Exception e)
@@ -54,35 +54,48 @@ namespace Nebulua
 
             switch (e)
             {
-                case LuaException ex: // script or lua errors but could originate anywhwere
+                case LuaException ex:
 
-                    // Common stuff.
                     msg = ex.Message; // default
                     //Console.WriteLine($"status:{ex.Status} info:{ex.Info}] context:[{ex.Context}]");
+// /// <summary>No error.</summary>
+// OK = LUA_OK,
+// /// <summary>Not an error.</summary>
+// YIELD = LUA_YIELD,
+// /// <summary>Runtime error e.g bad arg type.</summary>
+// ERRRUN = LUA_ERRRUN,
+// /// <summary>Syntax error during pre-compilation (file load not runtime - e.g. language violation).</summary>
+// ERRSYNTAX = LUA_ERRSYNTAX,
+// /// <summary>Memory allocation error.</summary>
+// ERRMEM = LUA_ERRMEM,
+// /// <summary>Error while running the error handler function.</summary>
+// ERRERR = LUA_ERRERR,
+// /// <summary>Couldn't open the given file.</summary>
+// ERRFILE = LUA_ERRFILE,
+// /// <summary>Script calls api function with invalid argument.</summary>
+// ERRARG = 10,
+// /// <summary>Interop internal.</summary>
+// ERRINTEROP = 11,
+// /// <summary>Debug flag.</summary>
+// DEBUG = 99,
 
                     switch (ex.Status)
                     {
-                        case LuaStatus.ERRRUN:
+                        // Lua system hard failures.
                         case LuaStatus.ERRMEM:
                         case LuaStatus.ERRERR:
                             State.Instance.ExecState = ExecState.Dead_XXX;
                             fatal = true;
                             break;
 
+                        // Usually script errors.
+                        case LuaStatus.ERRRUN:
                         case LuaStatus.ERRSYNTAX:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            break;
-
+                        case LuaStatus.ERRARG:
+                        case LuaStatus.ERRINTEROP:
                         case LuaStatus.ERRFILE:
                             State.Instance.ExecState = ExecState.Dead_XXX;
-                            break;
-
-                        case LuaStatus.ERRARG:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            break;
-
-                        case LuaStatus.INTEROP:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
+                            fatal = false;
                             break;
 
                         case LuaStatus.DEBUG:
@@ -113,9 +126,6 @@ namespace Nebulua
         }
 
 
-        /// <summary>Generic exception processor for other threads that throw.</summary>
-        /// <param name="e"></param>
-        /// <returns>(bool fatal, string msg)</returns>
         public static (bool fatal, string msg) ProcessException_TODO1_orig(Exception e)
         {
             bool fatal = false;
@@ -179,7 +189,7 @@ namespace Nebulua
                             State.Instance.ExecState = ExecState.Dead_XXX;
                             break;
 
-                        case LuaStatus.INTEROP:
+                        case LuaStatus.ERRINTEROP:
                             State.Instance.ExecState = ExecState.Dead_XXX;
                             break;
 
