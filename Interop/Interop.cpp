@@ -120,7 +120,7 @@ int luainteropcb_SetTempo(lua_State* l, int bpm)
 //============= Infrastructure =============//
 
 //--------------------------------------------------------//
-void Interop::Run(String^ scriptFn, String^ luaPath)
+void Interop::RunScript(String^ scriptFn, String^ luaPath)
 {
     InitLua(luaPath);
     // Load C host funcs into lua space.
@@ -128,4 +128,15 @@ void Interop::Run(String^ scriptFn, String^ luaPath)
     // Clean up stack.
     lua_pop(_l, 1);
     OpenScript(scriptFn);
+}
+
+//--------------------------------------------------------//
+void Interop::RunChunk(String^ code, String^ luaPath)
+{
+    InitLua(luaPath);
+    // Load C host funcs into lua space.
+    luainterop_Load(_l);
+    // Clean up stack.
+    lua_pop(_l, 1);
+    OpenChunk(code);
 }

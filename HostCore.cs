@@ -120,7 +120,7 @@ namespace Nebulua
             var scriptDir = Path.GetDirectoryName(_currentScriptFn);
             var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
 
-            _interop.Run(_currentScriptFn, luaPath);
+            _interop.RunScript(_currentScriptFn, luaPath);
             State.Instance.ExecState = ExecState.Idle;
 
             string smeta = _interop.Setup();

@@ -182,8 +182,13 @@ public:
 
 //============= Infrastructure =============//
 public:
-    /// <summary>Initialize and execute.</summary>
+    /// <summary>Initialize and execute script file.</summary>
     /// <param name="scriptFn">The script to load.</param>
     /// <param name="luaPath">LUA_PATH components</param>
-    void Run(String^ scriptFn, String^ luaPath);
+    void RunScript(String^ scriptFn, String^ luaPath);
+
+    /// <summary>Initialize and execute a chunk of lua code.</summary>
+    /// <param name="code">The lua code to load.</param>
+    /// <param name="luaPath">LUA_PATH components</param>
+    void RunChunk(String^ code, String^ luaPath);
 };
