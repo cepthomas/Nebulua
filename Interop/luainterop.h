@@ -1,5 +1,5 @@
 #pragma once
-///// Warning - this file is created by gen_interop.lua - do not edit. /////
+///// Warning - this file is created by do_gen.lua - do not edit. /////
 
 #include <stdbool.h>
 
@@ -96,5 +96,8 @@ int luainteropcb_SetTempo(lua_State* l, int bpm);
 /// Load Lua C lib.
 void luainterop_Load(lua_State* l);
 
-/// Operation result: lua traceback OR error info string OR NULL if OK. 
+/// Operation result: Error info string or NULL if OK. 
 const char* luainterop_Error();
+
+/// Operation result: lua traceback or NULL if OK. 
+const char* luainterop_Context();

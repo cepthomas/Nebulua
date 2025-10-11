@@ -334,7 +334,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                var (fatal, msg) = Utils.ProcessException_XXX(ex);
+                var (fatal, msg) = Utils.ProcessException(ex);
 
                 if (fatal)
                 {

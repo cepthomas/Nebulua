@@ -1,5 +1,4 @@
-///// Generated cpp and h files that bind Cpp/CLI to C interop code.   /////
-///// Warning - this file is created by gen_interop.lua - do not edit. /////
+///// Warning - this file is created by do_gen.lua - do not edit. /////
 
 #include <windows.h>
 #include "luainterop.h"
@@ -16,7 +15,7 @@ String^ Interop::Setup()
 {
     SCOPE();
     String^ ret = gcnew String(luainterop_Setup(_l));
-    EvalInterop(luainterop_Error(), "Setup()");
+    if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     return ret; 
 }
 
@@ -25,7 +24,7 @@ int Interop::Step(int tick)
 {
     SCOPE();
     int ret = luainterop_Step(_l, tick);
-    EvalInterop(luainterop_Error(), "Step()");
+    if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     return ret; 
 }
 
@@ -34,7 +33,7 @@ int Interop::ReceiveMidiNote(int chan_hnd, int note_num, double volume)
 {
     SCOPE();
     int ret = luainterop_ReceiveMidiNote(_l, chan_hnd, note_num, volume);
-    EvalInterop(luainterop_Error(), "ReceiveMidiNote()");
+    if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     return ret; 
 }
 
@@ -43,7 +42,7 @@ int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 {
     SCOPE();
     int ret = luainterop_ReceiveMidiController(_l, chan_hnd, controller, value);
-    EvalInterop(luainterop_Error(), "ReceiveMidiController()");
+    if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     return ret; 
 }
 
@@ -122,6 +121,7 @@ int luainteropcb_SetTempo(lua_State* l, int bpm)
 //--------------------------------------------------------//
 void Interop::RunScript(String^ scriptFn, String^ luaPath)
 {
+    SCOPE();
     InitLua(luaPath);
     // Load C host funcs into lua space.
     luainterop_Load(_l);
@@ -131,12 +131,13 @@ void Interop::RunScript(String^ scriptFn, String^ luaPath)
 }
 
 //--------------------------------------------------------//
-void Interop::RunChunk(String^ code, String^ luaPath)
+void Interop::RunChunk(String^ code, String^ name, String^ luaPath)
 {
+    SCOPE();
     InitLua(luaPath);
     // Load C host funcs into lua space.
     luainterop_Load(_l);
     // Clean up stack.
     lua_pop(_l, 1);
-    OpenChunk(code);
+    OpenChunk(code, name);
 }

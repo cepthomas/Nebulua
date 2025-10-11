@@ -192,7 +192,7 @@ namespace Nebulua
 
             if (_midiOut is null)
             {
-                throw new LuaException(LuaStatus.ERRARG, $"Invalid output device name {deviceName}");
+                throw new LuaException($"Invalid output device name {deviceName}", "TODO1 script context");
             }
         }
 

@@ -47,7 +47,7 @@ namespace Nebulua
         /// <summary>Generic exception processor.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
-        public static (bool fatal, string msg) ProcessException_XXX(Exception e)
+        public static (bool fatal, string msg) ProcessException(Exception e)
         {
             bool fatal = false;
             string msg;
@@ -59,33 +59,30 @@ namespace Nebulua
 
                     msg = ex.Message; // default
 
-                    switch (ex.Status)
-                    {
-                        // Lua system hard failures.
-                        case LuaStatus.ERRMEM:
-                        case LuaStatus.ERRERR:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            fatal = true;
-                            break;
+                    //switch (ex.Status) TODO1
+                    //{
+                    //    // Lua system hard failures.
+                    //    case LuaStatus.ERRMEM:
+                    //    case LuaStatus.ERRERR:
+                    //        State.Instance.ExecState = ExecState.Dead_XXX;
+                    //        fatal = true;
+                    //        break;
 
-                        // Usually script errors.
-                        case LuaStatus.ERRRUN:
-                        case LuaStatus.ERRSYNTAX:
-                        case LuaStatus.ERRARG:
-                        case LuaStatus.ERRINTEROP:
-                        case LuaStatus.ERRFILE:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            fatal = false;
-                            break;
+                    //    // Usually script errors.
+                    //    case LuaStatus.ERRRUN:
+                    //    case LuaStatus.ERRSYNTAX:
+                    //    //case LuaStatus.ERRARG:
+                    //    //case LuaStatus.ERRINTEROP:
+                    //    case LuaStatus.ERRFILE:
+                    //        State.Instance.ExecState = ExecState.Dead_XXX;
+                    //        fatal = false;
+                    //        break;
 
-                        case LuaStatus.DEBUG:
-                            break;
-
-                        case LuaStatus.OK:
-                        case LuaStatus.YIELD:
-                            // Normal, ignore.
-                            break;
-                    }
+                    //    case LuaStatus.OK:
+                    //    case LuaStatus.YIELD:
+                    //        // Normal, ignore.
+                    //        break;
+                    //}
                     break;
 
                 case AppException ex: // from app 
@@ -106,6 +103,7 @@ namespace Nebulua
         }
 
 
+#if _ORIG
         public static (bool fatal, string msg) ProcessException_TODO1_orig(Exception e)
         {
             bool fatal = false;
@@ -165,17 +163,6 @@ namespace Nebulua
                             State.Instance.ExecState = ExecState.Dead_XXX;
                             break;
 
-                        case LuaStatus.ERRARG:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            break;
-
-                        case LuaStatus.ERRINTEROP:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            break;
-
-                        case LuaStatus.DEBUG:
-                            break;
-
                         case LuaStatus.OK:
                         case LuaStatus.YIELD:
                             // Normal, ignore.
@@ -199,6 +186,7 @@ namespace Nebulua
 
             return (fatal, msg);
         }
+#endif
     }
 
     #region Console abstraction to support testing TODO?

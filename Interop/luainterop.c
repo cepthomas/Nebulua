@@ -1,5 +1,4 @@
-///// Generated C and h files that bind interop C to lua C code.       /////
-///// Warning - this file is created by gen_interop.lua - do not edit. /////
+///// Warning - this file is created by do_gen.lua - do not edit. /////
 
 #include "luainterop.h"
 
@@ -9,6 +8,8 @@
 #endif
 
 static const char* _error;
+static const char* _context;
+
 
 //============= interop C => Lua functions =============//
 
@@ -16,6 +17,7 @@ static const char* _error;
 const char* luainterop_Setup(lua_State* l)
 {
     _error = NULL;
+    _context = NULL;
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
@@ -41,8 +43,9 @@ const char* luainterop_Setup(lua_State* l)
     }
     else
     {
+        _error = "Script function setup() error";
         // Get the traceback from the stack.
-         _error = lua_tostring(l, -1);
+         _context = lua_tostring(l, -1);
     }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
@@ -52,6 +55,7 @@ const char* luainterop_Setup(lua_State* l)
 int luainterop_Step(lua_State* l, int tick)
 {
     _error = NULL;
+    _context = NULL;
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
@@ -79,8 +83,9 @@ int luainterop_Step(lua_State* l, int tick)
     }
     else
     {
+        _error = "Script function step() error";
         // Get the traceback from the stack.
-         _error = lua_tostring(l, -1);
+         _context = lua_tostring(l, -1);
     }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
@@ -90,6 +95,7 @@ int luainterop_Step(lua_State* l, int tick)
 int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     _error = NULL;
+    _context = NULL;
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
@@ -121,8 +127,9 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     }
     else
     {
+        _error = "Script function receive_midi_note() error";
         // Get the traceback from the stack.
-         _error = lua_tostring(l, -1);
+         _context = lua_tostring(l, -1);
     }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
@@ -132,6 +139,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
 int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller, int value)
 {
     _error = NULL;
+    _context = NULL;
     int stat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
@@ -163,8 +171,9 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     }
     else
     {
+        _error = "Script function receive_midi_controller() error";
         // Get the traceback from the stack.
-         _error = lua_tostring(l, -1);
+         _context = lua_tostring(l, -1);
     }
     lua_pop(l, num_ret); // Clean up results.
     return ret;
@@ -355,4 +364,9 @@ void luainterop_Load(lua_State* l)
 const char* luainterop_Error()
 {
     return _error;
+}
+
+const char* luainterop_Context()
+{
+    return _context;
 }

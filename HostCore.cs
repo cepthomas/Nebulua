@@ -413,7 +413,7 @@ namespace Nebulua
             // Check args.
             if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException(LuaStatus.ERRARG, $"Invalid input midi device {e.dev_name}");
+                throw new LuaException($"Invalid input midi device {e.dev_name}", "TODO1 script context");
             }
 
             // Locate or create the device.
@@ -444,7 +444,7 @@ namespace Nebulua
             // Check args.
             if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException(LuaStatus.ERRARG, $"Invalid output midi device {e.dev_name}");
+                throw new LuaException($"Invalid output midi device {e.dev_name}", "TODO1 script context");
             }
 
             // Locate or create the device.
@@ -487,7 +487,7 @@ namespace Nebulua
                 ch.ChannelNumber < 1 ||
                 ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
+                throw new LuaException($"Invalid channel {e.chan_hnd}", "TODO1 script context");
             }
 
             // Sound or quiet?
@@ -528,7 +528,7 @@ namespace Nebulua
                 ch.ChannelNumber < 1 ||
                 ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException(LuaStatus.ERRARG, $"Invalid channel {e.chan_hnd}");
+                throw new LuaException($"Invalid channel {e.chan_hnd}", "TODO1 script context");
             }
 
             int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
@@ -566,7 +566,7 @@ namespace Nebulua
             else
             {
                 SetTimer(0);
-                throw new LuaException(LuaStatus.ERRARG, $"Invalid tempo {e.bpm}", "TODO1 context");
+                throw new LuaException($"Invalid tempo {e.bpm}", "TODO1 script context");
             }
         }
 
@@ -594,7 +594,7 @@ namespace Nebulua
             else
             {
                 //ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}"));
-                throw new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}", "TODO1 context");
+                throw new LuaException($"Invalid log level {e.level}", "TODO1 script context");
             }
         }
         #endregion
