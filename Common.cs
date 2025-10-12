@@ -104,7 +104,7 @@ namespace Nebulua
 
 
 #if _ORIG
-        public static (bool fatal, string msg) ProcessException_TODO1_orig(Exception e)
+        public static (bool fatal, string msg) ProcessException_orig(Exception e)
         {
             bool fatal = false;
             string msg;

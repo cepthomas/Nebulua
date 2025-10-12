@@ -52,7 +52,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
 // @param[in] chan_name User channel name
 // @param[in] patch Midi patch number 0 => 127
 // @return Channel handle or 0 if invalid
-int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch);
+int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch);
 
 // Open a midi input channel.
 // @param[in] l Internal lua state.
@@ -60,7 +60,7 @@ int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num
 // @param[in] chan_num Midi channel number 1 => 16 or 0 => all
 // @param[in] chan_name User channel name
 // @return Channel handle or 0 if invalid
-int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name);
+int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name);
 
 // If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 // @param[in] l Internal lua state.
@@ -68,7 +68,7 @@ int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num,
 // @param[in] note_num Note number
 // @param[in] volume Volume 0.0 => 1.0
 // @return Unused
-int luainteropcb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume);
+int luainterop_cb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
 // Send a controller immediately.
 // @param[in] l Internal lua state.
@@ -76,20 +76,20 @@ int luainteropcb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double v
 // @param[in] controller Specific controller 0 => 127
 // @param[in] value Payload 0 => 127
 // @return Unused
-int luainteropcb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value);
+int luainterop_cb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value);
 
 // Script wants to log something.
 // @param[in] l Internal lua state.
 // @param[in] level Log level
 // @param[in] msg Log message
 // @return Unused
-int luainteropcb_Log(lua_State* l, int level, const char* msg);
+int luainterop_cb_Log(lua_State* l, int level, const char* msg);
 
 // Script wants to change tempo.
 // @param[in] l Internal lua state.
 // @param[in] bpm BPM 40 => 240
 // @return Unused
-int luainteropcb_SetTempo(lua_State* l, int bpm);
+int luainterop_cb_SetTempo(lua_State* l, int bpm);
 
 //============= Infrastructure =============//
 

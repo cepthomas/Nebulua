@@ -9,6 +9,7 @@
 
 static const char* _error;
 static const char* _context;
+static int _lstat;
 
 
 //============= interop C => Lua functions =============//
@@ -18,7 +19,7 @@ const char* luainterop_Setup(lua_State* l)
 {
     _error = NULL;
     _context = NULL;
-    int stat = LUA_OK;
+    _lstat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
     const char* ret = 0;
@@ -34,8 +35,8 @@ const char* luainterop_Setup(lua_State* l)
     // Push arguments. No error checking required.
 
     // Do the protected call.
-    stat = luaex_docall(l, num_args, num_ret);
-    if (stat == LUA_OK)
+    _lstat = luaex_docall(l, num_args, num_ret);
+    if (_lstat == LUA_OK)
     {
         // Get the results from the stack.
         if (lua_isstring(l, -1)) { ret = lua_tostring(l, -1); }
@@ -56,7 +57,7 @@ int luainterop_Step(lua_State* l, int tick)
 {
     _error = NULL;
     _context = NULL;
-    int stat = LUA_OK;
+    _lstat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
     int ret = 0;
@@ -74,8 +75,8 @@ int luainterop_Step(lua_State* l, int tick)
     num_args++;
 
     // Do the protected call.
-    stat = luaex_docall(l, num_args, num_ret);
-    if (stat == LUA_OK)
+    _lstat = luaex_docall(l, num_args, num_ret);
+    if (_lstat == LUA_OK)
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
@@ -96,7 +97,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
 {
     _error = NULL;
     _context = NULL;
-    int stat = LUA_OK;
+    _lstat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
     int ret = 0;
@@ -118,8 +119,8 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     num_args++;
 
     // Do the protected call.
-    stat = luaex_docall(l, num_args, num_ret);
-    if (stat == LUA_OK)
+    _lstat = luaex_docall(l, num_args, num_ret);
+    if (_lstat == LUA_OK)
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
@@ -140,7 +141,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
 {
     _error = NULL;
     _context = NULL;
-    int stat = LUA_OK;
+    _lstat = LUA_OK;
     int num_args = 0;
     int num_ret = 1;
     int ret = 0;
@@ -162,8 +163,8 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     num_args++;
 
     // Do the protected call.
-    stat = luaex_docall(l, num_args, num_ret);
-    if (stat == LUA_OK)
+    _lstat = luaex_docall(l, num_args, num_ret);
+    if (_lstat == LUA_OK)
     {
         // Get the results from the stack.
         if (lua_isinteger(l, -1)) { ret = lua_tointeger(l, -1); }
@@ -208,7 +209,7 @@ static int luainterop_OpenMidiOutput(lua_State* l)
     else { luaL_error(l, "Invalid arg type for patch"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_OpenMidiOutput(l, dev_name, chan_num, chan_name, patch);
+    int ret = luainterop_cb_OpenMidiOutput(l, dev_name, chan_num, chan_name, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -235,7 +236,7 @@ static int luainterop_OpenMidiInput(lua_State* l)
     else { luaL_error(l, "Invalid arg type for chan_name"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_OpenMidiInput(l, dev_name, chan_num, chan_name);
+    int ret = luainterop_cb_OpenMidiInput(l, dev_name, chan_num, chan_name);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -262,7 +263,7 @@ static int luainterop_SendMidiNote(lua_State* l)
     else { luaL_error(l, "Invalid arg type for volume"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_SendMidiNote(l, chan_hnd, note_num, volume);
+    int ret = luainterop_cb_SendMidiNote(l, chan_hnd, note_num, volume);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -289,7 +290,7 @@ static int luainterop_SendMidiController(lua_State* l)
     else { luaL_error(l, "Invalid arg type for value"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_SendMidiController(l, chan_hnd, controller, value);
+    int ret = luainterop_cb_SendMidiController(l, chan_hnd, controller, value);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -312,7 +313,7 @@ static int luainterop_Log(lua_State* l)
     else { luaL_error(l, "Invalid arg type for msg"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_Log(l, level, msg);
+    int ret = luainterop_cb_Log(l, level, msg);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -331,7 +332,7 @@ static int luainterop_SetTempo(lua_State* l)
     else { luaL_error(l, "Invalid arg type for bpm"); }
 
     // Do the work. One result.
-    int ret = luainteropcb_SetTempo(l, bpm);
+    int ret = luainterop_cb_SetTempo(l, bpm);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -361,12 +362,5 @@ void luainterop_Load(lua_State* l)
     luaL_requiref(l, "luainterop", luainterop_Open, true);
 }
 
-const char* luainterop_Error()
-{
-    return _error;
-}
-
-const char* luainterop_Context()
-{
-    return _context;
-}
+const char* luainterop_Error() { return _error; }
+const char* luainterop_Context() { return _context; }

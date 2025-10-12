@@ -52,7 +52,7 @@ int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 
 //--------------------------------------------------------//
 
-int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch)
+int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch)
 {
     SCOPE();
     OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, chan_name, patch);
@@ -63,7 +63,7 @@ int luainteropcb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num
 
 //--------------------------------------------------------//
 
-int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name)
+int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name)
 {
     SCOPE();
     OpenMidiInputArgs^ args = gcnew OpenMidiInputArgs(dev_name, chan_num, chan_name);
@@ -74,7 +74,7 @@ int luainteropcb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num,
 
 //--------------------------------------------------------//
 
-int luainteropcb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainterop_cb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
     SCOPE();
     SendMidiNoteArgs^ args = gcnew SendMidiNoteArgs(chan_hnd, note_num, volume);
@@ -85,7 +85,7 @@ int luainteropcb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double v
 
 //--------------------------------------------------------//
 
-int luainteropcb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value)
+int luainterop_cb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value)
 {
     SCOPE();
     SendMidiControllerArgs^ args = gcnew SendMidiControllerArgs(chan_hnd, controller, value);
@@ -96,7 +96,7 @@ int luainteropcb_SendMidiController(lua_State* l, int chan_hnd, int controller, 
 
 //--------------------------------------------------------//
 
-int luainteropcb_Log(lua_State* l, int level, const char* msg)
+int luainterop_cb_Log(lua_State* l, int level, const char* msg)
 {
     SCOPE();
     LogArgs^ args = gcnew LogArgs(level, msg);
@@ -107,7 +107,7 @@ int luainteropcb_Log(lua_State* l, int level, const char* msg)
 
 //--------------------------------------------------------//
 
-int luainteropcb_SetTempo(lua_State* l, int bpm)
+int luainterop_cb_SetTempo(lua_State* l, int bpm)
 {
     SCOPE();
     SetTempoArgs^ args = gcnew SetTempoArgs(bpm);
