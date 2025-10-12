@@ -27,7 +27,7 @@ const char* luainterop_Setup(lua_State* l)
     int ltype = lua_getglobal(l, "setup");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Script does not implement required function setup()";
+        _error = "Script does not implement function setup()";
         return ret;
     }
 
@@ -65,7 +65,7 @@ int luainterop_Step(lua_State* l, int tick)
     int ltype = lua_getglobal(l, "step");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Script does not implement required function step()";
+        _error = "Script does not implement function step()";
         return ret;
     }
 
@@ -105,7 +105,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     int ltype = lua_getglobal(l, "receive_midi_note");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Script does not implement required function receive_midi_note()";
+        _error = "Script does not implement function receive_midi_note()";
         return ret;
     }
 
@@ -149,7 +149,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     int ltype = lua_getglobal(l, "receive_midi_controller");
     if (ltype != LUA_TFUNCTION)
     {
-        _error = "Script does not implement required function receive_midi_controller()";
+        _error = "Script does not implement function receive_midi_controller()";
         return ret;
     }
 
