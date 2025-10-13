@@ -108,13 +108,15 @@ namespace Nebulua
 
             if (_midiIn is null)
             {
-                throw new AppException($"Invalid input midi device name [{deviceName}]");
-            }
-
-            // Assume internal type.
-            if (!realInput)
-            {
-                _midiIn = null;
+                if (deviceName == "ccMidiGen") // Assume internal type.
+                {
+                    _midiIn = null;
+                    realInput = false;
+                }
+                else
+                {
+                    throw new AppException($"Invalid input midi device name [{deviceName}]");
+                }
             }
         }
 

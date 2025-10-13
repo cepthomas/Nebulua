@@ -7,7 +7,7 @@ set ODIR=%cd%
 cd ..\
 set LDIR=%cd%\LBOT
 set LUA_PATH=%LDIR%\?.lua;%ODIR%\?.lua;?.lua;
-:: TODO1 yuck:
+:: TODO1 yuck this. LBOT\csrc\cliex.h/cpp probably should live somewhere else?
 cd ..\..\Libs\LuaInterop\Generator
 :: Gen the C and C++ components from the spec.
 lua do_gen.lua -c %ODIR%\interop_spec.lua %ODIR%

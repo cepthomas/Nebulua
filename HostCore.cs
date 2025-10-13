@@ -414,11 +414,15 @@ namespace Nebulua
             e.ret = -1; // default is invalid
 
             // Check args.
-            if (string.IsNullOrEmpty(e.dev_name) ||
-                e.chan_num < 1 ||
-                e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            if (string.IsNullOrEmpty(e.dev_name))
             {
                 _loggerScr.Warn($"Invalid input midi device {e.dev_name}");
+                return;
+            }
+
+            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            {
+                _loggerScr.Warn($"Invalid input midi channel {e.dev_name ?? "null"}:{e.chan_num}");
                 return;
             }
 
@@ -428,8 +432,7 @@ namespace Nebulua
                 var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
                 if (input is null)
                 {
- handle internal devices local midi_device_in1  = "ccMidiGen"
-                 input = new (e.dev_name); // throws if invalid
+                    input = new(e.dev_name); // throws if invalid
                     input.ReceiveEvent += Midi_ReceiveEvent;
                     _inputs.Add(input);
                 }
@@ -456,11 +459,15 @@ namespace Nebulua
             e.ret = -1; // default is invalid
 
             // Check args.
-            if (string.IsNullOrEmpty(e.dev_name) ||
-                e.chan_num < 1 ||
-                e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            if (string.IsNullOrEmpty(e.dev_name))
             {
-                _loggerScr.Warn($"Invalid output midi device {e.dev_name}");
+                _loggerScr.Warn($"Invalid output midi device {e.dev_name ?? "null"}");
+                return;
+            }
+
+            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            {
+                _loggerScr.Warn($"Invalid output midi channel {e.dev_name ?? "null"}:{e.chan_num}");
                 return;
             }
 

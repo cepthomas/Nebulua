@@ -78,7 +78,7 @@ M.log_info('Loading script_api.lua...')
 -- @param bpm new tempo
 -- @return status
 function M.set_tempo(bpm)
-    local ret = li.set_ret(bpm)
+    local ret = li.set_tempo(bpm)
     -- if tempo == -1 then error(string.format("Invalid tempo:%d", bpm), 2) end
 end
 
