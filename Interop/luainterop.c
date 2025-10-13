@@ -12,7 +12,7 @@ static const char* _context;
 static int _lstat;
 
 
-//============= interop C => Lua functions =============//
+//============= App => C/Lua functions =============//
 
 //--------------------------------------------------------//
 const char* luainterop_Setup(lua_State* l)
@@ -44,7 +44,7 @@ const char* luainterop_Setup(lua_State* l)
     }
     else
     {
-        _error = "Script function setup() error";
+        _error = (_lstat == LUA_ERRMEM || _lstat == LUA_ERRMEM) ? "FATAL" : "Script function setup() error";
         // Get the traceback from the stack.
          _context = lua_tostring(l, -1);
     }
@@ -84,7 +84,7 @@ int luainterop_Step(lua_State* l, int tick)
     }
     else
     {
-        _error = "Script function step() error";
+        _error = (_lstat == LUA_ERRMEM || _lstat == LUA_ERRMEM) ? "FATAL" : "Script function step() error";
         // Get the traceback from the stack.
          _context = lua_tostring(l, -1);
     }
@@ -128,7 +128,7 @@ int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double 
     }
     else
     {
-        _error = "Script function receive_midi_note() error";
+        _error = (_lstat == LUA_ERRMEM || _lstat == LUA_ERRMEM) ? "FATAL" : "Script function receive_midi_note() error";
         // Get the traceback from the stack.
          _context = lua_tostring(l, -1);
     }
@@ -172,7 +172,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
     }
     else
     {
-        _error = "Script function receive_midi_controller() error";
+        _error = (_lstat == LUA_ERRMEM || _lstat == LUA_ERRMEM) ? "FATAL" : "Script function receive_midi_controller() error";
         // Get the traceback from the stack.
          _context = lua_tostring(l, -1);
     }
@@ -181,7 +181,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
 }
 
 
-//============= Lua => interop C callback functions =============//
+//============= C/Lua => App functions =============//
 
 //--------------------------------------------------------//
 // Open a midi output channel.
@@ -191,7 +191,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
 // Lua arg: chan_num Midi channel number 1 => 16
 // Lua arg: chan_name User channel name
 // Lua arg: patch Midi patch number 0 => 127
-// Lua return: int Channel handle or 0 if invalid
+// Lua return: int Channel handle or -1 if error
 static int luainterop_OpenMidiOutput(lua_State* l)
 {
     // Get arguments
@@ -221,7 +221,7 @@ static int luainterop_OpenMidiOutput(lua_State* l)
 // Lua arg: dev_name Midi device name
 // Lua arg: chan_num Midi channel number 1 => 16 or 0 => all
 // Lua arg: chan_name User channel name
-// Lua return: int Channel handle or 0 if invalid
+// Lua return: int Channel handle or -1 if error
 static int luainterop_OpenMidiInput(lua_State* l)
 {
     // Get arguments
@@ -248,7 +248,7 @@ static int luainterop_OpenMidiInput(lua_State* l)
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: note_num Note number
 // Lua arg: volume Volume 0.0 => 1.0
-// Lua return: int Unused
+// Lua return: int -1 if error
 static int luainterop_SendMidiNote(lua_State* l)
 {
     // Get arguments
@@ -275,7 +275,7 @@ static int luainterop_SendMidiNote(lua_State* l)
 // Lua arg: chan_hnd Output channel handle
 // Lua arg: controller Specific controller 0 => 127
 // Lua arg: value Payload 0 => 127
-// Lua return: int Unused
+// Lua return: int -1 if error
 static int luainterop_SendMidiController(lua_State* l)
 {
     // Get arguments
@@ -301,7 +301,7 @@ static int luainterop_SendMidiController(lua_State* l)
 // @return Number of lua return values.
 // Lua arg: level Log level
 // Lua arg: msg Log message
-// Lua return: int Unused
+// Lua return: int -1 if error
 static int luainterop_Log(lua_State* l)
 {
     // Get arguments
@@ -323,7 +323,7 @@ static int luainterop_Log(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: bpm BPM 40 => 240
-// Lua return: int Unused
+// Lua return: int -1 if error
 static int luainterop_SetTempo(lua_State* l)
 {
     // Get arguments

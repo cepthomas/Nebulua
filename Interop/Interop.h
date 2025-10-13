@@ -6,7 +6,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-//============= interop C => Cpp/CLI callback payload =============//
+//============= C/Lua => Cpp/CLI payloads =============//
 
 //--------------------------------------------------------//
 public ref class OpenMidiOutputArgs : public EventArgs
@@ -20,7 +20,7 @@ public:
     property String^ chan_name;
     /// <summary>Midi patch number 0 => 127</summary>
     property int patch;
-    /// <summary>Channel handle or 0 if invalid</summary>
+    /// <summary>Channel handle or -1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
     OpenMidiOutputArgs(const char* dev_name, int chan_num, const char* chan_name, int patch)
@@ -42,7 +42,7 @@ public:
     property int chan_num;
     /// <summary>User channel name</summary>
     property String^ chan_name;
-    /// <summary>Channel handle or 0 if invalid</summary>
+    /// <summary>Channel handle or -1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
     OpenMidiInputArgs(const char* dev_name, int chan_num, const char* chan_name)
@@ -63,7 +63,7 @@ public:
     property int note_num;
     /// <summary>Volume 0.0 => 1.0</summary>
     property double volume;
-    /// <summary>Unused</summary>
+    /// <summary>-1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
     SendMidiNoteArgs(int chan_hnd, int note_num, double volume)
@@ -84,7 +84,7 @@ public:
     property int controller;
     /// <summary>Payload 0 => 127</summary>
     property int value;
-    /// <summary>Unused</summary>
+    /// <summary>-1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
     SendMidiControllerArgs(int chan_hnd, int controller, int value)
@@ -103,7 +103,7 @@ public:
     property int level;
     /// <summary>Log message</summary>
     property String^ msg;
-    /// <summary>Unused</summary>
+    /// <summary>-1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
     LogArgs(int level, const char* msg)
@@ -119,7 +119,7 @@ public ref class SetTempoArgs : public EventArgs
 public:
     /// <summary>BPM 40 => 240</summary>
     property int bpm;
-    /// <summary>Unused</summary>
+    /// <summary>-1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
     SetTempoArgs(int bpm)
@@ -133,7 +133,7 @@ public:
 public ref class Interop : CliEx
 {
 
-//============= Cpp/CLI => interop C functions =============//
+//============= Cpp/CLI => C/Lua functions =============//
 public:
 
     /// <summary>Setup</summary>
@@ -159,7 +159,7 @@ public:
     /// <returns>Script return</returns>
     int ReceiveMidiController(int chan_hnd, int controller, int value);
 
-//============= interop C => Cpp/CLI callback functions =============//
+//============= C/Lua => Cpp/CLI functions =============//
 public:
     static event EventHandler<OpenMidiOutputArgs^>^ OpenMidiOutput;
     static void Notify(OpenMidiOutputArgs^ args) { OpenMidiOutput(nullptr, args); }

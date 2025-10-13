@@ -103,7 +103,7 @@ namespace Nebulua
                 var (fatal, msg) = Utils.ProcessException(ex);
                 if (fatal)
                 {
-                    // Logging an error will cause the app to exit.
+                    // Logging an error will cause the app to stop.
                     _logger.Error(msg);
                 }
                 else

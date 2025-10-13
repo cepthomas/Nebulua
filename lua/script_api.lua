@@ -61,6 +61,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Log functions. This goes straight through to the host.
+-- Level error is fatal and will stop the app.
 -- Magic numbers must match host code.
 -- @param msg what to log
 function M.log_error(msg) li.log(4, msg) end
@@ -76,7 +77,10 @@ M.log_info('Loading script_api.lua...')
 --- Set system tempo.
 -- @param bpm new tempo
 -- @return status
-M.set_tempo = li.set_tempo
+function M.set_tempo(bpm)
+    local ret = li.set_ret(bpm)
+    -- if tempo == -1 then error(string.format("Invalid tempo:%d", bpm), 2) end
+end
 
 -----------------------------------------------------------------------------
 --- Send a control message now.
@@ -84,7 +88,10 @@ M.set_tempo = li.set_tempo
 -- @param controller Specific controller 0 -> 127
 -- @param value Payload 0 -> 127
 -- @return status
-M.send_midi_controller = li.send_midi_controller
+function M.send_midi_controller(chan_hnd, controller, value)
+    local ret = li.send_midi_controller(chan_hnd, controller, value)
+    -- if ret == -1 then log_warn(string.format("Invalid midi_controller %d %d %d", chan_hnd, controller, value), 2) end
+end
 
 -----------------------------------------------------------------------------
 --- Create an input channel.
@@ -93,6 +100,7 @@ M.send_midi_controller = li.send_midi_controller
 -- @return the new chan_hnd or 0 if invalid
 function M.open_midi_input(dev_name, chan_num, chan_name)
     local chan_hnd = li.open_midi_input(dev_name, chan_num, chan_name)
+    if chan_hnd == -1 then error(string.format("Invalid midi input dev:%s num:%d name:%s", dev_name, chan_num, chan_name), 2) end
     return chan_hnd
 end
 
@@ -105,6 +113,7 @@ end
 function M.open_midi_output(dev_name, chan_num, chan_name, patch)
     local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch)
     _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
+    if chan_hnd == -1 then error(string.format("Invalid midi output dev:%s num:%d name:%s patch:%d", dev_name, chan_num, chan_name, patch), 2) end
     return chan_hnd
 end
 
@@ -115,7 +124,8 @@ end
 -- @return status
 function M.set_volume(chan_hnd, volume)
     if volume < 0.1 or volume > 2.0 then
-        error(string.format("Invalid master volume %f", volume), 2)
+        M.log_warn(string.format("Invalid channel volume %f", volume), 2)
+        -- error(string.format("Invalid channel volume %f", volume), 2)
     end
     _channel_volumes[chan_hnd] = volume
 

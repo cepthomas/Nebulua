@@ -8,7 +8,7 @@ using namespace System;
 using namespace System::Collections::Generic;
 
 
-//============= Cpp/CLI => interop C functions =============//
+//============= Cpp/CLI => C/Lua functions =============//
 
 //--------------------------------------------------------//
 String^ Interop::Setup()
@@ -47,7 +47,7 @@ int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 }
 
 
-//============= interop C => Cpp/CLI callback functions =============//
+//============= C/Lua => Cpp/CLI functions =============//
 
 
 //--------------------------------------------------------//

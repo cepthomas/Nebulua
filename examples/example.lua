@@ -36,7 +36,7 @@ local hnd_lmin  = api.open_midi_input(midi_device_in2, 1, "akai-kbd")
 local midi_device_out    = "VirtualMIDISynth #1"  -- VST host
 -- local midi_device_out  = "loopMIDI Port"  -- DAW host
 
-local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",    inst.AcousticGrandPiano)
+local hnd_keys    = api.open_midi_output(midi_device_out, 111,  "keys",    inst.AcousticGrandPiano)
 local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",    inst.AcousticBass)
 local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",   inst.Lead1Square)
 local hnd_strings = api.open_midi_output(midi_device_out, 4,  "strings", inst.StringEnsemble1)
@@ -96,6 +96,9 @@ end
 function step(tick)
     -- Overhead.
     api.process_step(tick)
+
+    --TODO1 error here?
+    api.booga()
 
     -- Other work you may want to do. Like do something every new bar.
         local bar, beat, sub = bt.tick_to_bt(tick)

@@ -106,6 +106,11 @@ namespace Nebulua
                 }
             }
 
+            if (_midiIn is null)
+            {
+                throw new AppException($"Invalid input midi device name [{deviceName}]");
+            }
+
             // Assume internal type.
             if (!realInput)
             {
@@ -192,7 +197,7 @@ namespace Nebulua
 
             if (_midiOut is null)
             {
-                throw new LuaException($"Invalid output device name {deviceName}", "TODO1 script context");
+                 throw new AppException($"Invalid output midi device name [{deviceName}]");
             }
         }
 

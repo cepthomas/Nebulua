@@ -122,7 +122,7 @@ namespace Nebulua
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             traffic.BackColor = UserSettings.Current.BackColor;
-            traffic.MatchText.Add("ERR ", Color.HotPink);
+            traffic.MatchText.Add("ERR ", Color.LightPink);
             traffic.MatchText.Add("WRN ", Color.Yellow);
             traffic.MatchText.Add("SND ", Color.PaleGreen);
             traffic.MatchText.Add("RCV ", Color.LightBlue);
@@ -338,7 +338,7 @@ namespace Nebulua
 
                 if (fatal)
                 {
-                    // Logging an error will cause the app to exit.
+                    // Logging an error will cause the app to stop.
                     _logger.Error(msg);
                 }
                 else
@@ -403,7 +403,7 @@ namespace Nebulua
             //return;
             //}
 
-            switch (State.Instance.ExecState, chkPlay.Checked) // TODO1
+            switch (State.Instance.ExecState, chkPlay.Checked) // TODO1 fix/test
             {
                 case (ExecState.Idle, true):
                     MaybeReload();
@@ -423,11 +423,11 @@ namespace Nebulua
                     _hostCore.KillAll();
                     break;
 
-                case (ExecState.Dead_XXX, true):
+                case (ExecState.Dead, true):
 
                     break;
 
-                case (ExecState.Dead_XXX, false):
+                case (ExecState.Dead, false):
 
                     break;
             };
@@ -587,7 +587,7 @@ namespace Nebulua
                 "for _,v in ipairs(mus.gen_md()) do print(v) end",
                 ];
 
-            var (_, sres) = ExeLuaChunk(s);
+            var (_, sres) = ExecuteLuaChunk(s);
 
             ls.Add(sres);
             ls.Add($"");
@@ -691,10 +691,11 @@ namespace Nebulua
             this.InvokeIfRequired(_ =>
             {
                 traffic.AppendLine(e.ShortMessage);
+
                 if (e.Level == LogLevel.Error)
                 {
                     traffic.AppendLine("Fatal error - please restart");
-                    State.Instance.ExecState = ExecState.Dead_XXX;
+                    State.Instance.ExecState = ExecState.Dead;
                 }
             });
         }
@@ -712,7 +713,7 @@ namespace Nebulua
                 "for _,v in ipairs(mid.gen_list()) do print(v) end"
                 ];
 
-            var r = ExeLuaChunk(s);
+            var r = ExecuteLuaChunk(s);
 
             if (r.ecode == 0)
             {
@@ -736,7 +737,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="scode"></param>
         /// <returns></returns>
-        (int ecode, string sres) ExeLuaChunk(List<string> scode)
+        (int ecode, string sres) ExecuteLuaChunk(List<string> scode)
         {
             var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
             var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
@@ -752,7 +753,7 @@ namespace Nebulua
                 lserr.Add($"=== stderr:");
                 lserr.Add($"{r.sret}");
 
-                _logger.Error(string.Join(Environment.NewLine, lserr));
+                _logger.Warn(string.Join(Environment.NewLine, lserr));
             }
             return (r.ecode, r.sret);
         }

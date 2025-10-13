@@ -41,152 +41,41 @@ namespace Nebulua
         }
     }
 
-    /// <summary>General stuff.</summary>
+    /// <summary>Utility stuff.</summary>
     public class Utils
     {
-        /// <summary>Generic exception processor.</summary>
+        /// <summary>General exception processor.</summary>
         /// <param name="e"></param>
         /// <returns>(bool fatal, string msg)</returns>
         public static (bool fatal, string msg) ProcessException(Exception e)
         {
             bool fatal = false;
-            string msg;
+            string msg = e.Message; // default
 
             switch (e)
             {
                 case LuaException ex:
-                    //Console.WriteLine($"status:{ex.Status} info:{ex.Info}] context:[{ex.Context}]");
-
-                    msg = ex.Message; // default
-
-                    //switch (ex.Status) TODO1
-                    //{
-                    //    // Lua system hard failures.
-                    //    case LuaStatus.ERRMEM:
-                    //    case LuaStatus.ERRERR:
-                    //        State.Instance.ExecState = ExecState.Dead_XXX;
-                    //        fatal = true;
-                    //        break;
-
-                    //    // Usually script errors.
-                    //    case LuaStatus.ERRRUN:
-                    //    case LuaStatus.ERRSYNTAX:
-                    //    //case LuaStatus.ERRARG:
-                    //    //case LuaStatus.ERRINTEROP:
-                    //    case LuaStatus.ERRFILE:
-                    //        State.Instance.ExecState = ExecState.Dead_XXX;
-                    //        fatal = false;
-                    //        break;
-
-                    //    case LuaStatus.OK:
-                    //    case LuaStatus.YIELD:
-                    //        // Normal, ignore.
-                    //        break;
-                    //}
+                    if (ex.Error.Contains("FATAL")) // bad lua internal error
+                    {
+                        fatal = true;
+                        State.Instance.ExecState = ExecState.Dead;
+                    }
                     break;
 
-                case AppException ex: // from app 
-                    msg = $"TODO1 App Error {ex.Message}";
+                case AppException ex: // from app - not fatal
                     break;
 
                 default: // other - assume fatal
-                    msg = $"{e.GetType()} {e.Message}";
+                    fatal = true;
                     if (e.StackTrace is not null)
                     {
                         msg += $"{Environment.NewLine}{e.StackTrace}";
                     }
-                    fatal = true;
                     break;
             }
 
             return (fatal, msg);
         }
-
-
-#if _ORIG
-        public static (bool fatal, string msg) ProcessException_orig(Exception e)
-        {
-            bool fatal = false;
-            string msg;
-
-            switch (e)
-            {
-                case LuaException ex: // script or lua errors but could originate anywhwere
-
-                    // Common stuff.
-                    msg = ex.Message; // default
-                    //Console.WriteLine($"status:{ex.Status} info:{ex.Info}] context:[{ex.Context}]");
-
-                    if (ex.Context.Length > 0)
-                    {
-                        // Make a synopsis.
-                        var parts = ex.Context.SplitByTokens("\r\n\t");
-
-                        int tbindex = parts.IndexOf("stack traceback:");
-
-                        //if (parts[1] == "stack traceback:")
-                        if (tbindex >= 0)
-                        {
-                            // Dissect the stack from luaLerror().
-                            //C:\Dev\Apps\Nebulua\lua\script_api.lua:95: Invalid arg type for chan_name
-                            var errdesc = parts[0].SplitByToken(":").Last();
-                            //  C  \Dev\Apps\Nebulua\lua\script_api.lua  95  Invalid arg type for chan_name
-
-                            //  C:\Dev\Apps\Nebulua\examples\example.lua:33: in main chunk
-                            var src = parts.Last().SplitByToken(":");
-                            //  C  \Dev\Apps\Nebulua\examples\example.lua  33  in main chunk
-                            //var srcfile = $"{src[0]}:{src[1]}({src[2]})";
-
-                            msg = $"{ex.Status} {errdesc} => {src[0]}:{src[1]}({src[2]})";
-                        }
-                        else
-                        {
-                            // Use the whole thing.
-                            msg = $"{ex.Status} {ex.Context}";
-                        }
-                    }
-
-                    switch (ex.Status)
-                    {
-                        case LuaStatus.ERRRUN:
-                        case LuaStatus.ERRMEM:
-                        case LuaStatus.ERRERR:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            fatal = true;
-                            break;
-
-                        case LuaStatus.ERRSYNTAX:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            break;
-
-                        case LuaStatus.ERRFILE:
-                            State.Instance.ExecState = ExecState.Dead_XXX;
-                            break;
-
-                        case LuaStatus.OK:
-                        case LuaStatus.YIELD:
-                            // Normal, ignore.
-                            break;
-                    }
-                    break;
-
-                case AppException ex: // from app 
-                    msg = $"App Error {ex.Message}";
-                    break;
-
-                default: // other, probably fatal
-                    msg = $"{e.GetType()} {e.Message}";
-                    if (e.StackTrace is not null)
-                    {
-                        msg += $"{Environment.NewLine}{e.StackTrace}";
-                    }
-                    fatal = true;
-                    break;
-            }
-
-            return (fatal, msg);
-        }
-#endif
     }
 
     #region Console abstraction to support testing TODO?

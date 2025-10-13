@@ -10,7 +10,7 @@ namespace Nebulua
 {
     #region Enums
     /// <summary>Internal status.</summary>
-    public enum ExecState { Idle, Run, Exit, Dead_XXX }
+    public enum ExecState { Idle, Run, Exit, Dead }
     #endregion
 
     /// <summary>System dynamic values for access by all other components. Some notify clients.</summary>

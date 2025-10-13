@@ -71,7 +71,7 @@ M.host_funcs =
             { name = "chan_name", type = "S", description = "User channel name" },
             { name = "patch",     type = "I", description = "Midi patch number 0 => 127" },
         },
-        ret = { type = "I", description = "Channel handle or 0 if invalid" }
+        ret = { type = "I", description = "Channel handle or -1 if error" }
     },
 
     {
@@ -84,7 +84,7 @@ M.host_funcs =
             { name = "chan_num",  type = "I", description = "Midi channel number 1 => 16 or 0 => all" },
             { name = "chan_name", type = "S", description = "User channel name" },
         },
-        ret = { type = "I", description = "Channel handle or 0 if invalid" }
+        ret = { type = "I", description = "Channel handle or -1 if error" }
     },
 
     {
@@ -97,7 +97,7 @@ M.host_funcs =
             { name = "note_num", type = "I", description = "Note number" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
-        ret = { type = "I", description = "Unused" }
+        ret = { type = "I", description = "-1 if error" }
     },
 
     {
@@ -110,7 +110,7 @@ M.host_funcs =
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
-        ret = { type = "I", description = "Unused" }
+        ret = { type = "I", description = "-1 if error" }
     },
 
     {
@@ -122,7 +122,7 @@ M.host_funcs =
             { name = "level", type = "I", description = "Log level" },
             { name = "msg", type = "S", description = "Log message" },
         },
-        ret = { type = "I", description = "Unused" }
+        ret = { type = "I", description = "-1 if error" }
     },
 
     {
@@ -133,7 +133,7 @@ M.host_funcs =
         {
             { name = "bpm", type = "I", description = "BPM 40 => 240" },
         },
-        ret = { type = "I", description = "Unused" }
+        ret = { type = "I", description = "-1 if error" }
     },
 }
 

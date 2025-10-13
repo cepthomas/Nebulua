@@ -20,6 +20,9 @@ namespace Nebulua
         /// <summary>Script logger.</summary>
         readonly Logger _loggerScr = LogManager.CreateLogger("SCR");
 
+        /// <summary>Midi traffic logger.</summary>
+        readonly Logger _loggerMidi = LogManager.CreateLogger("MID");
+
         /// <summary>The interop.</summary>
         readonly Interop _interop = new();
 
@@ -104,12 +107,12 @@ namespace Nebulua
                 }
                 else
                 {
-                    throw new AppException($"Invalid script file {scriptFn}");
+                    throw new AppException($"Invalid script file [{scriptFn}]");
                 }
             }
             else if (_currentScriptFn is null)
             {
-                throw new AppException("Can't reload, no current file");
+                throw new AppException("Can't reload - no current file");
             }
 
             // Load and run the new script.
@@ -167,13 +170,13 @@ namespace Nebulua
         {
             if (ch.DeviceId >= _outputs.Count)
             {
-                throw new AppException($"Invalid device id {ch.DeviceId}");
+                throw new AppException($"Invalid device id [{ch.DeviceId}]");
             }
 
             var output = _outputs[ch.DeviceId];
             if (!output.Channels.ContainsKey(ch.ChannelNumber))
             {
-                throw new AppException($"Invalid channel {ch.ChannelNumber}");
+                throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
             }
 
             output.Channels[ch.ChannelNumber].Enable = enable;
@@ -261,7 +264,7 @@ namespace Nebulua
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
                 Midi_ReceiveEvent(input, nevt);
             }
-            //else TODO1 do I care?
+            //else TODO do I care?
         }
 
         /// <summary>
@@ -390,7 +393,7 @@ namespace Nebulua
 
                 if (logit && UserSettings.Current.MonitorRcv)
                 {
-                    _logger.Trace($"RCV {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chanHnd)}");
+                    _loggerMidi.Trace($"<<< {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chanHnd)}");
                 }
             }
             catch (Exception ex)
@@ -400,7 +403,7 @@ namespace Nebulua
         }
         #endregion
 
-        #region Script => Host Callbacks
+        #region Script => Host Functions
         /// <summary>
         /// Script creates an input channel.
         /// </summary>
@@ -408,28 +411,39 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
-            e.ret = 0;
+            e.ret = -1; // default is invalid
 
             // Check args.
-            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            if (string.IsNullOrEmpty(e.dev_name) ||
+                e.chan_num < 1 ||
+                e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException($"Invalid input midi device {e.dev_name}", "TODO1 script context");
+                _loggerScr.Warn($"Invalid input midi device {e.dev_name}");
+                return;
             }
 
-            // Locate or create the device.
-            var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-            if (input is null)
+            try
             {
-                input = new(e.dev_name); // throws if invalid
-                input.ReceiveEvent += Midi_ReceiveEvent;
-                _inputs.Add(input);
+                // Locate or create the device.
+                var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+                if (input is null)
+                {
+ handle internal devices local midi_device_in1  = "ccMidiGen"
+                 input = new (e.dev_name); // throws if invalid
+                    input.ReceiveEvent += Midi_ReceiveEvent;
+                    _inputs.Add(input);
+                }
+
+                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true };
+                input.Channels.Add(e.chan_num, ch);
+
+                ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
+                e.ret = chHnd;
             }
-
-            MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true };
-            input.Channels.Add(e.chan_num, ch);
-
-            ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
-            e.ret = chHnd;
+            catch (AppException ex)
+            {
+                _loggerScr.Warn(ex.Message);
+            }
         }
 
         /// <summary>
@@ -439,35 +453,45 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
-            e.ret = 0; // chanHnd default means invalid
+            e.ret = -1; // default is invalid
 
             // Check args.
-            if (e.dev_name is null || e.dev_name.Length == 0 || e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            if (string.IsNullOrEmpty(e.dev_name) ||
+                e.chan_num < 1 ||
+                e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException($"Invalid output midi device {e.dev_name}", "TODO1 script context");
+                _loggerScr.Warn($"Invalid output midi device {e.dev_name}");
+                return;
             }
 
-            // Locate or create the device.
-            var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-            if (output is null)
+            try
             {
-                output = new(e.dev_name); // throws if invalid
-                _outputs.Add(output);
+                // Locate or create the device.
+                var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+                if (output is null)
+                {
+                    output = new(e.dev_name); // throws if invalid
+                    _outputs.Add(output);
+                }
+
+                // Add specific channel.
+                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true, Patch = e.patch };
+                output.Channels.Add(e.chan_num, ch);
+
+                ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
+                e.ret = chHnd;
+
+                if (e.patch >= 0)
+                {
+                    // Send the patch now.
+                    PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
+                    output.Send(pevt);
+                    output.Channels[e.chan_num].Patch = e.patch;
+                }
             }
-
-            // Add specific channel.
-            MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true, Patch =  e.patch };
-            output.Channels.Add(e.chan_num, ch);
-
-            ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
-            e.ret = chHnd;
-
-            if (e.patch >= 0)
+            catch (AppException ex)
             {
-                // Send the patch now.
-                PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
-                output.Send(pevt);
-                output.Channels[e.chan_num].Patch = e.patch;
+                _loggerScr.Warn(ex.Message);
             }
         }
 
@@ -487,7 +511,8 @@ namespace Nebulua
                 ch.ChannelNumber < 1 ||
                 ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException($"Invalid channel {e.chan_hnd}", "TODO1 script context");
+                _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
+                return;
             }
 
             // Sound or quiet?
@@ -507,7 +532,7 @@ namespace Nebulua
 
                 if (UserSettings.Current.MonitorSnd)
                 {
-                    _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                    _loggerMidi.Trace($">>> {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
                 }
             }
         }
@@ -528,7 +553,8 @@ namespace Nebulua
                 ch.ChannelNumber < 1 ||
                 ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
             {
-                throw new LuaException($"Invalid channel {e.chan_hnd}", "TODO1 script context");
+                _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
+                return;
             }
 
             int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
@@ -543,7 +569,7 @@ namespace Nebulua
 
             if (UserSettings.Current.MonitorSnd)
             {
-                _logger.Trace($"SND {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                _loggerMidi.Trace($">>> {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
             }
         }
 
@@ -554,6 +580,8 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_SetTempo(object? _, SetTempoArgs e)
         {
+            e.ret = 0; // not used
+
             if (e.bpm >= 30 && e.bpm <= 240)
             {
                 State.Instance.Tempo = e.bpm;
@@ -565,8 +593,10 @@ namespace Nebulua
             }
             else
             {
-                SetTimer(0);
-                throw new LuaException($"Invalid tempo {e.bpm}", "TODO1 script context");
+                e.ret = -1;
+                // Leave as is or reset?
+                //SetTimer(0);
+                _loggerScr.Warn($"Invalid tempo {e.bpm}");
             }
         }
 
@@ -577,24 +607,23 @@ namespace Nebulua
         /// <param name="e"></param>
         void Interop_Log(object? _, LogArgs e)
         {
-            if (e.level >= (int)LogLevel.Trace && e.level <= (int)LogLevel.Error)
-            {
-                string s = $"{e.msg ?? "null"}";
-                switch ((LogLevel)e.level)
-                {
-                    case LogLevel.Trace: _loggerScr.Trace(s); break;
-                    case LogLevel.Debug: _loggerScr.Debug(s); break;
-                    case LogLevel.Info:  _loggerScr.Info(s); break;
-                    case LogLevel.Warn:  _loggerScr.Warn(s); break;
-                    case LogLevel.Error: _loggerScr.Error(s); break;
-                }
+            e.ret = 0; // not used
 
-                e.ret = 0;
-            }
-            else
+            if (e.level < (int)LogLevel.Trace || e.level > (int)LogLevel.Error)
             {
-                //ProcessException(new LuaException(LuaStatus.ERRARG, $"Invalid log level {e.level}"));
-                throw new LuaException($"Invalid log level {e.level}", "TODO1 script context");
+                e.ret = -1;
+                _loggerScr.Warn($"Invalid log level {e.level}");
+                e.level = (int)LogLevel.Warn;
+            }
+
+            string s = $"{e.msg ?? "null"}";
+            switch ((LogLevel)e.level)
+            {
+                case LogLevel.Trace: _loggerScr.Trace(s); break;
+                case LogLevel.Debug: _loggerScr.Debug(s); break;
+                case LogLevel.Info: _loggerScr.Info(s); break;
+                case LogLevel.Warn: _loggerScr.Warn(s); break;
+                case LogLevel.Error: _loggerScr.Error(s); break;
             }
         }
         #endregion
