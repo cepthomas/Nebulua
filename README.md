@@ -401,7 +401,7 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 - intervals: string of note definitions. Like `"1 +3 4 -b7"`.
 
 
-# Tech Notes
+# Tech Notes TODO1 update
 
 ## Build
 
@@ -417,7 +417,7 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
     - Main which does window event loop and the cli.
     - Midi receive events callback.
     - Timer periodic events callback.
-- The shared resource that requires synchronization is a singleton `AppInterop`. It is protected by a 
+- The shared resource that requires synchronization is a singleton `Interop`. It is protected by a 
   `CRITICAL_SECTION`. Thread access to the UI is protected by `InvokeIfRequired()`.
 - The app interop translates between internal `LUA_XXX` status and user-facing `enum NebStatus`.
   The interop never throws.
@@ -430,7 +430,7 @@ Host -> lua
 ```
 MmTimer_Callback(double totalElapsed, double periodElapsed)  [in App\Core.cs]
     calls
-AppInterop.Step(tick)  [in interop\AppInterop.cpp]
+Interop.Step(tick)  [in interop\Interop.cpp]
     calls
 luainterop_Step(_l, tick)  [in interop\luainterop.c]
     calls
@@ -443,7 +443,7 @@ neb.send_midi_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
     calls
 luainterop_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
     calls
- AppInterop::NotifySend(args)  [in interop\AppInterop.cpp]
+ Interop::NotifySend(args)  [in interop\Interop.cpp]
     calls
 Interop_Send(object? _, SendArgs e)  [in App\Core.cs]
     calls driver...

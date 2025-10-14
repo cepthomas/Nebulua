@@ -13,11 +13,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-// TODO slow startup:
-// dur:295.510 tot:295.510 MainForm() enter
-// dur:1390.500 tot:1686.010 MainForm() exit
-// dur:035.980 tot:1721.990 OnLoad() entry
-// dur:284.873 tot:2006.863 OnLoad() exit
+// TODO slow startup.
 
 
 namespace Nebulua
@@ -436,8 +432,8 @@ namespace Nebulua
             {
                 if (UserSettings.Current.AutoReload)
                 {
-                    var lastTouch = File.GetLastWriteTime(_loadedScriptFn);
-                    if (lastTouch > _scriptTouch)
+                    var touch = File.GetLastWriteTime(_loadedScriptFn);
+                    if (touch > _scriptTouch)
                     {
                         OpenScriptFile();
                     }
@@ -469,7 +465,7 @@ namespace Nebulua
                 string name = ((ClickClack)sender!).Name;
                 int x = (int)e.X; // note
                 int y = (int)e.Y; // velocity
-                _hostCore.InjectReceiveEvent(name, 1, x, y);
+                _hostCore.InjectMidiInEvent(name, 1, x, y);
             }
         }
 

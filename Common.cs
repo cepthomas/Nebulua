@@ -6,7 +6,7 @@ using System.Linq;
 namespace Nebulua
 {
     #region Types
-    /// <summary>Application error. Includes function args etc.</summary>
+    /// <summary>Application level error. Above lua level.</summary>
     public class AppException(string message) : Exception(message) { }
 
     /// <summary>Channel playing.</summary>

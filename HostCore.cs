@@ -89,11 +89,12 @@ namespace Nebulua
 
         #region Public functions
         /// <summary>
-        /// Load and execute script. Can throw.
+        /// Load and execute script.
         /// </summary>
         /// <param name="scriptFn">The script file or null to reload current.</param>
         /// <returns></returns>
         /// <exception cref="AppException"></exception>
+        /// <exception cref="LuaException">From called functions.</exception>
         public void LoadScript(string? scriptFn = null)
         {
             ResetIo();
@@ -143,7 +144,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Get a list of all valid device channels.
+        /// Get a list of all valid device channels. Doesn't throw.
         /// </summary>
         /// <returns></returns>
         public List<ChannelHandle> ValidOutputChannels()
@@ -188,7 +189,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Human readable strings about the channel.
+        /// Human readable strings about the channel. Doesn't throw.
         /// </summary>
         /// <param name="ch"></param>
         /// <returns></returns>
@@ -252,7 +253,7 @@ namespace Nebulua
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
-        public void InjectReceiveEvent(string devName, int channel, int noteNum, int velocity)
+        public void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity)
         {
             var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
 
@@ -264,11 +265,11 @@ namespace Nebulua
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
                 Midi_ReceiveEvent(input, nevt);
             }
-            //else TODO do I care?
+            //else do I care?
         }
 
         /// <summary>
-        /// Stop all midi.
+        /// Stop all midi. Doesn't throw.
         /// </summary>
         public void KillAll()
         {
@@ -303,7 +304,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Process events. These are on the client UI thread now. Doesn't throw.
+        /// Process events. These are on the client UI thread now but has no exception handler.
         /// </summary>
         /// <param name="totalElapsed"></param>
         /// <param name="periodElapsed"></param>
@@ -353,13 +354,13 @@ namespace Nebulua
                 }
                 catch (Exception ex)
                 {
-                    _logger.Exception(ex);
+                    _logger.Exception(ex); //TODO1 XXX do better
                 }
             }
         }
 
         /// <summary>
-        /// Midi input arrived. These are on the client UI thread now. Can throw.
+        /// Midi input arrived. These are on the client UI thread now but has no exception handler.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -398,7 +399,7 @@ namespace Nebulua
             }
             catch (Exception ex)
             {
-                _logger.Exception(ex);
+                _logger.Exception(ex); // TODO1 XXX do better
             }
         }
         #endregion
@@ -409,6 +410,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
+        /// <exception cref="AppException">From called functions</exception>
         void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
             e.ret = -1; // default is invalid
@@ -445,7 +447,7 @@ namespace Nebulua
             }
             catch (AppException ex)
             {
-                _loggerScr.Warn(ex.Message);
+                _loggerScr.Warn(ex.Message); // TODO1 XXX do better
             }
         }
 
@@ -454,6 +456,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
+        /// <exception cref="AppException">From called functions</exception>
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
             e.ret = -1; // default is invalid
@@ -498,12 +501,12 @@ namespace Nebulua
             }
             catch (AppException ex)
             {
-                _loggerScr.Warn(ex.Message);
+                _loggerScr.Warn(ex.Message); // TODO1 XXX do better
             }
         }
 
         /// <summary>
-        /// Script wants to send a midi note.
+        /// Script wants to send a midi note. Doesn't throw.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -545,7 +548,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Script wants to send a midi controller.
+        /// Script wants to send a midi controller. Doesn't throw.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -581,7 +584,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Script wants to change tempo.
+        /// Script wants to change tempo. Doesn't throw.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -602,13 +605,13 @@ namespace Nebulua
             {
                 e.ret = -1;
                 // Leave as is or reset?
-                //SetTimer(0);
+                // SetTimer(0);
                 _loggerScr.Warn($"Invalid tempo {e.bpm}");
             }
         }
 
         /// <summary>
-        /// Script wants to log something.
+        /// Script wants to log something. Doesn't throw.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -637,7 +640,7 @@ namespace Nebulua
 
         #region Private functions
         /// <summary>
-        /// Clean up devices.
+        /// Clean up devices. Doesn't throw.
         /// </summary>
         void ResetIo()
         {
@@ -648,7 +651,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Set timer for this tempo.
+        /// Set timer for this tempo. Doesn't throw.
         /// </summary>
         /// <param name="tempo"></param>
         void SetTimer(int tempo)
@@ -667,7 +670,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Create string suitable for logging.
+        /// Create string suitable for logging. Doesn't throw.
         /// </summary>
         /// <param name="evt">Midi event to format.</param>
         /// <param name="tick">Current tick.</param>

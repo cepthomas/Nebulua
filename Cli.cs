@@ -98,20 +98,30 @@ namespace Nebulua
                 // Done. Wait a bit in case there are some lingering events or logging.
                 Thread.Sleep(100);
             }
-            catch (Exception ex)
+            catch (LuaException ex)
             {
-                var (fatal, msg) = Utils.ProcessException(ex);
-                if (fatal)
+                if (ex.Error.Contains("FATAL")) // bad lua internal error
                 {
                     // Logging an error will cause the app to stop.
-                    _logger.Error(msg);
+                    State.Instance.ExecState = ExecState.Dead;
+                    _logger.Error(ex.Message);
                 }
                 else
                 {
-                    // User can decide what to do with this. They may be recoverable so use warn.
+                    // This may be recoverable so use warn. User can decide what to do with this.
                     State.Instance.ExecState = ExecState.Idle;
-                    _logger.Warn(msg);
+                    _logger.Warn(ex.Message);
                 }
+            }
+            catch (AppException ex) // from app - not fatal
+            {
+                State.Instance.ExecState = ExecState.Idle;
+                _logger.Warn(ex.Message);
+            }
+            catch (Exception ex) // other/unknown - assume fatal
+            {
+                // Logging an error will cause the app to stop.
+                _logger.Exception(ex);
             }
             finally
             {
@@ -120,7 +130,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Loop forever doing cmdproc requests. Should not throw. Command processor will take care of its own errors.
+        /// Loop forever doing cmdproc requests.
         /// </summary>
         public void Run()
         {
