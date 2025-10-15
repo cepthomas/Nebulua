@@ -1,6 +1,6 @@
-using Ephemera.NBagOfTricks;
 using System;
 using System.Linq;
+using Ephemera.NBagOfTricks;
 
 
 namespace Nebulua
@@ -41,52 +41,52 @@ namespace Nebulua
         }
     }
 
-    /// <summary>Utility stuff.</summary>
-    public class Utils
-    {
-        /// <summary>General exception processor.</summary>
-        /// <param name="e"></param>
-        /// <returns>(bool fatal, string msg)</returns>
-        public static (bool fatal, string msg) ProcessException(Exception e)
-        {
-            bool fatal = false;
-            string msg = e.Message; // default
+    ///// <summary>Utility stuff.</summary>
+    //public class Utils
+    //{
+    //    /// <summary>General exception processor.</summary>
+    //    /// <param name="e"></param>
+    //    /// <returns>(bool fatal, string msg)</returns>
+    //    public static (bool fatal, string msg) ProcessException(Exception e)
+    //    {
+    //        bool fatal = false;
+    //        string msg = e.Message; // default
 
-            switch (e)
-            {
-                case LuaException ex:
-                    if (ex.Error.Contains("FATAL")) // bad lua internal error
-                    {
-                        fatal = true;
-                        State.Instance.ExecState = ExecState.Dead;
-                    }
-                    break;
+    //        switch (e)
+    //        {
+    //            case LuaException ex:
+    //                if (ex.Error.Contains("FATAL")) // bad lua internal error
+    //                {
+    //                    fatal = true;
+    //                    State.Instance.ExecState = ExecState.Dead;
+    //                }
+    //                break;
 
-                case AppException ex: // from app - not fatal
-                    break;
+    //            case AppException ex: // from app - not fatal
+    //                break;
 
-                default: // other - assume fatal
-                    fatal = true;
-                    if (e.StackTrace is not null)
-                    {
-                        msg += $"{Environment.NewLine}{e.StackTrace}";
-                    }
-                    break;
-            }
+    //            default: // other - assume fatal
+    //                fatal = true;
+    //                if (e.StackTrace is not null)
+    //                {
+    //                    msg += $"{Environment.NewLine}{e.StackTrace}";
+    //                }
+    //                break;
+    //        }
 
-            return (fatal, msg);
-        }
-    }
+    //        return (fatal, msg);
+    //    }
+    //}
 
-    #region Console abstraction to support testing TODO?
-    public interface IConsole
-    {
-        bool KeyAvailable { get; }
-        string Title { get; set; }
-        void Write(string text);
-        void WriteLine(string text);
-        string? ReadLine();
-        ConsoleKeyInfo ReadKey(bool intercept);
-    }
-    #endregion
+    // #region Console abstraction to support testing TODO?
+    // public interface IConsole
+    // {
+    //     bool KeyAvailable { get; }
+    //     string Title { get; set; }
+    //     void Write(string text);
+    //     void WriteLine(string text);
+    //     string? ReadLine();
+    //     ConsoleKeyInfo ReadKey(bool intercept);
+    // }
+    // #endregion
 }

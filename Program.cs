@@ -28,10 +28,10 @@ namespace Nebulua
 
                 case 1:
                     var scriptFn = args[0];
-                    RealConsole console = new();
-                    var cli = new Cli(scriptFn, console);
-                    cli.Run();
-                    cli.Dispose();
+                    //RealConsole console = new();
+                    //var cli = new Cli(scriptFn, console);
+                    //cli.Run();
+                    //cli.Dispose();
                     break;
 
                 default:
