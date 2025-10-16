@@ -58,9 +58,7 @@ namespace Nebulua
         //readonly TimingAnalyzer? _tan = null;
         #endregion
 
-        int _debug = 3;
-
-
+int _debug = 3;
 
 
         #region Lifecycle
@@ -272,9 +270,6 @@ namespace Nebulua
 
 
 
-
-
-        #region File handling
         /// <summary>
         /// Create the menu with the recently used files.
         /// </summary>
@@ -296,6 +291,11 @@ namespace Nebulua
 
             ddbtnFile.SetOptions(options);
         }
+
+
+
+
+        #region File handling
 
         /// <summary>
         /// Selection from user.
@@ -407,9 +407,10 @@ namespace Nebulua
         }
         #endregion
 
-        #region UI Event handlers
+
+
         /// <summary>
-        /// Handler for state changes for ui display.
+        /// Handler for state changes.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="name">Specific State value.</param>
@@ -425,21 +426,23 @@ namespace Nebulua
 
                     case "Tempo":
                         sldTempo.Value = State.Instance.Tempo;
-                        SetTimer(State.Instance.Tempo); // >>>>> HOSTCORE
+                        SetTimer(State.Instance.Tempo);
                         break;
 
-                    case "ExecState":
-                        //lblState.Text = State.Instance.ExecState.ToString();
-                        if (State.Instance.ExecState != ExecState.Run)
-                        {
-                            chkPlay.Checked = false;
-                        }
-                        break;
+                    //case "ExecState":
+                    //    if (State.Instance.ExecState != ExecState.Run)
+                    //    {
+                    //        chkPlay.Checked = false;
+                    //    }
+                    //    break;
                 }
             });
         }
 
 
+
+
+        #region UI Event handlers
         /// <summary>
         /// Update state.
         /// </summary>
@@ -482,11 +485,11 @@ namespace Nebulua
                     break;
 
                 case (ExecState.Dead, true):
-
+                    //
                     break;
 
                 case (ExecState.Dead, false):
-
+                    //
                     break;
             };
 
@@ -690,7 +693,7 @@ namespace Nebulua
                 }
             }
 
-            void EnableOutputChannel(ChannelHandle ch, bool enable) //HOSTCORE
+            void EnableOutputChannel(ChannelHandle ch, bool enable)
             {
                 if (ch.DeviceId >= _outputs.Count)
                 {
@@ -764,7 +767,7 @@ namespace Nebulua
             });
 
 
-            // TODO1 local func.
+            // local func
             List<string> GetInfo(ChannelHandle ch)
             {
                 string devName = "unknown";

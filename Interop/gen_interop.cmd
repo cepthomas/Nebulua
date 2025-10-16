@@ -1,14 +1,15 @@
 :: Convert spec into interop library.
+:: Note this is specific to my configuration only:
+set LINTOP_DIR=C:\Dev\Libs\LuaInterop
 
 echo off
 cls
 
 set ODIR=%cd%
 cd ..\
-set LDIR=%cd%\LBOT
-set LUA_PATH=%LDIR%\?.lua;%ODIR%\?.lua;?.lua;
-:: TODO1 yuck this. LBOT\csrc\cliex.h/cpp probably should live somewhere else?
-cd ..\..\Libs\LuaInterop\Generator
+set LBOT_DIR=%cd%\LBOT
+set LUA_PATH=%LBOT_DIR%\?.lua;%ODIR%\?.lua;?.lua;
+cd %LINTOP_DIR%\Generator
 :: Gen the C and C++ components from the spec.
 lua do_gen.lua -c %ODIR%\interop_spec.lua %ODIR%
 lua do_gen.lua -cppcli %ODIR%\interop_spec.lua %ODIR%
