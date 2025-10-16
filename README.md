@@ -24,8 +24,6 @@ Building this solution requires a folder named `LBOT` at the top level containin
   - copy of pertinent parts
   - symlink: `mklink /d <current_folder>\LBOT <lbot_source_folder>\LuaBagOfTricks`
 
-If you pass it a script file name on the command line it runs as a command line application. If not the UI is started.
-
 The UI does have a terminal which can be used for debugging scripts using
 [Lua debugger](https://github.com/cepthomas/LuaBagOfTricks/blob/main/debugex.lua).
 See [example](examples/example.lua) for how-to.
@@ -51,24 +49,24 @@ airport.lua | A take on Eno's Music for Airports - adapted from [this](https://g
 
 ## Glossary
 
-- Since this is code, everything is 0-based, not 1-based like standard music notation.
+- Since this is code, almost everything is 0-based, not 1-based like standard music notation.
 - Nebulua doesn't care about measures, that's up to you.
 
-Name       | Type   | Description                                     |
--------    | ------ | ---------------------------                     |
-chan_num   | int    | midi channel number 1 -> 16                     |
-dev_index  | int    | index into windows midi device table            |
-dev_name   | char*  | from windows midi device table                  |
-chan_hnd   | int    | internal opaque handle for channel id           |
-controller | int    | from midi_defs.lua                              |
-value      | int    | controller payload                              |
-note_num   | int    | 0 -> 127                                        |
-volume     | double | 0.0 -> 1.0, 0 means note off                    |
-velocity   | int    | 0 -> 127, 0 means note off                      |
-bar        | int    | 0 -> N, absolute                                |
-beat       | int    | 0 -> 3, in bar, quarter note                    |
-sub        | int    | 0 -> 7, in beat, "musical"                      |
-tick       | int    | absolute time, see ##Timing, same length as sub |
+Name       | Type   | Description                               | Range                           |
+-------    | ------ | ---------------------------               | --------                        |
+chan_num   | int    | midi channel number                       | 1 -> 16                         |
+dev_index  | int    | index into windows midi device table      |                                 |
+dev_name   | char*  | from windows midi device table            | 0 -> N                          |
+chan_hnd   | int    | internal opaque handle for channel id     |                                 |
+controller | int    | midi standard from midi_defs.lua          | 0 -> 127                        |
+value      | int    | controller payload                        | 0 -> 127                        |
+note_num   | int    | midi standard                             | 0 -> 127                        |
+volume     | double |                                           | 0.0 -> 1.0, 0 means note off    |
+velocity   | int    |                                           | 0 -> 127, 0 means note off      |
+bar        | int    | absolute                                  | 0 -> N                          |
+beat       | int    | in bar - quarter note                     | 0 -> 3                          |
+sub        | int    | in beat - "musical"                       | 0 -> 7                          |
+tick       | int    | absolute time                             | 0 -> N                          |
 
 
 ## Time
@@ -401,62 +399,49 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 - intervals: string of note definitions. Like `"1 +3 4 -b7"`.
 
 
-# Tech Notes TODO1 update
-
-## Build
+# Tech Notes
 
 - Windows 64 bit only. Build it with VS2022 and .NET8.
 - Uses 64 bit Lua 5.4.2 from [here](https://luabinaries.sourceforge.net/download.html).
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 
+## Architecture
 
-## Design
-
-- All lua code is in modules except for the interop functions such as `step()` which are in global `_G`.
 - There are 3 threads:
     - Main which does window event loop and the cli.
     - Midi receive events callback.
     - Timer periodic events callback.
-- The shared resource that requires synchronization is a singleton `Interop`. It is protected by a 
-  `CRITICAL_SECTION`. Thread access to the UI is protected by `InvokeIfRequired()`.
-- The app interop translates between internal `LUA_XXX` status and user-facing `enum NebStatus`.
-  The interop never throws.
-
-## Call Stack
+- The shared resource that requires synchronization is a singleton `Interop`. All calls to it need to
+  be protected - typically `lock()` mechanism is best.
+- All lua api code is in modules except for the interop functions such as `step()` which are in global `_G`.
 
 Going up and down the stacks is a bit convoluted. Here are some examples that help (hopefully).
 
 Host -> lua
 ```
 MmTimer_Callback(double totalElapsed, double periodElapsed)  [in App\Core.cs]
-    calls
-Interop.Step(tick)  [in interop\Interop.cpp]
-    calls
-luainterop_Step(_l, tick)  [in interop\luainterop.c]
-    calls
-function step(tick)  [in my_lua_script.lua]
+    Interop.Step(tick)  [in interop\Interop.cpp]
+        luainterop_Step(_l, tick)  [in interop\luainterop.c]
+            function step(tick)  [in my_lua_script.lua]
 ```
 
 Lua -> host
 ```
 neb.send_midi_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
-    calls
-luainterop_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
-    calls
- Interop::NotifySend(args)  [in interop\Interop.cpp]
-    calls
-Interop_Send(object? _, SendArgs e)  [in App\Core.cs]
-    calls driver...
+    luainterop_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
+        Interop::NotifySend(args)  [in interop\Interop.cpp]
+            Interop_Send(object? _, SendArgs e)  [in App\Core.cs]
+                calls driver...
 ```
 
-## Error Model
 
-- Almost all errors are considered fatal as they are usually things the user needs to fix before continuing,
-  such as script syntax errors. They are logged and then the application exits.
+## Error Handling
+
+- Interop throws `LuaException` for non-fatal things like user syntax errors and fatal things like C runtime
+  errors. The former can be edited by the user and reloaded without restarting the app.
+- Nebulua may throw `AppException` for non-fatal things.
 - Lua functions defined in C do not call `luaL_error()`. Only call `luaL_error()` in code that is called from
   the lua side. C side needs to handle function returns manually via status codes, error msgs, etc.
-- The C# application side uses custom exceptions to harmonize the heterogenous nature of the C#/C++/C/Lua stack.
-- The errors originating in thread callbacks can't throw so use another mechanism: `CallbackError()`.
 
 ## Files
 
@@ -467,29 +452,18 @@ Nebulua
 |   README.md - hello!
 |   *.cs
 |   etc...
-+---Interop - .NET binding to C/Lua - see below
++---Interop - .NET binding to C/Lua
+|   *.c/cpp/h
 +---lua - lua modules for application
 |       bar_time.lua
 |       midi_defs.lua
 |       music_defs.lua
 |       script_api.lua
 |       step_types.lua
-+---LBOT - LuaBagOfTricks modules for application
-+---LINT - LuaInterop modules for building interop
++---LBOT - LuaBagOfTricks modules for application - link or copy or ...
 +---examples
 |       airport.lua
 |       example.lua
-+---docs - *.md
 +---lib - .NET dependencies
 \---test - various test code projects
 ```
-
-
-## Updating Interop
-
-The Lua script interop should not need to be rebuilt after the api is finalized.
-If a change is required, do this:
-- Go to the `Interop` folder.
-- Edit `interop_spec.lua` with new changes.
-- Execute `gen_interop.cmd`. This generates the code files to support the interop.
-- Open `Nebulua.sln` and rebuild all.

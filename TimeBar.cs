@@ -106,6 +106,7 @@ namespace Nebulua
 
                 // Sections.
                 var fsize = pe.Graphics.MeasureString("X", FontSmall).Height;
+
                 foreach (var (tick, name) in State.Instance.SectionInfo)
                 {
                     int sect = GetClientFromTick(tick);
@@ -222,17 +223,7 @@ namespace Nebulua
         {
             string s = "";
 
-            foreach (var (tick, name) in State.Instance.SectionInfo)
-            {
-                if (tick > val)
-                {
-                    break;
-                }
-                else
-                {
-                    s = name;
-                }
-            }
+            State.Instance.SectionInfo.TakeWhile(si => si.tick <= val).ForEach(si => s = si.name);
 
             return s;
         }

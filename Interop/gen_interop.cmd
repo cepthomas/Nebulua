@@ -1,4 +1,6 @@
 :: Convert spec into interop library.
+:: Should not need to be regenerated after the api is finalized.
+
 :: Note this is specific to my configuration only:
 set LINTOP_DIR=C:\Dev\Libs\LuaInterop
 

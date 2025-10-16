@@ -13,7 +13,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-// TODO slow startup.
+// TODO kinda slow startup running in debugger.
 
 namespace Nebulua
 {
@@ -53,13 +53,87 @@ namespace Nebulua
         /// <summary>All the channel play controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
 
-        /// <summary>Diagnostic.</summary>
+        /// <summary>Debugging.</summary>
         readonly TimeIt _tmit = new();
+
+        /// <summary>Performance.</summary>
         //readonly TimingAnalyzer? _tan = null;
         #endregion
 
-int _debug = 3;
+        #region State
+        /// <summary>Internal state. </summary>
+        enum ExecState
+        {
+            /// <summary>No script loaded.</summary>
+            Idle,
+            /// <summary>Script loaded, not running.</summary>
+            Stop,
+            /// <summary>Script loaded, running.</summary>
+            Run,
+            /// <summary>Fatal error, not running.</summary>
+            Dead
+        }
+        ExecState _execState = ExecState.Idle;
 
+        ExecState CurrentState
+        {
+            get
+            {
+                return _execState;
+            }
+            set
+            {
+                if (value != _execState)
+                {
+                    switch (value)
+                    {
+                        case ExecState.Idle:
+                            _scriptFn = null;
+                            chkPlay.Checked = false;
+                            chkPlay.Enabled = false;
+                            _execState = ExecState.Idle;
+                            break;
+
+                        case ExecState.Stop:
+                            if (_scriptFn is not null)
+                            {
+                                chkPlay.Checked = false;
+                                chkPlay.Enabled = true;
+                                _execState = ExecState.Stop;
+                            }
+                            else
+                            {
+                                chkPlay.Checked = false;
+                                chkPlay.Enabled = false;
+                                _execState = ExecState.Idle;
+                            }
+                            break;
+
+                        case ExecState.Run:
+                            if (_scriptFn is not null)
+                            {
+                                chkPlay.Checked = true;
+                                chkPlay.Enabled = true;
+                                _execState = ExecState.Run;
+                            }
+                            else
+                            {
+                                chkPlay.Checked = false;
+                                chkPlay.Enabled = false;
+                                _execState = ExecState.Idle;
+                            }
+                            break;
+
+                        case ExecState.Dead:
+                            chkPlay.Checked = false;
+                            chkPlay.Enabled = false;
+                            _execState = ExecState.Dead;
+                            break;
+                    }
+                }
+            }
+        }
+        #endregion
 
         #region Lifecycle
         /// <summary>
@@ -124,7 +198,7 @@ int _debug = 3;
 
             btnKill.BackColor = UserSettings.Current.BackColor;
             btnKill.Image = ((Bitmap)(btnKill.Image!)).Colorize(UserSettings.Current.IconColor);
-            btnKill.Click += (_, __) => { KillAll(); State.Instance.ExecState = ExecState.Idle; };
+            btnKill.Click += (_, __) => { KillAll(); CurrentState = ExecState.Idle; };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
             btnSettings.Image = ((Bitmap)(btnSettings.Image!)).Colorize(UserSettings.Current.IconColor);
@@ -221,13 +295,13 @@ int _debug = 3;
         /// <param name="e"></param>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            State.Instance.ExecState = ExecState.Idle;
+            CurrentState = ExecState.Idle;
 
             // Just in case.
             KillAll();
 
             // Destroy devices
-            ResetIo();
+            ResetDevices();
 
             // Save user settings.
             UserSettings.Current.FormGeometry = new()
@@ -268,34 +342,79 @@ int _debug = 3;
         }
         #endregion
 
-
-
+        #region Script File Handling
         /// <summary>
-        /// Create the menu with the recently used files.
+        /// Script file opener/reloader.
         /// </summary>
-        void PopulateFileMenu()
+        /// <param name="openScriptFn">The script file to open or null if reload.</param>
+        void OpenScriptFile(string? openScriptFn)
         {
-            List<string> options = [];
-            options.Add("Open...");
-
-            if (_scriptFn is not null)
+            lock(_locker)
             {
-                options.Add("Reload");
-            }
+                try
+                {
+                    // Clean up first.
+                    _mmTimer.Stop();
+                    DestroyControls();
+                    CurrentState = ExecState.Idle;
 
-            if (UserSettings.Current.RecentFiles.Count > 0)
-            {
-                options.Add("");
-                UserSettings.Current.RecentFiles.ForEach(options.Add);
-            }
+                    // Determine file to load.
+                    if (openScriptFn is not null)
+                    {
+                        _scriptFn = openScriptFn;
+                    }
 
-            ddbtnFile.SetOptions(options);
+                    // Check valid file.
+                    if (_scriptFn is null || !_scriptFn.EndsWith(".lua") || !Path.Exists(_scriptFn))
+                    {
+                        _scriptFn = null;                    
+                        _scriptTouch = DateTime.MinValue;                    
+                        throw new AppException($"Invalid script file [{_scriptFn}]");
+                    }
+
+                    // OK to load.
+                    _scriptTouch = File.GetLastWriteTime(_scriptFn);
+                    _logger.Info($"Loading script {_scriptFn}");
+
+                    // Set up runtime lua environment. The lua lib files, the dir containing the script file.
+                    var srcDir = MiscUtils.GetSourcePath(); // The source dir.
+                    var scriptDir = Path.GetDirectoryName(_scriptFn);
+                    var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
+
+                    _interop.RunScript(_scriptFn, luaPath);
+                    string smeta = _interop.Setup();
+
+                    // Get info about the script.
+                    Dictionary<int, string> sectInfo = [];
+                    var chunks = smeta.SplitByToken("|");
+
+                    chunks.ForEach(ch =>
+                    {
+                        var elems = ch.SplitByToken(",");
+                        sectInfo[int.Parse(elems[1])] = elems[0];
+                    });
+
+                    State.Instance.InitSectionInfo(sectInfo);
+
+                    CreateControls();
+
+                    // Start timer.
+                    SetTimer(State.Instance.Tempo);
+                    _mmTimer.Start();
+
+                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
+                    UserSettings.Current.UpdateMru(_scriptFn!);
+
+                    PopulateFileMenu();
+
+                    timeBar.Invalidate(); // force update
+                }
+                catch (Exception ex)
+                {
+                    ProcessException(ex);
+                }
+            }
         }
-
-
-
-
-        #region File handling
 
         /// <summary>
         /// Selection from user.
@@ -333,81 +452,55 @@ int _debug = 3;
         }
 
         /// <summary>
-        /// Script file opener/reloader.
+        /// Create the menu with the recently used files.
         /// </summary>
-        /// <param name="openScriptFn">The script file to open.</param>
-        void OpenScriptFile(string? openScriptFn)
+        void PopulateFileMenu()
         {
-            lock(_locker)
+            List<string> options = [];
+            options.Add("Open...");
+
+            if (_scriptFn is not null)
             {
-                try
-                {
-                    // Clean up first.
-                    _mmTimer.Stop();
-                    DestroyControls();
-                    State.Instance.ExecState = ExecState.Idle;
-
-                    // Determine file to load.
-                    if (openScriptFn is null) // reload
-                    {
-                    }
-                    else // specific file
-                    {
-                        _scriptFn = openScriptFn;
-                    }
-
-                    // Check valid file.
-                    if (!_scriptFn.EndsWith(".lua") || !Path.Exists(_scriptFn))
-                    {
-                        _scriptFn = null;                    
-                        _scriptTouch = DateTime.MinValue;                    
-                        throw new AppException($"Invalid script file [{_scriptFn}]");
-                    }
-
-                    // OK to load.
-                    _scriptTouch = File.GetLastWriteTime(_scriptFn);
-                    _logger.Info($"Loading script {_scriptFn}");
-
-                    // Set up runtime lua environment. The lua lib files, the dir containing the script file.
-                    var srcDir = MiscUtils.GetSourcePath(); // The source dir.
-                    var scriptDir = Path.GetDirectoryName(_scriptFn);
-                    var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
-
-                    _interop.RunScript(_scriptFn, luaPath);
-                    string smeta = _interop.Setup();
-
-                    // Get info about the script.
-                    Dictionary<int, string> sectInfo = [];
-                    var chunks = smeta.SplitByToken("|");
-                    foreach (var chunk in chunks)// ForEach()
-                    {
-                        var elems = chunk.SplitByToken(",");
-                        sectInfo[int.Parse(elems[1])] = elems[0];
-                    }
-                    State.Instance.InitSectionInfo(sectInfo);
-
-                    CreateControls();
-
-                    // Start timer.
-                    SetTimer(State.Instance.Tempo);
-                    _mmTimer.Start();
-
-                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                    UserSettings.Current.UpdateMru(_scriptFn!);
-
-                    PopulateFileMenu();
-
-                    timeBar.Invalidate(); // force update
-                }
-                catch (Exception ex)
-                {
-                    var (fatal, msg) = ProcessException(ex);
-                }
+                options.Add("Reload");
             }
+
+            if (UserSettings.Current.RecentFiles.Count > 0)
+            {
+                options.Add("");
+                UserSettings.Current.RecentFiles.ForEach(options.Add);
+            }
+
+            ddbtnFile.SetOptions(options);
         }
         #endregion
 
+        #region Run Control
+        /// <summary>
+        /// Update state.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Play_Click(object? sender, EventArgs e)
+        {
+            if (chkPlay.Checked)
+            {
+                // Maybe reload.
+                if (UserSettings.Current.AutoReload && _scriptFn is not null)
+                {
+                    var touch = File.GetLastWriteTime(_scriptFn);
+                    if (touch > _scriptTouch)
+                    {
+                        OpenScriptFile(null);
+                    }
+                }
 
+                CurrentState = ExecState.Run;
+            }
+            else
+            {
+                CurrentState = ExecState.Stop;
+            }
+        }
 
         /// <summary>
         /// Handler for state changes.
@@ -428,82 +521,8 @@ int _debug = 3;
                         sldTempo.Value = State.Instance.Tempo;
                         SetTimer(State.Instance.Tempo);
                         break;
-
-                    //case "ExecState":
-                    //    if (State.Instance.ExecState != ExecState.Run)
-                    //    {
-                    //        chkPlay.Checked = false;
-                    //    }
-                    //    break;
                 }
             });
-        }
-
-
-
-
-        #region UI Event handlers
-        /// <summary>
-        /// Update state.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Play_Click(object? sender, EventArgs e)
-        {
-            if (_scriptFn is null)
-            {
-                _logger.Warn("No script file loaded");
-                return;
-            }
-
-
-            //if (chkPlay.Checked && State.Instance.ExecState == ExecState.Dead)
-            //{
-            //chkPlay.Checked = false;
-            //_logger.Warn("Script is dead");
-            //return;
-            //}
-
-            switch (State.Instance.ExecState, chkPlay.Checked) // TODO1 fix/test
-            {
-                case (ExecState.Idle, true):
-                    MaybeReload();
-                    State.Instance.ExecState = ExecState.Run;
-                    break;
-
-                case (ExecState.Idle, false):
-                    //
-                    break;
-
-                case (ExecState.Run, true):
-                    //
-                    break;
-
-                case (ExecState.Run, false):
-                    State.Instance.ExecState = ExecState.Idle;
-                    KillAll();
-                    break;
-
-                case (ExecState.Dead, true):
-                    //
-                    break;
-
-                case (ExecState.Dead, false):
-                    //
-                    break;
-            };
-
-            void MaybeReload() //   ????????????
-            {
-                if (UserSettings.Current.AutoReload)
-                {
-                    var touch = File.GetLastWriteTime(_scriptFn);
-                    if (touch > _scriptTouch)
-                    {
-                        OpenScriptFile(null);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -519,398 +538,76 @@ int _debug = 3;
         }
 
         /// <summary>
-        /// User clicked something.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void CcMidiGen_MouseClickEvent(object? sender, ClickClack.UserEventArgs e)
-        {
-            if (e.X is not null && e.Y is not null)
-            {
-                string name = ((ClickClack)sender!).Name;
-                int x = (int)e.X; // note
-                int y = (int)e.Y; // velocity
-                InjectMidiInEvent(name, 1, x, y);
-            }
-        }
-
-        /// <summary>
-        /// Provide tool tip text.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void CcMidiGen_MouseMoveEvent(object? sender, ClickClack.UserEventArgs e)
-        {
-            e.Text = $"{MusicDefinitions.NoteNumberToName((int)e.X!)} V:{e.Y}";
-        }
-
-        /// <summary>
         /// Do some global key handling. Space bar is used for stop/start playing.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space && _scriptFn is not null)
+            if (e.KeyCode == Keys.Space) // && _scriptFn is not null)
             {
-                chkPlay.Checked = !chkPlay.Checked;
-                Play_Click(null, new());
+                CurrentState = CurrentState == ExecState.Stop ? ExecState.Run : ExecState.Stop;
                 e.Handled = true;
             }
             base.OnKeyDown(e);
         }
 
         /// <summary>
-        /// 
+        /// General exception processor. Doesn't throw.
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Settings_Click(object? sender, EventArgs e)
+        /// <returns>(bool fatal, string msg)</returns>
+        (bool fatal, string msg) ProcessException(Exception e)
         {
-            var changes = SettingsEditor.Edit(UserSettings.Current, "User Settings", 500);
+            bool fatal = false; // default
+            string msg = e.Message; // default
 
-            // Detect changes of interest.
-            bool restart = false;
-
-            foreach (var (name, cat) in changes)// ForEach()
+            switch (e)
             {
-                switch (name)
-                {
-                    case "ActiveColor":
-                    case "BackColor":
-                    case "IconColor":
-                    case "PenColor":
-                    case "SelectedColor":
-                        restart = true;
-                        break;
+                case LuaException ex:
+                    if (ex.Error.Contains("FATAL")) // bad lua internal error
+                    {
+                        fatal = true;
+                        CurrentState = ExecState.Dead;
+                    }
+                    break;
 
-                    case "FileLogLevel":
-                        LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
-                        break;
+                case AppException: // from app - not fatal
+                    break;
 
-                    case "NotifLogLevel":
-                        LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
-                        break;
-                }
+                default: // other/unknon - assume fatal
+                    fatal = true;
+                    if (e.StackTrace is not null)
+                    {
+                        msg += $"{Environment.NewLine}{e.StackTrace}";
+                    }
+                    break;
             }
 
-            if (restart)
+            if (fatal)
             {
-                MessageBox.Show("Restart required for device changes to take effect");
+                // Logging an error will cause the app to exit.
+                _logger.Error(msg);
             }
-        }
-
-        /// <summary>
-        /// The meaning of life.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void About_Click(object? sender, EventArgs e)
-        {
-            // Main help.
-            Tools.ShowReadme("Nebulua");
-
-            // Show the builtin definitions and user devices.
-            List<string> ls = [];
-
-            // Show them what they have.
-            ls.Add($"# Your Midi Devices");
-            ls.Add($"");
-            ls.Add($"## Outputs");
-            ls.Add($"");
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            else
             {
-                ls.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
+                // User can decide what to do with this. They may be recoverable so use warn.
+                _logger.Warn(msg);
+                CurrentState = ExecState.Idle;
             }
 
-            ls.Add($"");
-            ls.Add($"## Inputs");
-            ls.Add($"");
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            {
-                ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
-            }
-
-            // Generate definitions content.
-            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
-            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
-
-            List<string> s = [
-                "local mid = require('midi_defs')",
-                "local mus = require('music_defs')",
-                "for _,v in ipairs(mid.gen_md()) do print(v) end",
-                "for _,v in ipairs(mus.gen_md()) do print(v) end",
-                ];
-
-            var (_, sres) = ExecuteLuaChunk(s);
-
-            ls.Add(sres);
-            ls.Add($"");
-
-            // Show readme.
-            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
-
-            // Show midi stuff.
-            string docfn = Path.GetTempFileName() + ".html";
-            try
-            {
-                File.WriteAllText(docfn, html);
-                var proc = new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } };
-
-                proc.Exited += (_, __) => File.Delete(docfn);
-                proc.Start();
-            }
-            catch (Exception ex)
-            {
-                _logger.Exception(ex);
-            }
+            return (fatal, msg);
         }
         #endregion
 
-
-
-
+        #region Callback Handlers
         /// <summary>
-        /// Process UI change.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControlEvent(object? sender, ChannelControlEventArgs e)
-        {
-            ChannelControl control = (ChannelControl)sender!;
-
-            // Update all channel enables.
-            bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
-
-            foreach (var c in _channelControls)// ForEach()
-            {
-                if (anySolo) // only solo
-                {
-                    EnableOutputChannel(c.ChHandle, c.State == PlayState.Solo);
-                }
-                else // except mute
-                {
-                    EnableOutputChannel(c.ChHandle, c.State != PlayState.Mute);
-                }
-            }
-
-            void EnableOutputChannel(ChannelHandle ch, bool enable)
-            {
-                if (ch.DeviceId >= _outputs.Count)
-                {
-                    throw new AppException($"Invalid device id [{ch.DeviceId}]");
-                }
-
-                var output = _outputs[ch.DeviceId];
-                if (!output.Channels.ContainsKey(ch.ChannelNumber))
-                {
-                    throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
-                }
-
-                output.Channels[ch.ChannelNumber].Enable = enable;
-                if (!enable)
-                {
-                    // Kill just in case.
-                    _outputs[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Destroy controls.
-        /// </summary>
-        void DestroyControls()
-        {
-            KillAll();
-
-            // Clean out our current elements.
-            _channelControls.ForEach(c =>
-            {
-                Controls.Remove(c);
-                c.Dispose();
-            });
-            _channelControls.Clear();
-        }
-
-        /// <summary>
-        /// Create controls.
-        /// </summary>
-        void CreateControls()
-        {
-            DestroyControls();
-
-            // Create channels and controls.
-            int x = timeBar.Left;
-            int y = timeBar.Bottom + 5; // 0 + CONTROL_SPACING;
-
-
-            List<ChannelHandle> valchs = [];
-            for (int devNum = 0; devNum < _outputs.Count; devNum++)
-            {
-                var output = _outputs[devNum];
-                output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
-            }
-
-            valchs.ForEach(ch =>
-            {
-                ChannelControl control = new(ch)
-                {
-                    Location = new(x, y),
-                    Info = GetInfo(ch)
-                };
-
-                control.ChannelControlEvent += ChannelControlEvent;
-                Controls.Add(control);
-                _channelControls.Add(control);
-
-                // Adjust positioning for next iteration.
-                x += control.Width + 5;
-            });
-
-
-            // local func
-            List<string> GetInfo(ChannelHandle ch)
-            {
-                string devName = "unknown";
-                string chanName = "unknown";
-                int patchNum = -1;
-
-                if (ch.Direction == Direction.Output)
-                {
-                    if (ch.DeviceId < _outputs.Count)
-                    {
-                        var dev = _outputs[ch.DeviceId];
-                        devName = dev.DeviceName;
-                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-                        patchNum = dev.Channels[ch.ChannelNumber].Patch;
-                    }
-                }
-                else
-                {
-                    if (ch.DeviceId < _inputs.Count)
-                    {
-                        var dev = _inputs[ch.DeviceId];
-                        devName = dev.DeviceName;
-                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-                    }
-                }
-
-                List<string> ret = [];
-                ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
-                ret.Add($"device: {devName}");
-
-                if (patchNum != -1)
-                {
-                    // Determine patch name.
-                    string sname;
-                    if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
-                    {
-                        sname = $"kit: {patchNum}";
-                        if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
-                        {
-                            sname += ($" {kitName}");
-                        }
-                    }
-                    else
-                    {
-                        sname = $"patch: {patchNum}";
-                        if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
-                        {
-                            sname += ($" {patchName}");
-                        }
-                    }
-
-                    ret.Add(sname);
-                }
-
-                return ret;
-            }
-        }
-
-        /// <summary>
-        /// Capture bad events and display them to the user.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
-        {
-            this.InvokeIfRequired(_ =>
-            {
-                traffic.AppendLine(e.ShortMessage);
-
-                if (e.Level == LogLevel.Error)
-                {
-                    traffic.AppendLine("Fatal error - please restart");
-                    State.Instance.ExecState = ExecState.Dead;
-                }
-            });
-        }
-
-        /// <summary>
-        /// Read the lua midi definitions for internal consumption.
-        /// </summary>
-        void ReadMidiDefs()
-        {
-            //var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
-            //var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
-
-            List<string> s = [
-                "local mid = require('midi_defs')",
-                "for _,v in ipairs(mid.gen_list()) do print(v) end"
-                ];
-
-            var r = ExecuteLuaChunk(s);
-
-            if (r.ecode == 0)
-            {
-                foreach (var line in r.sres.SplitByToken(Environment.NewLine))// ForEach()
-                {
-                    var parts = line.SplitByToken(",");
-
-                    switch (parts[0])
-                    {
-                        case "instrument": MidiDefs.Instruments.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "drum": MidiDefs.Drums.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "controller": MidiDefs.Controllers.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "kit": MidiDefs.DrumKits.Add(int.Parse(parts[2]), parts[1]); break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Execute a chunk of lua code. Fixes up lua path and handles errors.
-        /// </summary>
-        /// <param name="scode"></param>
-        /// <returns></returns>
-        (int ecode, string sres) ExecuteLuaChunk(List<string> scode)
-        {
-            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
-            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
-            scode.Insert(0, $"package.path = '{luaPath}' .. package.path");
-
-            var r = Tools.ExecuteLuaCode(string.Join(Environment.NewLine, scode));
-
-            if (r.ecode != 0)
-            {
-                // Command failed. Capture everything useful.
-                List<string> lserr = [];
-                lserr.Add($"=== code: {r.ecode}");
-                lserr.Add($"=== stderr:");
-                lserr.Add($"{r.sret}");
-
-                _logger.Warn(string.Join(Environment.NewLine, lserr));
-            }
-            return (r.ecode, r.sret);
-        }
-
-        /// <summary>
-        /// Process events. This on a system thread so has no exception handler or useful stack.
+        /// Process events. This is on a system thread but gets bounced to the UI thread.
         /// </summary>
         /// <param name="totalElapsed"></param>
         /// <param name="periodElapsed"></param>
         void MmTimer_Callback(double totalElapsed, double periodElapsed)
         {
-            if (State.Instance.ExecState == ExecState.Run)
+            if (CurrentState == ExecState.Run)
             {
                 lock(_locker)
                 {
@@ -919,14 +616,11 @@ int _debug = 3;
                         // Do script.
                         //_tan?.Arm();
 
-                        if (_debug > 0)
+                        if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
                         {
-                            //var mtid = Environment.CurrentManagedThreadId;
-                            //var tname  = Thread.CurrentThread.Name;
-                            _logger.Info($"MmTimer_Callback thread [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
-                            _debug--;
+                            Thread.CurrentThread.Name = "MM_TIMER";
+                            _logger.Info($"Managed thread [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
                         }
-
 
                         int ret = _interop.Step(State.Instance.CurrentTick);
 
@@ -950,7 +644,7 @@ int _debug = 3;
                                 else
                                 {
                                     // Stop and rewind.
-                                    State.Instance.ExecState = ExecState.Idle;
+                                    CurrentState = ExecState.Idle;
                                     State.Instance.CurrentTick = start;
 
                                     // just in case
@@ -972,7 +666,7 @@ int _debug = 3;
         }
 
         /// <summary>
-        /// Midi input arrived. This on a system thread so has no exception handler or useful stack.
+        /// Midi input arrived. This is on a system thread but gets bounced to the UI thread.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -982,9 +676,11 @@ int _debug = 3;
             {
                 try
                 {
-                    //var mtid = Environment.CurrentManagedThreadId;
-                    //var tname  = Thread.CurrentThread.Name;
-                    _logger.Info($"Midi_ReceiveEvent thread [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
+                    if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
+                    {
+                        Thread.CurrentThread.Name = "MIDI_RCV";
+                        _logger.Info($"Managed thread [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+                    }
 
                     var input = (MidiInputDevice)sender!;
                     ChannelHandle ch = new(_inputs.IndexOf(input), e.Channel, Direction.Input);
@@ -1012,7 +708,7 @@ int _debug = 3;
 
                     if (logit && UserSettings.Current.MonitorRcv)
                     {
-                        _loggerMidi.Trace($"<<< {FormatMidiEvent(e, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, chanHnd)}");
+                        _loggerMidi.Trace($"<<< {FormatMidiEvent(e, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, chanHnd)}");
                     }
                 }
                 catch (Exception ex)
@@ -1022,13 +718,46 @@ int _debug = 3;
             }
         }
 
+        /// <summary>
+        /// Process UI change.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControlEvent(object? sender, ChannelControlEventArgs e)
+        {
+            ChannelControl control = (ChannelControl)sender!;
 
+            // Update all channel enables.
+            bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
 
+            foreach (var c in _channelControls)
+            {
+                bool enable = anySolo ? c.State == PlayState.Solo : c.State != PlayState.Mute;
 
+                var ch = c.ChHandle;
 
+                if (ch.DeviceId >= _outputs.Count)
+                {
+                    throw new AppException($"Invalid device id [{ch.DeviceId}]");
+                }
 
+                var output = _outputs[ch.DeviceId];
+                if (!output.Channels.TryGetValue(ch.ChannelNumber, out MidiChannel? value))
+                {
+                    throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
+                }
 
-        #region Script => Host Functions
+                value.Enable = enable;
+                if (!enable)
+                {
+                    // Kill just in case.
+                    _outputs[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
+                }
+            };
+        }
+        #endregion
+
+        #region Script ==> Host Functions
         /// <summary>
         /// Script creates an input channel.
         /// </summary>
@@ -1166,7 +895,7 @@ int _debug = 3;
 
                 if (UserSettings.Current.MonitorSnd)
                 {
-                    _loggerMidi.Trace($">>> {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                    _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
                 }
             }
         }
@@ -1203,7 +932,7 @@ int _debug = 3;
 
             if (UserSettings.Current.MonitorSnd)
             {
-                _loggerMidi.Trace($">>> {FormatMidiEvent(evt, State.Instance.ExecState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
             }
         }
 
@@ -1262,9 +991,148 @@ int _debug = 3;
         }
         #endregion
 
+        #region Channel Controls
+        /// <summary>
+        /// Destroy controls.
+        /// </summary>
+        void DestroyControls()
+        {
+            KillAll();
+
+            // Clean out our current elements.
+            _channelControls.ForEach(c =>
+            {
+                Controls.Remove(c);
+                c.Dispose();
+            });
+            _channelControls.Clear();
+        }
+
+        /// <summary>
+        /// Create controls.
+        /// </summary>
+        void CreateControls()
+        {
+            DestroyControls();
+
+            // Create channels and controls.
+            int x = timeBar.Left;
+            int y = timeBar.Bottom + 5; // 0 + CONTROL_SPACING;
 
 
+            List<ChannelHandle> valchs = [];
+            for (int devNum = 0; devNum < _outputs.Count; devNum++)
+            {
+                var output = _outputs[devNum];
+                output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
+            }
 
+            valchs.ForEach(ch =>
+            {
+                ChannelControl control = new(ch)
+                {
+                    Location = new(x, y),
+                    Info = GetInfo(ch)
+                };
+
+                control.ChannelControlEvent += ChannelControlEvent;
+                Controls.Add(control);
+                _channelControls.Add(control);
+
+                // Adjust positioning for next iteration.
+                x += control.Width + 5;
+            });
+
+
+            // local func
+            List<string> GetInfo(ChannelHandle ch)
+            {
+                string devName = "unknown";
+                string chanName = "unknown";
+                int patchNum = -1;
+
+                if (ch.Direction == Direction.Output)
+                {
+                    if (ch.DeviceId < _outputs.Count)
+                    {
+                        var dev = _outputs[ch.DeviceId];
+                        devName = dev.DeviceName;
+                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+                        patchNum = dev.Channels[ch.ChannelNumber].Patch;
+                    }
+                }
+                else
+                {
+                    if (ch.DeviceId < _inputs.Count)
+                    {
+                        var dev = _inputs[ch.DeviceId];
+                        devName = dev.DeviceName;
+                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+                    }
+                }
+
+                List<string> ret = [];
+                ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
+                ret.Add($"device: {devName}");
+
+                if (patchNum != -1)
+                {
+                    // Determine patch name.
+                    string sname;
+                    if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
+                    {
+                        sname = $"kit: {patchNum}";
+                        if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
+                        {
+                            sname += ($" {kitName}");
+                        }
+                    }
+                    else
+                    {
+                        sname = $"patch: {patchNum}";
+                        if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
+                        {
+                            sname += ($" {patchName}");
+                        }
+                    }
+
+                    ret.Add(sname);
+                }
+
+                return ret;
+            }
+        }
+        #endregion
+
+        #region CC Midigen
+        /// <summary>
+        /// User clicked something.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void CcMidiGen_MouseClickEvent(object? sender, ClickClack.UserEventArgs e)
+        {
+            if (e.X is not null && e.Y is not null)
+            {
+                string name = ((ClickClack)sender!).Name;
+                int x = (int)e.X; // note
+                int y = (int)e.Y; // velocity
+                InjectMidiInEvent(name, 1, x, y);
+            }
+        }
+
+        /// <summary>
+        /// Provide tool tip text.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void CcMidiGen_MouseMoveEvent(object? sender, ClickClack.UserEventArgs e)
+        {
+            e.Text = $"{MusicDefinitions.NoteNumberToName((int)e.X!)} V:{e.Y}";
+        }
+        #endregion
+
+        #region Midi Utilities
         /// <summary>
         /// Input from internal non-midi device. Doesn't throw.
         /// </summary>
@@ -1288,44 +1156,10 @@ int _debug = 3;
         /// </summary>
         void KillAll()
         {
-            _outputs.ForEach(op =>
-            {
-                op.Channels.ForEach(ch => op.Send(new ControlChangeEvent(0, ch.Key, MidiController.AllNotesOff, 0)));
-            });
+            _outputs.ForEach(op => op.Channels.ForEach(ch => op.Send(new ControlChangeEvent(0, ch.Key, MidiController.AllNotesOff, 0))));
 
             // Hard reset.
-            State.Instance.ExecState = ExecState.Idle;
-        }
-
-
-        /// <summary>
-        /// Clean up devices. Doesn't throw.
-        /// </summary>
-        void ResetIo()
-        {
-            _inputs.ForEach(d => d.Dispose());
-            _inputs.Clear();
-            _outputs.ForEach(d => d.Dispose());
-            _outputs.Clear();
-        }
-
-        /// <summary>
-        /// Set timer for this tempo. Doesn't throw.
-        /// </summary>
-        /// <param name="tempo"></param>
-        void SetTimer(int tempo)
-        {
-            if (tempo > 0)
-            {
-                double sec_per_beat = 60.0 / tempo;
-                double msec_per_sub = 1000 * sec_per_beat / MusicTime.SUBS_PER_BEAT;
-                double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
-                _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimer_Callback);
-            }
-            else // stop
-            {
-                _mmTimer.SetTimer(0, MmTimer_Callback);
-            }
+            CurrentState = ExecState.Idle;
         }
 
         /// <summary>
@@ -1363,51 +1197,219 @@ int _debug = 3;
             return s;
         }
 
-
-
-        /// <summary>General exception processor.</summary>
-        /// <param name="e"></param>
-        /// <returns>(bool fatal, string msg)</returns>
-        (bool fatal, string msg) ProcessException(Exception e)
+        /// <summary>
+        /// Read the lua midi definitions for internal consumption.
+        /// </summary>
+        void ReadMidiDefs()
         {
-            bool fatal = false; // default
-            string msg = e.Message; // default
+            //var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
 
-            switch (e)
+            List<string> s = [
+                "local mid = require('midi_defs')",
+                "for _,v in ipairs(mid.gen_list()) do print(v) end"
+                ];
+
+            var (ecode, sres) = ExecuteLuaChunk(s);
+
+            if (ecode == 0)
             {
-                case LuaException ex:
-                    if (ex.Error.Contains("FATAL")) // bad lua internal error
+                foreach (var line in sres.SplitByToken(Environment.NewLine))
+                {
+                    var parts = line.SplitByToken(",");
+
+                    switch (parts[0])
                     {
-                        fatal = true;
-                        State.Instance.ExecState = ExecState.Dead;
+                        case "instrument": MidiDefs.Instruments.Add(int.Parse(parts[2]), parts[1]); break;
+                        case "drum": MidiDefs.Drums.Add(int.Parse(parts[2]), parts[1]); break;
+                        case "controller": MidiDefs.Controllers.Add(int.Parse(parts[2]), parts[1]); break;
+                        case "kit": MidiDefs.DrumKits.Add(int.Parse(parts[2]), parts[1]); break;
                     }
-                    break;
-
-                case AppException ex: // from app - not fatal
-                    break;
-
-                default: // other/unknon - assume fatal
-                    fatal = true;
-                    if (e.StackTrace is not null)
-                    {
-                        msg += $"{Environment.NewLine}{e.StackTrace}";
-                    }
-                    break;
+                }
             }
-
-            if (fatal)
-            {
-                // Logging an error will cause the app to exit.
-                _logger.Error(msg);
-            }
-            else
-            {
-                // User can decide what to do with this. They may be recoverable so use warn.
-                State.Instance.ExecState = ExecState.Idle;
-                _logger.Warn(msg);
-            }
-
-            return (fatal, msg);
         }
+        #endregion
+
+        #region Misc Stuff
+        /// <summary>
+        /// Capture bad things and display them to the user.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void LogManager_LogMessage(object? sender, LogMessageEventArgs e)
+        {
+            this.InvokeIfRequired(_ =>
+            {
+                traffic.AppendLine(e.ShortMessage);
+
+                if (e.Level == LogLevel.Error)
+                {
+                    traffic.AppendLine("Fatal error - please restart");
+                    CurrentState = ExecState.Dead;
+                }
+            });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Settings_Click(object? sender, EventArgs e)
+        {
+            var changes = SettingsEditor.Edit(UserSettings.Current, "User Settings", 500);
+
+            // Detect changes of interest.
+            bool restart = false;
+
+            foreach (var (name, cat) in changes)
+            {
+                switch (name)
+                {
+                    case "ActiveColor":
+                    case "BackColor":
+                    case "IconColor":
+                    case "PenColor":
+                    case "SelectedColor":
+                        restart = true;
+                        break;
+
+                    case "FileLogLevel":
+                        LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
+                        break;
+
+                    case "NotifLogLevel":
+                        LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
+                        break;
+                }
+            }
+
+            if (restart)
+            {
+                MessageBox.Show("Restart required for device changes to take effect");
+            }
+        }
+
+        /// <summary>
+        /// The meaning of life.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void About_Click(object? sender, EventArgs e)
+        {
+            // Main help.
+            Tools.ShowReadme("Nebulua");
+
+            // Show the builtin definitions and user devices.
+            List<string> ls = [];
+
+            // Show them what they have.
+            ls.Add($"# Your Midi Devices");
+            ls.Add($"");
+            ls.Add($"## Outputs");
+            ls.Add($"");
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                ls.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
+            }
+
+            ls.Add($"");
+            ls.Add($"## Inputs");
+            ls.Add($"");
+            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
+            {
+                ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
+            }
+
+            // Generate definitions content.
+            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
+            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
+
+            List<string> s = [
+                "local mid = require('midi_defs')",
+                "local mus = require('music_defs')",
+                "for _,v in ipairs(mid.gen_md()) do print(v) end",
+                "for _,v in ipairs(mus.gen_md()) do print(v) end",
+                ];
+
+            var (_, sres) = ExecuteLuaChunk(s);
+
+            ls.Add(sres);
+            ls.Add($"");
+
+            // Show readme.
+            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
+
+            // Show midi stuff.
+            string docfn = Path.GetTempFileName() + ".html";
+            try
+            {
+                File.WriteAllText(docfn, html);
+                var proc = new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } };
+
+                proc.Exited += (_, __) => File.Delete(docfn);
+                proc.Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception(ex);
+            }
+        }
+
+        /// <summary>
+        /// Clean up devices. Doesn't throw.
+        /// </summary>
+        void ResetDevices()
+        {
+            _inputs.ForEach(d => d.Dispose());
+            _inputs.Clear();
+            _outputs.ForEach(d => d.Dispose());
+            _outputs.Clear();
+        }
+
+        /// <summary>
+        /// Set timer for this tempo. Doesn't throw.
+        /// </summary>
+        /// <param name="tempo"></param>
+        void SetTimer(int tempo)
+        {
+            if (tempo > 0)
+            {
+                double sec_per_beat = 60.0 / tempo;
+                double msec_per_sub = 1000 * sec_per_beat / MusicTime.SUBS_PER_BEAT;
+                double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
+                _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimer_Callback);
+            }
+            else // stop
+            {
+                _mmTimer.SetTimer(0, MmTimer_Callback);
+            }
+        }
+
+        /// <summary>
+        /// Execute a chunk of lua code. Fixes up lua path and handles errors.
+        /// </summary>
+        /// <param name="scode"></param>
+        /// <returns></returns>
+        (int ecode, string sres) ExecuteLuaChunk(List<string> scode)
+        {
+            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
+            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
+            scode.Insert(0, $"package.path = '{luaPath}' .. package.path");
+
+            var (ecode, sret) = Tools.ExecuteLuaCode(string.Join(Environment.NewLine, scode));
+
+            if (ecode != 0)
+            {
+                // Command failed. Capture everything useful.
+                List<string> lserr = [];
+                lserr.Add($"=== code: {ecode}");
+                lserr.Add($"=== stderr:");
+                lserr.Add($"{sret}");
+
+                _logger.Warn(string.Join(Environment.NewLine, lserr));
+            }
+            return (ecode, sret);
+        }
+        #endregion
     }
 }

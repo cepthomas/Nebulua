@@ -8,16 +8,10 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
-    #region Enums
-    /// <summary>Internal status.</summary>
-    public enum ExecState { Idle, Run, Exit, Dead }
-    #endregion
-
     /// <summary>System dynamic values for access by all other components. Some notify clients.</summary>
     public class State
     {
         #region Backing fields
-        ExecState _execState;
         List<(int tick, string name)> _sectionInfo = [];
         int _tempo = 100;
         int _currentTick = 0;
@@ -27,19 +21,6 @@ namespace Nebulua
         #endregion
 
         #region Properties that notify
-        public ExecState ExecState
-        {
-            get { return _execState; }
-            set
-            {
-                if (value != _execState)
-                {
-                    _execState = value;
-                    NotifyStateChanged();
-                }
-            }
-        }
-
         /// <summary>Where are we in composition.</summary>
         public int CurrentTick
         {

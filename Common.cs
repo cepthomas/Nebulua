@@ -5,7 +5,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Nebulua
 {
-    #region Types
     /// <summary>Application level error. Above lua level.</summary>
     public class AppException(string message) : Exception(message) { }
 
@@ -14,7 +13,6 @@ namespace Nebulua
 
     /// <summary>Channel direction.</summary>
     public enum Direction { None, Input, Output }
-    #endregion
 
     /// <summary>References one channel. Supports translation to/from script unique int handle.</summary>
     /// <param name="DeviceId">Index in internal list</param>
@@ -40,53 +38,4 @@ namespace Nebulua
             return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Direction == Direction.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
     }
-
-    ///// <summary>Utility stuff.</summary>
-    //public class Utils
-    //{
-    //    /// <summary>General exception processor.</summary>
-    //    /// <param name="e"></param>
-    //    /// <returns>(bool fatal, string msg)</returns>
-    //    public static (bool fatal, string msg) ProcessException(Exception e)
-    //    {
-    //        bool fatal = false;
-    //        string msg = e.Message; // default
-
-    //        switch (e)
-    //        {
-    //            case LuaException ex:
-    //                if (ex.Error.Contains("FATAL")) // bad lua internal error
-    //                {
-    //                    fatal = true;
-    //                    State.Instance.ExecState = ExecState.Dead;
-    //                }
-    //                break;
-
-    //            case AppException ex: // from app - not fatal
-    //                break;
-
-    //            default: // other - assume fatal
-    //                fatal = true;
-    //                if (e.StackTrace is not null)
-    //                {
-    //                    msg += $"{Environment.NewLine}{e.StackTrace}";
-    //                }
-    //                break;
-    //        }
-
-    //        return (fatal, msg);
-    //    }
-    //}
-
-    // #region Console abstraction to support testing TODO?
-    // public interface IConsole
-    // {
-    //     bool KeyAvailable { get; }
-    //     string Title { get; set; }
-    //     void Write(string text);
-    //     void WriteLine(string text);
-    //     string? ReadLine();
-    //     ConsoleKeyInfo ReadKey(bool intercept);
-    // }
-    // #endregion
 }
