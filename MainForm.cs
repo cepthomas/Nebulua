@@ -354,9 +354,13 @@ namespace Nebulua
                 try
                 {
                     // Clean up first.
+                    // Just in case.
+                    KillAll();
                     _mmTimer.Stop();
                     DestroyControls();
                     CurrentState = ExecState.Idle;
+                    // Destroy devices
+                    ResetDevices();
 
                     // Determine file to load.
                     if (openScriptFn is not null)

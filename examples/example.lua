@@ -28,19 +28,21 @@ api.log_info('Loading example.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Midi channels. Adjust for your configuration.
-local midi_device_in1  = "ccMidiGen"
--- local midi_device_in2  = "loopMIDI Port"
-local hnd_ccin  = api.open_midi_input(midi_device_in1, 1, "click-clack")
--- local hnd_lmin  = api.open_midi_input(midi_device_in2, 1, "akai-kbd")
+local midi_device_in  = "ccMidiGen"
+-- local midi_device_in  = "MPK mini"
+-- local midi_device_in  = "loopMIDI Port"
+
+local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
 
 local midi_device_out    = "VirtualMIDISynth #1"  -- VST host
 -- local midi_device_out  = "loopMIDI Port"  -- DAW host
 
-local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",    inst.AcousticGrandPiano)
-local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",    inst.AcousticBass)
-local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",   inst.Lead1Square)
-local hnd_strings = api.open_midi_output(midi_device_out, 4,  "strings", inst.StringEnsemble1)
-local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",   kit.Jazz)
+local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
+local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",       inst.AcousticBass)
+local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",      inst.Lead1Square)
+-- local hnd_strings = api.open_midi_output(midi_device_out, 4,  "pan flute",  inst.StringEnsemble1)
+local hnd_strings = api.open_midi_output(midi_device_out, 4,  "strings",    inst.PanFlute)
+local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",      kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
@@ -112,8 +114,8 @@ end
 function receive_midi_note(chan_hnd, note_num, volume)
     if chan_hnd == hnd_ccin then
         -- Play the note.
-        api.send_midi_note(hnd_strings, note_num, volume)--, 0)
         -- api.log_debug(string.format("RCV hnd_ccin note:%d chan_hnd:%d volume:%f", note_num, chan_hnd, volume))
+        api.send_midi_note(hnd_strings, note_num, volume)--, 0)
     end
     return 0
 end
@@ -122,8 +124,8 @@ end
 -- Handlers for input controller events. Optional.
 function receive_midi_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_ccin then
-        -- Do something.
         -- api.log_debug(string.format("RCV controller:%d chan_hnd:%d value:%d", controller, chan_hnd, value))
+        -- Do something.
     end
     return 0
 end

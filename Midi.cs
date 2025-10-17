@@ -101,6 +101,7 @@ namespace Nebulua
                     _midiIn = new MidiIn(i);
                     _midiIn.MessageReceived += MidiIn_MessageReceived;
                     _midiIn.ErrorReceived += MidiIn_ErrorReceived;
+                    _midiIn.Start();
                     realInput = true;
                     break;
                 }
@@ -140,13 +141,11 @@ namespace Nebulua
             MidiEvent evt = MidiEvent.FromRawMessage(e.RawMessage);
 
             // Is it in our registered inputs and enabled?
-            var ch = Channels[evt.Channel - 1];
-            if (ch is not null && ch.Enable)
+            if (Channels.TryGetValue(evt.Channel, out MidiChannel? value) && value.Enable)
             {
                 // Invoke takes care of cross-thread issues.
                 ReceiveEvent?.Invoke(this, evt);
             }
-            // else ignore.
         }
 
         /// <summary>
@@ -220,8 +219,7 @@ namespace Nebulua
         public void Send(MidiEvent evt)
         {
             // Is it in our registered outputs and enabled?
-            var ch = Channels[evt.Channel];
-            if (ch is not null && ch.Enable)
+            if (Channels.TryGetValue(evt.Channel, out MidiChannel? value) && value.Enable)
             {
                 _midiOut?.Send(evt.GetAsShortMessage());
             }
