@@ -34,6 +34,7 @@ local midi_device_in  = "ccMidiGen"
 
 local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
 
+-- local midi_device_out    = "Microsoft GS Wavetable Synth"  -- Default
 local midi_device_out    = "VirtualMIDISynth #1"  -- VST host
 -- local midi_device_out  = "loopMIDI Port"  -- DAW host
 
