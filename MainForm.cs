@@ -1150,7 +1150,10 @@ namespace Nebulua
                 NoteEvent nevt = velocity > 0 ?
                     new NoteOnEvent(0, channel, noteNum, velocity, 0) :
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
-                Midi_ReceiveEvent(input, nevt);
+
+TODO1 clickclack events need to be on a different thread. like MidiLib.
+>>>                Midi_ReceiveEvent(input, nevt);
+
             }
             //else do I care?
         }
