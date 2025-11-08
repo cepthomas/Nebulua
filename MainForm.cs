@@ -21,7 +21,7 @@ namespace Nebulua
     {
         #region Fields
         /// <summary>App logger.</summary>
-        readonly Logger _logger = LogManager.CreateLogger("NEB");
+        readonly Logger _loggerApp = LogManager.CreateLogger("APP");
 
         /// <summary>Script logger.</summary>
         readonly Logger _loggerScr = LogManager.CreateLogger("SCR");
@@ -33,7 +33,7 @@ namespace Nebulua
         readonly Interop _interop = new();
 
         /// <summary>Interop serializing access.</summary>
-        readonly object _locker = new();
+        readonly object _interopLock = new();
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -134,6 +134,18 @@ namespace Nebulua
             }
         }
         #endregion
+
+
+
+        void Trace(string s)
+        {
+            Debug.WriteLine(s);
+        }
+
+        int? _threadId = null;
+        bool _inMmTimer = false;
+
+
 
         #region Lifecycle
         /// <summary>
@@ -249,7 +261,7 @@ namespace Nebulua
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             Thread.CurrentThread.Name = "MAIN";
-            _logger.Info($"MainForm thread [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
+//            Trace($"+++ MainForm() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
 
             _tmit.Snap("MainForm() exit");
         }
@@ -349,7 +361,7 @@ namespace Nebulua
         /// <param name="openScriptFn">The script file to open or null if reload.</param>
         void OpenScriptFile(string? openScriptFn)
         {
-            lock(_locker)
+            lock(_interopLock)
             {
                 try
                 {
@@ -378,7 +390,7 @@ namespace Nebulua
 
                     // OK to load.
                     _scriptTouch = File.GetLastWriteTime(_scriptFn);
-                    _logger.Info($"Loading script {_scriptFn}");
+                    _loggerApp.Info($"Loading script {_scriptFn}");
 
                     // Set up runtime lua environment. The lua lib files, the dir containing the script file.
                     var srcDir = MiscUtils.GetSourcePath(); // The source dir.
@@ -590,12 +602,12 @@ namespace Nebulua
             if (fatal)
             {
                 // Logging an error will cause the app to exit.
-                _logger.Error(msg);
+                _loggerApp.Error(msg);
             }
             else
             {
                 // User can decide what to do with this. They may be recoverable so use warn.
-                _logger.Warn(msg);
+                _loggerApp.Warn(msg);
                 CurrentState = ExecState.Idle;
             }
 
@@ -611,10 +623,19 @@ namespace Nebulua
         /// <param name="periodElapsed"></param>
         void MmTimer_Callback(double totalElapsed, double periodElapsed)
         {
+            _inMmTimer = true;
+
             if (CurrentState == ExecState.Run)
             {
-                lock(_locker)
+                lock(_interopLock)
                 {
+//                    if (_threadId is not null)// && _threadId != Thread.CurrentThread.ManagedThreadId)
+//                    {
+//                        Trace($"!!! MmTimer_Callback() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+//                        throw new InvalidOperationException();
+//                    }
+                    _threadId = Environment.CurrentManagedThreadId;
+
                     try
                     {
                         // Do script.
@@ -623,8 +644,12 @@ namespace Nebulua
                         if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
                         {
                             Thread.CurrentThread.Name = "MM_TIMER";
-                            _logger.Info($"Managed thread [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
                         }
+
+//                        if (State.Instance.CurrentTick  % 1000 == 0)
+//                        {
+//                            Trace($"+++ MmTimer_Callback() {State.Instance.CurrentTick} [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+//                        }
 
                         int ret = _interop.Step(State.Instance.CurrentTick);
 
@@ -665,8 +690,11 @@ namespace Nebulua
                     {
                         ProcessException(ex);
                     }
+                    //Trace($"--- MmTimer_Callback() EXIT");
+                    _threadId = null;
                 }
             }
+            _inMmTimer = false;
         }
 
         /// <summary>
@@ -676,15 +704,25 @@ namespace Nebulua
         /// <param name="e"></param>
         void Midi_ReceiveEvent(object? sender, MidiEvent e)
         {
-            lock(_locker)
+//            Trace($"+++ Midi_ReceiveEvent() ENTER [_threadId={_threadId ?? -1}] [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+            lock (_interopLock)
             {
+//                Trace($"+++ Midi_ReceiveEvent() LOCKED [_inMmTimer={_inMmTimer}]");
+//                if (_threadId is not null) // && _threadId != Thread.CurrentThread.ManagedThreadId)
+//                {
+//                    Trace($"!!! Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+//                    throw new InvalidOperationException();
+//                }
+                _threadId = Environment.CurrentManagedThreadId;
+
                 try
                 {
                     if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
                     {
                         Thread.CurrentThread.Name = "MIDI_RCV";
-                        _logger.Info($"Managed thread [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
                     }
+
+//                    Trace($"+++ Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
 
                     var input = (MidiInputDevice)sender!;
                     ChannelHandle ch = new(_inputs.IndexOf(input), e.Channel, Direction.Input);
@@ -719,6 +757,9 @@ namespace Nebulua
                 {
                     ProcessException(ex);
                 }
+
+//                Trace($"--- Midi_ReceiveEvent() EXIT");
+                _threadId = null;
             }
         }
 
@@ -882,6 +923,8 @@ namespace Nebulua
                 return;
             }
 
+//            Trace($"+++ Interop_SendMidiNote() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
+
             // Sound or quiet?
             var output = _outputs[ch.DeviceId];
             if (output.Channels[ch.ChannelNumber].Enable)
@@ -1021,8 +1064,7 @@ namespace Nebulua
 
             // Create channels and controls.
             int x = timeBar.Left;
-            int y = timeBar.Bottom + 5; // 0 + CONTROL_SPACING;
-
+            int y = timeBar.Bottom + 5;
 
             List<ChannelHandle> valchs = [];
             for (int devNum = 0; devNum < _outputs.Count; devNum++)
@@ -1151,9 +1193,9 @@ namespace Nebulua
                     new NoteOnEvent(0, channel, noteNum, velocity, 0) :
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
 
-TODO1 clickclack events need to be on a different thread. like MidiLib.
->>>                Midi_ReceiveEvent(input, nevt);
-
+//                Trace($"+++ InjectMidiInEvent() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
+                Midi_ReceiveEvent(input, nevt);
+//                Trace($"+++ InjectMidiInEvent() EXIT");
             }
             //else do I care?
         }
@@ -1358,7 +1400,7 @@ TODO1 clickclack events need to be on a different thread. like MidiLib.
             }
             catch (Exception ex)
             {
-                _logger.Exception(ex);
+                _loggerApp.Exception(ex);
             }
         }
 
@@ -1413,7 +1455,7 @@ TODO1 clickclack events need to be on a different thread. like MidiLib.
                 lserr.Add($"=== stderr:");
                 lserr.Add($"{sret}");
 
-                _logger.Warn(string.Join(Environment.NewLine, lserr));
+                _loggerApp.Warn(string.Join(Environment.NewLine, lserr));
             }
             return (ecode, sret);
         }
