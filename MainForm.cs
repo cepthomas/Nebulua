@@ -233,16 +233,6 @@ namespace Nebulua
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
 
-            ccMidiGen.Name = "ccMidiGen";
-            ccMidiGen.MinX = 24; // C0
-            ccMidiGen.MaxX = 96; // C6
-            ccMidiGen.GridX = [12, 24, 36, 48, 60, 72, 84];
-            ccMidiGen.MinY = 0; // min velocity == note off
-            ccMidiGen.MaxY = 127; // max velocity
-            ccMidiGen.GridY = [32, 64, 96];
-            ccMidiGen.MouseClickEvent += CcMidiGen_MouseClickEvent;
-            ccMidiGen.MouseMoveEvent += CcMidiGen_MouseMoveEvent;
-            
             ddbtnFile.Image = ((Bitmap)ddbtnFile.Image!).Colorize(UserSettings.Current.IconColor);
             ddbtnFile.BackColor = UserSettings.Current.BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
@@ -617,7 +607,7 @@ namespace Nebulua
 
         #region Callback Handlers
         /// <summary>
-        /// Process events. This is on a system thread but gets bounced to the UI thread.
+        /// Process events. This is on a system thread.
         /// </summary>
         /// <param name="totalElapsed"></param>
         /// <param name="periodElapsed"></param>
@@ -698,7 +688,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Midi input arrived. This is on a system thread but gets bounced to the UI thread.
+        /// Midi input arrived. This is on a system thread.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -1147,34 +1137,6 @@ namespace Nebulua
 
                 return ret;
             }
-        }
-        #endregion
-
-        #region CC Midigen
-        /// <summary>
-        /// User clicked something.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void CcMidiGen_MouseClickEvent(object? sender, ClickClack.UserEventArgs e)
-        {
-            if (e.X is not null && e.Y is not null)
-            {
-                string name = ((ClickClack)sender!).Name;
-                int x = (int)e.X; // note
-                int y = (int)e.Y; // velocity
-                InjectMidiInEvent(name, 1, x, y);
-            }
-        }
-
-        /// <summary>
-        /// Provide tool tip text.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void CcMidiGen_MouseMoveEvent(object? sender, ClickClack.UserEventArgs e)
-        {
-            e.Text = $"{MusicDefinitions.NoteNumberToName((int)e.X!)} V:{e.Y}";
         }
         #endregion
 

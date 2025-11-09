@@ -33,7 +33,6 @@ namespace Nebulua
             chkLoop = new CheckBox();
             btnSettings = new Button();
             timeBar = new TimeBar();
-            ccMidiGen = new Ephemera.NBagOfUis.ClickClack();
             ddbtnFile = new Ephemera.NBagOfUis.DropDownButton();
             toolTip = new ToolTip(components);
             SuspendLayout();
@@ -103,7 +102,7 @@ namespace Nebulua
             traffic.MaxText = 5000;
             traffic.Name = "traffic";
             traffic.Prompt = "";
-            traffic.Size = new Size(598, 291);
+            traffic.Size = new Size(850, 291);
             traffic.TabIndex = 41;
             traffic.WordWrap = true;
             // 
@@ -192,18 +191,6 @@ namespace Nebulua
             timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 52;
             // 
-            // ccMidiGen
-            // 
-            ccMidiGen.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
-            ccMidiGen.Location = new Point(618, 176);
-            ccMidiGen.MaxX = 100;
-            ccMidiGen.MaxY = 100;
-            ccMidiGen.MinX = 0;
-            ccMidiGen.MinY = 0;
-            ccMidiGen.Name = "ccMidiGen";
-            ccMidiGen.Size = new Size(257, 292);
-            ccMidiGen.TabIndex = 56;
-            // 
             // ddbtnFile
             // 
             ddbtnFile.FlatStyle = FlatStyle.Flat;
@@ -221,7 +208,6 @@ namespace Nebulua
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(880, 473);
             Controls.Add(ddbtnFile);
-            Controls.Add(ccMidiGen);
             Controls.Add(btnSettings);
             Controls.Add(timeBar);
             Controls.Add(chkLoop);
@@ -254,7 +240,6 @@ namespace Nebulua
         private CheckBox chkLoop;
         private TimeBar timeBar;
         private Button btnSettings;
-        private Ephemera.NBagOfUis.ClickClack ccMidiGen;
         private Ephemera.NBagOfUis.DropDownButton ddbtnFile;
         private ToolTip toolTip;
     }
