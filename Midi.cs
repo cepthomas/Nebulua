@@ -11,25 +11,19 @@ namespace Nebulua
     public class MidiDefs
     {
         /// <summary>Midi constant.</summary>
-        public const int MIDI_VAL_MIN = 0;
+        public const int MIN_MIDI = 0;
 
         /// <summary>Midi constant.</summary>
-        public const int MIDI_VAL_MAX = 127;
+        public const int MAX_MIDI = 127;
 
         /// <summary>Per device.</summary>
-        public const int NUM_MIDI_CHANNELS = 16;
-
-        /// <summary>Corresponds to midi velocity = 0.</summary>
-        public const double VOLUME_MIN = 0.0;
-
-        /// <summary>Corresponds to midi velocity = 127.</summary>
-        public const double VOLUME_MAX = 1.0;
+        public const int NUM_CHANNELS = 16;
 
         /// <summary>Default value.</summary>
-        public const double VOLUME_DEFAULT = 0.8;
+        public const double DEFAULT_VOLUME = 0.8;
 
         /// <summary>Allow UI controls some more headroom.</summary>
-        public const double MAX_GAIN = 2.0;
+        public const double MAX_VOLUME = 2.0;
 
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
@@ -226,4 +220,6 @@ namespace Nebulua
         }
         #endregion
     }
+
+    
 }

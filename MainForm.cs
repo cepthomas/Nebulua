@@ -722,7 +722,7 @@ namespace Nebulua
                     switch (e)
                     {
                         case NoteOnEvent evt:
-                            _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MIDI_VAL_MAX);
+                            _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MAX_MIDI);
                             break;
 
                         case NoteEvent evt:
@@ -810,7 +810,7 @@ namespace Nebulua
                 return;
             }
 
-            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
             {
                 _loggerScr.Warn($"Invalid input midi channel {e.chan_num}");
                 return;
@@ -856,7 +856,7 @@ namespace Nebulua
                 return;
             }
 
-            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_MIDI_CHANNELS)
+            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
             {
                 _loggerScr.Warn($"Invalid output midi channel {e.chan_num}");
                 return;
@@ -907,7 +907,7 @@ namespace Nebulua
 
             if (ch.DeviceId >= _outputs.Count ||
                 ch.ChannelNumber < 1 ||
-                ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
+                ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
             {
                 _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
                 return;
@@ -919,11 +919,11 @@ namespace Nebulua
             var output = _outputs[ch.DeviceId];
             if (output.Channels[ch.ChannelNumber].Enable)
             {
-                int note_num = MathUtils.Constrain(e.note_num, 0, MidiDefs.MIDI_VAL_MAX);
+                int note_num = MathUtils.Constrain(e.note_num, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
 
                 // Check for note off.
                 var vol = e.volume * State.Instance.Volume;
-                int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MIDI_VAL_MAX), 0, MidiDefs.MIDI_VAL_MAX);
+                int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MAX_MIDI), MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
                 MidiEvent evt = vel == 0?
                     new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOff, note_num, 0) :
                     new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOn, note_num, vel);
@@ -951,14 +951,14 @@ namespace Nebulua
 
             if (ch.DeviceId >= _outputs.Count ||
                 ch.ChannelNumber < 1 ||
-                ch.ChannelNumber > MidiDefs.NUM_MIDI_CHANNELS)
+                ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
             {
                 _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
                 return;
             }
 
-            int controller = MathUtils.Constrain(e.controller, 0, MidiDefs.MIDI_VAL_MAX);
-            int value = MathUtils.Constrain(e.value, 0, MidiDefs.MIDI_VAL_MAX);
+            int controller = MathUtils.Constrain(e.controller, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+            int value = MathUtils.Constrain(e.value, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
 
             var output = _outputs[ch.DeviceId];
             MidiEvent evt;
@@ -1150,7 +1150,7 @@ namespace Nebulua
 
             if (input is not null)
             {
-                velocity = MathUtils.Constrain(velocity, MidiDefs.MIDI_VAL_MIN, MidiDefs.MIDI_VAL_MAX);
+                velocity = MathUtils.Constrain(velocity, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
                 NoteEvent nevt = velocity > 0 ?
                     new NoteOnEvent(0, channel, noteNum, velocity, 0) :
                     new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);

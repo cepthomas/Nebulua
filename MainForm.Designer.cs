@@ -64,7 +64,7 @@ namespace Nebulua
             // sldVolume
             // 
             sldVolume.BorderStyle = BorderStyle.FixedSingle;
-            sldVolume.DrawColor = Color.Orange;
+            sldVolume.DrawColor = Color.Red;
             sldVolume.Label = "vol";
             sldVolume.Location = new Point(348, 8);
             sldVolume.Margin = new Padding(4, 5, 4, 5);

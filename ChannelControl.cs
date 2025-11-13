@@ -96,6 +96,7 @@ namespace Nebulua
                 Size = new Size(40, 20),
                 Text = "?"
             };
+            Controls.Add(lblChannelInfo);
 
             lblSolo = new()
             {
@@ -103,6 +104,7 @@ namespace Nebulua
                 Size = new Size(20, 20),
                 Text = "S"
             };
+            Controls.Add(lblSolo);
 
             lblMute = new()
             {
@@ -110,6 +112,7 @@ namespace Nebulua
                 Size = new Size(20, 20),
                 Text = "M"
             };
+            Controls.Add(lblMute);
 
             sldVolume = new()
             {
@@ -117,21 +120,17 @@ namespace Nebulua
                 Size = new Size(40, 30),
                 Orientation = Orientation.Horizontal,
                 BorderStyle = BorderStyle.FixedSingle,
-                Maximum = MidiDefs.MAX_GAIN,
-                Minimum = MidiDefs.VOLUME_MIN,
-                Value = MidiDefs.VOLUME_DEFAULT,
-                Resolution = 0.1
+                Maximum = MidiDefs.MAX_VOLUME,
+                Minimum = 0.0,
+                Value = MidiDefs.DEFAULT_VOLUME,
+                Resolution = 0.05
             };
+            Controls.Add(sldVolume);
 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             Size = new Size(sldVolume.Right + 5, 38);
             BorderStyle = BorderStyle.FixedSingle;
-
-            Controls.Add(sldVolume);
-            Controls.Add(lblMute);
-            Controls.Add(lblSolo);
-            Controls.Add(lblChannelInfo);
 
             toolTip = new(components);
         }
