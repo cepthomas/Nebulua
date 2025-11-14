@@ -12,7 +12,7 @@ M.MIDDLE_C4 = 60
 M.DEFAULT_OCTAVE = 4 -- middle C TODO1 combine with above?
 
 
---- All the builtin chord defs. TODO1 combine with midilib?
+--- All the builtin chord defs. TODO1 combine with midilib? get from text file.
 local chord_defs =
 {
 --  Chord    | Notes             | Description
