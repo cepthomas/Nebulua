@@ -773,11 +773,12 @@
         <member name="F:Ephemera.NBagOfTricks.MusicDefinitions._scaleDefs">
             <summary>All the builtin scale defs.</summary>
         </member>
-        <member name="M:Ephemera.NBagOfTricks.MusicDefinitions.NoteNumberToName(System.Int32)">
+        <member name="M:Ephemera.NBagOfTricks.MusicDefinitions.NoteNumberToName(System.Int32,System.Boolean)">
             <summary>
             Convert note number into name.
             </summary>
-            <param name="inote"></param>
+            <param name="inote">Note number</param>
+            <param name="octave">Include octave</param>
             <returns></returns>
         </member>
         <member name="M:Ephemera.NBagOfTricks.MusicDefinitions.NoteNameToNumber(System.String)">
