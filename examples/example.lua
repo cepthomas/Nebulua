@@ -28,7 +28,7 @@ api.log_info('Loading example.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Midi channels. Adjust for your configuration.
-local midi_device_in  = "ccMidiGen"
+local midi_device_in  = "TODO1 XXX ccMidiGen"
 local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
 
 local midi_device_out    = "Microsoft GS Wavetable Synth"  -- Default  or "VirtualMIDISynth #1"  -- VST host

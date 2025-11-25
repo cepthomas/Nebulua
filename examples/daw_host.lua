@@ -47,7 +47,7 @@ api.log_info('Loading daw_host.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Midi channels. Adjust for your configuration.
-local midi_device_in  = "ccMidiGen"
+local midi_device_in  = "TODO1 use midigen ccMidiGen"
 -- local midi_device_in  = "MPK mini"
 local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
 
