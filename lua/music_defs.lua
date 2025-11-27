@@ -9,10 +9,10 @@ local M = {}
 --- Music definitions
 M.NOTES_PER_OCTAVE = 12
 M.MIDDLE_C4 = 60
-M.DEFAULT_OCTAVE = 4 -- middle C TODO1 combine with above?
+M.DEFAULT_OCTAVE = 4 -- middle 
 
 
---- All the builtin chord defs. TODO1 combine with C:\Dev\Libs\NBagOfTricks\MusicDefinitions.cs
+--- All the builtin chord defs.
 local chord_defs =
 {
 --  Chord    | Notes             | Description

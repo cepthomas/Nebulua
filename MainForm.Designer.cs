@@ -20,7 +20,6 @@ namespace Nebulua
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             chkPlay = new CheckBox();
             btnRewind = new Button();
             sldVolume = new Ephemera.NBagOfUis.Slider();
@@ -42,7 +41,7 @@ namespace Nebulua
             chkPlay.Appearance = Appearance.Button;
             chkPlay.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
             chkPlay.FlatStyle = FlatStyle.Flat;
-            chkPlay.Image = (Image)resources.GetObject("chkPlay.Image");
+            chkPlay.Image = Properties.Resources.glyphicons_174_play;
             chkPlay.Location = new Point(64, 9);
             chkPlay.Name = "chkPlay";
             chkPlay.Size = new Size(40, 38);
@@ -53,7 +52,7 @@ namespace Nebulua
             // btnRewind
             // 
             btnRewind.FlatStyle = FlatStyle.Flat;
-            btnRewind.Image = (Image)resources.GetObject("btnRewind.Image");
+            btnRewind.Image = Properties.Resources.glyphicons_173_rewind;
             btnRewind.Location = new Point(13, 8);
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new Size(40, 38);
@@ -109,7 +108,7 @@ namespace Nebulua
             // btnAbout
             // 
             btnAbout.FlatStyle = FlatStyle.Flat;
-            btnAbout.Image = (Image)resources.GetObject("btnAbout.Image");
+            btnAbout.Image = Properties.Resources.glyphicons_195_question_sign;
             btnAbout.Location = new Point(642, 10);
             btnAbout.Name = "btnAbout";
             btnAbout.Size = new Size(40, 38);
@@ -120,7 +119,7 @@ namespace Nebulua
             // btnKill
             // 
             btnKill.FlatStyle = FlatStyle.Flat;
-            btnKill.Image = (Image)resources.GetObject("btnKill.Image");
+            btnKill.Image = Properties.Resources.glyphicons_206_electricity;
             btnKill.Location = new Point(550, 10);
             btnKill.Name = "btnKill";
             btnKill.Size = new Size(40, 38);
@@ -133,7 +132,7 @@ namespace Nebulua
             chkMonRcv.Appearance = Appearance.Button;
             chkMonRcv.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
             chkMonRcv.FlatStyle = FlatStyle.Flat;
-            chkMonRcv.Image = (Image)resources.GetObject("chkMonRcv.Image");
+            chkMonRcv.Image = Properties.Resources.glyphicons_213_arrow_down;
             chkMonRcv.Location = new Point(458, 10);
             chkMonRcv.Name = "chkMonRcv";
             chkMonRcv.Size = new Size(40, 38);
@@ -146,7 +145,7 @@ namespace Nebulua
             chkMonSnd.Appearance = Appearance.Button;
             chkMonSnd.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
             chkMonSnd.FlatStyle = FlatStyle.Flat;
-            chkMonSnd.Image = (Image)resources.GetObject("chkMonSnd.Image");
+            chkMonSnd.Image = Properties.Resources.glyphicons_214_arrow_up;
             chkMonSnd.Location = new Point(504, 10);
             chkMonSnd.Name = "chkMonSnd";
             chkMonSnd.Size = new Size(40, 38);
@@ -159,7 +158,7 @@ namespace Nebulua
             chkLoop.Appearance = Appearance.Button;
             chkLoop.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
             chkLoop.FlatStyle = FlatStyle.Flat;
-            chkLoop.Image = (Image)resources.GetObject("chkLoop.Image");
+            chkLoop.Image = Properties.Resources.glyphicons_82_refresh;
             chkLoop.Location = new Point(180, 8);
             chkLoop.Name = "chkLoop";
             chkLoop.Size = new Size(40, 38);
@@ -170,7 +169,7 @@ namespace Nebulua
             // btnSettings
             // 
             btnSettings.FlatStyle = FlatStyle.Flat;
-            btnSettings.Image = (Image)resources.GetObject("btnSettings.Image");
+            btnSettings.Image = Properties.Resources.glyphicons_137_cogwheel;
             btnSettings.Location = new Point(596, 10);
             btnSettings.Name = "btnSettings";
             btnSettings.Size = new Size(40, 38);
@@ -220,7 +219,6 @@ namespace Nebulua
             Controls.Add(sldVolume);
             Controls.Add(sldTempo);
             Controls.Add(traffic);
-            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             Text = "Form1";
             ResumeLayout(false);

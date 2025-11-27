@@ -47,11 +47,11 @@ api.log_info('Loading daw_host.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Midi channels. Adjust for your configuration.
-local midi_device_in  = "TODO1 use midigen ccMidiGen"
+local midi_device_in  = "loopMIDI Port 1"
 -- local midi_device_in  = "MPK mini"
 local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
 
-local midi_device_out  = "loopMIDI Port"  -- DAW host
+local midi_device_out  = "loopMIDI Port 2"  -- DAW host
 local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
 local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",       inst.AcousticBass)
 local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",      inst.Lead1Square)
