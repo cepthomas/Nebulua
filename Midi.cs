@@ -51,7 +51,7 @@ namespace Nebulua
     /// <summary>
     /// A midi input device.
     /// </summary>
-    public class MidiInputDevice : IDisposable //TODO1 retry
+    public class MidiInputDevice : IDisposable //TODO retry
     {
         #region Fields
         /// <summary>NAudio midi input device.</summary>
@@ -149,7 +149,7 @@ namespace Nebulua
     /// <summary>
     /// A midi output device.
     /// </summary>
-    public class MidiOutputDevice : IDisposable //TODO1 retry
+    public class MidiOutputDevice : IDisposable //TODO retry
     {
         #region Fields
         /// <summary>NAudio midi output device.</summary>
