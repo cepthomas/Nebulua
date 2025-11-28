@@ -135,17 +135,13 @@ namespace Nebulua
         }
         #endregion
 
+        //void Trace(string s)
+        //{
+        //    Debug.WriteLine(s);
+        //}
 
-
-        void Trace(string s)
-        {
-            Debug.WriteLine(s);
-        }
-
-        int? _threadId = null;
-        bool _inMmTimer = false;
-
-
+        //int? _threadId = null;
+        //bool _inMmTimer = false;
 
         #region Lifecycle
         /// <summary>
@@ -613,7 +609,7 @@ namespace Nebulua
         /// <param name="periodElapsed"></param>
         void MmTimer_Callback(double totalElapsed, double periodElapsed)
         {
-            _inMmTimer = true;
+            //_inMmTimer = true;
 
             if (CurrentState == ExecState.Run)
             {
@@ -624,7 +620,7 @@ namespace Nebulua
 //                        Trace($"!!! MmTimer_Callback() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
 //                        throw new InvalidOperationException();
 //                    }
-                    _threadId = Environment.CurrentManagedThreadId;
+                    //_threadId = Environment.CurrentManagedThreadId;
 
                     try
                     {
@@ -681,10 +677,10 @@ namespace Nebulua
                         ProcessException(ex);
                     }
                     //Trace($"--- MmTimer_Callback() EXIT");
-                    _threadId = null;
+                    //_threadId = null;
                 }
             }
-            _inMmTimer = false;
+            //_inMmTimer = false;
         }
 
         /// <summary>
@@ -703,7 +699,7 @@ namespace Nebulua
 //                    Trace($"!!! Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
 //                    throw new InvalidOperationException();
 //                }
-                _threadId = Environment.CurrentManagedThreadId;
+                //_threadId = Environment.CurrentManagedThreadId;
 
                 try
                 {
@@ -749,7 +745,7 @@ namespace Nebulua
                 }
 
 //                Trace($"--- Midi_ReceiveEvent() EXIT");
-                _threadId = null;
+                //_threadId = null;
             }
         }
 

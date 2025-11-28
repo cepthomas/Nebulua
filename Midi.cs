@@ -19,12 +19,6 @@ namespace Nebulua
         /// <summary>Per device.</summary>
         public const int NUM_CHANNELS = 16;
 
-        /// <summary>Default value.</summary>
-        public const double DEFAULT_VOLUME = 0.8;
-
-        /// <summary>Allow UI controls some more headroom.</summary>
-        public const double MAX_VOLUME = 2.0;
-
         /// <summary>The normal drum channel.</summary>
         public const int DEFAULT_DRUM_CHANNEL = 10;
 

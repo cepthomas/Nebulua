@@ -120,9 +120,9 @@ namespace Nebulua
                 Size = new Size(40, 30),
                 Orientation = Orientation.Horizontal,
                 BorderStyle = BorderStyle.FixedSingle,
-                Maximum = MidiDefs.MAX_VOLUME,
+                Maximum = Defs.MAX_VOLUME,
                 Minimum = 0.0,
-                Value = MidiDefs.DEFAULT_VOLUME,
+                Value = Defs.DEFAULT_VOLUME,
                 Resolution = 0.05
             };
             Controls.Add(sldVolume);

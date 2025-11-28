@@ -38,4 +38,13 @@ namespace Nebulua
             return (ch.DeviceId << 8) | ch.ChannelNumber | (ch.Direction == Direction.Output ? OUTPUT_FLAG : OUTPUT_FLAG);
         }
     }
+
+    public class Defs
+    {
+        /// <summary>Default value.</summary>
+        public const double DEFAULT_VOLUME = 0.8;
+
+        /// <summary>Allow UI controls some more headroom.</summary>
+        public const double MAX_VOLUME = 2.0;
+    }
 }

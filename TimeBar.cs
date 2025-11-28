@@ -17,7 +17,7 @@ namespace Nebulua
     public enum SnapType { Bar, Beat, Sub }
 
     /// <summary>The control.</summary>
-    public class TimeBar : UserControl
+    public class TimeBar : UserControl //TODO1 make generic? Also MusicTime.cs.
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>
