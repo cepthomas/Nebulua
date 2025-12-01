@@ -49,7 +49,7 @@ api.log_info('Loading daw_host.lua...')
 -- Midi channels. Adjust for your configuration.
 local midi_device_in  = "loopMIDI Port 1"
 -- local midi_device_in  = "MPK mini"
-local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
+local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "my input")
 
 local midi_device_out  = "loopMIDI Port 2"  -- DAW host
 local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)

@@ -29,7 +29,7 @@ api.log_info('Loading example.lua...')
 
 -- Midi channels. Adjust for your configuration.
 local midi_device_in  = "loopMIDI Port 1"
-local hnd_ccin  = api.open_midi_input(midi_device_in, 1, midi_device_in)
+local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "my input")
 
 local midi_device_out    = "Microsoft GS Wavetable Synth"  -- Default  or "VirtualMIDISynth #1"  -- VST host
 local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
@@ -120,7 +120,7 @@ end
 -- Handlers for input controller events. Optional.
 function receive_midi_controller(chan_hnd, controller, value)
     if chan_hnd == hnd_ccin then
-        -- api.log_debug(string.format("RCV controller:%d chan_hnd:%d value:%d", controller, chan_hnd, value))
+        api.log_debug(string.format("RCV controller:%d chan_hnd:%d value:%d", controller, chan_hnd, value))
         -- Do something.
     end
     return 0

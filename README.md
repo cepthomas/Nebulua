@@ -5,7 +5,7 @@ A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) 
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
 Windows only.
 
-It's called Nebulator after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
+It's called Nebulator/Nebulua after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
 ![logo](marks.png)
 
