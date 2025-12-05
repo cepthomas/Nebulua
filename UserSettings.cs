@@ -57,17 +57,11 @@ namespace Nebulua
         [JsonConverter(typeof(JsonColorConverter))]
         public Color IconColor { get; set; } = Color.Purple;
 
-        [DisplayName("Default Pen Color")]
-        [Description("Pen color.")]
-        [Browsable(true)]
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color PenColor { get; set; } = Color.Black;
-
         [DisplayName("Active Color")]
         [Description("Active control surfaces.")]
         [Browsable(true)]
         [JsonConverter(typeof(JsonColorConverter))]
-        public Color ActiveColor { get; set; } = Color.DodgerBlue;
+        public Color ControlColor { get; set; } = Color.DodgerBlue;
 
         [DisplayName("Selected Color")]
         [Description("The color used for selected controls.")]

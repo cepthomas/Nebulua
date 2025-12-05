@@ -174,50 +174,50 @@ namespace Nebulua
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             #region Init the controls
-            chkPlay.Image = ((Bitmap)chkPlay.Image!).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);
             chkPlay.BackColor = UserSettings.Current.BackColor;
             chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            chkLoop.Image = ((Bitmap)(chkLoop.Image!)).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(chkLoop, _settings.IconColor);
             chkLoop.BackColor = UserSettings.Current.BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            chkMonRcv.Image = ((Bitmap)(chkMonRcv.Image!)).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(chkMonRcv, _settings.IconColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
             chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
 
             chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            chkMonSnd.Image = ((Bitmap)(chkMonSnd.Image!)).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(chkMonSnd, _settings.IconColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
             chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
 
             btnRewind.BackColor = UserSettings.Current.BackColor;
-            btnRewind.Image = ((Bitmap)(btnRewind.Image!)).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnRewind, _settings.IconColor);
             btnRewind.Click += Rewind_Click;
 
             btnAbout.BackColor = UserSettings.Current.BackColor;
-            btnAbout.Image = ((Bitmap)(btnAbout.Image!)).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnAbout, _settings.IconColor);
             btnAbout.Click += About_Click;
 
             btnKill.BackColor = UserSettings.Current.BackColor;
-            btnKill.Image = ((Bitmap)(btnKill.Image!)).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
             btnKill.Click += (_, __) => { KillAll(); CurrentState = ExecState.Idle; };
 
             btnSettings.BackColor = UserSettings.Current.BackColor;
-            btnSettings.Image = ((Bitmap)(btnSettings.Image!)).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
             btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = UserSettings.Current.BackColor;
-            sldVolume.DrawColor = UserSettings.Current.ActiveColor;
+            sldVolume.DrawColor = UserSettings.Current.ControlColor;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
 
             sldTempo.BackColor = UserSettings.Current.BackColor;
-            sldTempo.DrawColor = UserSettings.Current.ActiveColor;
+            sldTempo.DrawColor = UserSettings.Current.ControlColor;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             traffic.BackColor = UserSettings.Current.BackColor;
@@ -229,7 +229,7 @@ namespace Nebulua
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
 
-            ddbtnFile.Image = ((Bitmap)ddbtnFile.Image!).Colorize(UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(ddbtnFile, _settings.IconColor);
             ddbtnFile.BackColor = UserSettings.Current.BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
@@ -1272,10 +1272,9 @@ namespace Nebulua
             {
                 switch (name)
                 {
-                    case "ActiveColor":
+                    case "ControlColor":
                     case "BackColor":
                     case "IconColor":
-                    case "PenColor":
                     case "SelectedColor":
                         restart = true;
                         break;

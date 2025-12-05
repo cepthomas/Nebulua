@@ -77,7 +77,7 @@ namespace Nebulua
             lblSolo.BackColor = _unselColor;
             lblMute.BackColor = _unselColor;
             sldVolume.BackColor = _unselColor;
-            sldVolume.ForeColor = UserSettings.Current.ActiveColor;
+            sldVolume.ForeColor = UserSettings.Current.ControlColor;
 
             toolTip.SetToolTip(this, string.Join(Environment.NewLine, Info));
         }
@@ -150,7 +150,7 @@ namespace Nebulua
 
             toolTip.SetToolTip(lblChannelInfo, string.Join(Environment.NewLine, Info));
 
-            sldVolume.DrawColor = UserSettings.Current.ActiveColor;
+            sldVolume.DrawColor = UserSettings.Current.ControlColor;
             lblSolo.Click += SoloMute_Click;
             lblMute.Click += SoloMute_Click;
 

@@ -57,19 +57,22 @@ namespace Nebulua
 
         public string ScriptPath { get; set; } = "";
         public bool OpenLastFile { get; set; } = true;
+
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LogLevel FileLogLevel { get; set; } = LogLevel.Trace;
+
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LogLevel NotifLogLevel { get; set; } = LogLevel.Debug;
         
         [JsonConverter(typeof(JsonColorConverter))]
         public Color BackColor { get; set; } = Color.LightYellow;
+
         [JsonConverter(typeof(JsonColorConverter))]
         public Color IconColor { get; set; } = Color.Purple;
+
         [JsonConverter(typeof(JsonColorConverter))]
-        public Color PenColor { get; set; } = Color.Black;
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color ActiveColor { get; set; } = Color.DodgerBlue;
+        public Color ControlColor { get; set; } = Color.DodgerBlue;
+        
         [JsonConverter(typeof(JsonColorConverter))]
         public Color SelectedColor { get; set; } = Color.Moccasin;
 
