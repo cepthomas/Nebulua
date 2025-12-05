@@ -72,7 +72,7 @@ namespace Nebulua
             ChHandle = ch;
             // Colors.
             _selColor = UserSettings.Current.SelectedColor;
-            _unselColor = UserSettings.Current.BackColor;
+            _unselColor = BackColor;
             lblChannelInfo.BackColor = _unselColor;
             lblSolo.BackColor = _unselColor;
             lblMute.BackColor = _unselColor;

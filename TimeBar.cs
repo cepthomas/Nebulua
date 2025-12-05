@@ -59,7 +59,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            BackColor = UserSettings.Current.BackColor;
+            BackColor = BackColor;
             _penMarker.Color = UserSettings.Current.ControlColor;
             base.OnLoad(e);
         }

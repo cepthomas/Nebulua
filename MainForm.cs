@@ -170,57 +170,56 @@ namespace Nebulua
             Location = UserSettings.Current.FormGeometry.Location;
             Size = UserSettings.Current.FormGeometry.Size;
             WindowState = FormWindowState.Normal;
-            BackColor = UserSettings.Current.BackColor;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             #region Init the controls
-            GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);
-            chkPlay.BackColor = UserSettings.Current.BackColor;
+            GraphicsUtils.ColorizeControl(chkPlay, UserSettings.Current.IconColor);
+            chkPlay.BackColor = BackColor;
             chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            GraphicsUtils.ColorizeControl(chkLoop, _settings.IconColor);
-            chkLoop.BackColor = UserSettings.Current.BackColor;
+            GraphicsUtils.ColorizeControl(chkLoop, UserSettings.Current.IconColor);
+            chkLoop.BackColor = BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
-            chkMonRcv.BackColor = UserSettings.Current.BackColor;
-            GraphicsUtils.ColorizeControl(chkMonRcv, _settings.IconColor);
+            chkMonRcv.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(chkMonRcv, UserSettings.Current.IconColor);
             chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
             chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
 
-            chkMonSnd.BackColor = UserSettings.Current.BackColor;
-            GraphicsUtils.ColorizeControl(chkMonSnd, _settings.IconColor);
+            chkMonSnd.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(chkMonSnd, UserSettings.Current.IconColor);
             chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
             chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
 
-            btnRewind.BackColor = UserSettings.Current.BackColor;
-            GraphicsUtils.ColorizeControl(btnRewind, _settings.IconColor);
+            btnRewind.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(btnRewind, UserSettings.Current.IconColor);
             btnRewind.Click += Rewind_Click;
 
-            btnAbout.BackColor = UserSettings.Current.BackColor;
-            GraphicsUtils.ColorizeControl(btnAbout, _settings.IconColor);
+            btnAbout.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(btnAbout, UserSettings.Current.IconColor);
             btnAbout.Click += About_Click;
 
-            btnKill.BackColor = UserSettings.Current.BackColor;
-            GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
+            btnKill.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(btnKill, UserSettings.Current.IconColor);
             btnKill.Click += (_, __) => { KillAll(); CurrentState = ExecState.Idle; };
 
-            btnSettings.BackColor = UserSettings.Current.BackColor;
-            GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
+            btnSettings.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(btnSettings, UserSettings.Current.IconColor);
             btnSettings.Click += Settings_Click;
 
-            sldVolume.BackColor = UserSettings.Current.BackColor;
+            sldVolume.BackColor = BackColor;
             sldVolume.DrawColor = UserSettings.Current.ControlColor;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
 
-            sldTempo.BackColor = UserSettings.Current.BackColor;
+            sldTempo.BackColor = BackColor;
             sldTempo.DrawColor = UserSettings.Current.ControlColor;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
-            traffic.BackColor = UserSettings.Current.BackColor;
+            traffic.BackColor = BackColor;
             traffic.MatchText.Add("ERR ", Color.LightPink);
             traffic.MatchText.Add("WRN ", Color.Yellow);
             traffic.MatchText.Add("SND ", Color.PaleGreen);
@@ -229,8 +228,8 @@ namespace Nebulua
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
 
-            GraphicsUtils.ColorizeControl(ddbtnFile, _settings.IconColor);
-            ddbtnFile.BackColor = UserSettings.Current.BackColor;
+            GraphicsUtils.ColorizeControl(ddbtnFile, UserSettings.Current.IconColor);
+            ddbtnFile.BackColor = BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
             ddbtnFile.Enabled = true;
             ddbtnFile.Selected += File_Selected;
