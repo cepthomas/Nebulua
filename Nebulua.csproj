@@ -41,6 +41,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Remove="ChannelControl.cs" />
+      <Compile Remove="Midi.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Content Include="Resources\app.ico" />
     </ItemGroup>
 
@@ -54,6 +59,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Libs\MidiLibLite\MidiLibLite.csproj" />
         <ProjectReference Include="Interop\Interop.vcxproj" />
     </ItemGroup>
 
@@ -73,7 +79,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="NAudio.Midi" Version="2.2.1" />
+        <!-- <PackageReference Include="NAudio.Midi" Version="2.2.1" /> -->
         <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
         <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
     </ItemGroup>

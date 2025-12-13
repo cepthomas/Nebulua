@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nebulua", "Nebulua.csproj", "{51C8AC83-E85F-44FD-9027-40CA8F452394}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AF843774-3B63-2215-9A47-15E3CBC9C726} = {AF843774-3B63-2215-9A47-15E3CBC9C726}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Interop", "Interop\Interop.vcxproj", "{953F3806-EB5D-444E-A500-09B455E35E53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidiLibLite", "..\..\Libs\MidiLibLite\MidiLibLite.csproj", "{AF843774-3B63-2215-9A47-15E3CBC9C726}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +36,14 @@ Global
 		{953F3806-EB5D-444E-A500-09B455E35E53}.Release|Any CPU.Build.0 = Release|x64
 		{953F3806-EB5D-444E-A500-09B455E35E53}.Release|x64.ActiveCfg = Release|x64
 		{953F3806-EB5D-444E-A500-09B455E35E53}.Release|x64.Build.0 = Release|x64
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Debug|x64.Build.0 = Debug|Any CPU
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Release|x64.ActiveCfg = Release|Any CPU
+		{AF843774-3B63-2215-9A47-15E3CBC9C726}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

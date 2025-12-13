@@ -8,9 +8,10 @@ using System.Linq;
 using System.Threading;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using NAudio.Midi;
+//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
+using Ephemera.MidiLibLite;
 
 
 // TODO kinda slow startup running in debugger.
@@ -45,10 +46,10 @@ namespace Nebulua
         DateTime _scriptTouch;
 
         /// <summary>All midi devices to use for send.</summary>
-        readonly List<MidiOutputDevice> _outputs = [];
+        readonly List<MidiOutputDevice> _outputDevices = [];
 
         /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
-        readonly List<MidiInputDevice> _inputs = [];
+        readonly List<MidiInputDevice> _inputDevices = [];
 
         /// <summary>All the channel play controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
@@ -59,6 +60,23 @@ namespace Nebulua
         /// <summary>Performance.</summary>
         //readonly TimingAnalyzer? _tan = null;
         #endregion
+
+///////////////////////////// NEW NEW //////////////////////////////////////
+        /// <summary>All the channel controls.</summary>
+//        readonly List<ChannelControl> _channelControls = [];
+
+        /// <summary>Cosmetics.</summ ary>
+//        readonly Color _controlColor = Color.Aquamarine;
+
+        /// <summary>Cosmetics.</summary>
+//        readonly Color _selectedColor = Color.Yellow;
+
+        /// <summary>The boss.</summary>
+        readonly Manager _mgr = new();
+
+
+
+
 
         #region State
         /// <summary>Internal state. </summary>
@@ -197,7 +215,8 @@ namespace Nebulua
 
             btnKill.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnKill, UserSettings.Current.IconColor);
-            btnKill.Click += (_, __) => { KillAll(); CurrentState = ExecState.Idle; };
+            btnKill.Click += (_, __) => { _mgr.Kill(); CurrentState = ExecState.Idle; };
+//btnKillMidi.Click += (_, __) => { _mgr.Kill(); };
 
             btnSettings.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnSettings, UserSettings.Current.IconColor);
@@ -236,6 +255,8 @@ namespace Nebulua
             Interop.SetTempo += Interop_SetTempo;
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+
+_mgr.InputReceive += Mgr_InputReceive;
 
             Thread.CurrentThread.Name = "MAIN";
             // Trace($"+++ MainForm() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
@@ -287,7 +308,7 @@ namespace Nebulua
             CurrentState = ExecState.Idle;
 
             // Just in case.
-            KillAll();
+            _mgr.Kill();
 
             // Destroy devices
             ResetDevices();
@@ -314,6 +335,11 @@ namespace Nebulua
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+///////////////////////////// NEW NEW //////////////////////////////////////
+            DestroyControls();
+            _mgr.DestroyDevices();
+
+            
             if (disposing)
             {
                 // Wait a bit in case there are some lingering events.
@@ -344,7 +370,7 @@ namespace Nebulua
                 {
                     // Clean up first.
                     // Just in case.
-                    KillAll();
+                    _mgr.Kill();
                     _mmTimer.Stop();
                     DestroyControls();
                     CurrentState = ExecState.Idle;
@@ -654,7 +680,7 @@ namespace Nebulua
                                     State.Instance.CurrentTick = start;
 
                                     // just in case
-                                    KillAll();
+                                    _mgr.Kill();
                                 }
                             }
                         }
@@ -679,17 +705,18 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Midi_ReceiveEvent(object? sender, MidiEvent e)
+        //void Midi_ReceiveEvent(object? sender, MidiEvent e)
+        void Mgr_InputReceive(object? sender, BaseMidiEvent e)
         {
-//            Trace($"+++ Midi_ReceiveEvent() ENTER [_threadId={_threadId ?? -1}] [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+            // Trace($"+++ Midi_ReceiveEvent() ENTER [_threadId={_threadId ?? -1}] [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
             lock (_interopLock)
             {
-//                Trace($"+++ Midi_ReceiveEvent() LOCKED [_inMmTimer={_inMmTimer}]");
-//                if (_threadId is not null) // && _threadId != Thread.CurrentThread.ManagedThreadId)
-//                {
-//                    Trace($"!!! Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
-//                    throw new InvalidOperationException();
-//                }
+                //Trace($"+++ Midi_ReceiveEvent() LOCKED [_inMmTimer={_inMmTimer}]");
+                //if (_threadId is not null) // && _threadId != Thread.CurrentThread.ManagedThreadId)
+                //{
+                //    Trace($"!!! Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+                //    throw new InvalidOperationException();
+                //}
                 //_threadId = Environment.CurrentManagedThreadId;
 
                 try
@@ -699,25 +726,26 @@ namespace Nebulua
                         Thread.CurrentThread.Name = "MIDI_RCV";
                     }
 
-//                    Trace($"+++ Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+                    //Trace($"+++ Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
 
-                    var input = (MidiInputDevice)sender!;
-                    ChannelHandle ch = new(_inputs.IndexOf(input), e.Channel, Direction.Input);
-                    int chanHnd = ch;
+                    var indev = (MidiInputDevice)sender!;
+
+                    ChannelHandle chnd = new(indev.Id, e.ChannelNumber, false);
+                    //int chanHnd = ch;
                     bool logit = true;
 
                     switch (e)
                     {
-                        case NoteOnEvent evt:
-                            _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, (double)evt.Velocity / MidiDefs.MAX_MIDI);
+                        case NoteOn evt:
+                            _interop.ReceiveMidiNote(chnd, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
                             break;
 
-                        case NoteEvent evt:
-                            _interop.ReceiveMidiNote(chanHnd, evt.NoteNumber, 0);
+                        case NoteOff evt:
+                            _interop.ReceiveMidiNote(chnd, evt.Note, 0);
                             break;
 
-                        case ControlChangeEvent evt:
-                            _interop.ReceiveMidiController(chanHnd, (int)evt.Controller, evt.ControllerValue);
+                        case Controller evt:
+                            _interop.ReceiveMidiController(chnd, (int)evt.ControllerId, evt.Value);
                             break;
 
                         default: // Ignore others for now.
@@ -727,7 +755,7 @@ namespace Nebulua
 
                     if (logit && UserSettings.Current.MonitorRcv)
                     {
-                        _loggerMidi.Trace($"<<< {FormatMidiEvent(e, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, chanHnd)}");
+                        _loggerMidi.Trace($"<<< {FormatMidiEvent(e, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, chnd)}");
                     }
                 }
                 catch (Exception ex)
@@ -735,7 +763,7 @@ namespace Nebulua
                     ProcessException(ex);
                 }
 
-//                Trace($"--- Midi_ReceiveEvent() EXIT");
+                //Trace($"--- Midi_ReceiveEvent() EXIT");
                 //_threadId = null;
             }
         }
@@ -745,39 +773,67 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControlEvent(object? sender, ChannelControlEventArgs e)
+        void ChannelControlEvent(object? sender, ChannelControl.ChannelChangeEventArgs e)
         {
-            ChannelControl control = (ChannelControl)sender!;
+            var cc = sender as ChannelControl;
+            var channel = cc!.BoundChannel!;
 
-            // Update all channel enables.
-            bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
-
-            foreach (var c in _channelControls)
+            if (e.StateChange)
             {
-                bool enable = anySolo ? c.State == PlayState.Solo : c.State != PlayState.Mute;
+                //Tell(INFO, $"StateChange");
 
-                var ch = c.ChHandle;
+                // Update all channels.
+                bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
 
-                if (ch.DeviceId >= _outputs.Count)
+                foreach (var cciter in _channelControls)
                 {
-                    throw new AppException($"Invalid device id [{ch.DeviceId}]");
-                }
+                    bool enable = anySolo ?
+                        cciter.State == ChannelControl.ChannelState.Solo :
+                        cciter.State != ChannelControl.ChannelState.Mute;
 
-                var output = _outputs[ch.DeviceId];
-                if (!output.Channels.TryGetValue(ch.ChannelNumber, out MidiChannel? value))
-                {
-                    throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
+                    channel.Enable = enable;
+                    if (!enable)
+                    {
+                        // Kill just in case.
+                        _mgr.Kill(channel);
+                    }
                 }
+            }
 
-                value.Enable = enable;
-                if (!enable)
-                {
-                    // Kill just in case.
-                    _outputs[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
-                }
-            };
+            ////////////////////////// OLD //////////////////////////
+            //// Update all channel enables.
+            //bool anySolo = _channelControls.Where(c => c.State == PlayState.Solo).Any();
+
+            //foreach (var c in _channelControls)
+            //{
+            //    bool enable = anySolo ? c.State == PlayState.Solo : c.State != PlayState.Mute;
+
+            //    var ch = c.ChHandle;
+
+            //    if (ch.DeviceId >= _outputs.Count)
+            //    {
+            //        throw new AppException($"Invalid device id [{ch.DeviceId}]");
+            //    }
+
+            //    var output = _outputs[ch.DeviceId];
+            //    if (!output.Channels.TryGetValue(ch.ChannelNumber, out MidiChannel? value))
+            //    {
+            //        throw new AppException($"Invalid channel [{ch.ChannelNumber}]");
+            //    }
+
+            //    value.Enable = enable;
+            //    if (!enable)
+            //    {
+            //        // Kill just in case.
+            //        _outputs[ch.DeviceId].Send(new ControlChangeEvent(0, ch.ChannelNumber, MidiController.AllNotesOff, 0));
+            //    }
+            //};
         }
         #endregion
+
+
+
+
 
         #region Script ==> Host Functions
         /// <summary>
@@ -788,42 +844,47 @@ namespace Nebulua
         /// <exception cref="AppException">From called functions</exception>
         void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
-            e.ret = -1; // default is invalid
 
-            // Check args.
-            if (string.IsNullOrEmpty(e.dev_name))
-            {
-                _loggerScr.Warn($"Invalid input midi device {e.dev_name}");
-                return;
-            }
+            var chan_in = _mgr.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
+            e.ret = chan_in.Handle;
 
-            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
-            {
-                _loggerScr.Warn($"Invalid input midi channel {e.chan_num}");
-                return;
-            }
+            /////////////////////////////////// OLD //////////////////////////////////////
+            // e.ret = -1; // default is invalid
 
-            try
-            {
-                // Locate or create the device.
-                var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-                if (input is null)
-                {
-                    input = new(e.dev_name); // throws if invalid
-                    input.ReceiveEvent += Midi_ReceiveEvent;
-                    _inputs.Add(input);
-                }
+            // // Check args.
+            // if (string.IsNullOrEmpty(e.dev_name))
+            // {
+            //     _loggerScr.Warn($"Invalid input midi device {e.dev_name}");
+            //     return;
+            // }
 
-                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true };
-                input.Channels.Add(e.chan_num, ch);
+            // if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
+            // {
+            //     _loggerScr.Warn($"Invalid input midi channel {e.chan_num}");
+            //     return;
+            // }
 
-                ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
-                e.ret = chHnd;
-            }
-            catch (AppException ex)
-            {
-                ProcessException(ex);
-            }
+            // try
+            // {
+            //     // Locate or create the device.
+            //     var input = _inputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+            //     if (input is null)
+            //     {
+            //         input = new(e.dev_name); // throws if invalid
+            //         input.ReceiveEvent += Midi_ReceiveEvent;
+            //         _inputs.Add(input);
+            //     }
+
+            //     MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true };
+            //     input.Channels.Add(e.chan_num, ch);
+
+            //     ChannelHandle chHnd = new(_inputs.Count - 1, e.chan_num, Direction.Input);
+            //     e.ret = chHnd;
+            // }
+            // catch (AppException ex)
+            // {
+            //     ProcessException(ex);
+            // }
         }
 
         /// <summary>
@@ -834,50 +895,69 @@ namespace Nebulua
         /// <exception cref="AppException">From called functions</exception>
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
-            e.ret = -1; // default is invalid
 
-            // Check args.
-            if (string.IsNullOrEmpty(e.dev_name))
-            {
-                _loggerScr.Warn($"Invalid output midi device {e.dev_name ?? "null"}");
-                return;
-            }
+// OpenMidiOutputArgs            
+//     property String^ dev_name;
+//     /// <summary>Midi channel number 1 => 16</summary>
+//     property int chan_num;
+//     /// <summary>User channel name</summary>
+//     property String^ chan_name;
+//     /// <summary>Midi patch number 0 => 127</summary>
+//     property int patch;
+//     /// <summary>Channel handle or -1 if error</summary>
+//     property int ret;
 
-            if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
-            {
-                _loggerScr.Warn($"Invalid output midi channel {e.chan_num}");
-                return;
-            }
 
-            try
-            {
-                // Locate or create the device.
-                var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
-                if (output is null)
-                {
-                    output = new(e.dev_name); // throws if invalid
-                    _outputs.Add(output);
-                }
+            // Create channels and initialize controls.
+            var chan_out = _mgr.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name, e.patch);
+            e.ret = chan_out.Handle;
 
-                // Add specific channel.
-                MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true, Patch = e.patch };
-                output.Channels.Add(e.chan_num, ch);
 
-                ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
-                e.ret = chHnd;
+            /////////////////////////////////// OLD //////////////////////////////////////
+            // e.ret = -1; // default is invalid
 
-                if (e.patch >= 0)
-                {
-                    // Send the patch now.
-                    PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
-                    output.Send(pevt);
-                    output.Channels[e.chan_num].Patch = e.patch;
-                }
-            }
-            catch (AppException ex)
-            {
-                ProcessException(ex);
-            }
+            // // Check args.
+            // if (string.IsNullOrEmpty(e.dev_name))
+            // {
+            //     _loggerScr.Warn($"Invalid output midi device {e.dev_name ?? "null"}");
+            //     return;
+            // }
+
+            // if (e.chan_num < 1 || e.chan_num > MidiDefs.NUM_CHANNELS)
+            // {
+            //     _loggerScr.Warn($"Invalid output midi channel {e.chan_num}");
+            //     return;
+            // }
+
+            // try
+            // {
+            //     // Locate or create the device.
+            //     var output = _outputs.FirstOrDefault(o => o.DeviceName == e.dev_name);
+            //     if (output is null)
+            //     {
+            //         output = new(e.dev_name); // throws if invalid
+            //         _outputs.Add(output);
+            //     }
+
+            //     // Add specific channel.
+            //     MidiChannel ch = new() { ChannelName = e.chan_name, Enable = true, Patch = e.patch };
+            //     output.Channels.Add(e.chan_num, ch);
+
+            //     ChannelHandle chHnd = new(_outputs.Count - 1, e.chan_num, Direction.Output);
+            //     e.ret = chHnd;
+
+            //     if (e.patch >= 0)
+            //     {
+            //         // Send the patch now.
+            //         PatchChangeEvent pevt = new(0, e.chan_num, e.patch);
+            //         output.Send(pevt);
+            //         output.Channels[e.chan_num].Patch = e.patch;
+            //     }
+            // }
+            // catch (AppException ex)
+            // {
+            //     ProcessException(ex);
+            // }
         }
 
         /// <summary>
@@ -889,39 +969,54 @@ namespace Nebulua
         {
             e.ret = 0; // not used
 
-            // Check args for valid device and channel.
-            ChannelHandle ch = new(e.chan_hnd);
+            if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.note_num)); }
+            
+            ChannelHandle chnd = new(e.chan_hnd);
 
-            if (ch.DeviceId >= _outputs.Count ||
-                ch.ChannelNumber < 1 ||
-                ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
+            var ch = _mgr.GetOutputChannel(chnd);
+            if (e.volume == 0.0)
             {
-                _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
-                return;
+                ch.Device.Send(new NoteOff(chnd.ChannelNumber, e.note_num));
+            }
+            else
+            {
+                ch.Device.Send(new NoteOn(chnd.ChannelNumber, e.note_num, (int)MathUtils.Constrain(e.volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI)));
             }
 
-//            Trace($"+++ Interop_SendMidiNote() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
 
-            // Sound or quiet?
-            var output = _outputs[ch.DeviceId];
-            if (output.Channels[ch.ChannelNumber].Enable)
-            {
-                int note_num = MathUtils.Constrain(e.note_num, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+//            // Check args for valid device and channel.
+//            ChannelHandle ch = new(e.chan_hnd);
 
-                // Check for note off.
-                var vol = e.volume * State.Instance.Volume;
-                int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MAX_MIDI), MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-                MidiEvent evt = vel == 0?
-                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOff, note_num, 0) :
-                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOn, note_num, vel);
+//            if (ch.DeviceId >= _outputs.Count ||
+//                ch.ChannelNumber < 1 ||
+//                ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
+//            {
+//                _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
+//                return;
+//            }
 
-                output.Send(evt);
+////            Trace($"+++ Interop_SendMidiNote() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
 
-                if (UserSettings.Current.MonitorSnd)
-                {
-                    _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
-                }
-            }
+//            // Sound or quiet?
+//            var output = _outputs[ch.DeviceId];
+//            if (output.Channels[ch.ChannelNumber].Enable)
+//            {
+//                int note_num = MathUtils.Constrain(e.note_num, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+
+//                // Check for note off.
+//                var vol = e.volume * State.Instance.Volume;
+//                int vel = vol == 0.0 ? 0 : MathUtils.Constrain((int)(vol * MidiDefs.MAX_MIDI), MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+//                MidiEvent evt = vel == 0?
+//                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOff, note_num, 0) :
+//                    new NoteEvent(0, ch.ChannelNumber, MidiCommandCode.NoteOn, note_num, vel);
+
+//                output.Send(evt);
+
+//                if (UserSettings.Current.MonitorSnd)
+//                {
+//                    _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+//                }
+//            }
         }
 
         /// <summary>
@@ -933,30 +1028,41 @@ namespace Nebulua
         {
             e.ret = 0; // not used
 
-            // Check args.
-            ChannelHandle ch = new(e.chan_hnd);
+            if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.controller)); }
+            if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.value)); }
 
-            if (ch.DeviceId >= _outputs.Count ||
-                ch.ChannelNumber < 1 ||
-                ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
-            {
-                _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
-                return;
-            }
+            ChannelHandle chnd = new(e.chan_hnd);
 
-            int controller = MathUtils.Constrain(e.controller, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-            int value = MathUtils.Constrain(e.value, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+            var ch = _mgr.GetOutputChannel(chnd);
+            var se = new Controller(chnd.ChannelNumber, e.controller, e.value);
+            ch.Device.Send(se);
 
-            var output = _outputs[ch.DeviceId];
-            MidiEvent evt;
 
-            evt = new ControlChangeEvent(0, ch.ChannelNumber, (MidiController)controller, value);
 
-            output.Send(evt);
+            //// Check args.
+            //ChannelHandle ch = new(e.chan_hnd);
+
+            //if (ch.DeviceId >= _outputs.Count ||
+            //    ch.ChannelNumber < 1 ||
+            //    ch.ChannelNumber > MidiDefs.NUM_CHANNELS)
+            //{
+            //    _loggerScr.Warn($"Invalid channel {e.chan_hnd}");
+            //    return;
+            //}
+
+            //int controller = MathUtils.Constrain(e.controller, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+            //int value = MathUtils.Constrain(e.value, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+
+            //var output = _outputs[ch.DeviceId];
+            //MidiEvent evt;
+
+            //evt = new ControlChangeEvent(0, ch.ChannelNumber, (MidiController)controller, value);
+
+            //output.Send(evt);
 
             if (UserSettings.Current.MonitorSnd)
             {
-                _loggerMidi.Trace($">>> {FormatMidiEvent(evt, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                _loggerMidi.Trace($">>> {FormatMidiEvent(se, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
             }
         }
 
@@ -1021,7 +1127,7 @@ namespace Nebulua
         /// </summary>
         void DestroyControls()
         {
-            KillAll();
+            _mgr.Kill();
 
             // Clean out our current elements.
             _channelControls.ForEach(c =>
@@ -1039,91 +1145,132 @@ namespace Nebulua
         {
             DestroyControls();
 
-            // Create channels and controls.
+
+
+            /// create a control for each channel and bind object
+            // int x = sldMasterVolume.Left;
+            // int y = sldMasterVolume.Bottom + 10;
             int x = timeBar.Left;
             int y = timeBar.Bottom + 5;
 
-            List<ChannelHandle> valchs = [];
-            for (int devNum = 0; devNum < _outputs.Count; devNum++)
-            {
-                var output = _outputs[devNum];
-                output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
-            }
+            //List<OutputChannel> channels = [chan_out1, chan_out2];
 
-            valchs.ForEach(ch =>
+            //     _mgr.      public OutputChannel GetOutputChannel(ChannelHandle chnd)
+
+
+
+            channels.ForEach(chan =>
             {
-                ChannelControl control = new(ch)
+                var ctrl = new ChannelControl()
                 {
+                    BoundChannel = chan,
+                    UserRenderer = null,
                     Location = new(x, y),
-                    Info = GetInfo(ch)
+                    BorderStyle = BorderStyle.FixedSingle,
+                    ControlColor = UserSettings.Current.ControlColor,
+                    SelectedColor = UserSettings.Current.SelectedColor,
+                    Volume = Defs.DEFAULT_VOLUME,
                 };
+                ctrl.ChannelChange += ChannelControl_ChannelChange;
+                ctrl.SendMidi += ChannelControl_SendMidi;
 
-                control.ChannelControlEvent += ChannelControlEvent;
-                Controls.Add(control);
-                _channelControls.Add(control);
-
-                // Adjust positioning for next iteration.
-                x += control.Width + 5;
+                Controls.Add(ctrl);
+                x += ctrl.Width + 4; // Width is not valid until after previous statement.
             });
 
 
-            // local func
-            List<string> GetInfo(ChannelHandle ch)
-            {
-                string devName = "unknown";
-                string chanName = "unknown";
-                int patchNum = -1;
 
-                if (ch.Direction == Direction.Output)
-                {
-                    if (ch.DeviceId < _outputs.Count)
-                    {
-                        var dev = _outputs[ch.DeviceId];
-                        devName = dev.DeviceName;
-                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-                        patchNum = dev.Channels[ch.ChannelNumber].Patch;
-                    }
-                }
-                else
-                {
-                    if (ch.DeviceId < _inputs.Count)
-                    {
-                        var dev = _inputs[ch.DeviceId];
-                        devName = dev.DeviceName;
-                        chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-                    }
-                }
 
-                List<string> ret = [];
-                ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
-                ret.Add($"device: {devName}");
 
-                if (patchNum != -1)
-                {
-                    // Determine patch name.
-                    string sname;
-                    if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
-                    {
-                        sname = $"kit: {patchNum}";
-                        if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
-                        {
-                            sname += ($" {kitName}");
-                        }
-                    }
-                    else
-                    {
-                        sname = $"patch: {patchNum}";
-                        if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
-                        {
-                            sname += ($" {patchName}");
-                        }
-                    }
+///////////////////// OLD ///////////////////////////////////
+///////////////////// OLD ///////////////////////////////////
+///////////////////// OLD ///////////////////////////////////
 
-                    ret.Add(sname);
-                }
+            // // Create channels and controls.
+            // int x = timeBar.Left;
+            // int y = timeBar.Bottom + 5;
 
-                return ret;
-            }
+            // List<ChannelHandle> valchs = [];
+            // for (int devNum = 0; devNum < _outputs.Count; devNum++)
+            // {
+            //     var output = _outputs[devNum];
+            //     output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
+            // }
+
+            // valchs.ForEach(ch =>
+            // {
+            //     ChannelControl control = new(ch)
+            //     {
+            //         Location = new(x, y),
+            //         Info = GetInfo(ch)
+            //     };
+
+            //     control.ChannelControlEvent += ChannelControlEvent;
+            //     Controls.Add(control);
+            //     _channelControls.Add(control);
+
+            //     // Adjust positioning for next iteration.
+            //     x += control.Width + 5;
+            // });
+
+
+            // // local func
+            // List<string> GetInfo(ChannelHandle ch)
+            // {
+            //     string devName = "unknown";
+            //     string chanName = "unknown";
+            //     int patchNum = -1;
+
+            //     if (ch.Direction == Direction.Output)
+            //     {
+            //         if (ch.DeviceId < _outputs.Count)
+            //         {
+            //             var dev = _outputs[ch.DeviceId];
+            //             devName = dev.DeviceName;
+            //             chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+            //             patchNum = dev.Channels[ch.ChannelNumber].Patch;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         if (ch.DeviceId < _inputs.Count)
+            //         {
+            //             var dev = _inputs[ch.DeviceId];
+            //             devName = dev.DeviceName;
+            //             chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+            //         }
+            //     }
+
+            //     List<string> ret = [];
+            //     ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
+            //     ret.Add($"device: {devName}");
+
+            //     if (patchNum != -1)
+            //     {
+            //         // Determine patch name.
+            //         string sname;
+            //         if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
+            //         {
+            //             sname = $"kit: {patchNum}";
+            //             if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
+            //             {
+            //                 sname += ($" {kitName}");
+            //             }
+            //         }
+            //         else
+            //         {
+            //             sname = $"patch: {patchNum}";
+            //             if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
+            //             {
+            //                 sname += ($" {patchName}");
+            //             }
+            //         }
+
+            //         ret.Add(sname);
+            //     }
+
+            //     return ret;
+            // }
         }
         #endregion
 
@@ -1133,7 +1280,7 @@ namespace Nebulua
         /// </summary>
         void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity)
         {
-            var input = _inputs.FirstOrDefault(o => o.DeviceName == devName);
+            var input = _inputDevices.FirstOrDefault(o => o.DeviceName == devName);
 
             if (input is not null)
             {
@@ -1149,16 +1296,16 @@ namespace Nebulua
             //else do I care?
         }
 
-        /// <summary>
-        /// Stop all midi. Doesn't throw.
-        /// </summary>
-        void KillAll()
-        {
-            _outputs.ForEach(op => op.Channels.ForEach(ch => op.Send(new ControlChangeEvent(0, ch.Key, MidiController.AllNotesOff, 0))));
+        ///// <summary>
+        ///// Stop all midi. Doesn't throw.
+        ///// </summary>
+        //void KillAll()
+        //{
+        //    _outputs.ForEach(op => op.Channels.ForEach(ch => op.Send(new ControlChangeEvent(0, ch.Key, MidiController.AllNotesOff, 0))));
 
-            // Hard reset.
-            CurrentState = ExecState.Idle;
-        }
+        //    // Hard reset.
+        //    CurrentState = ExecState.Idle;
+        //}
 
         /// <summary>
         /// Create string suitable for logging. Doesn't throw.
@@ -1167,25 +1314,32 @@ namespace Nebulua
         /// <param name="tick">Current tick.</param>
         /// <param name="chanHnd">Channel info.</param>
         /// <returns>Suitable string.</returns>
-        string FormatMidiEvent(MidiEvent evt, int tick, int chanHnd)
+        string FormatMidiEvent(BaseMidiEvent evt, int tick, int chanHnd)
         {
             // Common part.
             ChannelHandle ch = new(chanHnd);
 
-            string s = $"{tick:00000} {MusicTime.Format(tick)} {evt.CommandCode} Dev:{ch.DeviceId} Ch:{ch.ChannelNumber} ";
+            string s = $"{tick:00000} {MusicTime.Format(tick)} Dev:{ch.DeviceId} Ch:{ch.ChannelNumber} ";
 
             switch (evt)
             {
-                case NoteEvent e:
-                    var snote = ch.ChannelNumber == 10 || ch.ChannelNumber == 16 ?
-                        $"DRUM_{e.NoteNumber}" :
-                        MusicDefinitions.NoteNumberToName(e.NoteNumber);
-                    s = $"{s} {e.NoteNumber}:{snote} Vel:{e.Velocity}";
+                case NoteOn e:
+                    var snoteon = ch.ChannelNumber == 10 || ch.ChannelNumber == 16 ?
+                        $"DRUM_{e.Note}" :
+                        MusicDefinitions.NoteNumberToName(e.Note);
+                    s = $"{s} {e.Note}:{snoteon} Vel:{e.Velocity}";
                     break;
 
-                case ControlChangeEvent e:
-                    var sctl = Enum.IsDefined(e.Controller) ? e.Controller.ToString() : $"CTLR_{e.Controller}";
-                    s = $"{s} {(int)e.Controller}:{sctl} Val:{e.ControllerValue}";
+                case NoteOff e:
+                    var snoteoff = ch.ChannelNumber == 10 || ch.ChannelNumber == 16 ?
+                        $"DRUM_{e.Note}" :
+                        MusicDefinitions.NoteNumberToName(e.Note);
+                    s = $"{s} {e.Note}:{snoteoff}";
+                    break;
+
+                case Controller e:
+                    var sctl = MidiDefs.TheDefs.GetControllerName(e.ControllerId);
+                    s = $"{s} {sctl}:{e.Value}";
                     break;
 
                 default: // Ignore others for now.
@@ -1198,33 +1352,33 @@ namespace Nebulua
         /// <summary>
         /// Read the lua midi definitions for internal consumption.
         /// </summary>
-        void ReadMidiDefs()
-        {
-            //var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
+        //void ReadMidiDefs()
+        //{
+        //    //var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
 
-            List<string> s = [
-                "local mid = require('midi_defs')",
-                "for _,v in ipairs(mid.gen_list()) do print(v) end"
-                ];
+        //    List<string> s = [
+        //        "local mid = require('midi_defs')",
+        //        "for _,v in ipairs(mid.gen_list()) do print(v) end"
+        //        ];
 
-            var (ecode, sres) = ExecuteLuaChunk(s);
+        //    var (ecode, sres) = ExecuteLuaChunk(s);
 
-            if (ecode == 0)
-            {
-                foreach (var line in sres.SplitByToken(Environment.NewLine))
-                {
-                    var parts = line.SplitByToken(",");
+        //    if (ecode == 0)
+        //    {
+        //        foreach (var line in sres.SplitByToken(Environment.NewLine))
+        //        {
+        //            var parts = line.SplitByToken(",");
 
-                    switch (parts[0])
-                    {
-                        case "instrument": MidiDefs.Instruments.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "drum": MidiDefs.Drums.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "controller": MidiDefs.Controllers.Add(int.Parse(parts[2]), parts[1]); break;
-                        case "kit": MidiDefs.DrumKits.Add(int.Parse(parts[2]), parts[1]); break;
-                    }
-                }
-            }
-        }
+        //            switch (parts[0])
+        //            {
+        //                case "instrument": MidiDefs.Instruments.Add(int.Parse(parts[2]), parts[1]); break;
+        //                case "drum": MidiDefs.Drums.Add(int.Parse(parts[2]), parts[1]); break;
+        //                case "controller": MidiDefs.Controllers.Add(int.Parse(parts[2]), parts[1]); break;
+        //                case "kit": MidiDefs.DrumKits.Add(int.Parse(parts[2]), parts[1]); break;
+        //            }
+        //        }
+        //    }
+        //}
         #endregion
 
         #region Misc Stuff
@@ -1296,60 +1450,10 @@ namespace Nebulua
             // Main help.
             Tools.ShowReadme("Nebulua");
 
-            // Show the builtin definitions and user devices.
-            List<string> ls = [];
+            // Show the user devices.
+            var devices = DeviceUtils.GetDevicesDoc();
 
-            // Show them what they have.
-            ls.Add($"# Your Midi Devices");
-            ls.Add($"");
-            ls.Add($"## Outputs");
-            ls.Add($"");
-            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-            {
-                ls.Add($"- \"{MidiOut.DeviceInfo(i).ProductName}\"");
-            }
-
-            ls.Add($"");
-            ls.Add($"## Inputs");
-            ls.Add($"");
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++)
-            {
-                ls.Add($"- \"{MidiIn.DeviceInfo(i).ProductName}\"");
-            }
-
-            // Generate definitions content.
-            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
-            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
-
-            List<string> s = [
-                "local mid = require('midi_defs')",
-                "local mus = require('music_defs')",
-                "for _,v in ipairs(mid.gen_md()) do print(v) end",
-                "for _,v in ipairs(mus.gen_md()) do print(v) end",
-                ];
-
-            var (_, sres) = ExecuteLuaChunk(s);
-
-            ls.Add(sres);
-            ls.Add($"");
-
-            // Show readme.
-            var html = Tools.MarkdownToHtml([.. ls], Tools.MarkdownMode.DarkApi, false);
-
-            // Show midi stuff.
-            string docfn = Path.GetTempFileName() + ".html";
-            try
-            {
-                File.WriteAllText(docfn, html);
-                var proc = new Process { StartInfo = new ProcessStartInfo(docfn) { UseShellExecute = true } };
-
-                proc.Exited += (_, __) => File.Delete(docfn);
-                proc.Start();
-            }
-            catch (Exception ex)
-            {
-                _loggerApp.Exception(ex);
-            }
+            traffic.AppendLine(devices);
         }
 
         /// <summary>
@@ -1357,10 +1461,10 @@ namespace Nebulua
         /// </summary>
         void ResetDevices()
         {
-            _inputs.ForEach(d => d.Dispose());
-            _inputs.Clear();
-            _outputs.ForEach(d => d.Dispose());
-            _outputs.Clear();
+            _inputDevices.ForEach(d => d.Dispose());
+            _inputDevices.Clear();
+            _outputDevices.ForEach(d => d.Dispose());
+            _outputDevices.Clear();
         }
 
         /// <summary>
@@ -1380,32 +1484,6 @@ namespace Nebulua
             {
                 _mmTimer.SetTimer(0, MmTimer_Callback);
             }
-        }
-
-        /// <summary>
-        /// Execute a chunk of lua code. Fixes up lua path and handles errors.
-        /// </summary>
-        /// <param name="scode"></param>
-        /// <returns></returns>
-        (int ecode, string sres) ExecuteLuaChunk(List<string> scode)
-        {
-            var srcDir = MiscUtils.GetSourcePath().Replace("\\", "/");
-            var luaPath = $"{srcDir}/LBOT/?.lua;{srcDir}/lua/?.lua;;";
-            scode.Insert(0, $"package.path = '{luaPath}' .. package.path");
-
-            var (ecode, sret) = Tools.ExecuteLuaCode(string.Join(Environment.NewLine, scode));
-
-            if (ecode != 0)
-            {
-                // Command failed. Capture everything useful.
-                List<string> lserr = [];
-                lserr.Add($"=== code: {ecode}");
-                lserr.Add($"=== stderr:");
-                lserr.Add($"{sret}");
-
-                _loggerApp.Warn(string.Join(Environment.NewLine, lserr));
-            }
-            return (ecode, sret);
         }
         #endregion
     }
