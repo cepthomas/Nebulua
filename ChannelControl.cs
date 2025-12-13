@@ -41,7 +41,7 @@ namespace Nebulua
 
         #region Properties
         /// <summary>Handle.</summary>
-        public ChannelHandle ChHandle { get; init; }
+        public int ChHandle { get; init; }
 
         /// <summary>For display.</summary>
         public List<string> Info { get; set; } = ["???"];
@@ -67,7 +67,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="deviceNumber"></param>
         /// <param name="channelNumber"></param>
-        public ChannelControl(ChannelHandle ch) : this()
+        public ChannelControl(int ch) : this()
         {
             ChHandle = ch;
             // Colors.

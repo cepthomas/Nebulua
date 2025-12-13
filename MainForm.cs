@@ -272,7 +272,7 @@ _mgr.InputReceive += Mgr_InputReceive;
         {
             _tmit.Snap("OnLoad() entry");
 
-            ReadMidiDefs();
+            //ReadMidiDefs();
 
             PopulateFileMenu();
 
@@ -730,7 +730,8 @@ _mgr.InputReceive += Mgr_InputReceive;
 
                     var indev = (MidiInputDevice)sender!;
 
-                    ChannelHandle chnd = new(indev.Id, e.ChannelNumber, false);
+                    var chnd = ChannelHandle.Encode(indev.Id, e.ChannelNumber, false);
+                    //int chnd = new(indev.Id, e.ChannelNumber, false);
                     //int chanHnd = ch;
                     bool logit = true;
 
@@ -960,6 +961,15 @@ _mgr.InputReceive += Mgr_InputReceive;
             // }
         }
 
+
+
+        //public OutputChannel? GetOutputChannel(int chnd)
+        //{
+        //    return _outputChannels.Find(ch => ch.Handle == chnd);
+        //}
+
+
+
         /// <summary>
         /// Script wants to send a midi note. Doesn't throw.
         /// </summary>
@@ -971,9 +981,11 @@ _mgr.InputReceive += Mgr_InputReceive;
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.note_num)); }
             
-            ChannelHandle chnd = new(e.chan_hnd);
+            var chnd = ChannelHandle.Decode(e.chan_hnd);
 
-            var ch = _mgr.GetOutputChannel(chnd);
+            var ch = _mgr.GetOutputChannel(e.chan_hnd);
+
+
             if (e.volume == 0.0)
             {
                 ch.Device.Send(new NoteOff(chnd.ChannelNumber, e.note_num));
@@ -1031,9 +1043,10 @@ _mgr.InputReceive += Mgr_InputReceive;
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.controller)); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.value)); }
 
-            ChannelHandle chnd = new(e.chan_hnd);
+            //int chnd = new(e.chan_hnd);
+            var chnd = ChannelHandle.Decode(e.chan_hnd);
 
-            var ch = _mgr.GetOutputChannel(chnd);
+            var ch = _mgr.GetOutputChannel(e.chan_hnd);
             var se = new Controller(chnd.ChannelNumber, e.controller, e.value);
             ch.Device.Send(se);
 
@@ -1275,26 +1288,26 @@ _mgr.InputReceive += Mgr_InputReceive;
         #endregion
 
         #region Midi Utilities
-        /// <summary>
-        /// Input from internal non-midi device. Doesn't throw.
-        /// </summary>
-        void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity)
-        {
-            var input = _inputDevices.FirstOrDefault(o => o.DeviceName == devName);
+        ///// <summary>
+        ///// Input from internal non-midi device. Doesn't throw.
+        ///// </summary>
+        //void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) TODO2 useful?
+        //{
+        //    var input = _inputDevices.FirstOrDefault(o => o.DeviceName == devName);
 
-            if (input is not null)
-            {
-                velocity = MathUtils.Constrain(velocity, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-                NoteEvent nevt = velocity > 0 ?
-                    new NoteOnEvent(0, channel, noteNum, velocity, 0) :
-                    new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
+        //    if (input is not null)
+        //    {
+        //        velocity = MathUtils.Constrain(velocity, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
+        //        NoteEvent nevt = velocity > 0 ?
+        //            new NoteOnEvent(0, channel, noteNum, velocity, 0) :
+        //            new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
 
-//                Trace($"+++ InjectMidiInEvent() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
-                Midi_ReceiveEvent(input, nevt);
-//                Trace($"+++ InjectMidiInEvent() EXIT");
-            }
-            //else do I care?
-        }
+        //        Trace($"+++ InjectMidiInEvent() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
+        //        Midi_ReceiveEvent(input, nevt);
+        //        Trace($"+++ InjectMidiInEvent() EXIT");
+        //    }
+        //    //else do I care?
+        //}
 
         ///// <summary>
         ///// Stop all midi. Doesn't throw.
@@ -1317,21 +1330,22 @@ _mgr.InputReceive += Mgr_InputReceive;
         string FormatMidiEvent(BaseMidiEvent evt, int tick, int chanHnd)
         {
             // Common part.
-            ChannelHandle ch = new(chanHnd);
+            //int ch = new(chanHnd);
+            var chnd = ChannelHandle.Decode(chanHnd);
 
-            string s = $"{tick:00000} {MusicTime.Format(tick)} Dev:{ch.DeviceId} Ch:{ch.ChannelNumber} ";
+            string s = $"{tick:00000} {MusicTime.Format(tick)} Dev:{chnd.DeviceId} Ch:{chnd.ChannelNumber} ";
 
             switch (evt)
             {
                 case NoteOn e:
-                    var snoteon = ch.ChannelNumber == 10 || ch.ChannelNumber == 16 ?
+                    var snoteon = chnd.ChannelNumber == 10 || chnd.ChannelNumber == 16 ?
                         $"DRUM_{e.Note}" :
                         MusicDefinitions.NoteNumberToName(e.Note);
                     s = $"{s} {e.Note}:{snoteon} Vel:{e.Velocity}";
                     break;
 
                 case NoteOff e:
-                    var snoteoff = ch.ChannelNumber == 10 || ch.ChannelNumber == 16 ?
+                    var snoteoff = chnd.ChannelNumber == 10 || chnd.ChannelNumber == 16 ?
                         $"DRUM_{e.Note}" :
                         MusicDefinitions.NoteNumberToName(e.Note);
                     s = $"{s} {e.Note}:{snoteoff}";
