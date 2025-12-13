@@ -6,7 +6,7 @@ local M = {}
 
 -- ut.config_debug(true)
 
---- Music definitions
+--- Music definitions. Some borrowed from midi for convenience.
 M.NOTES_PER_OCTAVE = 12
 M.MIDDLE_C4 = 60
 M.DEFAULT_OCTAVE = 4 -- middle 

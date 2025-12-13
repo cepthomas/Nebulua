@@ -135,14 +135,6 @@ namespace Nebulua
         }
         #endregion
 
-        //void Trace(string s)
-        //{
-        //    Debug.WriteLine(s);
-        //}
-
-        //int? _threadId = null;
-        //bool _inMmTimer = false;
-
         #region Lifecycle
         /// <summary>
         /// Constructor inits most of the UI.
@@ -246,7 +238,7 @@ namespace Nebulua
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             Thread.CurrentThread.Name = "MAIN";
-//            Trace($"+++ MainForm() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
+            // Trace($"+++ MainForm() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
 
             _tmit.Snap("MainForm() exit");
         }

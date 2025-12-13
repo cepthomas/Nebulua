@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        
+
         <!-- Use Exe type to make console available. -->
         <OutputType>Exe</OutputType>
         <UseWindowsForms>true</UseWindowsForms>
