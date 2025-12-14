@@ -64,8 +64,8 @@ namespace Nebulua
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public LogLevel NotifLogLevel { get; set; } = LogLevel.Debug;
         
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color BackColor { get; set; } = Color.LightYellow;
+        // [JsonConverter(typeof(JsonColorConverter))]
+        // public Color BackColor { get; set; } = Color.LightYellow;
 
         [JsonConverter(typeof(JsonColorConverter))]
         public Color IconColor { get; set; } = Color.Purple;

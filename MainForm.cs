@@ -99,7 +99,7 @@ namespace Nebulua
             {
                 return _execState;
             }
-            set
+            set //TODO1 make into func
             {
                 if (value != _execState)
                 {
@@ -238,6 +238,8 @@ namespace Nebulua
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
             traffic.WordWrap = UserSettings.Current.WordWrap;
+
+            timeBar.BackColor = UserSettings.Current.ControlColor;
 
             GraphicsUtils.ColorizeControl(ddbtnFile, UserSettings.Current.IconColor);
             ddbtnFile.BackColor = BackColor;
@@ -730,7 +732,7 @@ _mgr.InputReceive += Mgr_InputReceive;
 
                     var indev = (MidiInputDevice)sender!;
 
-                    var chnd = ChannelHandle.Encode(indev.Id, e.ChannelNumber, false);
+                    var chnd = ChannelHandle.Create(indev.Id, e.ChannelNumber, false);
                     //int chnd = new(indev.Id, e.ChannelNumber, false);
                     //int chanHnd = ch;
                     bool logit = true;
@@ -756,7 +758,7 @@ _mgr.InputReceive += Mgr_InputReceive;
 
                     if (logit && UserSettings.Current.MonitorRcv)
                     {
-                        _loggerMidi.Trace($"<<< {FormatMidiEvent(e, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, chnd)}");
+                        _loggerMidi.Trace($"<<< {FormatMidiEvent(e, chnd)}");
                     }
                 }
                 catch (Exception ex)
@@ -981,18 +983,14 @@ _mgr.InputReceive += Mgr_InputReceive;
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.note_num)); }
             
-            var chnd = ChannelHandle.Decode(e.chan_hnd);
-
-            var ch = _mgr.GetOutputChannel(e.chan_hnd);
-
-
+            var channel = _mgr.GetOutputChannel(e.chan_hnd);
             if (e.volume == 0.0)
             {
-                ch.Device.Send(new NoteOff(chnd.ChannelNumber, e.note_num));
+                channel.Device.Send(new NoteOff(channel.ChannelNumber, e.note_num));
             }
             else
             {
-                ch.Device.Send(new NoteOn(chnd.ChannelNumber, e.note_num, (int)MathUtils.Constrain(e.volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI)));
+                channel.Device.Send(new NoteOn(channel.ChannelNumber, e.note_num, (int)MathUtils.Constrain(e.volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI)));
             }
 
 
@@ -1043,12 +1041,9 @@ _mgr.InputReceive += Mgr_InputReceive;
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.controller)); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.value)); }
 
-            //int chnd = new(e.chan_hnd);
-            var chnd = ChannelHandle.Decode(e.chan_hnd);
-
-            var ch = _mgr.GetOutputChannel(e.chan_hnd);
-            var se = new Controller(chnd.ChannelNumber, e.controller, e.value);
-            ch.Device.Send(se);
+            var channel = _mgr.GetOutputChannel(e.chan_hnd);
+            var se = new Controller(channel.ChannelNumber, e.controller, e.value);
+            channel.Device.Send(se);
 
 
 
@@ -1075,7 +1070,7 @@ _mgr.InputReceive += Mgr_InputReceive;
 
             if (UserSettings.Current.MonitorSnd)
             {
-                _loggerMidi.Trace($">>> {FormatMidiEvent(se, CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0, e.chan_hnd)}");
+                _loggerMidi.Trace($">>> {FormatMidiEvent(se, e.chan_hnd)}");
             }
         }
 
@@ -1158,8 +1153,6 @@ _mgr.InputReceive += Mgr_InputReceive;
         {
             DestroyControls();
 
-
-
             /// create a control for each channel and bind object
             // int x = sldMasterVolume.Left;
             // int y = sldMasterVolume.Bottom + 10;
@@ -1172,7 +1165,7 @@ _mgr.InputReceive += Mgr_InputReceive;
 
 
 
-            channels.ForEach(chan =>
+            _mgr.XXX.ForEach(chan =>
             {
                 var ctrl = new ChannelControl()
                 {
@@ -1192,106 +1185,182 @@ _mgr.InputReceive += Mgr_InputReceive;
             });
 
 
+        }
 
 
 
-///////////////////// OLD ///////////////////////////////////
-///////////////////// OLD ///////////////////////////////////
-///////////////////// OLD ///////////////////////////////////
-
-            // // Create channels and controls.
-            // int x = timeBar.Left;
-            // int y = timeBar.Bottom + 5;
-
-            // List<ChannelHandle> valchs = [];
-            // for (int devNum = 0; devNum < _outputs.Count; devNum++)
-            // {
-            //     var output = _outputs[devNum];
-            //     output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
-            // }
-
-            // valchs.ForEach(ch =>
-            // {
-            //     ChannelControl control = new(ch)
-            //     {
-            //         Location = new(x, y),
-            //         Info = GetInfo(ch)
-            //     };
-
-            //     control.ChannelControlEvent += ChannelControlEvent;
-            //     Controls.Add(control);
-            //     _channelControls.Add(control);
-
-            //     // Adjust positioning for next iteration.
-            //     x += control.Width + 5;
-            // });
+        #endregion
 
 
-            // // local func
-            // List<string> GetInfo(ChannelHandle ch)
-            // {
-            //     string devName = "unknown";
-            //     string chanName = "unknown";
-            //     int patchNum = -1;
+        #region Events
+        /// <summary>
+        /// UI clicked something -> send some midi. Works for different sources.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControl_SendMidi(object? sender, BaseMidiEvent e)
+        {
+            var channel = (sender as ChannelControl)!.BoundChannel;
+            channel.Device.Send(e);
 
-            //     if (ch.Direction == Direction.Output)
-            //     {
-            //         if (ch.DeviceId < _outputs.Count)
-            //         {
-            //             var dev = _outputs[ch.DeviceId];
-            //             devName = dev.DeviceName;
-            //             chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-            //             patchNum = dev.Channels[ch.ChannelNumber].Patch;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         if (ch.DeviceId < _inputs.Count)
-            //         {
-            //             var dev = _inputs[ch.DeviceId];
-            //             devName = dev.DeviceName;
-            //             chanName = dev.Channels[ch.ChannelNumber].ChannelName;
-            //         }
-            //     }
 
-            //     List<string> ret = [];
-            //     ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
-            //     ret.Add($"device: {devName}");
+            //var channel = sender switch
+            //{
+            //    ChannelControl => (sender as ChannelControl)!.BoundChannel,
+            //    CustomRenderer => _mgr.GetOutputChannel((sender as CustomRenderer)!.ChannelHandle),
+            //    _ => null // should never happen
+            //};
 
-            //     if (patchNum != -1)
-            //     {
-            //         // Determine patch name.
-            //         string sname;
-            //         if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
-            //         {
-            //             sname = $"kit: {patchNum}";
-            //             if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
-            //             {
-            //                 sname += ($" {kitName}");
-            //             }
-            //         }
-            //         else
-            //         {
-            //             sname = $"patch: {patchNum}";
-            //             if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
-            //             {
-            //                 sname += ($" {patchName}");
-            //             }
-            //         }
+            //if (channel is not null && channel.Enable)
+            //{
+            //    Tell(INFO, $"Channel send [{e}]");
+            //    channel.Device.Send(e);
+            //}
+        }
 
-            //         ret.Add(sname);
-            //     }
+        /// <summary>
+        /// UI clicked something -> configure channel.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ChannelControl_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e)
+        {
+            var cc = sender as ChannelControl;
+            var channel = cc!.BoundChannel!;
 
-            //     return ret;
-            // }
+            if (e.StateChange)
+            {
+                //Tell(INFO, $"StateChange");
+
+                // Update all channels.
+                bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
+
+                foreach (var cciter in _channelControls)
+                {
+                    bool enable = anySolo ?
+                        cciter.State == ChannelControl.ChannelState.Solo :
+                        cciter.State != ChannelControl.ChannelState.Mute;
+
+                    channel.Enable = enable;
+                    if (!enable)
+                    {
+                        // Kill just in case.
+                        _mgr.Kill(channel);
+                    }
+                }
+            }
+
+            //if (e.PatchChange)
+            //{
+            //    Tell(INFO, $"PatchChange [{channel.Patch}]");
+            //    channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
+            //}
+
+            //if (e.AliasFileChange)
+            //{
+            //    Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
+            //}
         }
         #endregion
+
+
+
+
+        ///////////////////// OLD ///////////////////////////////////
+        ///////////////////// OLD ///////////////////////////////////
+        ///////////////////// OLD ///////////////////////////////////
+
+        // // Create channels and controls.
+        // int x = timeBar.Left;
+        // int y = timeBar.Bottom + 5;
+
+        // List<ChannelHandle> valchs = [];
+        // for (int devNum = 0; devNum < _outputs.Count; devNum++)
+        // {
+        //     var output = _outputs[devNum];
+        //     output.Channels.ForEach(ch => { valchs.Add(new(devNum, ch.Key, Direction.Output)); });
+        // }
+
+        // valchs.ForEach(ch =>
+        // {
+        //     ChannelControl control = new(ch)
+        //     {
+        //         Location = new(x, y),
+        //         Info = GetInfo(ch)
+        //     };
+
+        //     control.ChannelControlEvent += ChannelControlEvent;
+        //     Controls.Add(control);
+        //     _channelControls.Add(control);
+
+        //     // Adjust positioning for next iteration.
+        //     x += control.Width + 5;
+        // });
+
+
+        // // local func
+        // List<string> GetInfo(ChannelHandle ch)
+        // {
+        //     string devName = "unknown";
+        //     string chanName = "unknown";
+        //     int patchNum = -1;
+
+        //     if (ch.Direction == Direction.Output)
+        //     {
+        //         if (ch.DeviceId < _outputs.Count)
+        //         {
+        //             var dev = _outputs[ch.DeviceId];
+        //             devName = dev.DeviceName;
+        //             chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+        //             patchNum = dev.Channels[ch.ChannelNumber].Patch;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         if (ch.DeviceId < _inputs.Count)
+        //         {
+        //             var dev = _inputs[ch.DeviceId];
+        //             devName = dev.DeviceName;
+        //             chanName = dev.Channels[ch.ChannelNumber].ChannelName;
+        //         }
+        //     }
+
+        //     List<string> ret = [];
+        //     ret.Add($"{(ch.Direction == Direction.Output ? "output: " : "input: ")}:{chanName}");
+        //     ret.Add($"device: {devName}");
+
+        //     if (patchNum != -1)
+        //     {
+        //         // Determine patch name.
+        //         string sname;
+        //         if (ch.ChannelNumber == MidiDefs.DEFAULT_DRUM_CHANNEL)
+        //         {
+        //             sname = $"kit: {patchNum}";
+        //             if (MidiDefs.DrumKits.TryGetValue(patchNum, out string? kitName))
+        //             {
+        //                 sname += ($" {kitName}");
+        //             }
+        //         }
+        //         else
+        //         {
+        //             sname = $"patch: {patchNum}";
+        //             if (MidiDefs.Instruments.TryGetValue(patchNum, out string? patchName))
+        //             {
+        //                 sname += ($" {patchName}");
+        //             }
+        //         }
+
+        //         ret.Add(sname);
+        //     }
+
+        //     return ret;
+        // }
 
         #region Midi Utilities
         ///// <summary>
         ///// Input from internal non-midi device. Doesn't throw.
         ///// </summary>
-        //void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) TODO2 useful?
+        //void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) TODO1 useful?
         //{
         //    var input = _inputDevices.FirstOrDefault(o => o.DeviceName == devName);
 
@@ -1324,35 +1393,35 @@ _mgr.InputReceive += Mgr_InputReceive;
         /// Create string suitable for logging. Doesn't throw.
         /// </summary>
         /// <param name="evt">Midi event to format.</param>
-        /// <param name="tick">Current tick.</param>
         /// <param name="chanHnd">Channel info.</param>
         /// <returns>Suitable string.</returns>
-        string FormatMidiEvent(BaseMidiEvent evt, int tick, int chanHnd)
+        string FormatMidiEvent(BaseMidiEvent evt, int chnd)
         {
             // Common part.
-            //int ch = new(chanHnd);
-            var chnd = ChannelHandle.Decode(chanHnd);
+            int tick = CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0;
+            int devId = ChannelHandle.DeviceId(chnd);
+            int chanNum = ChannelHandle.ChannelNumber(chnd);
 
-            string s = $"{tick:00000} {MusicTime.Format(tick)} Dev:{chnd.DeviceId} Ch:{chnd.ChannelNumber} ";
+            string s = $"{tick:00000} {MusicTime.Format(tick)} Dev:{devId} Ch:{chanNum} ";
 
             switch (evt)
             {
                 case NoteOn e:
-                    var snoteon = chnd.ChannelNumber == 10 || chnd.ChannelNumber == 16 ?
+                    var snoteon = chanNum == 10 || chanNum == 16 ?
                         $"DRUM_{e.Note}" :
                         MusicDefinitions.NoteNumberToName(e.Note);
                     s = $"{s} {e.Note}:{snoteon} Vel:{e.Velocity}";
                     break;
 
                 case NoteOff e:
-                    var snoteoff = chnd.ChannelNumber == 10 || chnd.ChannelNumber == 16 ?
+                    var snoteoff = chanNum == 10 || chanNum == 16 ?
                         $"DRUM_{e.Note}" :
                         MusicDefinitions.NoteNumberToName(e.Note);
                     s = $"{s} {e.Note}:{snoteoff}";
                     break;
 
                 case Controller e:
-                    var sctl = MidiDefs.TheDefs.GetControllerName(e.ControllerId);
+                    var sctl = MidiDefs.Instance.GetControllerName(e.ControllerId);
                     s = $"{s} {sctl}:{e.Value}";
                     break;
 
@@ -1409,7 +1478,7 @@ _mgr.InputReceive += Mgr_InputReceive;
 
                 if (e.Level == LogLevel.Error)
                 {
-                    traffic.AppendLine("Fatal error - please restart");
+                    traffic.AppendLine("Fatal error - please fix then restart");
                     CurrentState = ExecState.Dead;
                 }
             });
