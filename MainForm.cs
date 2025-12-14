@@ -30,6 +30,9 @@ namespace Nebulua
         /// <summary>Midi traffic logger.</summary>
         readonly Logger _loggerMidi = LogManager.CreateLogger("MID");
 
+        /// <summary>The current settings.</summary>
+        UserSettings _settings = new();
+
         /// <summary>The midi boss.</summary>
         readonly Manager _mgr = new();
 
@@ -81,61 +84,8 @@ namespace Nebulua
 
         ExecState CurrentState
         {
-            get
-            {
-                return _execState;
-            }
-            set //TODO1 make into func
-            {
-                if (value != _execState)
-                {
-                    switch (value)
-                    {
-                        case ExecState.Idle:
-                            _scriptFn = null;
-                            chkPlay.Checked = false;
-                            chkPlay.Enabled = false;
-                            _execState = ExecState.Idle;
-                            break;
-
-                        case ExecState.Stop:
-                            if (_scriptFn is not null)
-                            {
-                                chkPlay.Checked = false;
-                                chkPlay.Enabled = true;
-                                _execState = ExecState.Stop;
-                            }
-                            else
-                            {
-                                chkPlay.Checked = false;
-                                chkPlay.Enabled = false;
-                                _execState = ExecState.Idle;
-                            }
-                            break;
-
-                        case ExecState.Run:
-                            if (_scriptFn is not null)
-                            {
-                                chkPlay.Checked = true;
-                                chkPlay.Enabled = true;
-                                _execState = ExecState.Run;
-                            }
-                            else
-                            {
-                                chkPlay.Checked = false;
-                                chkPlay.Enabled = false;
-                                _execState = ExecState.Idle;
-                            }
-                            break;
-
-                        case ExecState.Dead:
-                            chkPlay.Checked = false;
-                            chkPlay.Enabled = false;
-                            _execState = ExecState.Dead;
-                            break;
-                    }
-                }
-            }
+            get { return _execState; }
+            set { if (value != _execState) { UpdateState(value); } }
         }
         #endregion
 
@@ -156,63 +106,63 @@ namespace Nebulua
 
             // Settings.
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
-            UserSettings.Current = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
+            _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
-            LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
+            LogManager.MinLevelFile = _settings.FileLogLevel;
+            LogManager.MinLevelNotif = _settings.NotifLogLevel;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
             // Main window.
-            Location = UserSettings.Current.FormGeometry.Location;
-            Size = UserSettings.Current.FormGeometry.Size;
+            Location = _settings.FormGeometry.Location;
+            Size = _settings.FormGeometry.Size;
             WindowState = FormWindowState.Normal;
             Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
 
             #region Init the controls
-            GraphicsUtils.ColorizeControl(chkPlay, UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);
             chkPlay.BackColor = BackColor;
-            chkPlay.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkPlay.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
             chkPlay.Click += Play_Click;
 
-            GraphicsUtils.ColorizeControl(chkLoop, UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(chkLoop, _settings.IconColor);
             chkLoop.BackColor = BackColor;
-            chkLoop.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            chkLoop.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
             chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(chkMonRcv, UserSettings.Current.IconColor);
-            chkMonRcv.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            chkMonRcv.Checked = UserSettings.Current.MonitorRcv;
-            chkMonRcv.Click += (_, __) => UserSettings.Current.MonitorRcv = chkMonRcv.Checked;
+            GraphicsUtils.ColorizeControl(chkMonRcv, _settings.IconColor);
+            chkMonRcv.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
+            chkMonRcv.Checked = _settings.MonitorRcv;
+            chkMonRcv.Click += (_, __) => _settings.MonitorRcv = chkMonRcv.Checked;
 
             chkMonSnd.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(chkMonSnd, UserSettings.Current.IconColor);
-            chkMonSnd.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
-            chkMonSnd.Checked = UserSettings.Current.MonitorSnd;
-            chkMonSnd.Click += (_, __) => UserSettings.Current.MonitorSnd = chkMonSnd.Checked;
+            GraphicsUtils.ColorizeControl(chkMonSnd, _settings.IconColor);
+            chkMonSnd.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
+            chkMonSnd.Checked = _settings.MonitorSnd;
+            chkMonSnd.Click += (_, __) => _settings.MonitorSnd = chkMonSnd.Checked;
 
             btnRewind.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(btnRewind, UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnRewind, _settings.IconColor);
             btnRewind.Click += Rewind_Click;
 
             btnAbout.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(btnAbout, UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnAbout, _settings.IconColor);
             btnAbout.Click += About_Click;
 
             btnKill.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(btnKill, UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
             btnKill.Click += (_, __) => { _mgr.Kill(); CurrentState = ExecState.Idle; };
 
             btnSettings.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(btnSettings, UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
             btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = BackColor;
-            sldVolume.DrawColor = UserSettings.Current.ControlColor;
+            sldVolume.DrawColor = _settings.ControlColor;
             sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
 
             sldTempo.BackColor = BackColor;
-            sldTempo.DrawColor = UserSettings.Current.ControlColor;
+            sldTempo.DrawColor = _settings.ControlColor;
             sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
 
             traffic.BackColor = BackColor;
@@ -222,13 +172,14 @@ namespace Nebulua
             traffic.MatchText.Add("RCV ", Color.LightBlue);
             traffic.Font = new("Cascadia Mono", 9);
             traffic.Prompt = "";
-            traffic.WordWrap = UserSettings.Current.WordWrap;
+            traffic.WordWrap = _settings.WordWrap;
 
-            timeBar.BackColor = UserSettings.Current.ControlColor;
+            timeBar.ControlColor = _settings.ControlColor;
+            timeBar.BackColor = Color.LightGoldenrodYellow;
 
-            GraphicsUtils.ColorizeControl(ddbtnFile, UserSettings.Current.IconColor);
+            GraphicsUtils.ColorizeControl(ddbtnFile, _settings.IconColor);
             ddbtnFile.BackColor = BackColor;
-            ddbtnFile.FlatAppearance.CheckedBackColor = UserSettings.Current.SelectedColor;
+            ddbtnFile.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
             ddbtnFile.Enabled = true;
             ddbtnFile.Selected += File_Selected;
             #endregion
@@ -243,7 +194,8 @@ namespace Nebulua
 
             State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
-            _mgr.InputReceive += Mgr_InputReceive;
+            _mgr.MessageReceive += Mgr_MessageReceive;
+            _mgr.MessageSend += Mgr_MessageSend;
 
             Thread.CurrentThread.Name = "MAIN";
             // Trace($"+++ MainForm() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
@@ -261,9 +213,9 @@ namespace Nebulua
 
             PopulateFileMenu();
 
-            if (UserSettings.Current.OpenLastFile && UserSettings.Current.RecentFiles.Count > 0)
+            if (_settings.OpenLastFile && _settings.RecentFiles.Count > 0)
             {
-                OpenScriptFile(UserSettings.Current.RecentFiles[0]);
+                OpenScriptFile(_settings.RecentFiles[0]);
             }
 
             base.OnLoad(e);
@@ -299,15 +251,15 @@ namespace Nebulua
             ResetDevices();
 
             // Save user settings.
-            UserSettings.Current.FormGeometry = new()
+            _settings.FormGeometry = new()
             {
                 X = Location.X,
                 Y = Location.Y,
                 Width = Width,
                 Height = Height
             };
-            UserSettings.Current.WordWrap = traffic.WordWrap;
-            UserSettings.Current.Save();
+            _settings.WordWrap = traffic.WordWrap;
+            _settings.Save();
 
             LogManager.Stop();
 
@@ -405,7 +357,7 @@ namespace Nebulua
                     _mmTimer.Start();
 
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                    UserSettings.Current.UpdateMru(_scriptFn!);
+                    _settings.UpdateMru(_scriptFn!);
 
                     PopulateFileMenu();
 
@@ -433,7 +385,7 @@ namespace Nebulua
                         {
                             Filter = "Nebulua files | *.lua",
                             Title = "Select a Nebulua file",
-                            InitialDirectory = UserSettings.Current.ScriptPath,
+                            InitialDirectory = _settings.ScriptPath,
                         };
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
@@ -466,10 +418,10 @@ namespace Nebulua
                 options.Add("Reload");
             }
 
-            if (UserSettings.Current.RecentFiles.Count > 0)
+            if (_settings.RecentFiles.Count > 0)
             {
                 options.Add("");
-                UserSettings.Current.RecentFiles.ForEach(options.Add);
+                _settings.RecentFiles.ForEach(options.Add);
             }
 
             ddbtnFile.SetOptions(options);
@@ -487,7 +439,7 @@ namespace Nebulua
             if (chkPlay.Checked)
             {
                 // Maybe reload.
-                if (UserSettings.Current.AutoReload && _scriptFn is not null)
+                if (_settings.AutoReload && _scriptFn is not null)
                 {
                     var touch = File.GetLastWriteTime(_scriptFn);
                     if (touch > _scriptTouch)
@@ -685,17 +637,17 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Midi input arrived. This is on a system thread.
+        /// Midi message arrived. Pass along to the script. This is on a system thread.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         //void Midi_ReceiveEvent(object? sender, MidiEvent e)
-        void Mgr_InputReceive(object? sender, BaseMidiEvent e)
+        void Mgr_MessageReceive(object? sender, BaseMidiEvent e)
         {
-            // Trace($"+++ Midi_ReceiveEvent() ENTER [_threadId={_threadId ?? -1}] [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+            // Trace($"+++ Mgr_MessageReceive() ENTER [_threadId={_threadId ?? -1}] [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
             lock (_interopLock)
             {
-                //Trace($"+++ Midi_ReceiveEvent() LOCKED [_inMmTimer={_inMmTimer}]");
+                //Trace($"+++ Mgr_MessageReceive() LOCKED [_inMmTimer={_inMmTimer}]");
                 //if (_threadId is not null) // && _threadId != Thread.CurrentThread.ManagedThreadId)
                 //{
                 //    Trace($"!!! Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
@@ -710,13 +662,10 @@ namespace Nebulua
                         Thread.CurrentThread.Name = "MIDI_RCV";
                     }
 
-                    //Trace($"+++ Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+                    //Trace($"+++ Mgr_MessageReceive() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
 
                     var indev = (MidiInputDevice)sender!;
-
                     var chnd = ChannelHandle.Create(indev.Id, e.ChannelNumber, false);
-                    //int chnd = new(indev.Id, e.ChannelNumber, false);
-                    //int chanHnd = ch;
                     bool logit = true;
 
                     switch (e)
@@ -738,7 +687,7 @@ namespace Nebulua
                             break;
                     }
 
-                    if (logit && UserSettings.Current.MonitorRcv)
+                    if (logit && _settings.MonitorRcv)
                     {
                         _loggerMidi.Trace($"<<< {FormatMidiEvent(e, chnd)}");
                     }
@@ -748,9 +697,23 @@ namespace Nebulua
                     ProcessException(ex);
                 }
 
-                //Trace($"--- Midi_ReceiveEvent() EXIT");
+                //Trace($"--- Mgr_MessageReceive() EXIT");
                 //_threadId = null;
             }
+        }
+
+        /// <summary>
+        /// Midi message sent. Just for logging.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        //void Midi_ReceiveEvent(object? sender, MidiEvent e)
+        void Mgr_MessageSend(object? sender, BaseMidiEvent e)
+        {
+            // Actual sent.
+            var indev = (MidiOutputDevice)sender!;
+            var chnd = ChannelHandle.Create(indev.Id, e.ChannelNumber, false);
+            _loggerMidi.Trace($">>> ! {FormatMidiEvent(e, chnd)}");
         }
 
         /// <summary>
@@ -849,8 +812,9 @@ namespace Nebulua
             var se = new Controller(channel.ChannelNumber, e.controller, e.value);
             channel.Device.Send(se);
 
-            if (UserSettings.Current.MonitorSnd)
+            if (_settings.MonitorSnd)
             {
+                // Intended sent.
                 _loggerMidi.Trace($">>> {FormatMidiEvent(se, e.chan_hnd)}");
             }
         }
@@ -946,8 +910,8 @@ namespace Nebulua
                     UserRenderer = null,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
-                    ControlColor = UserSettings.Current.ControlColor,
-                    SelectedColor = UserSettings.Current.SelectedColor,
+                    ControlColor = _settings.ControlColor,
+                    SelectedColor = _settings.SelectedColor,
                     Volume = Defs.DEFAULT_VOLUME,
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
@@ -1018,7 +982,7 @@ namespace Nebulua
         ///// <summary>
         ///// Input from internal non-midi device. Doesn't throw.
         ///// </summary>
-        //void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) TODO1 useful?
+        //void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) TODO2 useful?
         //{
         //    var input = _inputDevices.FirstOrDefault(o => o.DeviceName == devName);
 
@@ -1081,6 +1045,57 @@ namespace Nebulua
         #endregion
 
         #region Misc Stuff
+        /// <summary>Handle state change.</summary>
+        /// <param name="state">New state</param>
+        void UpdateState(ExecState state)
+        {
+            switch (state)
+            {
+                case ExecState.Idle:
+                    _scriptFn = null;
+                    chkPlay.Checked = false;
+                    chkPlay.Enabled = false;
+                    _execState = ExecState.Idle;
+                    break;
+
+                case ExecState.Stop:
+                    if (_scriptFn is not null)
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = true;
+                        _execState = ExecState.Stop;
+                    }
+                    else
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = false;
+                        _execState = ExecState.Idle;
+                    }
+                    break;
+
+                case ExecState.Run:
+                    if (_scriptFn is not null)
+                    {
+                        chkPlay.Checked = true;
+                        chkPlay.Enabled = true;
+                        _execState = ExecState.Run;
+                    }
+                    else
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = false;
+                        _execState = ExecState.Idle;
+                    }
+                    break;
+
+                case ExecState.Dead:
+                    chkPlay.Checked = false;
+                    chkPlay.Enabled = false;
+                    _execState = ExecState.Dead;
+                    break;
+            }
+        }
+
         /// <summary>
         /// Capture bad things and display them to the user.
         /// </summary>
@@ -1107,7 +1122,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void Settings_Click(object? sender, EventArgs e)
         {
-            var changes = SettingsEditor.Edit(UserSettings.Current, "User Settings", 500);
+            var changes = SettingsEditor.Edit(_settings, "User Settings", 500);
 
             // Detect changes of interest.
             bool restart = false;
@@ -1124,11 +1139,11 @@ namespace Nebulua
                         break;
 
                     case "FileLogLevel":
-                        LogManager.MinLevelFile = UserSettings.Current.FileLogLevel;
+                        LogManager.MinLevelFile = _settings.FileLogLevel;
                         break;
 
                     case "NotifLogLevel":
-                        LogManager.MinLevelNotif = UserSettings.Current.NotifLogLevel;
+                        LogManager.MinLevelNotif = _settings.NotifLogLevel;
                         break;
                 }
             }
@@ -1150,9 +1165,38 @@ namespace Nebulua
             Tools.ShowReadme("Nebulua");
 
             // Show the user devices.
-            var devices = DeviceUtils.GetDevicesDoc();
+            List<string> ls = [];
 
-            traffic.AppendLine(devices);
+            // Show them what they have.
+            var outs = MidiOutputDevice.GetAvailableDevices();
+            var ins = MidiInputDevice.GetAvailableDevices();
+
+            ls.Add($"# Your Midi Devices");
+
+            ls.Add($"");
+            ls.Add($"## Inputs");
+            ls.Add($"");
+
+            if (ins.Count == 0)
+            {
+                ls.Add($"- None");
+            }
+            else
+            {
+                ins.ForEach(d => ls.Add($"- [{d}]"));
+            }
+
+            ls.Add($"## Outputs");
+            if (outs.Count == 0)
+            {
+                ls.Add($"- None");
+            }
+            else
+            {
+                outs.ForEach(d => ls.Add($"- [{d}]"));
+            }
+
+            traffic.AppendLine(string.Join(Environment.NewLine, ls));
         }
 
         /// <summary>

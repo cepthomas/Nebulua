@@ -13,9 +13,6 @@ namespace Nebulua
     [Serializable]
     public sealed class UserSettings : SettingsCore
     {
-        /// <summary>The current settings.</summary>
-        public static UserSettings Current { get; set; } = new();
-
         #region Properties - persisted editable
         [DisplayName("Script Path")]
         [Description("Default location for user scripts.")]

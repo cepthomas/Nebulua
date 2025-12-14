@@ -40,6 +40,9 @@ namespace Nebulua
         /// <summary>Baby font.</summary>
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
+        /// <summary>For drawing.</summary>
+        public Color ControlColor { get; set; } = Color.Red;
+
         /// <summary>How to select times.</summary>
         public SnapType Snap { get; set; }
         #endregion
@@ -59,8 +62,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            BackColor = BackColor;
-            _penMarker.Color = UserSettings.Current.ControlColor;
+            _penMarker.Color = ControlColor;
             base.OnLoad(e);
         }
 
