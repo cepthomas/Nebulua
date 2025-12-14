@@ -9,8 +9,8 @@ using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
 
 
-
 // ? zoom, drag, shift
+
 namespace Nebulua
 {
     /// <summary>User selection options.</summary>
