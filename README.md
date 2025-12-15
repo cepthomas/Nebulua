@@ -186,7 +186,7 @@ Register an output midi channel.
 - dev_name: The system name.
 - chan_num: Specific channel number.
 - chan_name: Name for channel.
-- patch: Send this patch number or `mid.NO_PATCH`. Use NO_PATCH if your host manages its own patches.
+- patch: Send this patch number or `mid.NO_PATCH`. Use NO_PATCH if your host manages its own patches. TODO2
 - return: A channel handle to use in subsequent functions.
 
 

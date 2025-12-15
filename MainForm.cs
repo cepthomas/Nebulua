@@ -907,6 +907,7 @@ namespace Nebulua
                 var ctrl = new ChannelControl()
                 {
                     BoundChannel = chan,
+                    Options = DisplayOptions.SoloMute,
                     UserRenderer = null,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,

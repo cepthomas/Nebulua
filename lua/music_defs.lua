@@ -1,6 +1,8 @@
 -- local ut = require('lbot_utils')
 local sx = require("stringex")
 
+-- Music definitions. TODO1 MusicLib autogen static part from txt files
+
 -- Create the namespace/module.
 local M = {}
 
@@ -115,7 +117,7 @@ local interval_defs =
     ["#6"]=10, ["b7"]=10, ["7"]=11, ["8"]=12, ["9"]=14, ["#9"]=15, ["11"]=17, ["#11"]=18, ["13"]=21
 }
 
---- The chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals.
+--- Runtime stuff - The chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals.
 M.definitions = {}
 
 

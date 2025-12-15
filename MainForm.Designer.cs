@@ -220,7 +220,7 @@ namespace Nebulua
             Controls.Add(sldTempo);
             Controls.Add(traffic);
             Name = "MainForm";
-            Text = "Form1";
+            Text = "MainForm";
             ResumeLayout(false);
         }
 

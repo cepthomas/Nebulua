@@ -1,3 +1,5 @@
+-- TODO1 MusicLib autogen from txt files - delete this
+
 -- local ut = require("lbot_utils")
 
 -- Create the namespace/module.
@@ -10,7 +12,7 @@ M.MAX_MIDI = 127
 M.NO_PATCH = -1
 
 
--- The GM midi instrument definitions. TODO1 get from txt files
+-- The GM midi instrument definitions.
 M.instruments =
 {
     AcousticGrandPiano = 000, BrightAcousticPiano = 001, ElectricGrandPiano = 002, HonkyTonkPiano = 003, ElectricPiano1 = 004, ElectricPiano2 = 005,
