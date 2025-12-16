@@ -1,7 +1,7 @@
 -- local ut = require('lbot_utils')
 local sx = require("stringex")
 
--- Music definitions. TODO1 MusicLib autogen static part from txt files
+-- Music definitions. TODO1 autogen static part from music_defs.ini - like midi_defs.ini
 
 -- Create the namespace/module.
 local M = {}
@@ -15,7 +15,7 @@ M.DEFAULT_OCTAVE = 4 -- middle
 
 
 --- All the builtin chord defs.
-local chord_defs =
+local chords =
 {
 --  Chord    | Notes             | Description
     "M       | 1 3 5             | Named after the major 3rd interval between root and 3.",
@@ -49,7 +49,7 @@ local chord_defs =
 }
 
 --- All the builtin scale defs.
-local scale_defs =
+local scales =
 {
 --  Scale                    | Notes                        | Description                              | Lower tetrachord  | Upper tetrachord
     "Acoustic                | 1 2 3 #4 5 6 b7              | Acoustic scale                           | whole tone        | minor",
@@ -102,7 +102,7 @@ local scale_defs =
 }
 
 --- All possible note names and aliases as offset from middle C.
-local note_defs =
+local notes =
 {
     ["C"]=0,  ["Db"]=1, ["D"]=2, ["Eb"]=3, ["E"]=4,  ["F"]=5,  ["Gb"]=6, ["G"]=7, ["Ab"]=8, ["A"]=9,  ["Bb"]=10, ["B"]=11,
     ["B#"]=0, ["C#"]=1,          ["D#"]=3, ["Fb"]=4, ["E#"]=5, ["F#"]=6,          ["G#"]=8,           ["A#"]=10, ["Cb"]=11,
@@ -110,7 +110,7 @@ local note_defs =
 }
 
 --- Intervals as used in chord and scale defs.
-local interval_defs =
+local intervals =
 {
     ["1"]=0,  ["#1"]=1, ["b2"]=1, ["2"]=2,  ["#2"]=3,  ["b3"]=3,  ["3"]=4, ["b4"]=4, ["4"]=5,
     ["#4"]=6,  ["b5"]=6,  ["5"]=7, ["#5"]=8, ["b6"]=8, ["6"]=9, ["bb7"]=9,
@@ -222,7 +222,7 @@ function M.note_name_to_number(snote)
             dn = true
             snote = snote:sub(2)
         end
-        inote = note_defs[snote]
+        inote = notes[snote]
         -- Adjust for octave shift.
         if inote and up then inote = inote + M.NOTES_PER_OCTAVE end
         if inote and dn then inote = inote - M.NOTES_PER_OCTAVE end
@@ -249,7 +249,7 @@ function M.interval_name_to_number(sinterval)
             dn = true
             sinterval = sinterval:sub(2)
         end
-        iinterval = interval_defs[sinterval]
+        iinterval = intervals[sinterval]
         -- Adjust for octave shift.
         if iinterval and up then iinterval = iinterval + M.NOTES_PER_OCTAVE end
         if iinterval and dn then iinterval = iinterval - M.NOTES_PER_OCTAVE end
@@ -286,7 +286,7 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Chord   | Notes             | Description")
     table.insert(docs, "------- | ----------------- | -----------")
-    for _, s in ipairs(chord_defs) do
+    for _, s in ipairs(chords) do
         table.insert(docs, s)
     end
     table.insert(docs, "")
@@ -295,7 +295,7 @@ function M.gen_md()
     table.insert(docs, "")
     table.insert(docs, "Scale                   | Notes                        | Description                              | Lower tetrachord  | Upper tetrachord")
     table.insert(docs, "-------                 | -----------------            | -----------------                        | ----------------  | ----------------")
-    for _, s in ipairs(scale_defs) do
+    for _, s in ipairs(scales) do
         table.insert(docs, s)
     end
     table.insert(docs, "")
@@ -306,7 +306,7 @@ end
 
 ------ Init stuff ---------------------------------------------------------------------
 
-for _, coll in ipairs({ scale_defs, chord_defs }) do
+for _, coll in ipairs({ scales, chords }) do
     for _, sc in ipairs(coll) do
         local parts = sx.strsplit(sc, "|", true)
         M.create_definition(parts[1], parts[2])

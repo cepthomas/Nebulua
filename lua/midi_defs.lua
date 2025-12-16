@@ -1,4 +1,4 @@
--- TODO1 MusicLib autogen from txt files - delete this
+-- TODO1 autogen from gm_defs.ini - delete this
 
 -- local ut = require("lbot_utils")
 
