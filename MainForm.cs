@@ -980,27 +980,6 @@ namespace Nebulua
         #endregion
 
         #region Midi Utilities
-        ///// <summary>
-        ///// Input from internal non-midi device. Doesn't throw.
-        ///// </summary>
-        //void InjectMidiInEvent(string devName, int channel, int noteNum, int velocity) TODO2 useful?
-        //{
-        //    var input = _inputDevices.FirstOrDefault(o => o.DeviceName == devName);
-
-        //    if (input is not null)
-        //    {
-        //        velocity = MathUtils.Constrain(velocity, MidiDefs.MIN_MIDI, MidiDefs.MAX_MIDI);
-        //        NoteEvent nevt = velocity > 0 ?
-        //            new NoteOnEvent(0, channel, noteNum, velocity, 0) :
-        //            new NoteEvent(0, channel, MidiCommandCode.NoteOff, noteNum, 0);
-
-        //        Trace($"+++ InjectMidiInEvent() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
-        //        Midi_ReceiveEvent(input, nevt);
-        //        Trace($"+++ InjectMidiInEvent() EXIT");
-        //    }
-        //    //else do I care?
-        //}
-
         /// <summary>
         /// Create string suitable for logging. Doesn't throw.
         /// </summary>

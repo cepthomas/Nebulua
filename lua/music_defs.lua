@@ -10,7 +10,7 @@ local M = {}
 
 --- Music definitions. Some borrowed from midi for convenience.
 M.NOTES_PER_OCTAVE = 12
-M.MIDDLE_C4 = 60
+M.MIDDLE_C = 60 -- C4
 M.DEFAULT_OCTAVE = 4 -- middle 
 
 
@@ -180,7 +180,7 @@ function M.get_notes_from_string(nstr)
 
             -- Transpose octave.
             -- note_num = note_num + (octave - 1) * M.NOTES_PER_OCTAVE
-            local abs_note_num = note_num + M.MIDDLE_C4 - (M.DEFAULT_OCTAVE - octave) * M.NOTES_PER_OCTAVE
+            local abs_note_num = note_num + M.MIDDLE_C - (M.DEFAULT_OCTAVE - octave) * M.NOTES_PER_OCTAVE
 
             if c_or_s ~= nil then
                 -- It's a chord or scale.
