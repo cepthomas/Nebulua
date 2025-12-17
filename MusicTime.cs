@@ -8,7 +8,7 @@ using Ephemera.NBagOfTricks;
 namespace Nebulua
 {
     /// <summary>Misc musical timing functions.</summary>
-    public class MusicTime
+    public class MusicTime // TODO1 delete
     {
         /// <summary>Only 4/4 time supported.</summary>
         public const int BEATS_PER_BAR = 4;

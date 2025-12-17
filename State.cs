@@ -9,7 +9,7 @@ using Ephemera.NBagOfTricks;
 namespace Nebulua
 {
     /// <summary>System dynamic values for access by all other components. Some notify clients.</summary>
-    public class State
+    public class State // TODO1 delete
     {
         #region Backing fields
         List<(int tick, string name)> _sectionInfo = [];
