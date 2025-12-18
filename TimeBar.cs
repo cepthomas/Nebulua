@@ -17,7 +17,7 @@ namespace Nebulua
     public enum SnapType { Bar, Beat, Sub }
 
     /// <summary>The control.</summary>
-    public class TimeBar : UserControl // TODO1 delete
+    public class TimeBar_delete : UserControl // TODO1 delete
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>
@@ -51,7 +51,7 @@ namespace Nebulua
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public TimeBar()
+        public TimeBar_delete()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
         }

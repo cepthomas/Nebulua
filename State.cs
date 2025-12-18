@@ -9,7 +9,7 @@ using Ephemera.NBagOfTricks;
 namespace Nebulua
 {
     /// <summary>System dynamic values for access by all other components. Some notify clients.</summary>
-    public class State // TODO1 delete
+    public class State_delete // TODO1 delete
     {
         #region Backing fields
         List<(int tick, string name)> _sectionInfo = [];
@@ -103,20 +103,20 @@ namespace Nebulua
 
         #region Lifecycle
         /// <summary>Prevent client multiple instantiation.</summary>
-        State() { }
+        State_delete() { }
 
         /// <summary>The singleton instance.</summary>
-        public static State Instance
+        public static State_delete Instance
         {
             get
             {
-                _instance ??= new State();
+                _instance ??= new State_delete();
                 return _instance;
             }
         }
 
         /// <summary>The singleton instance.</summary>
-        static State? _instance;
+        static State_delete? _instance;
         #endregion
 
         #region Public functions
