@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
+using Ephemera.MusicLib;
 
 
 // TODO kinda slow startup running in debugger.
@@ -66,6 +67,13 @@ namespace Nebulua
         /// <summary>Performance.</summary>
         //readonly TimingAnalyzer? _tan = null;
         #endregion
+
+        //=============================== added ================================
+        int _tempo = 100;
+        double _volume = 0.6;
+        int _currentTick = 0;
+
+
 
         #region State
         /// <summary>Internal state. </summary>
@@ -127,7 +135,7 @@ namespace Nebulua
             GraphicsUtils.ColorizeControl(chkLoop, _settings.IconColor);
             chkLoop.BackColor = BackColor;
             chkLoop.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
-            chkLoop.Click += (_, __) => State.Instance.DoLoop = chkLoop.Checked;
+            chkLoop.Click += (_, __) => timeBar.DoLoop = chkLoop.Checked;
 
             chkMonRcv.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(chkMonRcv, _settings.IconColor);
@@ -159,13 +167,13 @@ namespace Nebulua
 
             sldVolume.BackColor = BackColor;
             sldVolume.DrawColor = _settings.ControlColor;
-            sldVolume.ValueChanged += (_, __) => State.Instance.Volume = sldVolume.Value;
+            sldVolume.ValueChanged += (_, __) => _volume = sldVolume.Value;
 
             sldTempo.BackColor = BackColor;
             sldTempo.DrawColor = _settings.ControlColor;
-            sldTempo.ValueChanged += (_, __) => State.Instance.Tempo = (int)sldTempo.Value;
+            sldTempo.ValueChanged += (_, __) => { _tempo = (int)sldTempo.Value; SetTimer(_tempo); };
 
-            traffic.BackColor = BackColor;
+                traffic.BackColor = BackColor;
             traffic.MatchText.Add("ERR ", Color.LightPink);
             traffic.MatchText.Add("WRN ", Color.Yellow);
             traffic.MatchText.Add("SND ", Color.PaleGreen);
@@ -175,7 +183,7 @@ namespace Nebulua
             traffic.WordWrap = _settings.WordWrap;
 
             timeBar.ControlColor = _settings.ControlColor;
-            timeBar.BackColor = Color.LightGoldenrodYellow;
+            timeBar.SelectedColor = _settings.SelectedColor;
 
             GraphicsUtils.ColorizeControl(ddbtnFile, _settings.IconColor);
             ddbtnFile.BackColor = BackColor;
@@ -192,7 +200,7 @@ namespace Nebulua
             Interop.SendMidiController += Interop_SendMidiController;
             Interop.SetTempo += Interop_SetTempo;
 
-            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
+//            State.Instance.ValueChangeEvent += State_ValueChangeEvent;
 
             _mgr.MessageReceive += Mgr_MessageReceive;
             _mgr.MessageSend += Mgr_MessageSend;
@@ -348,12 +356,12 @@ namespace Nebulua
                         sectInfo[int.Parse(elems[1])] = elems[0];
                     });
 
-                    State.Instance.InitSectionInfo(sectInfo);
+                    timeBar.InitSectionInfo(sectInfo);
 
                     CreateControls();
 
                     // Start timer.
-                    SetTimer(State.Instance.Tempo);
+                    SetTimer(_tempo);
                     _mmTimer.Start();
 
                     Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
@@ -456,28 +464,28 @@ namespace Nebulua
             }
         }
 
-        /// <summary>
-        /// Handler for state changes.
-        /// </summary>
-        /// <param name="_"></param>
-        /// <param name="name">Specific State value.</param>
-        void State_ValueChangeEvent(object? _, string name)
-        {
-            this.InvokeIfRequired(_ =>
-            {
-                switch (name)
-                {
-                    case "CurrentTick":
-                        timeBar.Invalidate();
-                        break;
+        ///// <summary>
+        ///// Handler for state changes.
+        ///// </summary>
+        ///// <param name="_"></param>
+        ///// <param name="name">Specific State value.</param>
+        //void State_ValueChangeEvent(object? _, string name)
+        //{
+        //    this.InvokeIfRequired(_ =>
+        //    {
+        //        switch (name)
+        //        {
+        //            case "CurrentTick":
+        //                timeBar.Invalidate();
+        //                break;
 
-                    case "Tempo":
-                        sldTempo.Value = State.Instance.Tempo;
-                        SetTimer(State.Instance.Tempo);
-                        break;
-                }
-            });
-        }
+        //            case "Tempo":
+        //                sldTempo.Value = _tempo;
+        //                SetTimer(_tempo);
+        //                break;
+        //        }
+        //    });
+        //}
 
         /// <summary>
         /// Rewind.
@@ -486,7 +494,7 @@ namespace Nebulua
         /// <param name="e"></param>
         void Rewind_Click(object? sender, EventArgs e)
         {
-            State.Instance.CurrentTick = 0;
+            _currentTick = 0;
             // Current tick may have been corrected for loop.
             //timeBar.Current = State.Instance.CurrentTick;
         }
@@ -589,39 +597,23 @@ namespace Nebulua
                        //     Trace($"+++ MmTimer_Callback() {State.Instance.CurrentTick} [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
                        // }
 
-                        int ret = _interop.Step(State.Instance.CurrentTick);
+                        int ret = _interop.Step(_currentTick);
 
                         // Read stopwatch and diff/stats.
                         //string? s = _tan?.Dump();
 
-                        if (State.Instance.IsComposition)
+                        if (timeBar.Valid)
                         {
                             // Bump time and check state.
-                            int start = State.Instance.LoopStart == -1 ? 0 : State.Instance.LoopStart;
-                            int end = State.Instance.LoopEnd == -1 ? State.Instance.Length : State.Instance.LoopEnd;
-
-                            if (++State.Instance.CurrentTick >= end) // done
+                            if (!timeBar.Increment())
                             {
-                                // Keep going? else stop/rewind.
-                                if (State.Instance.DoLoop)
-                                {
-                                    // Keep going.
-                                    State.Instance.CurrentTick = start;
-                                }
-                                else
-                                {
-                                    // Stop and rewind.
-                                    CurrentState = ExecState.Idle;
-                                    State.Instance.CurrentTick = start;
+                                // Stop and rewind.
+                                CurrentState = ExecState.Idle;
+                                //State.Instance.CurrentTick = start;
 
-                                    // just in case
-                                    _mgr.Kill();
-                                }
+                                // just in case
+                                _mgr.Kill();
                             }
-                        }
-                        else // dynamic script
-                        {
-                            ++State.Instance.CurrentTick;
                         }
                     }
                     catch (Exception ex)
@@ -784,8 +776,8 @@ namespace Nebulua
             e.ret = 0; // not used
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.note_num)); }
-            
-            var channel = _mgr.GetOutputChannel(e.chan_hnd);
+            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException(nameof(e.chan_hnd));
+
             if (e.volume == 0.0)
             {
                 channel.Device.Send(new NoteOff(channel.ChannelNumber, e.note_num));
@@ -807,8 +799,8 @@ namespace Nebulua
 
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.controller)); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.value)); }
+            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException(nameof(e.chan_hnd));
 
-            var channel = _mgr.GetOutputChannel(e.chan_hnd);
             var se = new Controller(channel.ChannelNumber, e.controller, e.value);
             channel.Device.Send(se);
 
@@ -830,8 +822,8 @@ namespace Nebulua
 
             if (e.bpm >= 30 && e.bpm <= 240)
             {
-                State.Instance.Tempo = e.bpm;
-                SetTimer(State.Instance.Tempo);
+                _tempo = e.bpm;
+                SetTimer(_tempo);
             }
             else if (e.bpm == 0)
             {
@@ -907,7 +899,7 @@ namespace Nebulua
                 var ctrl = new ChannelControl()
                 {
                     BoundChannel = chan,
-                    Options = DisplayOptions.SoloMute,
+                    Options = ChannelControl.DisplayOptions.SoloMute,
                     UserRenderer = null,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
@@ -989,11 +981,12 @@ namespace Nebulua
         string FormatMidiEvent(BaseMidiEvent evt, int chnd)
         {
             // Common part.
-            int tick = CurrentState == ExecState.Run ? State.Instance.CurrentTick : 0;
+            int tick = CurrentState == ExecState.Run ? _currentTick : 0;
             int devId = ChannelHandle.DeviceId(chnd);
             int chanNum = ChannelHandle.ChannelNumber(chnd);
+            MusicTime mt = new(tick);
 
-            string s = $"{tick:00000} {MusicTime.Format(tick)} Dev:{devId} Ch:{chanNum} ";
+            string s = $"{tick:00000} {mt} Dev:{devId} Ch:{chanNum} ";
 
             switch (evt)
             {
@@ -1199,7 +1192,7 @@ namespace Nebulua
             if (tempo > 0)
             {
                 double sec_per_beat = 60.0 / tempo;
-                double msec_per_sub = 1000 * sec_per_beat / MusicTime.SUBS_PER_BEAT;
+                double msec_per_sub = 1000 * sec_per_beat / MusicTime.TicksPerBeat;
                 double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
                 _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimer_Callback);
             }

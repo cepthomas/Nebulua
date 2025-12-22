@@ -1,4 +1,4 @@
--- TODO1 autogen from gm_defs.ini - delete this
+-- TODO1 autogen from gm_defs.ini - then delete this
 
 -- local ut = require("lbot_utils")
 

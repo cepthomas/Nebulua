@@ -60,6 +60,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Libs\MidiLibLite\MidiLibLite.csproj" />
+        <ProjectReference Include="..\..\Libs\MusicLib\MusicLib.csproj" />
         <ProjectReference Include="Interop\Interop.vcxproj" />
     </ItemGroup>
 
