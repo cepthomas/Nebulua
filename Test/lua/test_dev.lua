@@ -3,7 +3,7 @@
 
 local ut  = require("lbot_utils")
 local st  = require("step_types")
-local bt  = require("bar_time")
+local bt  = require("music_time")
 local li  = require("luainterop") -- mock
 local api = require("script_api")
 

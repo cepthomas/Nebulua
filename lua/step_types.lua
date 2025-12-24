@@ -2,7 +2,7 @@
 
 -- local ut = require('lbot_utils')
 local lt = require('lbot_types')
-local bt = require('bar_time')
+local bt = require('music_time')
 local mid = require('midi_defs')
 
 

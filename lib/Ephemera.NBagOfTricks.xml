@@ -297,20 +297,20 @@
         </member>
         <member name="M:Ephemera.NBagOfTricks.IniReader.GetValues(System.String)">
             <summary>Get values for the section name.</summary>
-            <param name="section"></param>
-            <returns></returns>
+            <param name="name"></param>
+            <returns>The section contents or throws if name is invalid.</returns>
         </member>
-        <member name="M:Ephemera.NBagOfTricks.IniReader.DoFile(System.String)">
+        <member name="M:Ephemera.NBagOfTricks.IniReader.ParseFile(System.String)">
             <summary>
             Process an ini file.
             </summary>
             <param name="fn"></param>
         </member>
-        <member name="M:Ephemera.NBagOfTricks.IniReader.DoStrings(System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:Ephemera.NBagOfTricks.IniReader.ParseString(System.String)">
             <summary>
             Process an ini string.
             </summary>
-            <param name="ls">Input</param>
+            <param name="s">Input</param>
         </member>
         <member name="T:Ephemera.NBagOfTricks.JsonColorConverter">
             <summary>Serialize prettier.</summary>

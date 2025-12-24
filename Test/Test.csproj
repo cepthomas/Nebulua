@@ -1,27 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <UseWindowsForms>true</UseWindowsForms>
+        <RootNamespace>Ephemera.MidiLibLite.Test</RootNamespace>
+        <AssemblyName>Ephemera.MidiLibLite.Test</AssemblyName>
+        <Deterministic>False</Deterministic>
+        <Description>MidiLibLite tester</Description>
+        <Copyright>MIT License</Copyright>
+        <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
+        <OutputPath>bin\</OutputPath>
+        <WarningLevel>4</WarningLevel>
+        <NoWarn>CS1591;CA1822;IDE0130;IDE0060</NoWarn>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+        <StartupObject>Ephemera.MidiLibLite.Test.Program</StartupObject>
+        <NoWin32Manifest>true</NoWin32Manifest>
+        <IsPublishable>False</IsPublishable>
+        <!-- en none -->
 
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <StartupObject>Test.Program</StartupObject>
-    <!-- <Platforms>x64</Platforms> -->
-    <NoWarn>CS1591;IDE0130</NoWarn>
+        <!-- <RuntimeIdentifier>win-x64</RuntimeIdentifier> -->
   </PropertyGroup>
-
-
-  <ItemGroup>
-    <Compile Include="..\Cli.cs" Link="Cli.cs" />
-    <Compile Include="..\Common.cs" Link="Common.cs" />
-    <Compile Include="..\HostCore.cs" Link="HostCore.cs" />
-    <Compile Include="..\Midi.cs" Link="Midi.cs" />
-    <Compile Include="..\State.cs" Link="State.cs" />
-    <Compile Include="..\MusicTime.cs" Link="MusicTime.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Interop\Interop.vcxproj" />

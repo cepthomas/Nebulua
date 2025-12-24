@@ -7,7 +7,7 @@ local sx  = require("stringex")
 
 local M = {}
 
--- TODO2 put in MusicLib? Rename to music_time.lua.
+-- TODO2 put in MusicLib?
 
 
 -------------------- Definitions - must match C code! --------------

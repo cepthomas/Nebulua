@@ -124,7 +124,7 @@ Scripts need this section.
 local api = require("script_api") -- lua api
 local mid = require("midi_defs") -- GM midi instrument definitions
 local mus = require("music_defs") -- chords, scales, etc
-local bt  = require("bar_time") -- time utility
+local bt  = require("music_time") -- time utility
 local ut  = require("lbot_utils") -- misc utilities
 ```
 
@@ -133,7 +133,7 @@ local ut  = require("lbot_utils") -- misc utilities
 ```lua
 function bt.bt_to_tick(bar, beat, sub)
 ```
-Create from explicit bar_time parts.
+Create from explicit music_time parts.
 
 - bar: Bar number 0 - 1000
 - beat: Beat number 0 - 3
@@ -143,7 +143,7 @@ Create from explicit bar_time parts.
 ```lua
 function bt.beats_to_tick(beat, sub)
 ```
-Create from explicit bar_time parts.
+Create from explicit music_time parts.
 
 - beat: Beat number 0 - 1000
 - sub: Subbeat number 0 - 7
@@ -168,7 +168,7 @@ Format the value like "1.2.3".
 ```lua
 function bt.tick_to_bt(tick)
 ```
-Translate tick into bar_time parts.
+Translate tick into music_time parts.
 
 - tick: To translate
 - return: bar, beat, sub
@@ -455,7 +455,7 @@ Nebulua
 +---Interop - .NET binding to C/Lua
 |   *.c/cpp/h
 +---lua - lua modules for application
-|       bar_time.lua
+|       music_time.lua
 |       midi_defs.lua
 |       music_defs.lua
 |       script_api.lua

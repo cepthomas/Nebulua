@@ -1,8 +1,8 @@
 
--- Unit tests for bar_time.lua.
+-- Unit tests for music_time.lua.
 
 -- local ut = require("lbot_utils")
-local bt = require("bar_time")
+local bt = require("music_time")
 
 
 -- Create the namespace/module.
@@ -18,7 +18,7 @@ local M = {}
 -- end
 
 -----------------------------------------------------------------------------
-function M.suite_bar_time(pn)
+function M.suite_music_time(pn)
     -- Basic ops.
 
     local bar, beat, sub = bt.tick_to_bt(12345)

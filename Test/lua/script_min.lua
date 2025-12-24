@@ -3,7 +3,7 @@
 
 local li = require("luainterop")
 local md = require("music_defs")
-local bt = require("bar_time")
+local bt = require("music_time")
 local ut = require("lbot_utils")
 
 
