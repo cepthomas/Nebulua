@@ -7,8 +7,6 @@ local sx  = require("stringex")
 
 local M = {}
 
--- TODO2 put in MusicLib?
-
 
 -------------------- Definitions - must match C code! --------------
 -- Only 4/4 time supported.

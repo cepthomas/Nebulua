@@ -41,11 +41,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="ChannelControl.cs" />
-      <Compile Remove="Midi.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="Resources\app.ico" />
     </ItemGroup>
 
@@ -58,7 +53,7 @@
         </Reference>
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup> <!-- TODO1 fix these -->
         <ProjectReference Include="..\..\Libs\MidiLibLite\MidiLibLite.csproj" />
         <ProjectReference Include="..\..\Libs\MusicLib\MusicLib.csproj" />
         <ProjectReference Include="Interop\Interop.vcxproj" />
