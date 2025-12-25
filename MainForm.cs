@@ -808,7 +808,7 @@ namespace Nebulua
 
             if (e.bpm >= 30 && e.bpm <= 240)
             {
-                sldTempo.Value = e.bpm; //TODO2 confirm this triggers => SetTimer((int)sldTempo.Value);
+                sldTempo.Value = e.bpm; //TODO1 confirm this triggers => SetTimer((int)sldTempo.Value);
             }
             else if (e.bpm == 0)
             {

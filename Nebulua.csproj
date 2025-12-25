@@ -54,7 +54,7 @@
     </ItemGroup>
 
     <ItemGroup> <!-- TODO1 fix these -->
-        <ProjectReference Include="..\..\Libs\MidiLibLite\MidiLibLite.csproj" />
+        <ProjectReference Include="..\..\Libs\MidiLib\MidiLib.csproj" />
         <ProjectReference Include="..\..\Libs\MusicLib\MusicLib.csproj" />
         <ProjectReference Include="Interop\Interop.vcxproj" />
     </ItemGroup>

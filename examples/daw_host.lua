@@ -15,7 +15,7 @@ local ut  = require("lbot_utils")
 local sx  = require("stringex")
 
 
--- Acoustica Expanded Instruments presets. TODO2 tbd_load_defs('exp_instruments.ini')
+-- Acoustica Expanded Instruments presets. TODO1 tbd_load_defs('exp_instruments.ini')
 exp_instruments =
 {
     AmbientWind = 000, AmbientWind2 = 001, AmbientWind3 = 002, AmbientWind4 = 003, AmbientWind5 = 004, AmbientStrings = 005, EightiesCheezeSynth = 006, 
