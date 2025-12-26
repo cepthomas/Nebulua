@@ -71,7 +71,7 @@ namespace Nebulua
         public Color IconColor { get; set; } = Color.Purple;
 
         [JsonConverter(typeof(JsonColorConverter))]
-        public Color ControlColor { get; set; } = Color.DodgerBlue;
+        public Color DrawColor { get; set; } = Color.DodgerBlue;
         
         [JsonConverter(typeof(JsonColorConverter))]
         public Color SelectedColor { get; set; } = Color.Moccasin;

@@ -52,7 +52,7 @@ namespace Nebulua
         [Description("Active control surfaces.")]
         [Browsable(true)]
         [JsonConverter(typeof(JsonColorConverter))]
-        public Color ControlColor { get; set; } = Color.DodgerBlue;
+        public Color DrawColor { get; set; } = Color.DodgerBlue;
 
         [DisplayName("Selected Color")]
         [Description("The color used for selected controls.")]

@@ -159,11 +159,11 @@ namespace Nebulua
             btnSettings.Click += Settings_Click;
 
             sldVolume.BackColor = BackColor;
-            sldVolume.DrawColor = _settings.ControlColor;
+            sldVolume.DrawColor = _settings.DrawColor;
             //sldVolume.ValueChanged += (_, __) => _volume = sldVolume.Value;
 
             sldTempo.BackColor = BackColor;
-            sldTempo.DrawColor = _settings.ControlColor;
+            sldTempo.DrawColor = _settings.DrawColor;
             sldTempo.ValueChanged += (_, __) => { SetTimer((int)sldTempo.Value); };
 
                 traffic.BackColor = BackColor;
@@ -175,7 +175,7 @@ namespace Nebulua
             traffic.Prompt = "";
             traffic.WordWrap = _settings.WordWrap;
 
-            timeBar.ControlColor = _settings.ControlColor;
+            timeBar.DrawColor = _settings.DrawColor;
             timeBar.SelectedColor = _settings.SelectedColor;
             timeBar.StateChange += TimeBar_StateChangeEvent;
 
@@ -888,7 +888,7 @@ namespace Nebulua
                     UserRenderer = null,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
-                    ControlColor = _settings.ControlColor,
+                    DrawColor = _settings.DrawColor,
                     SelectedColor = _settings.SelectedColor,
                     Volume = Defs.DEFAULT_VOLUME,
                 };
@@ -1089,7 +1089,7 @@ namespace Nebulua
             {
                 switch (name)
                 {
-                    case "ControlColor":
+                    case "DrawColor":
                     case "BackColor":
                     case "IconColor":
                     case "SelectedColor":
