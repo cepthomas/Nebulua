@@ -2,9 +2,9 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
+using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
-using Ephemera.NBagOfTricks;
 
 
 namespace Test
