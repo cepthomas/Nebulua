@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-//using NAudio.Midi;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLibLite;
@@ -16,6 +15,8 @@ using Ephemera.MusicLib;
 
 
 // TODO kinda slow startup running in debugger.
+
+// Is patch an instrument or drum? TODO1
 
 namespace Nebulua
 {
