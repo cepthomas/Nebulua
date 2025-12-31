@@ -863,6 +863,8 @@ namespace Nebulua
             // Clean out our current elements.
             _channelControls.ForEach(c =>
             {
+                c.ChannelChange -= ChannelControl_ChannelChange;
+                c.SendMidi -= ChannelControl_SendMidi;
                 Controls.Remove(c);
                 c.Dispose();
             });
