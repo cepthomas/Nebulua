@@ -90,7 +90,7 @@ function setup()
 end
 
 -----------------------------------------------------------------------------
--- Main work loop called every subbeat/tick. Required.
+-- Main work loop called every tick. Required.
 function step(tick)
     -- Overhead.
     api.process_step(tick)
