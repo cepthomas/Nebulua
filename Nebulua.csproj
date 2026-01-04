@@ -53,7 +53,7 @@
         </Reference>
     </ItemGroup>
 
-    <ItemGroup> <!-- TODO1 fix these -->
+    <ItemGroup>
         <ProjectReference Include="..\..\Libs\MidiLib\MidiLib.csproj" />
         <ProjectReference Include="..\..\Libs\MusicLib\MusicLib.csproj" />
         <ProjectReference Include="Interop\Interop.vcxproj" />
