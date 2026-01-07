@@ -10,34 +10,6 @@ using Nebulua;
 
 namespace Test
 {
-    // /// <summary>Odds and ends that have no other home.</summary>
-    // public class MISC_COMMON : TestSuite
-    // {
-    //     public override void RunSuite()
-    //     {
-    //         int bt = MusicTime.Parse("23.2.6");
-    //         UT_EQUAL(bt, 23 * MusicTime.SUBS_PER_BAR + 2 * MusicTime.SUBS_PER_BEAT + 6);
-    //         bt = MusicTime.Parse("146.1");
-    //         UT_EQUAL(bt, 146 * MusicTime.SUBS_PER_BAR + 1 * MusicTime.SUBS_PER_BEAT);
-    //         bt = MusicTime.Parse("71");
-    //         UT_EQUAL(bt, 71 * MusicTime.SUBS_PER_BAR);
-    //         bt = MusicTime.Parse("49.55.8");
-    //         UT_EQUAL(bt, -1);
-    //         bt = MusicTime.Parse("111.3.88");
-    //         UT_EQUAL(bt, -1);
-    //         bt = MusicTime.Parse("invalid");
-    //         UT_EQUAL(bt, -1);
-    //         string sbt = MusicTime.Format(12345);
-    //         UT_EQUAL(sbt, "385.3.1");
-
-    //         //string smidi = Common.FormatMidiStatus(MMSYSERR_INVALFLAG);
-    //         //UT_STR_EQUAL(smidi, "An invalid flag was passed to a system function.");
-
-    //         //smidi = Common.FormatMidiStatus(90909);
-    //         //UT_STR_EQUAL(smidi, "MidiStatus:90909");
-    //     }
-    // }
-
     /// <summary>Odds and ends that have no other home.</summary>
     public class MISC_EXCEPTIONS : TestSuite
     {
@@ -67,13 +39,12 @@ namespace Test
     }
 
 
-
     #region Script api functions TODO1
 
     // /// api.send_midi_note(hnd_strings, note_num, volume)
     // void SendMidiNote(int chnd, int note_num, double volume)
     // {
-    //     if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(note_num)); }
+    //     if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(note_num); }
 
     //     var ch = _mgr.GetOutputChannel(chnd);
 
@@ -93,8 +64,8 @@ namespace Test
     // /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
     // void SendMidiController(int chnd, int controller_id, int value)
     // {
-    //     if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(controller_id)); }
-    //     if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(value)); }
+    //     if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException((controller_id)); }
+    //     if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException((value)); }
     //     var ch = _mgr.GetOutputChannel(chnd);
     //     if (ch is not null)
     //     {

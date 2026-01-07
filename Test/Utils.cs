@@ -38,7 +38,7 @@ namespace Test
                 case SendMidiNoteArgs le: le.ret = Ret; break;
                 case SendMidiControllerArgs le: le.ret = Ret; break;
                 case SetTempoArgs le: le.ret = Ret; break;
-                default: /*throw new NotImplementedException();*/ break;
+                default: break; // handle?
             }
 
             Events.Add(e);
@@ -66,7 +66,7 @@ namespace Test
                 SendMidiNoteArgs ne => $"SendMidiNote() chan_hnd:{ne.chan_hnd} note_num:{ne.note_num} volume:{ne.volume} ret:{ne.ret}",
                 SendMidiControllerArgs ce => $"SendMidiController() chan_hnd:{ce.chan_hnd} controller:{ce.controller} value:{ce.value} ret:{ce.ret}",
                 SetTempoArgs te => $"SetTempo() bpm:{te.bpm} ret:{te.ret}",
-                _ => throw new NotImplementedException(),
+                _ => throw new ???Exception(),
             };
         }
     }

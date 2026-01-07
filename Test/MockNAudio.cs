@@ -60,7 +60,7 @@ namespace NAudio.Midi
                                         new NoteEvent(absoluteTime, channel, commandCode, data1, data2),
                 MidiCommandCode.ControlChange => new ControlChangeEvent(absoluteTime, channel, (MidiController)data1, data2),
                 MidiCommandCode.PatchChange => new PatchChangeEvent(absoluteTime, channel, data1),
-                _ => throw new FormatException($"Unsupported MIDI Command Code for Raw Message {commandCode}"),
+                _ => throw new NotSupportedException($"Unsupported MIDI Command Code for Raw Message {commandCode}"),
             };
             return me;
         }

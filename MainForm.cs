@@ -761,8 +761,8 @@ namespace Nebulua
         {
             e.ret = 0; // not used
 
-            if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.note_num)); }
-            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException(nameof(e.chan_hnd));
+            if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}")); }
+            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             if (e.volume == 0.0)
             {
@@ -784,9 +784,9 @@ namespace Nebulua
         {
             e.ret = 0; // not used
 
-            if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.controller)); }
-            if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(nameof(e.value)); }
-            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException(nameof(e.chan_hnd));
+            if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
+            if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
+            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             var se = new Controller(channel.ChannelNumber, e.controller, e.value);
             channel.Device.Send(se);
