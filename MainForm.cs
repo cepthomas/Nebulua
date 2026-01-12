@@ -893,7 +893,7 @@ namespace Nebulua
                     BorderStyle = BorderStyle.FixedSingle,
                     DrawColor = _settings.DrawColor,
                     SelectedColor = _settings.SelectedColor,
-                    Volume = Defs.DEFAULT_VOLUME,
+                    Volume = VolumeDefs.DEFAULT_VOLUME,
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
                 ctrl.SendMidi += ChannelControl_SendMidi;
