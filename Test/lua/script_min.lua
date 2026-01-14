@@ -2,7 +2,7 @@
 -- Minimal script for interop unit test - was script_happy.lua.
 
 local li = require("luainterop")
-local md = require("music_defs")
+local mus = require("music_defs")
 local bt = require("music_time")
 local ut = require("lbot_utils")
 
@@ -28,8 +28,8 @@ local hnd_input = li.open_midi_input(dev_in1, 3)
 ------------------------- Vars ----------------------------------------
 
 -- Get some stock chords and scales.
-local alg_scale = md.get_notes_from_string("G3.Algerian")
-local chord_notes = md.get_notes_from_string("C4.o7")
+local alg_scale = mus.get_notes_from_string("G3.Algerian")
+local chord_notes = mus.get_notes_from_string("C4.o7")
 
 --------------------- Called from app -----------------------------------
 

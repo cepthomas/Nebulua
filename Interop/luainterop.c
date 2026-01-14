@@ -190,7 +190,7 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
 // Lua arg: dev_name Midi device name
 // Lua arg: chan_num Midi channel number 1 => 16
 // Lua arg: chan_name User channel name
-// Lua arg: patch Midi patch number 0 => 127
+// Lua arg: patch Midi patch name
 // Lua return: int Channel handle or -1 if error
 static int luainterop_OpenMidiOutput(lua_State* l)
 {
@@ -204,8 +204,8 @@ static int luainterop_OpenMidiOutput(lua_State* l)
     const char* chan_name;
     if (lua_isstring(l, 3)) { chan_name = lua_tostring(l, 3); }
     else { luaL_error(l, "Invalid arg type for chan_name"); }
-    int patch;
-    if (lua_isinteger(l, 4)) { patch = lua_tointeger(l, 4); }
+    const char* patch;
+    if (lua_isstring(l, 4)) { patch = lua_tostring(l, 4); }
     else { luaL_error(l, "Invalid arg type for patch"); }
 
     // Do the work. One result.

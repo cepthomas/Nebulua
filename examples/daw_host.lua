@@ -52,12 +52,12 @@ local midi_device_in  = "loopMIDI Port 1"
 local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "my input")
 
 local midi_device_out  = "loopMIDI Port 2"  -- DAW host
-local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
-local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",       inst.AcousticBass)
-local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",      inst.Lead1Square)
+local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       "AcousticGrandPiano")
+local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",       "AcousticBass")
+local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",      "Lead1Square")
 local hnd_strings = api.open_midi_output(midi_device_out, 4,  "strings",    exinst.BrightVox) --inst.StringEnsemble1)
 -- PanFlute 075 StringEnsemble1 048
-local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",      kit.Jazz)
+local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",      "Jazz")
 
 
 ------------------------- Variables -----------------------------------

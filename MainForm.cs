@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
-using Ephemera.MidiLibLite;
+using Ephemera.MidiLib;
 using Ephemera.MusicLib;
 
 
@@ -35,14 +35,11 @@ namespace Nebulua
         /// <summary>The current settings.</summary>
         UserSettings _settings = new();
 
-        /// <summary>The midi boss.</summary>
-        readonly Manager _mgr = new();
-
         /// <summary>The interop.</summary>
         readonly Interop _interop = new();
 
-        /// <summary>Interop serializing access.</summary>
-        readonly object _interopLock = new();
+        ///// <summary>Interop serializing access.</summary>
+        //readonly object _interopLock = new();
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -153,7 +150,7 @@ namespace Nebulua
 
             btnKill.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
-            btnKill.Click += (_, __) => { _mgr.Kill(); CurrentState = ExecState.Idle; };
+            btnKill.Click += (_, __) => { MidiManager.Instance.Kill(); CurrentState = ExecState.Idle; };
 
             btnSettings.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
@@ -195,8 +192,8 @@ namespace Nebulua
             Interop.SendMidiController += Interop_SendMidiController;
             Interop.SetTempo += Interop_SetTempo;
 
-            _mgr.MessageReceive += Mgr_MessageReceive;
-            _mgr.MessageSend += Mgr_MessageSend;
+            MidiManager.Instance.MessageReceive += Mgr_MessageReceive;
+            MidiManager.Instance.MessageSend += Mgr_MessageSend;
 
             Thread.CurrentThread.Name = "MAIN";
             // Trace($"+++ MainForm() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
@@ -246,7 +243,7 @@ namespace Nebulua
             CurrentState = ExecState.Idle;
 
             // Just in case.
-            _mgr.Kill();
+            MidiManager.Instance.Kill();
 
             // Destroy devices
             ResetDevices();
@@ -274,7 +271,7 @@ namespace Nebulua
         protected override void Dispose(bool disposing)
         {
             DestroyControls();
-            _mgr.DestroyDevices();
+            MidiManager.Instance.DestroyDevices();
             
             if (disposing)
             {
@@ -300,13 +297,13 @@ namespace Nebulua
         /// <param name="openScriptFn">The script file to open or null if reload.</param>
         void OpenScriptFile(string? openScriptFn)
         {
-            lock(_interopLock)
+ //           lock(_interopLock)
             {
                 try
                 {
                     // Clean up first.
                     // Just in case.
-                    _mgr.Kill();
+                    MidiManager.Instance.Kill();
                     _mmTimer.Stop();
                     DestroyControls();
                     CurrentState = ExecState.Idle;
@@ -462,7 +459,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="name">Specific State value.</param>
-        void TimeBar_StateChangeEvent(object? _, StateChangeEventArgs e)
+        void TimeBar_StateChangeEvent(object? _, TimeBar.StateChangeEventArgs e)
         {
            this.InvokeIfRequired(_ =>
            {
@@ -555,63 +552,39 @@ namespace Nebulua
         /// <param name="periodElapsed"></param>
         void MmTimer_Callback(double totalElapsed, double periodElapsed)
         {
-            //_inMmTimer = true;
+            if (CurrentState != ExecState.Run) return;
 
-            if (CurrentState == ExecState.Run)
+            this.InvokeIfRequired(_ =>
             {
-                lock(_interopLock)
+                // Execute the script step. Note: Need exception handling here to protect from user script errors.
+                try
                 {
-                   // if (_threadId is not null)// && _threadId != Thread.CurrentThread.ManagedThreadId)
-                   // {
-                   //     Trace($"!!! MmTimer_Callback() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
-                   //     throw new InvalidOperationException();
-                   // }
-                    //_threadId = Environment.CurrentManagedThreadId;
+                    // Do script.
+                    //_tan?.Arm();
+                    int ret = _interop.Step(timeBar.Current.Tick);
 
-                    try
+                    // Bump time and check state.
+                    bool done = !timeBar.Increment();
+
+                    // Check for end of play. If no steps or not selected, free running mode so always keep going.
+                    if (timeBar.Length.Tick > 1)
                     {
-                        // Do script.
-                        //_tan?.Arm();
-
-                        if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
+                        // Check for end.
+                        if (done)
                         {
-                            Thread.CurrentThread.Name = "MM_TIMER";
-                        }
-
-                       // if (State.Instance.CurrentTick  % 1000 == 0)
-                       // {
-                       //     Trace($"+++ MmTimer_Callback() {State.Instance.CurrentTick} [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
-                       // }
-
-                        int ret = _interop.Step(timeBar.Current);
-
-                        // Read stopwatch and diff/stats.
-                        //string? s = _tan?.Dump();
-
-                        if (timeBar.Valid)
-                        {
-                            // Bump time and check state.
-                            if (!timeBar.Increment())
-                            {
-                                // Stop and rewind.
-                                CurrentState = ExecState.Idle;
-                                //State.Instance.CurrentTick = start;
-
-                                // just in case
-                                _mgr.Kill();
-                            }
+                            // Stop and rewind.
+                            CurrentState = ExecState.Idle;
+                            //State.Instance.CurrentTick = start;
+                            MidiManager.Instance.Kill(); // just in case
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        ProcessException(ex);
-                    }
-
-                    //Trace($"--- MmTimer_Callback() EXIT");
-                    //_threadId = null;
+                    // else keep going
                 }
-            }
-            //_inMmTimer = false;
+                catch (Exception ex)
+                {
+                    ProcessException(ex);
+                }
+            });
         }
 
         /// <summary>
@@ -620,63 +593,41 @@ namespace Nebulua
         /// <param name="sender"></param>
         /// <param name="e"></param>
         //void Midi_ReceiveEvent(object? sender, MidiEvent e)
-        void Mgr_MessageReceive(object? sender, BaseMidiEvent e)
+        void Mgr_MessageReceive(object? sender, BaseEvent e)
         {
-            // Trace($"+++ Mgr_MessageReceive() ENTER [_threadId={_threadId ?? -1}] [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
-            lock (_interopLock)
+            try
             {
-                //Trace($"+++ Mgr_MessageReceive() LOCKED [_inMmTimer={_inMmTimer}]");
-                //if (_threadId is not null) // && _threadId != Thread.CurrentThread.ManagedThreadId)
-                //{
-                //    Trace($"!!! Midi_ReceiveEvent() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
-                //    throw new InvalidOperationException();
-                //}
-                //_threadId = Environment.CurrentManagedThreadId;
+                var indev = (MidiInputDevice)sender!;
+                var chnd = HandleOps.Create(indev.Id, e.ChannelNumber, false);
+                bool logit = true;
 
-                try
+                switch (e)
                 {
-                    if (string.IsNullOrEmpty(Thread.CurrentThread.Name))
-                    {
-                        Thread.CurrentThread.Name = "MIDI_RCV";
-                    }
+                    case NoteOn evt:
+                        _interop.ReceiveMidiNote(chnd, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
+                        break;
 
-                    //Trace($"+++ Mgr_MessageReceive() [{Thread.CurrentThread.Name}:{Environment.CurrentManagedThreadId}]");
+                    case NoteOff evt:
+                        _interop.ReceiveMidiNote(chnd, evt.Note, 0);
+                        break;
 
-                    var indev = (MidiInputDevice)sender!;
-                    var chnd = ChannelHandle.Create(indev.Id, e.ChannelNumber, false);
-                    bool logit = true;
+                    case Controller evt:
+                        _interop.ReceiveMidiController(chnd, (int)evt.ControllerId, evt.Value);
+                        break;
 
-                    switch (e)
-                    {
-                        case NoteOn evt:
-                            _interop.ReceiveMidiNote(chnd, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
-                            break;
-
-                        case NoteOff evt:
-                            _interop.ReceiveMidiNote(chnd, evt.Note, 0);
-                            break;
-
-                        case Controller evt:
-                            _interop.ReceiveMidiController(chnd, (int)evt.ControllerId, evt.Value);
-                            break;
-
-                        default: // Ignore others for now.
-                            logit = false;
-                            break;
-                    }
-
-                    if (logit && _settings.MonitorRcv)
-                    {
-                        _loggerMidi.Trace($"<<< {FormatMidiEvent(e, chnd)}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ProcessException(ex);
+                    default: // Ignore others for now.
+                        logit = false;
+                        break;
                 }
 
-                //Trace($"--- Mgr_MessageReceive() EXIT");
-                //_threadId = null;
+                if (logit && _settings.MonitorRcv)
+                {
+                    _loggerMidi.Trace($"<<< {FormatMidiEvent(e, chnd)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ProcessException(ex);
             }
         }
 
@@ -686,11 +637,11 @@ namespace Nebulua
         /// <param name="sender"></param>
         /// <param name="e"></param>
         //void Midi_ReceiveEvent(object? sender, MidiEvent e)
-        void Mgr_MessageSend(object? sender, BaseMidiEvent e)
+        void Mgr_MessageSend(object? sender, BaseEvent e)
         {
             // Actual sent.
             var indev = (MidiOutputDevice)sender!;
-            var chnd = ChannelHandle.Create(indev.Id, e.ChannelNumber, false);
+            var chnd = HandleOps.Create(indev.Id, e.ChannelNumber, false);
             _loggerMidi.Trace($">>> ! {FormatMidiEvent(e, chnd)}");
         }
 
@@ -699,27 +650,27 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControlEvent(object? sender, ChannelControl.ChannelChangeEventArgs e)
+        void ChannelControlEvent(object? sender, ChannelChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
 
-            if (e.StateChange)
+            if (e.State)
             {
                 // Update all channels.
-                bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
+                bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
 
                 foreach (var cciter in _channelControls)
                 {
                     bool enable = anySolo ?
-                        cciter.State == ChannelControl.ChannelState.Solo :
-                        cciter.State != ChannelControl.ChannelState.Mute;
+                        cciter.State == ChannelState.Solo :
+                        cciter.State != ChannelState.Mute;
 
                     channel.Enable = enable;
                     if (!enable)
                     {
                         // Kill just in case.
-                        _mgr.Kill(channel);
+                        MidiManager.Instance.Kill(channel);
                     }
                 }
             }
@@ -735,7 +686,7 @@ namespace Nebulua
         /// <exception cref="AppException">From called functions</exception>
         void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
-            var chan_in = _mgr.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
+            var chan_in = MidiManager.Instance.OpenInputChannel(e.dev_name, e.chan_num, e.chan_name);
             e.ret = chan_in.Handle;
         }
 
@@ -748,7 +699,7 @@ namespace Nebulua
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
             // Create channels and initialize controls.
-            var chan_out = _mgr.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name, e.patch);
+            var chan_out = MidiManager.Instance.OpenOutputChannel(e.dev_name, e.chan_num, e.chan_name, e.patch);
             e.ret = chan_out.Handle;
         }
 
@@ -761,17 +712,17 @@ namespace Nebulua
         {
             e.ret = 0; // not used
 
-            if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}")); }
-            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}"); }
+            var channel = MidiManager.Instance.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             if (e.volume == 0.0)
             {
-                channel.Device.Send(new NoteOff(channel.ChannelNumber, e.note_num));
+                channel.Send(new NoteOff(channel.ChannelNumber, e.note_num));
             }
             else
             {
                 var vel = (int)MathUtils.Constrain(e.volume * sldVolume.Value * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                channel.Device.Send(new NoteOn(channel.ChannelNumber, e.note_num, vel));
+                channel.Send(new NoteOn(channel.ChannelNumber, e.note_num, vel));
             }
         }
 
@@ -786,10 +737,10 @@ namespace Nebulua
 
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
-            var channel = _mgr.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            var channel = MidiManager.Instance.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             var se = new Controller(channel.ChannelNumber, e.controller, e.value);
-            channel.Device.Send(se);
+            channel.Send(se);
 
             if (_settings.MonitorSnd)
             {
@@ -858,13 +809,13 @@ namespace Nebulua
         /// </summary>
         void DestroyControls()
         {
-            _mgr.Kill();
+            MidiManager.Instance.Kill();
 
             // Clean out our current elements.
             _channelControls.ForEach(c =>
             {
-                c.ChannelChange -= ChannelControl_ChannelChange;
-                c.SendMidi -= ChannelControl_SendMidi;
+                //c.ChannelChange -= ChannelControl_ChannelChange;
+                //c.SendMidi -= ChannelControl_SendMidi;
                 Controls.Remove(c);
                 c.Dispose();
             });
@@ -882,12 +833,12 @@ namespace Nebulua
             int x = timeBar.Left;
             int y = timeBar.Bottom + 5;
 
-            _mgr.OutputChannels.ForEach(chan =>
+            MidiManager.Instance.OutputChannels.ForEach(chan =>
             {
                 var ctrl = new ChannelControl()
                 {
                     BoundChannel = chan,
-                    Options = ChannelControl.DisplayOptions.SoloMute,
+                    Options = DisplayOptions.SoloMute,
                     UserRenderer = null,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
@@ -910,10 +861,10 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControl_SendMidi(object? sender, BaseMidiEvent e)
+        void ChannelControl_SendMidi(object? sender, BaseEvent e)
         {
             var channel = (sender as ChannelControl)!.BoundChannel;
-            channel.Device.Send(e);
+            channel.Send(e);
         }
 
         /// <summary>
@@ -921,27 +872,27 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ChannelControl_ChannelChange(object? sender, ChannelControl.ChannelChangeEventArgs e)
+        void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
         {
             var cc = sender as ChannelControl;
             var channel = cc!.BoundChannel!;
 
-            if (e.StateChange)
+            if (e.State)
             {
                 // Update all channels.
-                bool anySolo = _channelControls.Where(c => c.State == ChannelControl.ChannelState.Solo).Any();
+                bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
 
                 foreach (var cciter in _channelControls)
                 {
                     bool enable = anySolo ?
-                        cciter.State == ChannelControl.ChannelState.Solo :
-                        cciter.State != ChannelControl.ChannelState.Mute;
+                        cciter.State == ChannelState.Solo :
+                        cciter.State != ChannelState.Mute;
 
                     channel.Enable = enable;
                     if (!enable)
                     {
                         // Kill just in case.
-                        _mgr.Kill(channel);
+                        MidiManager.Instance.Kill(channel);
                     }
                 }
             }
@@ -966,35 +917,26 @@ namespace Nebulua
         /// <param name="evt">Midi event to format.</param>
         /// <param name="chanHnd">Channel info.</param>
         /// <returns>Suitable string.</returns>
-        string FormatMidiEvent(BaseMidiEvent evt, int chnd)
+        string FormatMidiEvent(BaseEvent evt, int chnd)
         {
             // Common part.
-            int tick = CurrentState == ExecState.Run ? timeBar.Current : 0;
-            int devId = ChannelHandle.DeviceId(chnd);
-            int chanNum = ChannelHandle.ChannelNumber(chnd);
-            MusicTime mt = new(tick);
-
-            string s = $"{tick:00000} {mt} Dev:{devId} Ch:{chanNum} ";
+            var mt = CurrentState == ExecState.Run ? timeBar.Current : MusicTime.ZERO;
+            int devId = HandleOps.DeviceId(chnd);
+            int chanNum = HandleOps.ChannelNumber(chnd);
+            string s = $"{mt.Tick:00000} {mt} Dev:{devId} Ch:{chanNum} ";
 
             switch (evt)
             {
                 case NoteOn e:
-                    var snoteon = chanNum == 10 || chanNum == 16 ?
-                        $"DRUM_{e.Note}" :
-                        MusicDefinitions.NoteNumberToName(e.Note);
-                    s = $"{s} {e.Note}:{snoteon} Vel:{e.Velocity}";
+                    s = $"{s} Note:{e.Note} Vel:{e.Velocity}";
                     break;
 
                 case NoteOff e:
-                    var snoteoff = chanNum == 10 || chanNum == 16 ?
-                        $"DRUM_{e.Note}" :
-                        MusicDefinitions.NoteNumberToName(e.Note);
-                    s = $"{s} {e.Note}:{snoteoff}";
+                    s = $"{s} Note:{e.Note}";
                     break;
 
                 case Controller e:
-                    var sctl = MidiDefs.Instance.GetControllerName(e.ControllerId);
-                    s = $"{s} {sctl}:{e.Value}";
+                    s = $"{s} Ctlr:{e.ControllerId} Val:{e.Value}";
                     break;
 
                 default: // Ignore others for now.

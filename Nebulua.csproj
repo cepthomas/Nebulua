@@ -51,11 +51,15 @@
         <Reference Include="Ephemera.NBagOfUis">
             <HintPath>lib\Ephemera.NBagOfUis.dll</HintPath>
         </Reference>
+        <Reference Include="Ephemera.MidiLib">
+            <HintPath>lib\Ephemera.MidiLib.dll</HintPath>
+        </Reference>
+        <Reference Include="Ephemera.MusicLib">
+            <HintPath>lib\Ephemera.MusicLib.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Libs\MidiLib\MidiLib.csproj" />
-        <ProjectReference Include="..\..\Libs\MusicLib\MusicLib.csproj" />
         <ProjectReference Include="Interop\Interop.vcxproj" />
     </ItemGroup>
 
@@ -75,7 +79,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- <PackageReference Include="NAudio.Midi" Version="2.2.1" /> -->
+        <PackageReference Include="NAudio.Midi" Version="2.2.1" />
         <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
         <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
     </ItemGroup>

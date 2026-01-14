@@ -4,10 +4,10 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
-        <RootNamespace>Ephemera.MidiLibLite.Test</RootNamespace>
-        <AssemblyName>Ephemera.MidiLibLite.Test</AssemblyName>
+        <RootNamespace>Ephemera.Nebulua.Test</RootNamespace>
+        <AssemblyName>Ephemera.Nebulua.Test</AssemblyName>
         <Deterministic>False</Deterministic>
-        <Description>MidiLibLite tester</Description>
+        <Description>Nebulua tester</Description>
         <Copyright>MIT License</Copyright>
         <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
         <OutputPath>bin\</OutputPath>
@@ -16,7 +16,7 @@
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <StartupObject>Ephemera.MidiLibLite.Test.Program</StartupObject>
+        <StartupObject>Ephemera.Nebulua.Test.Program</StartupObject>
         <NoWin32Manifest>true</NoWin32Manifest>
         <IsPublishable>False</IsPublishable>
         <!-- en none -->

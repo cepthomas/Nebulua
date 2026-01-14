@@ -69,7 +69,7 @@ M.host_funcs =
             { name = "dev_name",  type = "S", description = "Midi device name" },
             { name = "chan_num",  type = "I", description = "Midi channel number 1 => 16" },
             { name = "chan_name", type = "S", description = "User channel name" },
-            { name = "patch",     type = "I", description = "Midi patch number 0 => 127" },
+            { name = "patch",     type = "S", description = "Midi patch name" },
         },
         ret = { type = "I", description = "Channel handle or -1 if error" }
     },

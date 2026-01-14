@@ -18,17 +18,17 @@ public:
     property int chan_num;
     /// <summary>User channel name</summary>
     property String^ chan_name;
-    /// <summary>Midi patch number 0 => 127</summary>
-    property int patch;
+    /// <summary>Midi patch name</summary>
+    property String^ patch;
     /// <summary>Channel handle or -1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    OpenMidiOutputArgs(const char* dev_name, int chan_num, const char* chan_name, int patch)
+    OpenMidiOutputArgs(const char* dev_name, int chan_num, const char* chan_name, const char* patch)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
         this->chan_name = gcnew String(chan_name);
-        this->patch = patch;
+        this->patch = gcnew String(patch);
     }
 };
 
