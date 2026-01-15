@@ -1,10 +1,12 @@
 
 -- Script for interop and lua unit test - the happy path.
 
+local mid = require('midi_defs')
+local mus = require('music_defs')
+local def = require('defs_api')
 local api = require("script_api")
-local mus = require("music_defs")
-local bt = require("music_time")
-local ut = require("lbot_utils")
+local mt  = require("music_time")
+local ut  = require("lbot_utils")
 
 
 -- info = 2
@@ -28,8 +30,8 @@ local hnd_input = api.open_midi_input(dev_in1, 3)
 ------------------------- Vars ----------------------------------------
 
 -- Get some stock chords and scales.
-local alg_scale = mus.get_notes_from_string("G3.Algerian")
-local chord_notes = mus.get_notes_from_string("C4.o7")
+local alg_scale = def.get_notes_from_string("G3.Algerian")
+local chord_notes = def.get_notes_from_string("C4.o7")
 
 --------------------- Called from app -----------------------------------
 
@@ -53,7 +55,7 @@ function step(tick)
 
     -- Selective work.
 
-    local bar, beat, sub = bt.tick_to_bt(tick)
+    local bar, beat, sub = mt.tick_to_mt(tick)
     if beat == 0 and sub == 0 then
         api.send_midi_controller(hnd_synth, 50, 51)
     end

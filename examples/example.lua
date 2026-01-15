@@ -1,9 +1,6 @@
 
 -- An example Nebulua composition file.
 
--- Use the debugger, trigger with a dbg() statement.
--- See https://github.com/cepthomas/LuaBagOfTricks/blob/main/debugex.lua.
-local dbg = require("debugex")
 
 -- Import modules this needs.
 local api = require("script_api")
@@ -24,7 +21,7 @@ local ctrl = mid.controllers
 -- Say hello.
 api.log_info('Loading example.lua...')
 
-
+print('================')
 
 ------------------------- Configuration -------------------------------
 
@@ -61,8 +58,6 @@ local mtom = drum.HiMidTom
 -- Forward refs.
 local _algo_func
 
--- Start debugger.
--- dbg()
 
 ---------------------------------------------------------------------------
 ------------------------- System Functions --------------------------------
@@ -82,9 +77,6 @@ function setup()
     api.set_volume(hnd_synth, 0.6)
     api.set_volume(hnd_drums, 0.9)
     api.set_volume(hnd_strings, 0.9)
-
-    -- Start debugger.
-    -- dbg()
 
     -- This file uses static composition so you must call this!
     return api.process_comp()

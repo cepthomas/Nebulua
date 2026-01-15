@@ -7,13 +7,15 @@ local mus = require('music_defs')
 local def = require('defs_api')
 
 
--- Create the namespace/module.
-local M = {}
-
-
+some_arg = 'abc123'
 local dbg = require("debugex")
 dbg.init()
--- dbg()
+
+-- dbg.print('test_defs: '..some_arg)
+
+
+-- Create the namespace/module.
+local M = {}
 
 
 -----------------------------------------------------------------------------
@@ -49,8 +51,6 @@ function M.suite_music_defs(pn)
     root, octave = def.split_note_number(nil)
     pn.UT_EQUAL(root, nil)
     pn.UT_EQUAL(octave, nil)
-
-    -- dbg()
 
     ----- Create custom scales and chords.
     local tres = def.create_definition("MY_SCALE", "1 +3 4 -b7")
@@ -96,19 +96,12 @@ function M.suite_music_defs(pn)
     tres, err = def.get_notes_from_string("C.NONEXISTENT_CHORD") -- invalid
     pn.UT_NIL(tres, err)
 
-    -- ----- gen_md().
-    -- tres = def.gen_md()
-    -- -- print(tx.dump_table(tres, 'gen_md', 0))
-    -- pn.UT_EQUAL(#tres, 87)
-
-    ----- gen_list().
-    -- tres = mid.gen_list()
-    -- for _,v in ipairs(tres) do print(v) end
 
     ----------------------- debugging --------------------
 
     tres = def.get_notes_from_string('G4.m7')
     pn.UT_NOT_NIL(tres)
+    -- dbg.print(tx.dump_table(tres))
 
 end
 

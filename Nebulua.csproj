@@ -2,7 +2,8 @@
 
     <PropertyGroup>
 
-        <!-- Use Exe type to make console available. -->
+        <!-- Use Exe type to make console available. print() will appear there. -->
+        <!-- <OutputType>Exe</OutputType> -->
         <OutputType>WinExe</OutputType>
         <UseWindowsForms>true</UseWindowsForms>
         <OutputPath>bin\</OutputPath>

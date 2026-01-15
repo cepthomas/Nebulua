@@ -1,5 +1,5 @@
 
--- Unit tests for nebulua.lua.
+-- Unit tests for nebulua.lua. TODO1 ???
 
 local ut  = require("lbot_utils")
 local st  = require("step_types")
@@ -8,8 +8,8 @@ local li  = require("luainterop") -- mock
 local api = require("script_api")
 
 
--- local dbg = require("debugex")
--- dbg.init()
+local dbg = require("debugex")
+dbg.init()
 -- dbg()
 
 

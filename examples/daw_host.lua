@@ -2,9 +2,6 @@
 -- An example Nebulua file that uses a DAW for host.
 
 
--- Use the debugger, trigger with a dbg() statement.
--- See https://github.com/cepthomas/LuaBagOfTricks/blob/main/debugex.lua.
-local dbg = require("debugex")
 
 -- Import modules this needs.
 local api = require("script_api")
@@ -15,7 +12,7 @@ local ut  = require("lbot_utils")
 local sx  = require("stringex")
 
 
--- Acoustica Expanded Instruments presets. TODO1 tbd_load_defs('exp_instruments.ini')
+-- Acoustica Expanded Instruments presets. TODO1 tbd_load_defs('exp_defs.ini')
 exp_instruments =
 {
     AmbientWind = 000, AmbientWind2 = 001, AmbientWind3 = 002, AmbientWind4 = 003, AmbientWind5 = 004, AmbientStrings = 005, EightiesCheezeSynth = 006, 
@@ -81,7 +78,6 @@ local mtom = drum.HiMidTom
 -- Forward refs.
 local _algo_func
 
--- dbg()
 
 ---------------------------------------------------------------------------
 ------------------------- System Functions --------------------------------
@@ -101,8 +97,6 @@ function setup()
     api.set_volume(hnd_synth, 0.6)
     api.set_volume(hnd_drums, 0.9)
     api.set_volume(hnd_strings, 0.9)
-
-    -- dbg()
 
     -- This file uses static composition so you must call this!
     return api.process_comp()

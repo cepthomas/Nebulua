@@ -3,14 +3,8 @@ local sx = require("stringex")
 local mid = require("midi_defs")
 local mus = require("music_defs")
 
--- music_defs_api.lua
-
 -- Create the namespace/module.
 local M = {}
-
-local dbg = require("debugex")
-dbg.init()
--- dbg()
 
 
 --- Music definitions. Some borrowed from midi for convenience.
@@ -182,10 +176,6 @@ for _, coll in ipairs({ mus.scales, mus.chords }) do
     for k, v in pairs(coll) do
         M.create_definition(k, v)
     end
-    -- for _, sc in ipairs(coll) do
-    --     local parts = sx.strsplit(sc, "|", true)
-    --     M.create_definition(parts[1], parts[2])
-    -- end
 end
 
 -- Return the module.

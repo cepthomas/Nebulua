@@ -10,6 +10,10 @@ local tx  = require("tableex")
 local api = require("script_api")
 
 
+local dbg = require("debugex")
+dbg.init(59120)
+
+
 -- Create the namespace/module.
 local M = {}
 
@@ -62,7 +66,6 @@ function M.suite_parse_chunk(pn)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Bad syntax.
-    -- dbg()
     chunk = { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 99 }
     seq_length, steps = api.parse_chunk(chunk, 0x0A07, 678 )
     -- print('+++', tx.dump_table(steps, 'steps5', 1))
@@ -97,18 +100,19 @@ function M.suite_process_script(pn)
         pn.UT_EQUAL(stat, 0)
         -- print(">>>", ut.table_count(transients))
 
+dbg()
         if i == 4 then
-            pn.UT_EQUAL(#li.activity, 13)
+            pn.UT_EQUAL(#li.activity, 13) -------------------- 84
             -- pn.UT_EQUAL(ut.table_count(transients), 2)
         end
 
         if i == 40 then
-            pn.UT_EQUAL(#li.activity, 48)
+            pn.UT_EQUAL(#li.activity, 48) ----------------- 119
             -- pn.UT_EQUAL(ut.table_count(transients), 1)
         end
     end
 
-    pn.UT_EQUAL(#li.activity, 166)
+    pn.UT_EQUAL(#li.activity, 166) ------------------ 237
     -- pn.UT_EQUAL(ut.table_count(transients), 1)
 
     -- Examine collected data.

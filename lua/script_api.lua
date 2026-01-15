@@ -3,8 +3,6 @@
 -- Impedance matching between C and Lua. Hides or translates the raw C interop.
 -- Manages note collections currently being played.
 
-local dbg = require("debugex")
-
 local li  = require("luainterop")
 local ut  = require("lbot_utils")
 local sx  = require("stringex")
@@ -306,31 +304,30 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local func = nil
 
 
-    M.log_info('>>>1 '..tn..' '..what_to_play)
+    -- M.log_info('>>>10 '..tn..' '..tx.dump_table(what_to_play, 'what_to_play', 1)) -- TODO1 these
+    -- M.log_info('>>>10 '..tn..' '..what_to_play)
 
     if tn == "number" then
         -- use as is
         notes_to_play = { what_to_play }
 
-
-        M.log_info('>>>2 N '..notes_to_play)
-
+        M.log_info('>>>20 number '..tx.dump_table(notes_to_play, 'notes_to_play', 1))
 
     elseif tn == "function" then
         -- use as is
         func = what_to_play
+        M.log_info('>>>30 function ') 
+        -- M.log_info('>>>30 function '..what_to_play)
+
     elseif tn == "string" then
 
-
-
-        for _, l in ipairs(def) do
-            M.log_info('>>>33 S '..l)
-        end
-
+        -- for _, l in ipairs(def) do
+        --     M.log_info('>>>100 string '..l)
+        -- end
 
         notes_to_play = def.get_notes_from_string(what_to_play)
 
-        M.log_info('>>>3 S '..notes_to_play)
+        M.log_info('>>>40 string '..tx.dump_table(notes_to_play, 'notes_to_play', 1))
     else
         return 0, {string.format("Invalid note descriptor '%s'", tostring(chunk[2]))}
     end
@@ -410,8 +407,6 @@ function M.process_comp()
 
     -- Accumulate length of composition.
     local length = 0
-
-    -- dbg()
 
     for isect, section in ipairs(_sections) do
         -- Process the section. Requires a name.

@@ -10,10 +10,6 @@ local mid = require("midi_defs")
 local bt  = require("music_time")
 local ut  = require('lbot_utils')
 
--- Setup for debug.
--- local dbg = require("debugex")
--- dbg.init()
--- dbg()
 
 -- Say hello.
 api.log_info('Loading airport.lua...')

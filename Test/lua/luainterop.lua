@@ -17,7 +17,8 @@ local function capture(msg)
 end
 
 local function format_chan_hnd(chan_hnd)
-    local s = string.format("%02X-%02X", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+    local s = string.format("%02X-%02X", (chan_hnd >> 4) & 0x0F, chan_hnd & 0x0F)
+    -- local s = string.format("%02X-%02X", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
     return s
 end
 

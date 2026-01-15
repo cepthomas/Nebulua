@@ -2,7 +2,7 @@
 -- Unit tests for music_time.lua.
 
 -- local ut = require("lbot_utils")
-local bt = require("music_time")
+local mt = require("music_time")
 
 
 -- Create the namespace/module.
@@ -21,73 +21,73 @@ local M = {}
 function M.suite_music_time(pn)
     -- Basic ops.
 
-    local bar, beat, sub = bt.tick_to_bt(12345)
+    local bar, beat, sub = mt.tick_to_mt(12345)
     pn.UT_EQUAL(bar, 385)
     pn.UT_EQUAL(beat, 3)
     pn.UT_EQUAL(sub, 1)
 
-    local s = bt.tick_to_str(12345)
+    local s = mt.tick_to_str(12345)
     pn.UT_STR_EQUAL(s, "385.3.1")
 
     -- Create from music terminology.
 
-    local t = bt.bt_to_tick(129, 1, 6)
+    local t = mt.mt_to_tick(129, 1, 6)
     pn.UT_EQUAL(t, 4142)
-    s = bt.tick_to_str(t)
+    s = mt.tick_to_str(t)
     pn.UT_STR_EQUAL(s, "129.1.6")
 
     -- Two part, duration.
-    t = bt.beats_to_tick(179, 5)
+    t = mt.beats_to_tick(179, 5)
     pn.UT_EQUAL(t, 1437)
 
     -- Parse three part string form - time usually.
-    t = bt.str_to_tick("108.0.7")
+    t = mt.str_to_tick("108.0.7")
     pn.UT_EQUAL(t, 3463)
 
-    t = bt.str_to_tick("711.3.0")
+    t = mt.str_to_tick("711.3.0")
     pn.UT_EQUAL(t, 22776)
 
     -- Parse two part string form - duration usually.
-    t = bt.str_to_tick("241.4")
+    t = mt.str_to_tick("241.4")
     pn.UT_EQUAL(t, 1932)
-    s = bt.tick_to_str(t)
+    s = mt.tick_to_str(t)
     pn.UT_STR_EQUAL(s, "60.1.4")
 
     -- Bad input in many ways.
-    local res = pcall(bt.bt_to_tick, 1001, 1, 5)
+    local res = pcall(mt.mt_to_tick, 1001, 1, 5)
     pn.UT_FALSE(res)
 
-    res = pcall(bt.bt_to_tick, 10, 4, 3)
+    res = pcall(mt.mt_to_tick, 10, 4, 3)
     pn.UT_FALSE(res)
 
-    res = pcall(bt.bt_to_tick, 10, 2, 11)
+    res = pcall(mt.mt_to_tick, 10, 2, 11)
     pn.UT_FALSE(res)
 
-    res = pcall(bt.beats_to_tick, 4001, 2)
+    res = pcall(mt.beats_to_tick, 4001, 2)
     pn.UT_FALSE(res)
 
-    res = pcall(bt.beats_to_tick, 1122, 12)
+    res = pcall(mt.beats_to_tick, 1122, 12)
     pn.UT_FALSE(res)
 
-    res = pcall(bt.str_to_tick, "1:2:3")
+    res = pcall(mt.str_to_tick, "1:2:3")
     pn.UT_FALSE(res)
 
-    res = pcall(bt.str_to_tick, "1.2.3.4")
+    res = pcall(mt.str_to_tick, "1.2.3.4")
     pn.UT_FALSE(res)
 
-    res = pcall(bt.str_to_tick, "junk")
+    res = pcall(mt.str_to_tick, "junk")
     pn.UT_FALSE(res)
 
-    res = pcall(bt.str_to_tick, {"i'm", "a", "table" })
+    res = pcall(mt.str_to_tick, {"i'm", "a", "table" })
     pn.UT_FALSE(res)
 
-    res = pcall(bt.tick_to_bt, 93.81)
+    res = pcall(mt.tick_to_mt, 93.81)
     pn.UT_FALSE(res)
 
-    res = pcall(bt.tick_to_bt, {1,2,3})
+    res = pcall(mt.tick_to_mt, {1,2,3})
     pn.UT_FALSE(res)
 
-    res = pcall(bt.tick_to_str, "tick")
+    res = pcall(mt.tick_to_str, "tick")
     pn.UT_FALSE(res)
 
 end

@@ -1,9 +1,11 @@
 
-# Nebulua
+# Nebulua  TODO1 update all
 
 A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
-Windows only.
+
+Windows only. Requires VS2022 and .NET8.
+
 
 It's called Nebulator/Nebulua after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
