@@ -12,6 +12,7 @@ local tx  = require("tableex")
 local st  = require("step_types")
 local mid = require("midi_defs")
 local mus = require("music_defs")
+local def = require("defs_api")
 
 
 -- TODO stress test and bulletproof this.
@@ -44,8 +45,8 @@ local _channel_volumes = {}
 -- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
 local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
 
--- All the chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals.
-local _definitions = {}
+-- -- All the chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals.
+-- local _definitions = {}
 
 
 -----------------------------------------------------------------------------
@@ -304,14 +305,32 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local notes_to_play = nil
     local func = nil
 
+
+    M.log_info('>>>1 '..tn..' '..what_to_play)
+
     if tn == "number" then
         -- use as is
         notes_to_play = { what_to_play }
+
+
+        M.log_info('>>>2 N '..notes_to_play)
+
+
     elseif tn == "function" then
         -- use as is
         func = what_to_play
     elseif tn == "string" then
-        notes_to_play = mus.get_notes_from_string(what_to_play)
+
+
+
+        for _, l in ipairs(def) do
+            M.log_info('>>>33 S '..l)
+        end
+
+
+        notes_to_play = def.get_notes_from_string(what_to_play)
+
+        M.log_info('>>>3 S '..notes_to_play)
     else
         return 0, {string.format("Invalid note descriptor '%s'", tostring(chunk[2]))}
     end
@@ -550,30 +569,30 @@ end
 
 
 -----------------------------------------------------------------------------
---- Add a named chord or scale definition.
--- Like "MY_SCALE", "1 +3 4 -b7"
--- @param name string which
--- @param intervals string space separated interval names
--- @return intervals or nil,string if invalid.
-function M.create_definition(name, intervals)
-    local sints = sx.strsplit(intervals, " ", true)
-    local iints = {}
-    for _, sint in ipairs(sints) do
-        local iint = M.interval_name_to_number(sint)
-        if iint ~= nil then
-            table.insert(iints, iint)
-        else
-            return nil, "Oops bad interval ".. sint .. " in " .. name
-        end
-    end
-    if #iints > 0 then
-        _definitions[name] = iints
-    else
-        return nil, "Oops bad def: ".. name
-    end
+-- --- Add a named chord or scale definition.
+-- -- Like "MY_SCALE", "1 +3 4 -b7"
+-- -- @param name string which
+-- -- @param intervals string space separated interval names
+-- -- @return intervals or nil,string if invalid.
+-- function M.create_definition(name, intervals)
+--     local sints = sx.strsplit(intervals, " ", true)
+--     local iints = {}
+--     for _, sint in ipairs(sints) do
+--         local iint = M.interval_name_to_number(sint)
+--         if iint ~= nil then
+--             table.insert(iints, iint)
+--         else
+--             return nil, "Oops bad interval ".. sint .. " in " .. name
+--         end
+--     end
+--     if #iints > 0 then
+--         _definitions[name] = iints
+--     else
+--         return nil, "Oops bad def: ".. name
+--     end
 
-    return iints
-end
+--     return iints
+-- end
 
 -----------------------------------------------------------------------------
 --- Parse note or notes from input value. Could look like:
@@ -612,7 +631,7 @@ function M.get_notes_from_string(nstr)
 
             if c_or_s ~= nil then
                 -- It's a chord or scale.
-                local intervals = _definitions[c_or_s]
+                local intervals = mus.definitions[c_or_s]
                 if intervals ~= nil then
                     for _, cint in ipairs(intervals) do
                         table.insert(notes, cint + abs_note_num)
@@ -650,7 +669,7 @@ function M.note_name_to_number(snote)
             dn = true
             snote = snote:sub(2)
         end
-        inote = notes[snote]
+        inote = mus.notes[snote]
         -- Adjust for octave shift.
         if inote and up then inote = inote + M.NOTES_PER_OCTAVE end
         if inote and dn then inote = inote - M.NOTES_PER_OCTAVE end
@@ -677,7 +696,7 @@ function M.interval_name_to_number(sinterval)
             dn = true
             sinterval = sinterval:sub(2)
         end
-        iinterval = intervals[sinterval]
+        iinterval = mus.intervals[sinterval]
         -- Adjust for octave shift.
         if iinterval and up then iinterval = iinterval + M.NOTES_PER_OCTAVE end
         if iinterval and dn then iinterval = iinterval - M.NOTES_PER_OCTAVE end
@@ -706,18 +725,20 @@ end
 ------------- Finish up -----------------------------------------------------
 -----------------------------------------------------------------------------
 
--- Init runtime vars.
-for _, coll in ipairs({ mus.scales, mus.chords }) do
-    -- Acoustic = '1 2 3 #4 5 6 b7',
-    for k, v in pairs(coll) do
-        M.create_definition(k, v)
-    end
-    -- "Acoustic | 1 2 3 #4 5 6 b7 | Acoustic scale | whole tone  | minor",
-    -- for _, sc in ipairs(coll) do
-    --     local parts = sx.strsplit(sc, "|", true)
-    --     M.create_definition(parts[1], parts[2])
-    -- end
-end
+-- -- Init runtime vars.
+-- for _, coll in ipairs({ mus.scales, mus.chords }) do
+
+--     -- Acoustic = '1 2 3 #4 5 6 b7',
+--     for k, v in pairs(coll) do
+--         M.create_definition(k, v)
+--     end
+
+--     -- "Acoustic | 1 2 3 #4 5 6 b7 | Acoustic scale | whole tone  | minor",
+--     -- for _, sc in ipairs(coll) do
+--     --     local parts = sx.strsplit(sc, "|", true)
+--     --     M.create_definition(parts[1], parts[2])
+--     -- end
+-- end
 
 
 -----------------------------------------------------------------------------

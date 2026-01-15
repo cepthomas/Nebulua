@@ -24,7 +24,7 @@ M.MAX_TICK = M.MAX_BAR * M.SUBS_PER_BAR
 -----------------------------------------------------------------------------
 --- Convert proper components to tick.
 -- returns tick or raises
-function M.bt_to_tick(bar, beat, sub)
+function M.mt_to_tick(bar, beat, sub)
     lt.val_integer(bar, 0, M.MAX_BAR)
     lt.val_integer(beat, 0, M.BEATS_PER_BAR-1)
     lt.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
@@ -62,7 +62,7 @@ function M.str_to_tick(str)
         local bar = lt.tointeger(parts[1])
         local beat = lt.tointeger(parts[2])
         local sub = lt.tointeger(parts[3])
-        tick = M.bt_to_tick(bar, beat, sub)
+        tick = M.mt_to_tick(bar, beat, sub)
     else
         error('Invalid form:'..tostring(str))
     end
@@ -73,7 +73,7 @@ end
 -----------------------------------------------------------------------------
 --- Convert tick to components.
 -- returns bar,beat,sub or raises
-function M.tick_to_bt(tick)
+function M.tick_to_mt(tick)
     lt.val_integer(tick, 0, M.MAX_TICK)
     local bar = math.floor(tick / M.SUBS_PER_BAR)
     local beat = math.floor(tick / M.SUBS_PER_BEAT % M.BEATS_PER_BAR)
@@ -86,7 +86,7 @@ end
 -- returns string or raises
 function M.tick_to_str(tick)
     lt.val_integer(tick, 0, M.MAX_TICK)
-    local bar, beat, sub = M.tick_to_bt(tick)
+    local bar, beat, sub = M.tick_to_mt(tick)
     return string.format("%d.%d.%d", bar, beat, sub)
 end
 

@@ -8,7 +8,7 @@ M.MIDDLE_C = 60
 M.DEFAULT_OCTAVE = 4
 
 -- All the builtin scale defs.
-local scales =
+M.scales =
 {
     Acoustic = '1 2 3 #4 5 6 b7',
     Aeolian = '1 2 b3 4 5 b6 b7',
@@ -60,7 +60,7 @@ local scales =
 }
 
 -- All the builtin chord defs.
-local chords =
+M.chords =
 {
     ['M'] = '1 3 5',
     ['m'] = '1 b3 5',
@@ -93,7 +93,7 @@ local chords =
 }
 
 -- All possible note names and aliases as offset from middle C.
-local notes =
+M.notes =
 {
     ['C'] = 0,
     ['Db'] = 1,
@@ -131,7 +131,7 @@ local notes =
 }
 
 -- Intervals as used in chord and scale defs.
-local intervals =
+M.intervals =
 {
     ['1'] = 0,
     ['#1'] = 1,

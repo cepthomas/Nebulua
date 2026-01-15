@@ -11,7 +11,8 @@ local bt  = require("music_time")
 local ut  = require('lbot_utils')
 
 -- Setup for debug.
--- ut.config_debug(true)
+-- local dbg = require("debugex")
+-- dbg.init()
 -- dbg()
 
 -- Say hello.

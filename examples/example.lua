@@ -8,8 +8,9 @@ local dbg = require("debugex")
 -- Import modules this needs.
 local api = require("script_api")
 local mus = require("music_defs")
+local def = require("defs_api")
 local mid = require("midi_defs")
-local bt  = require("music_time")
+local mt  = require("music_time")
 local ut  = require("lbot_utils")
 local sx  = require("stringex")
 
@@ -42,11 +43,11 @@ local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",      "Jaz
 ------------------------- Variables -----------------------------------
 
 -- Get some stock chords and scales.
-local my_scale = mus.get_notes_from_string("C4.o7")
+local my_scale = def.get_notes_from_string("C4.o7")
 
 -- Create custom note collection.
-mus.create_definition("MY_CHORD", "1 +3 4 -b7")
-local my_chord = mus.get_notes_from_string("B4.MY_CHORD")
+def.create_definition("MY_CHORD", "1 +3 4 -b7")
+local my_chord = def.get_notes_from_string("B4.MY_CHORD")
 
 -- Aliases for instruments.
 local snare = drum.AcousticSnare
@@ -96,7 +97,7 @@ function step(tick)
     api.process_step(tick)
 
     -- Other work you may want to do. Like do something every new bar.
-        local bar, beat, sub = bt.tick_to_bt(tick)
+        local bar, beat, sub = mt.tick_to_mt(tick)
         if beat == 2 and sub == 0 then
             -- api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
             _algo_func(tick)

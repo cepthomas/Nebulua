@@ -8,7 +8,9 @@ local li  = require("luainterop") -- mock
 local api = require("script_api")
 
 
--- ut.config_debug(true)
+-- local dbg = require("debugex")
+-- dbg.init()
+-- dbg()
 
 
 -- Create the namespace/module.
