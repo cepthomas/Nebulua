@@ -43,9 +43,6 @@ local _channel_volumes = {}
 -- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
 local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
 
--- -- All the chord and scale note definitions. Key is chord/scale name, value is list of constituent intervals.
--- local _definitions = {}
-
 
 -----------------------------------------------------------------------------
 -- Lazy add to collection.
@@ -303,31 +300,14 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local notes_to_play = nil
     local func = nil
 
-
-    -- M.log_info('>>>10 '..tn..' '..tx.dump_table(what_to_play, 'what_to_play', 1)) -- TODO1 these
-    -- M.log_info('>>>10 '..tn..' '..what_to_play)
-
     if tn == "number" then
         -- use as is
         notes_to_play = { what_to_play }
-
-        M.log_info('>>>20 number '..tx.dump_table(notes_to_play, 'notes_to_play', 1))
-
     elseif tn == "function" then
         -- use as is
         func = what_to_play
-        M.log_info('>>>30 function ') 
-        -- M.log_info('>>>30 function '..what_to_play)
-
     elseif tn == "string" then
-
-        -- for _, l in ipairs(def) do
-        --     M.log_info('>>>100 string '..l)
-        -- end
-
         notes_to_play = def.get_notes_from_string(what_to_play)
-
-        M.log_info('>>>40 string '..tx.dump_table(notes_to_play, 'notes_to_play', 1))
     else
         return 0, {string.format("Invalid note descriptor '%s'", tostring(chunk[2]))}
     end
@@ -562,33 +542,6 @@ end
 ------------- Music definitions ---------------------------------------------
 -----------------------------------------------------------------------------
 
-
------------------------------------------------------------------------------
--- --- Add a named chord or scale definition.
--- -- Like "MY_SCALE", "1 +3 4 -b7"
--- -- @param name string which
--- -- @param intervals string space separated interval names
--- -- @return intervals or nil,string if invalid.
--- function M.create_definition(name, intervals)
---     local sints = sx.strsplit(intervals, " ", true)
---     local iints = {}
---     for _, sint in ipairs(sints) do
---         local iint = M.interval_name_to_number(sint)
---         if iint ~= nil then
---             table.insert(iints, iint)
---         else
---             return nil, "Oops bad interval ".. sint .. " in " .. name
---         end
---     end
---     if #iints > 0 then
---         _definitions[name] = iints
---     else
---         return nil, "Oops bad def: ".. name
---     end
-
---     return iints
--- end
-
 -----------------------------------------------------------------------------
 --- Parse note or notes from input value. Could look like:
 --   F4 - named note
@@ -714,26 +667,6 @@ function M.split_note_number(note_num)
     end
     return root, octave
 end
-
-
------------------------------------------------------------------------------
-------------- Finish up -----------------------------------------------------
------------------------------------------------------------------------------
-
--- -- Init runtime vars.
--- for _, coll in ipairs({ mus.scales, mus.chords }) do
-
---     -- Acoustic = '1 2 3 #4 5 6 b7',
---     for k, v in pairs(coll) do
---         M.create_definition(k, v)
---     end
-
---     -- "Acoustic | 1 2 3 #4 5 6 b7 | Acoustic scale | whole tone  | minor",
---     -- for _, sc in ipairs(coll) do
---     --     local parts = sx.strsplit(sc, "|", true)
---     --     M.create_definition(parts[1], parts[2])
---     -- end
--- end
 
 
 -----------------------------------------------------------------------------

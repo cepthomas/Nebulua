@@ -11,7 +11,8 @@ local api = require("script_api")
 
 
 local dbg = require("debugex")
-dbg.init(59120)
+dbg.init()
+-- dbg.init(59120)
 
 
 -- Create the namespace/module.
@@ -28,11 +29,49 @@ local M = {}
 
 
 -----------------------------------------------------------------------------
+function M.suite_print_table(pn)
+
+    local function tfunc() end
+
+    local just_a_var = 345.67
+
+    local t1 = {}
+    t1[2] = "I'm a string"
+    t1[4] = tfunc
+    t1[7] = nil
+    t1[10] = 123.45
+    t1[12] = true
+
+    local t2 = {}
+    t2["I'm also a string"] = 90909
+    t2[false] = tfunc
+    t2["t1"] = t1
+
+dbg()
+
+-- [t1]
+-- [number]4=[function]function: 0000000001017840
+-- [number]12=[boolean]true
+-- [number]10=[number]123.45
+-- [number]2=[string]I'm a string
+-- > t t2
+-- [t2]
+-- [boolean]false=[function]function: 0000000001017840
+--     [t1]
+--     [number]4=[function]function: 0000000001017840
+--     [number]12=[boolean]true
+--     [number]10=[number]123.45
+--     [number]2=[string]I'm a string
+-- [string]I'm also a string=[number]90909
+
+
+end
+
+-----------------------------------------------------------------------------
 function M.suite_parse_chunk(pn)
     -- Note number. This also checks the list of steps in more detail
     local chunk = { "|5       |2    9 9|3       |4    9 9|5       |6    9 9|7       |8    9 9|", 89 }
     local seq_length, steps = api.parse_chunk(chunk, 0x030E, 1000 )
-    -- print('+++', tx.dump_table(steps, 'steps1', 1))
     pn.UT_EQUAL(#steps, 16)
     pn.UT_EQUAL(seq_length, 64)
     local step = steps[6] -- pick one
@@ -46,14 +85,12 @@ function M.suite_parse_chunk(pn)
     -- Note name.
     chunk = { "|7   7   |        |        |        |    4---|---     |        |        |",  "C2" }
     seq_length, steps = api.parse_chunk(chunk, 0x0A04, 234 )
-    -- print('+++', tx.dump_table(steps, 'steps2', 1))
     pn.UT_EQUAL(#steps, 3)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Chord.
     chunk = { "|        |    6---|----    |        |        |        |3 2 1   |        |", "B4.m7" }
     seq_length, steps = api.parse_chunk(chunk, 0x0A05, 1111 )
-    -- print('+++', tx.dump_table(steps, 'steps3', 1))
     pn.UT_EQUAL(#steps, 16) -- 4 x 4 notes in chord
     pn.UT_EQUAL(seq_length, 64)
 
@@ -61,14 +98,12 @@ function M.suite_parse_chunk(pn)
     local dummy = function() end
     chunk = { "|        |    6-  |        |        |        | 9999   |  111   |        |", dummy }
     seq_length, steps = api.parse_chunk(chunk, 0x0A06, 1555 )
-    -- print('+++', tx.dump_table(steps, 'steps4', 1))
     pn.UT_EQUAL(#steps, 8)
     pn.UT_EQUAL(seq_length, 64)
 
     -- Bad syntax.
     chunk = { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 99 }
     seq_length, steps = api.parse_chunk(chunk, 0x0A07, 678 )
-    -- print('+++', tx.dump_table(steps, 'steps5', 1))
     pn.UT_EQUAL(seq_length, 0)
     pn.UT_STR_CONTAINS(tx.dump_table(steps, 'xxxx', 1), "Invalid '-' in pattern string")
 end
@@ -87,39 +122,26 @@ function M.suite_process_script(pn)
     -- api.dump_steps('_steps.txt', 's') -- diagnostic
     pn.UT_TRUE(sx.contains(meta, '_LENGTH,768'))
 
-    -- Look inside.
-    -- local steps, transients = _mole()
-
-    -- s = tx.dump_table(steps, "steps", 1)
-    -- print(s)
+-- dbg()
 
     -- Execute some script steps.
     for i = 0, 200 do
         li.current_tick = i
         local stat = api.process_step(i)
         pn.UT_EQUAL(stat, 0)
-        -- print(">>>", ut.table_count(transients))
 
-dbg()
         if i == 4 then
+
+-- dbg()
             pn.UT_EQUAL(#li.activity, 13) -------------------- 84
-            -- pn.UT_EQUAL(ut.table_count(transients), 2)
         end
 
         if i == 40 then
             pn.UT_EQUAL(#li.activity, 48) ----------------- 119
-            -- pn.UT_EQUAL(ut.table_count(transients), 1)
         end
     end
 
     pn.UT_EQUAL(#li.activity, 166) ------------------ 237
-    -- pn.UT_EQUAL(ut.table_count(transients), 1)
-
-    -- Examine collected data.
-    --for _, d in ipairs(li.activity) do
-
-    -- s = tx.dump_table(transients, "transients", 1)
-    -- print(s)
 end
 
 -----------------------------------------------------------------------------
