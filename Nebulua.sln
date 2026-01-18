@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nebulua", "Nebulua.csproj", "{51C8AC83-E85F-44FD-9027-40CA8F452394}"
-	ProjectSection(ProjectDependencies) = postProject
-		{AF843774-3B63-2215-9A47-15E3CBC9C726} = {AF843774-3B63-2215-9A47-15E3CBC9C726}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Interop", "Interop\Interop.vcxproj", "{953F3806-EB5D-444E-A500-09B455E35E53}"
 EndProject

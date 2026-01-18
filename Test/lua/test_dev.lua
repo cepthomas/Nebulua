@@ -1,6 +1,3 @@
-
--- Unit tests for nebulua.lua. TODO1 ???
-
 local ut  = require("lbot_utils")
 local st  = require("step_types")
 local bt  = require("music_time")

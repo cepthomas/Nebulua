@@ -1,14 +1,10 @@
 
-error()  https://www.lua.org/manual/5.4/manual.html#2.3
-
-
-# Nebulua  TODO1 update all
+# Nebulua
 
 A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
 
-Windows only. Requires VS2022 and .NET8.
-
+Windows only. Requires VS2022, .NET8, Lua 5.4.
 
 It's called Nebulator/Nebulua after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
@@ -60,8 +56,9 @@ airport.lua | A take on Eno's Music for Airports - adapted from [this](https://g
 Name       | Type   | Description                               | Range                           |
 -------    | ------ | ---------------------------               | --------                        |
 chan_num   | int    | midi channel number                       | 1 -> 16                         |
-dev_index  | int    | index into windows midi device table      |                                 |
-dev_name   | char*  | from windows midi device table            | 0 -> N                          |
+chan_name  | char*  | name for ui                               |                                 |
+dev_index  | int    | index into windows midi device table      | 0 -> N                          |
+dev_name   | char*  | from windows midi device table            |                                 |
 chan_hnd   | int    | internal opaque handle for channel id     |                                 |
 controller | int    | midi standard from midi_defs.lua          | 0 -> 127                        |
 value      | int    | controller payload                        | 0 -> 127                        |
@@ -70,13 +67,13 @@ volume     | double |                                           | 0.0 -> 1.0, 0 
 velocity   | int    |                                           | 0 -> 127, 0 means note off      |
 bar        | int    | absolute                                  | 0 -> N                          |
 beat       | int    | in bar - quarter note                     | 0 -> 3                          |
-sub        | int    | in beat - "musical"                       | 0 -> 7                          |
+tick       | int    | in beat - musical                         | 0 -> 7                          |
 tick       | int    | absolute time                             | 0 -> N                          |
 
 
 ## Time
 
-- Midi DeltaTicksPerQuarterNote aka subs per beat is fixed at 8. This provides 32nd note resolution which
+- Midi DeltaTicksPerQuarterNote aka ticks per beat is fixed at 8. This provides 32nd note resolution which
   should be more than adequate.
 - The fast timer resolution is fixed at 1 msec giving a usable range of bpm of 40 (188 msec period)
   to 240 (31 msec period).
@@ -127,35 +124,37 @@ Scripts need this section.
 
 ```lua
 local api = require("script_api") -- lua api
-local mid = require("midi_defs") -- GM midi instrument definitions
-local mus = require("music_defs") -- chords, scales, etc
-local bt  = require("music_time") -- time utility
+local def = require("defs_api")   -- lua api
+local mt  = require("music_time") -- music time utility
 local ut  = require("lbot_utils") -- misc utilities
+-- These also may be useful:
+local mid = require("midi_defs")  -- GM midi instrument definitions
+local mus = require("music_defs") -- chords, scales, etc
 ```
 
 ## Time
 
 ```lua
-function bt.bt_to_tick(bar, beat, sub)
+function mt.mt_to_tick(bar, beat, tick)
 ```
 Create from explicit music_time parts.
 
 - bar: Bar number 0 - 1000
 - beat: Beat number 0 - 3
-- sub: Subbeat number 0 - 7
+- tick: Subbeat number 0 - 7
 - return: Corresponding tick
 
 ```lua
-function bt.beats_to_tick(beat, sub)
+function mt.beats_to_tick(beat, tick)
 ```
 Create from explicit music_time parts.
 
 - beat: Beat number 0 - 1000
-- sub: Subbeat number 0 - 7
+- tick: Subbeat number 0 - 7
 - return: Corresponding tick
 
 ```lua
-function bt.str_to_tick(str)
+function mt.str_to_tick(str)
 ```
 Parse from string like "1.2.3" or "1.2" or "1".
 
@@ -163,7 +162,7 @@ Parse from string like "1.2.3" or "1.2" or "1".
 - return: Corresponding tick
 
 ```lua
-function bt.tick_to_str(tick)
+function mt.tick_to_str(tick)
 ```
 Format the value like "1.2.3".
 
@@ -171,12 +170,12 @@ Format the value like "1.2.3".
 - return: The string
 
 ```lua
-function bt.tick_to_bt(tick)
+function mt.tick_to_mt(tick)
 ```
 Translate tick into music_time parts.
 
 - tick: To translate
-- return: bar, beat, sub
+- return: bar, beat, tick
 
 ## Script Functions
 
@@ -184,14 +183,14 @@ Call these from your script.
 
 
 ```lua
-function api.open_midi_output(dev_name, chan_num, chan_name, _patch)
+function api.open_midi_output(dev_name, chan_num, chan_name, patch)
 ```
 Register an output midi channel.
 
 - dev_name: The system name.
 - chan_num: Specific channel number.
 - chan_name: Name for channel.
-- patch: Send this patch number or `mid.NO_PATCH`. Use NO_PATCH if your host manages its own patches. TODO1
+- patch: Send this patch name.
 - return: A channel handle to use in subsequent functions.
 
 
@@ -214,7 +213,7 @@ Send a note on/off immediately. Adds a note off if dur is specified and tick clo
 - chan_hnd: The channel handle to send it on.
 - note_num: Which.
 - volume: Note volume. 0.0 -> 1.0. 0.0 means note off.
-- dur: How long it lasts in subbeats. Optional.
+- dur: How long it lasts in music time. Optional for e.g drums.
 
 
 ```lua
@@ -266,7 +265,7 @@ If it's a static composition call this in setup().
 ```lua
 function api.process_step(tick)
 ```
-Call this in step(tick) to process things like note offs.
+Call this in step(tick) to process internal things e.g. note offs.
 
 - tick: current tick.
 
@@ -290,7 +289,7 @@ Send the object created in `parse_sequence_steps()`. See [Composition](#markdown
 
 ## Script Callbacks
 
-These are called by the system for overriding in the script.
+These are called by the system for implementing in the script.
 
 ```lua
 function setup()
@@ -371,7 +370,7 @@ Sequences can also be loaded dynamically and triggered at arbitrary times in the
 local example_seq_steps = api.parse_sequence_steps(hnd_keys, example_seq)
 
 function step(tick)
-    local bar, beat, sub = bt.tick_to_bt(tick)
+    local bar, beat, sub = mt.tick_to_mt(tick)
 
     if bar == 1 and beat == 0 and sub == 0 then
         api.send_sequence_steps(example_seq_steps, tick)
@@ -384,10 +383,10 @@ end
 
 ## Utilities
 
-Some helpers are found in `music_defs.lua`.
+Some helpers are found in `music_defs.lua`. The main useful ones are these.
 
 ```lua
-function M.get_notes_from_string(nstr)
+function def.get_notes_from_string(nstr)
 ```
 Parse note or notes from input value.
 
@@ -396,7 +395,7 @@ Parse note or notes from input value.
 
 
 ```lua
-function create_definition(name, intervals)
+function def.create_definition(name, intervals)
 ```
 Define a group of notes for use as a chord or scale. Then it can be used by get_notes_from_string().
 

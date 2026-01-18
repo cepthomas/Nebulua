@@ -8,7 +8,7 @@ using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
 
 
-namespace Test
+namespace Test // TODO1 useful?
 {
     /// <summary>Test entry.</summary>
     static class Program

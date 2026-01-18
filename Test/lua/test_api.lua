@@ -29,7 +29,7 @@ local M = {}
 
 
 -----------------------------------------------------------------------------
-function M.suite_print_table(pn)
+function M.suite_debug_print(pn)
 
     local function tfunc() end
 
@@ -46,24 +46,6 @@ function M.suite_print_table(pn)
     t2["I'm also a string"] = 90909
     t2[false] = tfunc
     t2["t1"] = t1
-
-dbg()
-
--- [t1]
--- [number]4=[function]function: 0000000001017840
--- [number]12=[boolean]true
--- [number]10=[number]123.45
--- [number]2=[string]I'm a string
--- > t t2
--- [t2]
--- [boolean]false=[function]function: 0000000001017840
---     [t1]
---     [number]4=[function]function: 0000000001017840
---     [number]12=[boolean]true
---     [number]10=[number]123.45
---     [number]2=[string]I'm a string
--- [string]I'm also a string=[number]90909
-
 
 end
 
@@ -122,8 +104,6 @@ function M.suite_process_script(pn)
     -- api.dump_steps('_steps.txt', 's') -- diagnostic
     pn.UT_TRUE(sx.contains(meta, '_LENGTH,768'))
 
--- dbg()
-
     -- Execute some script steps.
     for i = 0, 200 do
         li.current_tick = i
@@ -131,17 +111,15 @@ function M.suite_process_script(pn)
         pn.UT_EQUAL(stat, 0)
 
         if i == 4 then
-
--- dbg()
-            pn.UT_EQUAL(#li.activity, 13) -------------------- 84
+            pn.UT_EQUAL(#li.activity, 13)
         end
 
         if i == 40 then
-            pn.UT_EQUAL(#li.activity, 48) ----------------- 119
+            pn.UT_EQUAL(#li.activity, 48)
         end
     end
 
-    pn.UT_EQUAL(#li.activity, 166) ------------------ 237
+    pn.UT_EQUAL(#li.activity, 166)
 end
 
 -----------------------------------------------------------------------------

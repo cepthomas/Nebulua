@@ -16,12 +16,29 @@ using Ephemera.MusicLib;
 
 // TODO kinda slow startup running in debugger.
 
-// Is patch an instrument or drum? TODO1
 
 namespace Nebulua
 {
     public partial class MainForm : Form
     {
+        #region Types
+        /// <summary>Application level error. Above lua level.</summary>
+        public class AppException(string message) : Exception(message) { }
+
+        /// <summary>Internal state. </summary>
+        enum ExecState
+        {
+            /// <summary>No script loaded.</summary>
+            Idle,
+            /// <summary>Script loaded, not running.</summary>
+            Stop,
+            /// <summary>Script loaded, running.</summary>
+            Run,
+            /// <summary>Fatal error, not running.</summary>
+            Dead
+        }
+        #endregion
+
         #region Fields
         /// <summary>App logger.</summary>
         readonly Logger _loggerApp = LogManager.CreateLogger("APP");
@@ -53,32 +70,22 @@ namespace Nebulua
         /// <summary>All midi devices to use for send.</summary>
         readonly List<MidiOutputDevice> _outputDevices = [];
 
-        /// <summary>All midi devices to use for receive. Includes any internal types.</summary>
+        /// <summary>All midi devices to use for receive.</summary>
         readonly List<MidiInputDevice> _inputDevices = [];
 
-        /// <summary>All the channel play controls.</summary>
+        /// <summary>All channel play controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
-
-        /// <summary>Debugging.</summary>
-        readonly TimeIt _tmit = new();
-
-        /// <summary>Performance.</summary>
-        //readonly TimingAnalyzer? _tan = null;
         #endregion
 
-        #region State
-        /// <summary>Internal state. </summary>
-        enum ExecState
-        {
-            /// <summary>No script loaded.</summary>
-            Idle,
-            /// <summary>Script loaded, not running.</summary>
-            Stop,
-            /// <summary>Script loaded, running.</summary>
-            Run,
-            /// <summary>Fatal error, not running.</summary>
-            Dead
-        }
+
+
+
+
+//////////////////// NEBULUA ////////////////////
+//////////////////// NEBULUA ////////////////////
+//////////////////// NEBULUA ////////////////////
+
+        // enum ExecState { Idle, Stop, Run, Dead }
         ExecState _execState = ExecState.Idle;
 
         ExecState CurrentState
@@ -86,7 +93,114 @@ namespace Nebulua
             get { return _execState; }
             set { if (value != _execState) { UpdateState(value); } }
         }
-        #endregion
+
+        /// <summary>Handle state change.</summary>
+        /// <param name="state">New state</param>
+        void UpdateState(ExecState state)
+        {
+            switch (state)
+            {
+                case ExecState.Idle:
+                    _scriptFn = null;
+                    chkPlay.Checked = false;
+                    chkPlay.Enabled = false;
+                    _execState = ExecState.Idle;
+                    break;
+
+                case ExecState.Stop:
+                    if (_scriptFn is not null)
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = true;
+                        _execState = ExecState.Stop;
+                    }
+                    else
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = false;
+                        _execState = ExecState.Idle;
+                    }
+                    break;
+
+                case ExecState.Run:
+                    if (_scriptFn is not null)
+                    {
+                        chkPlay.Checked = true;
+                        chkPlay.Enabled = true;
+                        _execState = ExecState.Run;
+                    }
+                    else
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = false;
+                        _execState = ExecState.Idle;
+                    }
+                    break;
+
+                case ExecState.Dead:
+                    chkPlay.Checked = false;
+                    chkPlay.Enabled = false;
+                    _execState = ExecState.Dead;
+                    break;
+            }
+        }
+
+
+//////////////////// NEBULATOR ////////////////////
+//////////////////// NEBULATOR ////////////////////
+//////////////////// NEBULATOR ////////////////////
+        enum PlayCommand { Start, Stop, Rewind, StopRewind, UpdateUiTime }
+
+        bool ProcessPlay(PlayCommand cmd)
+        {
+            bool ret = true;
+
+            switch (cmd)
+            {
+                case PlayCommand.Start:
+                    bool ok = _script is not null && (!_needCompile || CompileScript());
+                    if (ok)
+                    {
+                        _startTime = DateTime.Now;
+                        chkPlay.Checked = true;
+                        _mmTimer.Start();
+                    }
+                    else
+                    {
+                        chkPlay.Checked = false;
+                        ret = false;
+                    }
+                    break;
+
+                case PlayCommand.Stop:
+                    chkPlay.Checked = false;
+                    _mmTimer.Stop();
+
+                    // Send midi stop all notes just in case.
+                    MidiManager.Instance.Kill();
+                    break;
+
+                case PlayCommand.Rewind:
+                    timeBar.Rewind();
+                    break;
+
+                case PlayCommand.StopRewind:
+                    chkPlay.Checked = false;
+                    timeBar.Rewind();
+                    break;
+
+                case PlayCommand.UpdateUiTime:
+                    break;
+            }
+
+            return ret;
+        }
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+
+
+
 
         #region Lifecycle
         /// <summary>
@@ -94,8 +208,6 @@ namespace Nebulua
         /// </summary>
         public MainForm()
         {
-            _tmit.Snap("MainForm() enter");
-
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
 
@@ -106,9 +218,11 @@ namespace Nebulua
             // Settings.
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
             _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
-            LogManager.LogMessage += LogManager_LogMessage;
             LogManager.MinLevelFile = _settings.FileLogLevel;
             LogManager.MinLevelNotif = _settings.NotifLogLevel;
+            LogManager.SourceInfo = false;
+            //LogManager.Timestamp = false;
+            LogManager.LogMessage += LogManager_LogMessage;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
             // Main window.
@@ -164,7 +278,7 @@ namespace Nebulua
             sldTempo.DrawColor = _settings.DrawColor;
             sldTempo.ValueChanged += (_, __) => { SetTimer((int)sldTempo.Value); };
 
-                traffic.BackColor = BackColor;
+            traffic.BackColor = BackColor;
             traffic.MatchText.Add("ERR ", Color.LightPink);
             traffic.MatchText.Add("WRN ", Color.Yellow);
             traffic.MatchText.Add("SND ", Color.PaleGreen);
@@ -196,19 +310,14 @@ namespace Nebulua
             MidiManager.Instance.MessageSend += Mgr_MessageSend;
 
             Thread.CurrentThread.Name = "MAIN";
-            // Trace($"+++ MainForm() [{Thread.CurrentThread.Name}] ({Environment.CurrentManagedThreadId})");
-
-            _tmit.Snap("MainForm() exit");
         }
 
         /// <summary>
-        /// Inits control appearance. Opens last script. Can throw.
+        /// Opens last script. Can throw.
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">Args</param>
         protected override void OnLoad(EventArgs e)
         {
-            _tmit.Snap("OnLoad() entry");
-
             PopulateFileMenu();
 
             if (_settings.OpenLastFile && _settings.RecentFiles.Count > 0)
@@ -217,25 +326,10 @@ namespace Nebulua
             }
 
             base.OnLoad(e);
-
-            _tmit.Snap("OnLoad() exit");
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnShown(EventArgs e)
-        {
-            _tmit.Snap("OnShown() entry");
-
-            base.OnShown(e);
-
-            _tmit.Snap("OnShown() exit");
-        }
-
-        /// <summary>
-        /// Goodbye.
+        /// Goodbye. Clean up.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -244,9 +338,6 @@ namespace Nebulua
 
             // Just in case.
             MidiManager.Instance.Kill();
-
-            // Destroy devices
-            ResetDevices();
 
             // Save user settings.
             _settings.FormGeometry = new()
@@ -271,8 +362,9 @@ namespace Nebulua
         protected override void Dispose(bool disposing)
         {
             DestroyControls();
+            MidiManager.Instance.DestroyChannels();
             MidiManager.Instance.DestroyDevices();
-            
+
             if (disposing)
             {
                 // Wait a bit in case there are some lingering events.
@@ -297,74 +389,70 @@ namespace Nebulua
         /// <param name="openScriptFn">The script file to open or null if reload.</param>
         void OpenScriptFile(string? openScriptFn)
         {
- //           lock(_interopLock)
+            try
             {
-                try
+                // Clean up first.
+                MidiManager.Instance.Kill();
+                _mmTimer.Stop();
+                DestroyControls();
+                CurrentState = ExecState.Idle;
+                MidiManager.Instance.DestroyChannels();
+                MidiManager.Instance.DestroyDevices();
+
+                // Determine file to load.
+                if (openScriptFn is not null)
                 {
-                    // Clean up first.
-                    // Just in case.
-                    MidiManager.Instance.Kill();
-                    _mmTimer.Stop();
-                    DestroyControls();
-                    CurrentState = ExecState.Idle;
-                    // Destroy devices
-                    ResetDevices();
-
-                    // Determine file to load.
-                    if (openScriptFn is not null)
-                    {
-                        _scriptFn = openScriptFn;
-                    }
-
-                    // Check valid file.
-                    if (_scriptFn is null || !_scriptFn.EndsWith(".lua") || !Path.Exists(_scriptFn))
-                    {
-                        _scriptFn = null;                    
-                        _scriptTouch = DateTime.MinValue;                    
-                        throw new AppException($"Invalid script file [{_scriptFn}]");
-                    }
-
-                    // OK to load.
-                    _scriptTouch = File.GetLastWriteTime(_scriptFn);
-                    _loggerApp.Info($"Loading script {_scriptFn}");
-
-                    // Set up runtime lua environment. The lua lib files, the dir containing the script file.
-                    var srcDir = MiscUtils.GetSourcePath(); // The source dir.
-                    var scriptDir = Path.GetDirectoryName(_scriptFn);
-                    var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
-
-                    _interop.RunScript(_scriptFn, luaPath);
-                    string smeta = _interop.Setup();
-
-                    // Get info about the script.
-                    Dictionary<int, string> sectInfo = [];
-                    var chunks = smeta.SplitByToken("|");
-
-                    chunks.ForEach(ch =>
-                    {
-                        var elems = ch.SplitByToken(",");
-                        sectInfo[int.Parse(elems[1])] = elems[0];
-                    });
-
-                    timeBar.InitSectionInfo(sectInfo);
-
-                    CreateControls();
-
-                    // Start timer.
-                    sldTempo.Value = 100;
-                    _mmTimer.Start();
-
-                    Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                    _settings.UpdateMru(_scriptFn!);
-
-                    PopulateFileMenu();
-
-                    timeBar.Invalidate(); // force update
+                    _scriptFn = openScriptFn;
                 }
-                catch (Exception ex)
+
+                // Check valid file.
+                if (_scriptFn is null || !_scriptFn.EndsWith(".lua") || !Path.Exists(_scriptFn))
                 {
-                    ProcessException(ex);
+                    _scriptFn = null;                    
+                    _scriptTouch = DateTime.MinValue;                    
+                    throw new AppException($"Invalid script file [{_scriptFn}]");
                 }
+
+                // OK to load.
+                _scriptTouch = File.GetLastWriteTime(_scriptFn);
+                _loggerApp.Info($"Loading script {_scriptFn}");
+
+                // Set up runtime lua environment. The lua lib files, the dir containing the script file.
+                var srcDir = MiscUtils.GetSourcePath(); // The source dir.
+                var scriptDir = Path.GetDirectoryName(_scriptFn);
+                var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
+
+                _interop.RunScript(_scriptFn, luaPath);
+                string smeta = _interop.Setup();
+
+                // Get info about the script.
+                Dictionary<int, string> sectInfo = [];
+                var chunks = smeta.SplitByToken("|");
+
+                chunks.ForEach(ch =>
+                {
+                    var elems = ch.SplitByToken(",");
+                    sectInfo[int.Parse(elems[1])] = elems[0];
+                });
+
+                timeBar.InitSectionInfo(sectInfo);
+
+                CreateControls();
+
+                // Start timer.
+                sldTempo.Value = 100;
+                _mmTimer.Start();
+
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
+                _settings.UpdateMru(_scriptFn!);
+
+                PopulateFileMenu();
+
+                timeBar.Invalidate(); // force update
+            }
+            catch (Exception ex)
+            {
+                ProcessException(ex);
             }
         }
 
@@ -455,19 +543,24 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Handler for state changes.
+        /// Handler for user state changes.
         /// </summary>
         /// <param name="_"></param>
-        /// <param name="name">Specific State value.</param>
+        /// <param name="e">What changed.</param>
         void TimeBar_StateChangeEvent(object? _, TimeBar.StateChangeEventArgs e)
         {
-           this.InvokeIfRequired(_ =>
-           {
-                if (e.CurrentTimeChange)
-                {
-                    timeBar.Invalidate();
-                }
-           });
+            if (e.CurrentTimeChange)
+            {
+                timeBar.Invalidate();
+            }
+
+            //this.InvokeIfRequired(_ =>
+            //{
+            //    if (e.CurrentTimeChange)
+            //    {
+            //        timeBar.Invalidate();
+            //    }
+            //});
         }
 
         /// <summary>
@@ -478,8 +571,6 @@ namespace Nebulua
         void Rewind_Click(object? sender, EventArgs e)
         {
             timeBar.Rewind();
-            // Current tick may have been corrected for loop.
-            //timeBar.Current = State.Instance.CurrentTick;
         }
 
         /// <summary>
@@ -488,7 +579,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space) // && _scriptFn is not null)
+            if (e.KeyCode == Keys.Space)
             {
                 CurrentState = CurrentState == ExecState.Stop ? ExecState.Run : ExecState.Stop;
                 e.Handled = true;
@@ -497,14 +588,13 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// General exception processor. Doesn't throw.
+        /// General exception processor.
         /// </summary>
         /// <param name="e"></param>
-        /// <returns>(bool fatal, string msg)</returns>
-        (bool fatal, string msg) ProcessException(Exception e)
+        void ProcessException(Exception e)
         {
             bool fatal = false; // default
-            string msg = e.Message; // default
+         //   string msg = e.Message; // default
 
             switch (e)
             {
@@ -512,45 +602,39 @@ namespace Nebulua
                     if (ex.Error.Contains("FATAL")) // bad lua internal error
                     {
                         fatal = true;
-                        CurrentState = ExecState.Dead;
                     }
                     break;
 
-                case AppException: // from app - not fatal
+                case AppException: // from app - generally not fatal
                     break;
 
                 default: // other/unknon - assume fatal
                     fatal = true;
-                    if (e.StackTrace is not null)
-                    {
-                        msg += $"{Environment.NewLine}{e.StackTrace}";
-                    }
                     break;
             }
 
             if (fatal)
             {
                 // Logging an error will cause the app to exit.
-                _loggerApp.Error(msg);
+                _loggerApp.Exception(e);
+                CurrentState = ExecState.Dead;
             }
             else
             {
                 // User can decide what to do with this. They may be recoverable so use warn.
-                _loggerApp.Warn(msg);
+                _loggerApp.Warn(e.Message);
                 CurrentState = ExecState.Idle;
             }
-
-            return (fatal, msg);
         }
         #endregion
 
         #region Callback Handlers
         /// <summary>
-        /// Process events. This is on a system thread.
+        /// Process events.
         /// </summary>
         /// <param name="totalElapsed"></param>
         /// <param name="periodElapsed"></param>
-        void MmTimer_Callback(double totalElapsed, double periodElapsed)
+        void MmTimerCallback(double totalElapsed, double periodElapsed)
         {
             if (CurrentState != ExecState.Run) return;
 
@@ -560,25 +644,26 @@ namespace Nebulua
                 try
                 {
                     // Do script.
-                    //_tan?.Arm();
                     int ret = _interop.Step(timeBar.Current.Tick);
 
                     // Bump time and check state.
                     bool done = !timeBar.Increment();
 
-                    // Check for end of play. If no steps or not selected, free running mode so always keep going.
-                    if (timeBar.Length.Tick > 1)
+                    // Check for end of play. If free running keep going.
+                    if (!timeBar.FreeRunning && done)
                     {
-                        // Check for end.
-                        if (done)
+                        if (chkLoop.Checked)
+                        {
+                            timeBar.Rewind();
+                        }
+                        else
                         {
                             // Stop and rewind.
                             CurrentState = ExecState.Idle;
-                            //State.Instance.CurrentTick = start;
+                            timeBar.Rewind();
                             MidiManager.Instance.Kill(); // just in case
                         }
                     }
-                    // else keep going
                 }
                 catch (Exception ex)
                 {
@@ -588,7 +673,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Midi message arrived. Pass along to the script. This is on a system thread.
+        /// Midi message arrived. Pass along to the script.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -622,7 +707,7 @@ namespace Nebulua
 
                 if (logit && _settings.MonitorRcv)
                 {
-                    _loggerMidi.Trace($"<<< {FormatMidiEvent(e, chnd)}");
+                    _loggerMidi.Trace($"<<< {e}");
                 }
             }
             catch (Exception ex)
@@ -636,13 +721,12 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        //void Midi_ReceiveEvent(object? sender, MidiEvent e)
         void Mgr_MessageSend(object? sender, BaseEvent e)
         {
             // Actual sent.
             var indev = (MidiOutputDevice)sender!;
             var chnd = HandleOps.Create(indev.Id, e.ChannelNumber, false);
-            _loggerMidi.Trace($">>> ! {FormatMidiEvent(e, chnd)}");
+            _loggerMidi.Trace($">>> ! {e}");
         }
 
         /// <summary>
@@ -652,24 +736,22 @@ namespace Nebulua
         /// <param name="e"></param>
         void ChannelControlEvent(object? sender, ChannelChangeEventArgs e)
         {
-            var cc = sender as ChannelControl;
-            var channel = cc!.BoundChannel!;
+            var channel = (sender as ChannelControl)!.BoundChannel!;
 
             if (e.State)
             {
                 // Update all channels.
                 bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
 
-                foreach (var cciter in _channelControls)
+                foreach (var cc in _channelControls)
                 {
                     bool enable = anySolo ?
-                        cciter.State == ChannelState.Solo :
-                        cciter.State != ChannelState.Mute;
+                        cc.State == ChannelState.Solo :
+                        cc.State != ChannelState.Mute;
 
                     channel.Enable = enable;
                     if (!enable)
                     {
-                        // Kill just in case.
                         MidiManager.Instance.Kill(channel);
                     }
                 }
@@ -704,7 +786,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Script wants to send a midi note. Doesn't throw.
+        /// Script wants to send a midi note.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -727,7 +809,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Script wants to send a midi controller. Doesn't throw.
+        /// Script wants to send a midi controller.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -745,12 +827,12 @@ namespace Nebulua
             if (_settings.MonitorSnd)
             {
                 // Intended sent.
-                _loggerMidi.Trace($">>> {FormatMidiEvent(se, e.chan_hnd)}");
+                _loggerMidi.Trace($">>> {e}");
             }
         }
 
         /// <summary>
-        /// Script wants to change tempo. Doesn't throw.
+        /// Script wants to change tempo.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -758,25 +840,23 @@ namespace Nebulua
         {
             e.ret = 0; // not used
 
-            if (e.bpm >= 30 && e.bpm <= 240)
-            {
-                sldTempo.Value = e.bpm; //TODO1 confirm this triggers => SetTimer((int)sldTempo.Value);
-            }
-            else if (e.bpm == 0)
+            if (e.bpm == 0)
             {
                 SetTimer(0);
             }
+            else if (e.bpm is < 30 or > 240)
+            {
+                _loggerScr.Warn($"Invalid tempo {e.bpm}");
+            }
             else
             {
-                e.ret = -1;
-                // Leave as is or reset?
-                // SetTimer(0);
-                _loggerScr.Warn($"Invalid tempo {e.bpm}");
+                sldTempo.Value = e.bpm;
+                SetTimer(e.bpm);
             }
         }
 
         /// <summary>
-        /// Script wants to log something. Doesn't throw.
+        /// Script wants to log something.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -796,8 +876,8 @@ namespace Nebulua
             {
                 case LogLevel.Trace: _loggerScr.Trace(s); break;
                 case LogLevel.Debug: _loggerScr.Debug(s); break;
-                case LogLevel.Info: _loggerScr.Info(s); break;
-                case LogLevel.Warn: _loggerScr.Warn(s); break;
+                case LogLevel.Info:  _loggerScr.Info(s); break;
+                case LogLevel.Warn:  _loggerScr.Warn(s); break;
                 case LogLevel.Error: _loggerScr.Error(s); break;
             }
         }
@@ -814,8 +894,6 @@ namespace Nebulua
             // Clean out our current elements.
             _channelControls.ForEach(c =>
             {
-                //c.ChannelChange -= ChannelControl_ChannelChange;
-                //c.SendMidi -= ChannelControl_SendMidi;
                 Controls.Remove(c);
                 c.Dispose();
             });
@@ -884,9 +962,7 @@ namespace Nebulua
 
                 foreach (var cciter in _channelControls)
                 {
-                    bool enable = anySolo ?
-                        cciter.State == ChannelState.Solo :
-                        cciter.State != ChannelState.Mute;
+                    bool enable = anySolo ? cciter.State == ChannelState.Solo : cciter.State != ChannelState.Mute;
 
                     channel.Enable = enable;
                     if (!enable)
@@ -896,109 +972,10 @@ namespace Nebulua
                     }
                 }
             }
-
-            //if (e.PatchChange)
-            //{
-            //    Tell(INFO, $"PatchChange [{channel.Patch}]");
-            //    channel.Device.Send(new Patch(channel.ChannelNumber, channel.Patch));
-            //}
-
-            //if (e.AliasFileChange)
-            //{
-            //    Tell(INFO, $"AliasFileChange [{channel.AliasFile}]");
-            //}
-        }
-        #endregion
-
-        #region Midi Utilities
-        /// <summary>
-        /// Create string suitable for logging. Doesn't throw.
-        /// </summary>
-        /// <param name="evt">Midi event to format.</param>
-        /// <param name="chanHnd">Channel info.</param>
-        /// <returns>Suitable string.</returns>
-        string FormatMidiEvent(BaseEvent evt, int chnd)
-        {
-            // Common part.
-            var mt = CurrentState == ExecState.Run ? timeBar.Current : MusicTime.ZERO;
-            int devId = HandleOps.DeviceId(chnd);
-            int chanNum = HandleOps.ChannelNumber(chnd);
-            string s = $"{mt.Tick:00000} {mt} Dev:{devId} Ch:{chanNum} ";
-
-            switch (evt)
-            {
-                case NoteOn e:
-                    s = $"{s} Note:{e.Note} Vel:{e.Velocity}";
-                    break;
-
-                case NoteOff e:
-                    s = $"{s} Note:{e.Note}";
-                    break;
-
-                case Controller e:
-                    s = $"{s} Ctlr:{e.ControllerId} Val:{e.Value}";
-                    break;
-
-                default: // Ignore others for now.
-                    break;
-            }
-
-            return s;
         }
         #endregion
 
         #region Misc Stuff
-        /// <summary>Handle state change.</summary>
-        /// <param name="state">New state</param>
-        void UpdateState(ExecState state)
-        {
-            switch (state)
-            {
-                case ExecState.Idle:
-                    _scriptFn = null;
-                    chkPlay.Checked = false;
-                    chkPlay.Enabled = false;
-                    _execState = ExecState.Idle;
-                    break;
-
-                case ExecState.Stop:
-                    if (_scriptFn is not null)
-                    {
-                        chkPlay.Checked = false;
-                        chkPlay.Enabled = true;
-                        _execState = ExecState.Stop;
-                    }
-                    else
-                    {
-                        chkPlay.Checked = false;
-                        chkPlay.Enabled = false;
-                        _execState = ExecState.Idle;
-                    }
-                    break;
-
-                case ExecState.Run:
-                    if (_scriptFn is not null)
-                    {
-                        chkPlay.Checked = true;
-                        chkPlay.Enabled = true;
-                        _execState = ExecState.Run;
-                    }
-                    else
-                    {
-                        chkPlay.Checked = false;
-                        chkPlay.Enabled = false;
-                        _execState = ExecState.Idle;
-                    }
-                    break;
-
-                case ExecState.Dead:
-                    chkPlay.Checked = false;
-                    chkPlay.Enabled = false;
-                    _execState = ExecState.Dead;
-                    break;
-            }
-        }
-
         /// <summary>
         /// Capture bad things and display them to the user.
         /// </summary>
@@ -1103,18 +1080,7 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Clean up devices. Doesn't throw.
-        /// </summary>
-        void ResetDevices()
-        {
-            _inputDevices.ForEach(d => d.Dispose());
-            _inputDevices.Clear();
-            _outputDevices.ForEach(d => d.Dispose());
-            _outputDevices.Clear();
-        }
-
-        /// <summary>
-        /// Set timer for this tempo. Doesn't throw.
+        /// Set timer for this tempo.
         /// </summary>
         /// <param name="tempo"></param>
         void SetTimer(int tempo)
@@ -1124,11 +1090,11 @@ namespace Nebulua
                 double sec_per_beat = 60.0 / tempo;
                 double msec_per_sub = 1000 * sec_per_beat / MusicTime.TicksPerBeat;
                 double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
-                _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimer_Callback);
+                _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimerCallback);
             }
             else // stop
             {
-                _mmTimer.SetTimer(0, MmTimer_Callback);
+                _mmTimer.SetTimer(0, MmTimerCallback);
             }
         }
         #endregion
