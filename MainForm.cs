@@ -49,14 +49,14 @@ namespace Nebulua
         /// <summary>Midi traffic logger.</summary>
         readonly Logger _loggerMidi = LogManager.CreateLogger("MID");
 
+        // enum ExecState { Idle, Stop, Run, Dead }
+        ExecState _execState = ExecState.Idle;
+
         /// <summary>The current settings.</summary>
         UserSettings _settings = new();
 
         /// <summary>The interop.</summary>
         readonly Interop _interop = new();
-
-        ///// <summary>Interop serializing access.</summary>
-        //readonly object _interopLock = new();
 
         /// <summary>Fast timer.</summary>
         readonly MmTimerEx _mmTimer = new();
@@ -76,131 +76,6 @@ namespace Nebulua
         /// <summary>All channel play controls.</summary>
         readonly List<ChannelControl> _channelControls = [];
         #endregion
-
-
-
-
-
-//////////////////// NEBULUA ////////////////////
-//////////////////// NEBULUA ////////////////////
-//////////////////// NEBULUA ////////////////////
-
-        // enum ExecState { Idle, Stop, Run, Dead }
-        ExecState _execState = ExecState.Idle;
-
-        ExecState CurrentState
-        {
-            get { return _execState; }
-            set { if (value != _execState) { UpdateState(value); } }
-        }
-
-        /// <summary>Handle state change.</summary>
-        /// <param name="state">New state</param>
-        void UpdateState(ExecState state)
-        {
-            switch (state)
-            {
-                case ExecState.Idle:
-                    _scriptFn = null;
-                    chkPlay.Checked = false;
-                    chkPlay.Enabled = false;
-                    _execState = ExecState.Idle;
-                    break;
-
-                case ExecState.Stop:
-                    if (_scriptFn is not null)
-                    {
-                        chkPlay.Checked = false;
-                        chkPlay.Enabled = true;
-                        _execState = ExecState.Stop;
-                    }
-                    else
-                    {
-                        chkPlay.Checked = false;
-                        chkPlay.Enabled = false;
-                        _execState = ExecState.Idle;
-                    }
-                    break;
-
-                case ExecState.Run:
-                    if (_scriptFn is not null)
-                    {
-                        chkPlay.Checked = true;
-                        chkPlay.Enabled = true;
-                        _execState = ExecState.Run;
-                    }
-                    else
-                    {
-                        chkPlay.Checked = false;
-                        chkPlay.Enabled = false;
-                        _execState = ExecState.Idle;
-                    }
-                    break;
-
-                case ExecState.Dead:
-                    chkPlay.Checked = false;
-                    chkPlay.Enabled = false;
-                    _execState = ExecState.Dead;
-                    break;
-            }
-        }
-
-
-//////////////////// NEBULATOR ////////////////////
-//////////////////// NEBULATOR ////////////////////
-//////////////////// NEBULATOR ////////////////////
-        enum PlayCommand { Start, Stop, Rewind, StopRewind, UpdateUiTime }
-
-        bool ProcessPlay(PlayCommand cmd)
-        {
-            bool ret = true;
-
-            switch (cmd)
-            {
-                case PlayCommand.Start:
-                    bool ok = _script is not null && (!_needCompile || CompileScript());
-                    if (ok)
-                    {
-                        _startTime = DateTime.Now;
-                        chkPlay.Checked = true;
-                        _mmTimer.Start();
-                    }
-                    else
-                    {
-                        chkPlay.Checked = false;
-                        ret = false;
-                    }
-                    break;
-
-                case PlayCommand.Stop:
-                    chkPlay.Checked = false;
-                    _mmTimer.Stop();
-
-                    // Send midi stop all notes just in case.
-                    MidiManager.Instance.Kill();
-                    break;
-
-                case PlayCommand.Rewind:
-                    timeBar.Rewind();
-                    break;
-
-                case PlayCommand.StopRewind:
-                    chkPlay.Checked = false;
-                    timeBar.Rewind();
-                    break;
-
-                case PlayCommand.UpdateUiTime:
-                    break;
-            }
-
-            return ret;
-        }
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////
-
-
-
 
         #region Lifecycle
         /// <summary>
@@ -264,7 +139,7 @@ namespace Nebulua
 
             btnKill.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
-            btnKill.Click += (_, __) => { MidiManager.Instance.Kill(); CurrentState = ExecState.Idle; };
+            btnKill.Click += (_, __) => { MidiManager.Instance.Kill(); UpdateState(ExecState.Idle); };
 
             btnSettings.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
@@ -334,7 +209,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            CurrentState = ExecState.Idle;
+            UpdateState(ExecState.Idle);
 
             // Just in case.
             MidiManager.Instance.Kill();
@@ -395,7 +270,7 @@ namespace Nebulua
                 MidiManager.Instance.Kill();
                 _mmTimer.Stop();
                 DestroyControls();
-                CurrentState = ExecState.Idle;
+                UpdateState(ExecState.Idle);
                 MidiManager.Instance.DestroyChannels();
                 MidiManager.Instance.DestroyDevices();
 
@@ -515,6 +390,59 @@ namespace Nebulua
         #endregion
 
         #region Run Control
+        /// <summary>Handle state change.</summary>
+        /// <param name="state">New state</param>
+        void UpdateState(ExecState state)
+        {
+            if (state == _execState) return;
+
+            switch (state)
+            {
+                case ExecState.Idle:
+                    _scriptFn = null;
+                    chkPlay.Checked = false;
+                    chkPlay.Enabled = false;
+                    _execState = ExecState.Idle;
+                    break;
+
+                case ExecState.Stop:
+                    if (_scriptFn is not null)
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = true;
+                        _execState = ExecState.Stop;
+                    }
+                    else
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = false;
+                        _execState = ExecState.Idle;
+                    }
+                    break;
+
+                case ExecState.Run:
+                    if (_scriptFn is not null)
+                    {
+                        chkPlay.Checked = true;
+                        chkPlay.Enabled = true;
+                        _execState = ExecState.Run;
+                    }
+                    else
+                    {
+                        chkPlay.Checked = false;
+                        chkPlay.Enabled = false;
+                        _execState = ExecState.Idle;
+                    }
+                    break;
+
+                case ExecState.Dead:
+                    chkPlay.Checked = false;
+                    chkPlay.Enabled = false;
+                    _execState = ExecState.Dead;
+                    break;
+            }
+        }
+        
         /// <summary>
         /// Update state.
         /// </summary>
@@ -534,11 +462,11 @@ namespace Nebulua
                     }
                 }
 
-                CurrentState = ExecState.Run;
+                UpdateState(ExecState.Run);
             }
             else
             {
-                CurrentState = ExecState.Stop;
+                UpdateState(ExecState.Stop);
             }
         }
 
@@ -581,7 +509,7 @@ namespace Nebulua
         {
             if (e.KeyCode == Keys.Space)
             {
-                CurrentState = CurrentState == ExecState.Stop ? ExecState.Run : ExecState.Stop;
+                UpdateState(_execState == ExecState.Stop ? ExecState.Run : ExecState.Stop);
                 e.Handled = true;
             }
             base.OnKeyDown(e);
@@ -617,13 +545,13 @@ namespace Nebulua
             {
                 // Logging an error will cause the app to exit.
                 _loggerApp.Exception(e);
-                CurrentState = ExecState.Dead;
+                UpdateState(ExecState.Dead);
             }
             else
             {
                 // User can decide what to do with this. They may be recoverable so use warn.
                 _loggerApp.Warn(e.Message);
-                CurrentState = ExecState.Idle;
+                UpdateState(ExecState.Idle);
             }
         }
         #endregion
@@ -636,7 +564,7 @@ namespace Nebulua
         /// <param name="periodElapsed"></param>
         void MmTimerCallback(double totalElapsed, double periodElapsed)
         {
-            if (CurrentState != ExecState.Run) return;
+            if (_execState != ExecState.Run) return;
 
             this.InvokeIfRequired(_ =>
             {
@@ -659,7 +587,7 @@ namespace Nebulua
                         else
                         {
                             // Stop and rewind.
-                            CurrentState = ExecState.Idle;
+                            UpdateState(ExecState.Idle);
                             timeBar.Rewind();
                             MidiManager.Instance.Kill(); // just in case
                         }
@@ -990,7 +918,7 @@ namespace Nebulua
                 if (e.Level == LogLevel.Error)
                 {
                     traffic.AppendLine("Fatal error - please fix then restart");
-                    CurrentState = ExecState.Dead;
+                    UpdateState(ExecState.Dead);
                 }
             });
         }

@@ -39,56 +39,18 @@ namespace Test
     }
 
 
-    #region Script api functions TODO1
+    #region Script api functions ????
 
     // /// api.send_midi_note(hnd_strings, note_num, volume)
     // void SendMidiNote(int chnd, int note_num, double volume)
-    // {
-    //     if (note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException(note_num); }
-
-    //     var ch = _mgr.GetOutputChannel(chnd);
-
-    //     if (ch is not null)
-    //     {
-    //         BaseMidiEvent evt = volume == 0.0 ?
-    //             new NoteOff(ChannelHandle.ChannelNumber(chnd), note_num) :
-    //             new NoteOn(ChannelHandle.ChannelNumber(chnd), note_num, (int)MathUtils.Constrain(volume * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI));
-    //         ch.Device.Send(evt);
-    //     }
-    //     else
-    //     {
-    //         // error?
-    //     }
-    // }
 
     // /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
     // void SendMidiController(int chnd, int controller_id, int value)
-    // {
-    //     if (controller_id is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException((controller_id)); }
-    //     if (value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentOutOfRangeException((value)); }
-    //     var ch = _mgr.GetOutputChannel(chnd);
-    //     if (ch is not null)
-    //     {
-    //         BaseMidiEvent evt = new Controller(ChannelHandle.ChannelNumber(chnd), controller_id, value);
-    //         ch.Device.Send(evt);
-    //     }
-    //     else
-    //     {
-    //         // error?
-    //     }
-    // }
 
     // /// Callback from script: function receive_midi_note(chan_hnd, note_num, volume)
     // void ReceiveMidiNote(int chnd, int note_num, double volume)
-    // {
-    // }
 
     // /// Callback from script: function receive_midi_controller(chan_hnd, controller, value)
     // void ReceiveMidiController(int chnd, int controller_id, int value)
-    // {
-    // }
     #endregion
-
-
-    
 }
