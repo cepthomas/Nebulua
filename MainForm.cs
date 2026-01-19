@@ -181,8 +181,8 @@ namespace Nebulua
             Interop.SendMidiController += Interop_SendMidiController;
             Interop.SetTempo += Interop_SetTempo;
 
-            MidiManager.Instance.MessageReceive += Mgr_MessageReceive;
-            MidiManager.Instance.MessageSend += Mgr_MessageSend;
+            MidiManager.Instance.MessageReceived += Mgr_MessageReceived;
+            MidiManager.Instance.MessageSent += Mgr_MessageSent;
 
             Thread.CurrentThread.Name = "MAIN";
         }
@@ -507,11 +507,22 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Space)
+            switch (e.KeyCode)
             {
-                UpdateState(_execState == ExecState.Stop ? ExecState.Run : ExecState.Stop);
-                e.Handled = true;
+                case Keys.Space:  // Handle start/stop toggle.
+                    UpdateState(_execState == ExecState.Stop ? ExecState.Run : ExecState.Stop);
+                    e.Handled = true;
+                    break;
+
+                case Keys.Escape:  // Reset timeBar.
+                    timeBar.ResetSelection();
+                    e.Handled = true;
+                    break;
+
+                default:
+                    break;
             }
+
             base.OnKeyDown(e);
         }
 
@@ -605,8 +616,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        //void Midi_ReceiveEvent(object? sender, MidiEvent e)
-        void Mgr_MessageReceive(object? sender, BaseEvent e)
+        void Mgr_MessageReceived(object? sender, BaseEvent e)
         {
             try
             {
@@ -649,7 +659,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Mgr_MessageSend(object? sender, BaseEvent e)
+        void Mgr_MessageSent(object? sender, BaseEvent e)
         {
             // Actual sent.
             var indev = (MidiOutputDevice)sender!;
@@ -845,7 +855,6 @@ namespace Nebulua
                 {
                     BoundChannel = chan,
                     Options = DisplayOptions.SoloMute,
-                    UserRenderer = null,
                     Location = new(x, y),
                     BorderStyle = BorderStyle.FixedSingle,
                     DrawColor = _settings.DrawColor,
@@ -853,7 +862,6 @@ namespace Nebulua
                     Volume = VolumeDefs.DEFAULT_VOLUME,
                 };
                 ctrl.ChannelChange += ChannelControl_ChannelChange;
-                ctrl.SendMidi += ChannelControl_SendMidi;
 
                 Controls.Add(ctrl);
                 x += ctrl.Width + 4; // Width is not valid until after previous statement.
@@ -862,17 +870,6 @@ namespace Nebulua
         #endregion
 
         #region Events
-        /// <summary>
-        /// UI clicked something -> send some midi. Works for different sources.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControl_SendMidi(object? sender, BaseEvent e)
-        {
-            var channel = (sender as ChannelControl)!.BoundChannel;
-            channel.Send(e);
-        }
-
         /// <summary>
         /// UI clicked something -> configure channel.
         /// </summary>

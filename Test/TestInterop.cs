@@ -7,6 +7,7 @@ using Ephemera.NBagOfTricks.PNUT;
 using Nebulua;
 
 
+
 namespace Test
 {
     /// <summary>Utility functions.</summary>
@@ -43,7 +44,7 @@ namespace Test
             // Run script steps.
             for (int i = 1; i < 100; i++)
             {
-                var stat = interop.Step(State.Instance.CurrentTick++);
+                var stat = interop.Step(i);
 
                 // Inject some received midi events.
                 if (i % 20 == 0)
@@ -62,6 +63,22 @@ namespace Test
                     UT_EQUAL(stat, 0);
                 }
             }
+
+    // Script api functions ????
+
+    // /// api.send_midi_note(hnd_strings, note_num, volume)
+    // void SendMidiNote(int chnd, int note_num, double volume)
+
+    // /// api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
+    // void SendMidiController(int chnd, int controller_id, int value)
+
+    // /// Callback from script: function receive_midi_note(chan_hnd, note_num, volume)
+    // void ReceiveMidiNote(int chnd, int note_num, double volume)
+
+    // /// Callback from script: function receive_midi_controller(chan_hnd, controller, value)
+    // void ReceiveMidiController(int chnd, int controller_id, int value)
+
+            
         }
     }
 }
