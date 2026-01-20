@@ -7,7 +7,7 @@
 local api = require("script_api")
 local mus = require("music_defs")
 local mid = require("midi_defs")
-local bt  = require("music_time")
+local mt  = require("music_time")
 local ut  = require('lbot_utils')
 
 
@@ -41,17 +41,17 @@ local add_loop
 -- Called once to initialize your script stuff. Required.
 function setup()
     -- Set up all the loop notes. Key is Ab.
-    add_loop("Ab4", bt.beats_to_tick(17,3),  bt.beats_to_tick(8,1))
-    add_loop("Ab5", bt.beats_to_tick(17,2),  bt.beats_to_tick(3,1))
+    add_loop("Ab4", mt.beats_to_tick(17,3),  mt.beats_to_tick(8,1))
+    add_loop("Ab5", mt.beats_to_tick(17,2),  mt.beats_to_tick(3,1))
     -- 3rd
-    add_loop("C5",  bt.beats_to_tick(21,1),  bt.beats_to_tick(5,3))
+    add_loop("C5",  mt.beats_to_tick(21,1),  mt.beats_to_tick(5,3))
     -- 4th
-    add_loop("Db5", bt.beats_to_tick(18,2),  bt.beats_to_tick(12,3))
+    add_loop("Db5", mt.beats_to_tick(18,2),  mt.beats_to_tick(12,3))
     -- 5th
-    add_loop("Eb5", bt.beats_to_tick(20,0),  bt.beats_to_tick(9,2))
+    add_loop("Eb5", mt.beats_to_tick(20,0),  mt.beats_to_tick(9,2))
     -- 6th
-    add_loop("F4",  bt.beats_to_tick(19,3),  bt.beats_to_tick(4,2))
-    add_loop("F5",  bt.beats_to_tick(20,0),  bt.beats_to_tick(14,1))
+    add_loop("F4",  mt.beats_to_tick(19,3),  mt.beats_to_tick(4,2))
+    add_loop("F5",  mt.beats_to_tick(20,0),  mt.beats_to_tick(14,1))
 
     -- How fast?
     api.set_tempo(61)

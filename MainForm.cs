@@ -14,7 +14,7 @@ using Ephemera.MidiLib;
 using Ephemera.MusicLib;
 
 
-// TODO kinda slow startup running in debugger.
+// TODO1 kinda slow startup running in debugger.
 
 
 namespace Nebulua
@@ -95,8 +95,6 @@ namespace Nebulua
             _settings = (UserSettings)SettingsCore.Load(appDir, typeof(UserSettings));
             LogManager.MinLevelFile = _settings.FileLogLevel;
             LogManager.MinLevelNotif = _settings.NotifLogLevel;
-            LogManager.SourceInfo = false;
-            //LogManager.Timestamp = false;
             LogManager.LogMessage += LogManager_LogMessage;
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
@@ -533,7 +531,6 @@ namespace Nebulua
         void ProcessException(Exception e)
         {
             bool fatal = false; // default
-         //   string msg = e.Message; // default
 
             switch (e)
             {
@@ -547,6 +544,10 @@ namespace Nebulua
                 case AppException: // from app - generally not fatal
                     break;
 
+                case MidiLibException: // from lib - generally fatal
+                    fatal = true;
+                    break;
+                    
                 default: // other/unknon - assume fatal
                     fatal = true;
                     break;
@@ -554,7 +555,7 @@ namespace Nebulua
 
             if (fatal)
             {
-                // Logging an error will cause the app to exit.
+                // Logging an error will cause the app to stop.
                 _loggerApp.Exception(e);
                 UpdateState(ExecState.Dead);
             }
@@ -914,7 +915,7 @@ namespace Nebulua
 
                 if (e.Level == LogLevel.Error)
                 {
-                    traffic.AppendLine("Fatal error - please fix then restart");
+                    traffic.AppendLine("Fatal error - please fix then reload or restart");
                     UpdateState(ExecState.Dead);
                 }
             });

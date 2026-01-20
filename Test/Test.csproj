@@ -16,7 +16,7 @@
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <StartupObject>Ephemera.Nebulua.Test.Program</StartupObject>
+        <!-- <StartupObject>Ephemera.Nebulua.Test.Program</StartupObject> -->
         <NoWin32Manifest>true</NoWin32Manifest>
         <IsPublishable>False</IsPublishable>
         <!-- en none -->
