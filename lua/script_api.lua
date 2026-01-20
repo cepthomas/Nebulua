@@ -97,6 +97,7 @@ end
 --- Create an input channel.
 -- @param dev_name system name
 -- @param chan_num channel number
+-- @param chan_name optional readable name
 -- @return the new chan_hnd or 0 if invalid
 function M.open_midi_input(dev_name, chan_num, chan_name)
     local chan_hnd = li.open_midi_input(dev_name, chan_num, chan_name)
@@ -108,12 +109,14 @@ end
 --- Create an output channel.
 -- @param dev_name system name
 -- @param chan_num channel number
--- @param patch send this patch number if >= 0
+-- @param chan_name optional readable name
+-- @param patch send this patch name
+-- @param alias_file optional instrument names file
 -- @return the new chan_hnd
-function M.open_midi_output(dev_name, chan_num, chan_name, patch)
-    local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch)
+function M.open_midi_output(dev_name, chan_num, chan_name, patch, alias_file)
+    local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch, alias_file)
     _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
-    if chan_hnd == -1 then error(string.format("Invalid midi output dev:%s num:%d name:%s patch:%d", dev_name, chan_num, chan_name, patch), 2) end
+    if chan_hnd == -1 then error(string.format("Invalid midi output dev:%s num:%d name:%s patch:%s", dev_name, chan_num, chan_name, patch), 2) end
     return chan_hnd
 end
 

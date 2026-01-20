@@ -52,9 +52,9 @@ int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 
 //--------------------------------------------------------//
 
-int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, const char* patch)
+int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, const char* patch, const char* alias_file)
 {
-    OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, chan_name, patch);
+    OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, chan_name, patch, alias_file);
     Interop::Notify(args);
     return args->ret;
 }

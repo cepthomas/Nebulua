@@ -66,10 +66,11 @@ M.host_funcs =
         description = "Open a midi output channel.",
         args =
         {
-            { name = "dev_name",  type = "S", description = "Midi device name" },
-            { name = "chan_num",  type = "I", description = "Midi channel number 1 => 16" },
-            { name = "chan_name", type = "S", description = "User channel name" },
-            { name = "patch",     type = "S", description = "Midi patch name" },
+            { name = "dev_name",   type = "S", description = "Midi device name" },
+            { name = "chan_num",   type = "I", description = "Midi channel number 1 => 16" },
+            { name = "chan_name",  type = "S", description = "User channel name" },
+            { name = "patch",      type = "S", description = "Midi patch name" },
+            { name = "alias_file", type = "S", description = "Optional instrument name file" },
         },
         ret = { type = "I", description = "Channel handle or -1 if error" }
     },

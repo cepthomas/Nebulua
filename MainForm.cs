@@ -168,6 +168,7 @@ namespace Nebulua
             ddbtnFile.BackColor = BackColor;
             ddbtnFile.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
             ddbtnFile.Enabled = true;
+            ddbtnFile.Opening += (_, _) => PopulateFileMenu();
             ddbtnFile.Selected += File_Selected;
             #endregion
 
@@ -191,8 +192,6 @@ namespace Nebulua
         /// <param name="e">Args</param>
         protected override void OnLoad(EventArgs e)
         {
-            PopulateFileMenu();
-
             if (_settings.OpenLastFile && _settings.RecentFiles.Count > 0)
             {
                 OpenScriptFile(_settings.RecentFiles[0]);
@@ -295,6 +294,9 @@ namespace Nebulua
                 var scriptDir = Path.GetDirectoryName(_scriptFn);
                 var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
 
+                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
+                _settings.UpdateMru(_scriptFn!);
+
                 _interop.RunScript(_scriptFn, luaPath);
                 string smeta = _interop.Setup();
 
@@ -315,11 +317,6 @@ namespace Nebulua
                 // Start timer.
                 sldTempo.Value = 100;
                 _mmTimer.Start();
-
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
-                _settings.UpdateMru(_scriptFn!);
-
-                PopulateFileMenu();
 
                 timeBar.Invalidate(); // force update
             }
@@ -530,40 +527,35 @@ namespace Nebulua
         /// <param name="e"></param>
         void ProcessException(Exception e)
         {
-            bool fatal = false; // default
-
             switch (e)
             {
                 case LuaException ex:
                     if (ex.Error.Contains("FATAL")) // bad lua internal error
                     {
-                        fatal = true;
+                        // Logging an exception will cause the app to stop.
+                        _loggerApp.Exception(e);
+                        UpdateState(ExecState.Dead);
+                    }
+                    else // Just warn w/context.
+                    {
+                        _loggerApp.Warn(ex.Context);
+                        UpdateState(ExecState.Idle);
                     }
                     break;
 
                 case AppException: // from app - generally not fatal
-                    break;
-
-                case MidiLibException: // from lib - generally fatal
-                    fatal = true;
+                case MidiLibException: // from lib - generally not fatal
+                    // User can decide what to do with this. They may be recoverable so use warn.
+                    _loggerApp.Warn(e.Message);
+                    _loggerApp.Debug(e.ToString());
+                    UpdateState(ExecState.Idle);
                     break;
                     
                 default: // other/unknon - assume fatal
-                    fatal = true;
+                    // Logging an exception will cause the app to stop.
+                    _loggerApp.Exception(e);
+                    UpdateState(ExecState.Dead);
                     break;
-            }
-
-            if (fatal)
-            {
-                // Logging an error will cause the app to stop.
-                _loggerApp.Exception(e);
-                UpdateState(ExecState.Dead);
-            }
-            else
-            {
-                // User can decide what to do with this. They may be recoverable so use warn.
-                _loggerApp.Warn(e.Message);
-                UpdateState(ExecState.Idle);
             }
         }
         #endregion

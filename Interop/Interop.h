@@ -20,15 +20,18 @@ public:
     property String^ chan_name;
     /// <summary>Midi patch name</summary>
     property String^ patch;
+    /// <summary>Optional instrument name file</summary>
+    property String^ alias_file;
     /// <summary>Channel handle or -1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    OpenMidiOutputArgs(const char* dev_name, int chan_num, const char* chan_name, const char* patch)
+    OpenMidiOutputArgs(const char* dev_name, int chan_num, const char* chan_name, const char* patch, const char* alias_file)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
         this->chan_name = gcnew String(chan_name);
         this->patch = gcnew String(patch);
+        this->alias_file = gcnew String(alias_file);
     }
 };
 

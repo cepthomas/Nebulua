@@ -52,8 +52,9 @@ int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller,
 // @param[in] chan_num Midi channel number 1 => 16
 // @param[in] chan_name User channel name
 // @param[in] patch Midi patch name
+// @param[in] alias_file Optional instrument name file
 // @return Channel handle or -1 if error
-int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, const char* patch);
+int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, const char* patch, const char* alias_file);
 
 // Open a midi input channel.
 // @param[in] l Internal lua state.

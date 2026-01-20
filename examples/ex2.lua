@@ -12,32 +12,32 @@ Some  won't work unless you have the exact same HW/SW configuration.
 local api = require("script_api")
 local mus = require("music_defs")
 local mid = require("midi_defs")
-local bt  = require("music_time")
+local mt  = require("music_time")
 local ut  = require("lbot_utils")
 local sx  = require("stringex")
 
 
 -- Acoustica Expanded Instruments presets. TODO1 tbd_load_defs('exp_defs.ini')
-exp_instruments =
-{
-    AmbientWind = 000, AmbientWind2 = 001, AmbientWind3 = 002, AmbientWind4 = 003, AmbientWind5 = 004, AmbientStrings = 005, EightiesCheezeSynth = 006, 
-    Jump = 007, FMChime = 008, FMBell = 009, StringPad = 010, GlassFlute = 011, SweetDreams = 012, RHString1 = 013, 
-    RHString2 = 014, Streak = 015, Boom = 016, Drips = 017, WaterWhistle1 = 018, WaterWhistle2 = 019, WaterWhistle3 = 020, 
-    BoyBand = 021, ShimmerVox = 022, StarChoir1 = 023, StarChoir2 = 024, SpacePiano = 025, GalaxyBell = 026, 
-    OctaveStringPad = 027, OctaveStringPad2 = 028, OctaveStringPad3 = 029, OctaveStringPad4 = 030, LowNoise1 = 031, LowNoise2 = 032, 
-    GreatNoise = 033, WineGlass = 034, WineGlassQ = 035, DrunkofftheVine = 036, DisorientingPad = 037, GlurbleVox = 038, 
-    EtherealVox = 039, SynthGuitar1 = 040, SynthGuitar2 = 041, MetallicPad = 042, PadoftheOrient = 043, CleanandSynthGt = 044, 
-    ShimmerBell = 045, MilkyWay = 046, WarmBells = 047, WarmBells2 = 048, CavernousStrings = 049, SlowElGuitar = 050, 
-    BrightVox = 051, BrightVox2 = 052, OrganVox1 = 053, OrganVox2 = 054, EightiesGirl = 055, EightiesGirl2 = 056, 
-    EightiesFretless = 057, EightiesFretless2 = 058, C64PulseBass = 059, C64BassandPerc = 060, C64PulseBass2 = 061, VoxPercussion = 062, 
-    HallStringsFast = 063, HallStringsSlow = 064, DreamyHallStrings = 065
-}
+-- exp_instruments =
+-- {
+--     AmbientWind = 000, AmbientWind2 = 001, AmbientWind3 = 002, AmbientWind4 = 003, AmbientWind5 = 004, AmbientStrings = 005, EightiesCheezeSynth = 006, 
+--     Jump = 007, FMChime = 008, FMBell = 009, StringPad = 010, GlassFlute = 011, SweetDreams = 012, RHString1 = 013, 
+--     RHString2 = 014, Streak = 015, Boom = 016, Drips = 017, WaterWhistle1 = 018, WaterWhistle2 = 019, WaterWhistle3 = 020, 
+--     BoyBand = 021, ShimmerVox = 022, StarChoir1 = 023, StarChoir2 = 024, SpacePiano = 025, GalaxyBell = 026, 
+--     OctaveStringPad = 027, OctaveStringPad2 = 028, OctaveStringPad3 = 029, OctaveStringPad4 = 030, LowNoise1 = 031, LowNoise2 = 032, 
+--     GreatNoise = 033, WineGlass = 034, WineGlassQ = 035, DrunkofftheVine = 036, DisorientingPad = 037, GlurbleVox = 038, 
+--     EtherealVox = 039, SynthGuitar1 = 040, SynthGuitar2 = 041, MetallicPad = 042, PadoftheOrient = 043, CleanandSynthGt = 044, 
+--     ShimmerBell = 045, MilkyWay = 046, WarmBells = 047, WarmBells2 = 048, CavernousStrings = 049, SlowElGuitar = 050, 
+--     BrightVox = 051, BrightVox2 = 052, OrganVox1 = 053, OrganVox2 = 054, EightiesGirl = 055, EightiesGirl2 = 056, 
+--     EightiesFretless = 057, EightiesFretless2 = 058, C64PulseBass = 059, C64BassandPerc = 060, C64PulseBass2 = 061, VoxPercussion = 062, 
+--     HallStringsFast = 063, HallStringsSlow = 064, DreamyHallStrings = 065
+-- }
 
 
 -- Aliases for imports - less typing.
 local inst = mid.instruments
 local ctrl = mid.controllers
-local exinst = exp_instruments
+-- local exinst = exp_instruments
 
 -- Say hello.
 api.log_info('Loading daw_host.lua...')
@@ -54,7 +54,7 @@ local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "my input")
 local midi_device_out  = "loopMIDI Port 2"  -- DAW host
 local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       "Glockenspiel")
 local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",       "SynthBass1")
-local hnd_strings = api.open_midi_output(midi_device_out, 4,  "strings",    exinst.BrightVox) --"StringEnsemble1")
+local hnd_strings = api.open_midi_output(midi_device_out, 4,  "strings",    "BrightVox", "exp_defs.ini") -- TODO1 
 -- PanFlute 075 StringEnsemble1 048
 
 
@@ -91,10 +91,10 @@ end
 -- Main work loop called every subbeat/tick. Required.
 function step(tick)
     -- Overhead.
-    api.process_step(tick)
+    -- api.process_step(tick)
 
     -- Other work you may want to do. Like do something every new bar.
-        local bar, beat, sub = bt.tick_to_bt(tick)
+        local bar, beat, sub = mt.tick_to_mt(tick)
         if beat == 2 and sub == 0 then
             -- api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
             _algo_func(tick)
