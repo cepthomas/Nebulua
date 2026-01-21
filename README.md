@@ -183,19 +183,19 @@ Call these from your script.
 
 
 ```lua
-function api.open_midi_output(dev_name, chan_num, chan_name, patch)
+function api.open_output_channel(dev_name, chan_num, chan_name, patch)
 ```
-Register an output midi channel.
+Register an output channel.
 
 - dev_name: The system name.
 - chan_num: Specific channel number.
 - chan_name: Name for channel.
-- patch: Send this patch name.
+- patch: Send this patch number.
 - return: A channel handle to use in subsequent functions.
 
 
 ```lua
-function api.open_midi_input(dev_name, chan_num, chan_name)
+function api.open_input_channel(dev_name, chan_num, chan_name)
 ```
 Register an input midi channel.
 
@@ -206,7 +206,7 @@ Register an input midi channel.
 
 
 ```lua
-function api.send_midi_note(chan_hnd, note_num, volume, dur)
+function api.send_note(chan_hnd, note_num, volume, dur)
 ```
 Send a note on/off immediately. Adds a note off if dur is specified and tick clock is running.
 
@@ -217,7 +217,7 @@ Send a note on/off immediately. Adds a note off if dur is specified and tick clo
 
 
 ```lua
-function api.send_midi_controller(chan_hnd, controller, value)
+function api.send_controller(chan_hnd, controller, value)
 ```
 Send a controller immediately. Useful for things like panning and bank select.
 
@@ -306,7 +306,7 @@ Called every subbeat/tick. Required.
 
 
 ```lua
-function receive_midi_note(chan_hnd, note_num, volume)
+function receive_note(chan_hnd, note_num, volume)
 ```
 Called when input note arrives. Optional.
 
@@ -317,7 +317,7 @@ Called when input note arrives. Optional.
 
 
 ```lua
-function rcv_control(chan_hnd, controller, value)
+function receive_control(chan_hnd, controller, value)
 ```
 Called when input controller arrives.
 
@@ -386,11 +386,11 @@ end
 Some helpers are found in `music_defs.lua`. The main useful ones are these.
 
 ```lua
-function def.get_notes_from_string(nstr)
+function def.get_notes_from_string(snote)
 ```
 Parse note or notes from input value.
 
-- nstr: see section [Standard Note Syntax](#standard-note-syntax).
+- snote: see section [Standard Note Syntax](#standard-note-syntax).
 - return: array of notes or empty if invalid.
 
 
@@ -431,11 +431,10 @@ MmTimer_Callback(double totalElapsed, double periodElapsed)  [in App\Core.cs]
 
 Lua -> host
 ```
-neb.send_midi_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
-    luainterop_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
-        Interop::NotifySend(args)  [in interop\Interop.cpp]
-            Interop_Send(object? _, SendArgs e)  [in App\Core.cs]
-                calls driver...
+neb.send_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
+    luainterop_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
+        Interop::Notify(args)  [in interop\Interop.cpp]
+            calls driver...
 ```
 
 
@@ -462,12 +461,14 @@ Nebulua
 |       music_time.lua
 |       midi_defs.lua
 |       music_defs.lua
+|       defs_api.lua
 |       script_api.lua
 |       step_types.lua
 +---LBOT - LuaBagOfTricks modules for application - link or copy or ...
 +---examples
 |       airport.lua
 |       example.lua
+|       ex2.lua
 +---lib - .NET dependencies
-\---test - various test code projects
+\---Test - various test code
 ```

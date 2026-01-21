@@ -174,10 +174,10 @@ namespace Nebulua
 
             // Hook script callbacks.
             Interop.Log += Interop_Log;
-            Interop.OpenMidiInput += Interop_OpenMidiInput;
-            Interop.OpenMidiOutput += Interop_OpenMidiOutput;
-            Interop.SendMidiNote += Interop_SendMidiNote;
-            Interop.SendMidiController += Interop_SendMidiController;
+            Interop.OpenInputChannel += Interop_OpenInputChannel;
+            Interop.OpenOutputChannel += Interop_OpenOutputChannel;
+            Interop.SendNote += Interop_SendNote;
+            Interop.SendController += Interop_SendController;
             Interop.SetTempo += Interop_SetTempo;
 
             MidiManager.Instance.MessageReceived += Mgr_MessageReceived;
@@ -620,15 +620,15 @@ namespace Nebulua
                 switch (e)
                 {
                     case NoteOn evt:
-                        _interop.ReceiveMidiNote(chnd, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
+                        _interop.ReceiveNote(chnd, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
                         break;
 
                     case NoteOff evt:
-                        _interop.ReceiveMidiNote(chnd, evt.Note, 0);
+                        _interop.ReceiveNote(chnd, evt.Note, 0);
                         break;
 
                     case Controller evt:
-                        _interop.ReceiveMidiController(chnd, (int)evt.ControllerId, evt.Value);
+                        _interop.ReceiveController(chnd, (int)evt.Id, evt.Value);
                         break;
 
                     default: // Ignore others for now.
@@ -697,7 +697,7 @@ namespace Nebulua
         /// <param name="_"></param>
         /// <param name="e"></param>
         /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
+        void Interop_OpenInputChannel(object? _, OpenInputChannelArgs e)
         {
             var chan_in = MidiManager.Instance.OpenInputChannel(e.dev_name, e.chan_num, e.chan_name);
             e.ret = chan_in.Handle;
@@ -709,7 +709,7 @@ namespace Nebulua
         /// <param name="_"></param>
         /// <param name="e"></param>
         /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
+        void Interop_OpenOutputChannel(object? _, OpenOutputChannelArgs e)
         {
             // Create channels and initialize controls.
             var chan_out = MidiManager.Instance.OpenOutputChannel(e.dev_name, e.chan_num, e.chan_name, e.patch);
@@ -721,7 +721,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_SendMidiNote(object? _, SendMidiNoteArgs e)
+        void Interop_SendNote(object? _, SendNoteArgs e)
         {
             e.ret = 0; // not used
 
@@ -744,7 +744,7 @@ namespace Nebulua
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
-        void Interop_SendMidiController(object? _, SendMidiControllerArgs e)
+        void Interop_SendController(object? _, SendControllerArgs e)
         {
             e.ret = 0; // not used
 

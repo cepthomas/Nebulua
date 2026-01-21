@@ -31,8 +31,8 @@ M.script_funcs =
     },
 
     {
-        lua_func_name = "receive_midi_note",
-        host_func_name = "ReceiveMidiNote",
+        lua_func_name = "receive_note",
+        host_func_name = "ReceiveNote",
         description = "Called when midi input arrives.",
         args =
         {
@@ -44,13 +44,13 @@ M.script_funcs =
     },
 
     {
-        lua_func_name = "receive_midi_controller",
-        host_func_name = "ReceiveMidiController",
+        lua_func_name = "receive_controller",
+        host_func_name = "ReceiveController",
         description = "Called when midi input arrives.",
         args =
         {
             { name = "chan_hnd", type = "I", description = "Input channel handle" },
-            { name = "controller", type = "I", description = "Specific controller id 0 => 127" },
+            { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
         ret = { type = "I", description = "Unused" }
@@ -61,36 +61,35 @@ M.script_funcs =
 M.host_funcs =
 {
     {
-        lua_func_name = "open_midi_output",
-        host_func_name = "OpenMidiOutput",
-        description = "Open a midi output channel.",
+        lua_func_name = "open_output_channel",
+        host_func_name = "OpenOutputChannel",
+        description = "Open an output channel.",
         args =
         {
-            { name = "dev_name",   type = "S", description = "Midi device name" },
-            { name = "chan_num",   type = "I", description = "Midi channel number 1 => 16" },
+            { name = "dev_name",   type = "S", description = "Device name" },
+            { name = "chan_num",   type = "I", description = "Channel number 1 => 16" },
             { name = "chan_name",  type = "S", description = "User channel name" },
-            { name = "patch",      type = "S", description = "Midi patch name" },
-            { name = "alias_file", type = "S", description = "Optional instrument name file" },
+            { name = "patch",      type = "I", description = "Patch number" },
         },
         ret = { type = "I", description = "Channel handle or -1 if error" }
     },
 
     {
-        lua_func_name = "open_midi_input",
-        host_func_name = "OpenMidiInput",
-        description = "Open a midi input channel.",
+        lua_func_name = "open_input_channel",
+        host_func_name = "OpenInputChannel",
+        description = "Open an input channel.",
         args =
         {
-            { name = "dev_name",  type = "S", description = "Midi device name" },
-            { name = "chan_num",  type = "I", description = "Midi channel number 1 => 16 or 0 => all" },
+            { name = "dev_name",  type = "S", description = "Device name" },
+            { name = "chan_num",  type = "I", description = "Channel number 1 => 16" },
             { name = "chan_name", type = "S", description = "User channel name" },
         },
         ret = { type = "I", description = "Channel handle or -1 if error" }
     },
 
     {
-        lua_func_name = "send_midi_note",
-        host_func_name = "SendMidiNote",
+        lua_func_name = "send_note",
+        host_func_name = "SendNote",
         description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).",
         args =
         {
@@ -102,8 +101,8 @@ M.host_funcs =
     },
 
     {
-        lua_func_name = "send_midi_controller",
-        host_func_name = "SendMidiController",
+        lua_func_name = "send_controller",
+        host_func_name = "SendController",
         description = "Send a controller immediately.",
         args =
         {

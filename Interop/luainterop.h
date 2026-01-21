@@ -32,37 +32,36 @@ int luainterop_Step(lua_State* l, int tick);
 // @param[in] note_num Note number 0 => 127
 // @param[in] volume Volume 0.0 => 1.0
 // @return int Unused
-int luainterop_ReceiveMidiNote(lua_State* l, int chan_hnd, int note_num, double volume);
+int luainterop_ReceiveNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
 // Called when midi input arrives.
 // @param[in] l Internal lua state.
 // @param[in] chan_hnd Input channel handle
-// @param[in] controller Specific controller id 0 => 127
+// @param[in] controller Specific controller 0 => 127
 // @param[in] value Payload 0 => 127
 // @return int Unused
-int luainterop_ReceiveMidiController(lua_State* l, int chan_hnd, int controller, int value);
+int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int value);
 
 
 //============= C/Lua => App functions =============//
 
 
-// Open a midi output channel.
+// Open an output channel.
 // @param[in] l Internal lua state.
-// @param[in] dev_name Midi device name
-// @param[in] chan_num Midi channel number 1 => 16
+// @param[in] dev_name Device name
+// @param[in] chan_num Channel number 1 => 16
 // @param[in] chan_name User channel name
-// @param[in] patch Midi patch name
-// @param[in] alias_file Optional instrument name file
+// @param[in] patch Patch number
 // @return Channel handle or -1 if error
-int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, const char* patch, const char* alias_file);
+int luainterop_cb_OpenOutputChannel(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch);
 
-// Open a midi input channel.
+// Open an input channel.
 // @param[in] l Internal lua state.
-// @param[in] dev_name Midi device name
-// @param[in] chan_num Midi channel number 1 => 16 or 0 => all
+// @param[in] dev_name Device name
+// @param[in] chan_num Channel number 1 => 16
 // @param[in] chan_name User channel name
 // @return Channel handle or -1 if error
-int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name);
+int luainterop_cb_OpenInputChannel(lua_State* l, const char* dev_name, int chan_num, const char* chan_name);
 
 // If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 // @param[in] l Internal lua state.
@@ -70,7 +69,7 @@ int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num
 // @param[in] note_num Note number
 // @param[in] volume Volume 0.0 => 1.0
 // @return -1 if error
-int luainterop_cb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume);
+int luainterop_cb_SendNote(lua_State* l, int chan_hnd, int note_num, double volume);
 
 // Send a controller immediately.
 // @param[in] l Internal lua state.
@@ -78,7 +77,7 @@ int luainterop_cb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double 
 // @param[in] controller Specific controller 0 => 127
 // @param[in] value Payload 0 => 127
 // @return -1 if error
-int luainterop_cb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value);
+int luainterop_cb_SendController(lua_State* l, int chan_hnd, int controller, int value);
 
 // Script wants to log something.
 // @param[in] l Internal lua state.

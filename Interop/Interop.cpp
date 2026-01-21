@@ -29,18 +29,18 @@ int Interop::Step(int tick)
 }
 
 //--------------------------------------------------------//
-int Interop::ReceiveMidiNote(int chan_hnd, int note_num, double volume)
+int Interop::ReceiveNote(int chan_hnd, int note_num, double volume)
 {
-    int ret = luainterop_ReceiveMidiNote(_l, chan_hnd, note_num, volume);
+    int ret = luainterop_ReceiveNote(_l, chan_hnd, note_num, volume);
     if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     Collect();
     return ret; 
 }
 
 //--------------------------------------------------------//
-int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
+int Interop::ReceiveController(int chan_hnd, int controller, int value)
 {
-    int ret = luainterop_ReceiveMidiController(_l, chan_hnd, controller, value);
+    int ret = luainterop_ReceiveController(_l, chan_hnd, controller, value);
     if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     Collect();
     return ret; 
@@ -52,9 +52,9 @@ int Interop::ReceiveMidiController(int chan_hnd, int controller, int value)
 
 //--------------------------------------------------------//
 
-int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, const char* patch, const char* alias_file)
+int luainterop_cb_OpenOutputChannel(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch)
 {
-    OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, chan_name, patch, alias_file);
+    OpenOutputChannelArgs^ args = gcnew OpenOutputChannelArgs(dev_name, chan_num, chan_name, patch);
     Interop::Notify(args);
     return args->ret;
 }
@@ -62,9 +62,9 @@ int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_nu
 
 //--------------------------------------------------------//
 
-int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name)
+int luainterop_cb_OpenInputChannel(lua_State* l, const char* dev_name, int chan_num, const char* chan_name)
 {
-    OpenMidiInputArgs^ args = gcnew OpenMidiInputArgs(dev_name, chan_num, chan_name);
+    OpenInputChannelArgs^ args = gcnew OpenInputChannelArgs(dev_name, chan_num, chan_name);
     Interop::Notify(args);
     return args->ret;
 }
@@ -72,9 +72,9 @@ int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num
 
 //--------------------------------------------------------//
 
-int luainterop_cb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainterop_cb_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
 {
-    SendMidiNoteArgs^ args = gcnew SendMidiNoteArgs(chan_hnd, note_num, volume);
+    SendNoteArgs^ args = gcnew SendNoteArgs(chan_hnd, note_num, volume);
     Interop::Notify(args);
     return args->ret;
 }
@@ -82,9 +82,9 @@ int luainterop_cb_SendMidiNote(lua_State* l, int chan_hnd, int note_num, double 
 
 //--------------------------------------------------------//
 
-int luainterop_cb_SendMidiController(lua_State* l, int chan_hnd, int controller, int value)
+int luainterop_cb_SendController(lua_State* l, int chan_hnd, int controller, int value)
 {
-    SendMidiControllerArgs^ args = gcnew SendMidiControllerArgs(chan_hnd, controller, value);
+    SendControllerArgs^ args = gcnew SendControllerArgs(chan_hnd, controller, value);
     Interop::Notify(args);
     return args->ret;
 }
