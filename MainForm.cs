@@ -29,9 +29,9 @@ namespace Nebulua
         enum ExecState
         {
             /// <summary>No script loaded.</summary>
-            Idle,
+            NoScript,
             /// <summary>Script loaded, not running.</summary>
-            Stop,
+            Idle,
             /// <summary>Script loaded, running.</summary>
             Run,
             /// <summary>Fatal error, not running.</summary>
@@ -49,8 +49,8 @@ namespace Nebulua
         /// <summary>Midi traffic logger.</summary>
         readonly Logger _loggerMidi = LogManager.CreateLogger("MID");
 
-        // enum ExecState { Idle, Stop, Run, Dead }
-        ExecState _execState = ExecState.Idle;
+        /// <summary>The current state.</summary>
+        ExecState _execState = ExecState.NoScript;
 
         /// <summary>The current settings.</summary>
         UserSettings _settings = new();
@@ -137,7 +137,7 @@ namespace Nebulua
 
             btnKill.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
-            btnKill.Click += (_, __) => { MidiManager.Instance.Kill(); UpdateState(ExecState.Idle); };
+            btnKill.Click += (_, __) => { MidiManager.Instance.Kill(); };
 
             btnSettings.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
@@ -206,7 +206,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            UpdateState(ExecState.Idle);
+            UpdateState(ExecState.NoScript);
 
             // Just in case.
             MidiManager.Instance.Kill();
@@ -267,11 +267,10 @@ namespace Nebulua
                 MidiManager.Instance.Kill();
                 _mmTimer.Stop();
                 DestroyControls();
-                UpdateState(ExecState.Idle);
                 MidiManager.Instance.DestroyChannels();
                 MidiManager.Instance.DestroyDevices();
 
-                // Determine file to load.
+                // Determine file to load. Null means reload current.
                 if (openScriptFn is not null)
                 {
                     _scriptFn = openScriptFn;
@@ -280,8 +279,8 @@ namespace Nebulua
                 // Check valid file.
                 if (_scriptFn is null || !_scriptFn.EndsWith(".lua") || !Path.Exists(_scriptFn))
                 {
-                    _scriptFn = null;                    
-                    _scriptTouch = DateTime.MinValue;                    
+                    _scriptFn = null;
+                    _scriptTouch = DateTime.MinValue;
                     throw new AppException($"Invalid script file [{_scriptFn}]");
                 }
 
@@ -317,6 +316,8 @@ namespace Nebulua
                 // Start timer.
                 sldTempo.Value = 100;
                 _mmTimer.Start();
+
+                UpdateState(ExecState.Idle);
 
                 timeBar.Invalidate(); // force update
             }
@@ -393,25 +394,25 @@ namespace Nebulua
 
             switch (state)
             {
-                case ExecState.Idle:
+                case ExecState.NoScript:
                     _scriptFn = null;
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
-                    _execState = ExecState.Idle;
+                    _execState = ExecState.NoScript;
                     break;
 
-                case ExecState.Stop:
+                case ExecState.Idle:
                     if (_scriptFn is not null)
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = true;
-                        _execState = ExecState.Stop;
+                        _execState = ExecState.Idle;
                     }
                     else
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        _execState = ExecState.Idle;
+                        _execState = ExecState.NoScript;
                     }
                     break;
 
@@ -426,7 +427,7 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        _execState = ExecState.Idle;
+                        _execState = ExecState.NoScript;
                     }
                     break;
 
@@ -461,7 +462,7 @@ namespace Nebulua
             }
             else
             {
-                UpdateState(ExecState.Stop);
+                UpdateState(ExecState.Idle);
             }
         }
 
@@ -505,7 +506,11 @@ namespace Nebulua
             switch (e.KeyCode)
             {
                 case Keys.Space:  // Handle start/stop toggle.
-                    UpdateState(_execState == ExecState.Stop ? ExecState.Run : ExecState.Stop);
+                    switch (_execState)
+                    {
+                        case ExecState.Idle: UpdateState(ExecState.Run); break;
+                        case ExecState.Run: UpdateState(ExecState.Idle); break;
+                    }
                     e.Handled = true;
                     break;
 
@@ -538,8 +543,9 @@ namespace Nebulua
                     }
                     else // Just warn w/context.
                     {
-                        _loggerApp.Warn(ex.Context);
-                        UpdateState(ExecState.Idle);
+                        if (ex.Context != "") _loggerApp.Warn(ex.Context);
+                        if (ex.Error != "") _loggerApp.Warn(ex.Error);
+                        UpdateState(ExecState.NoScript);
                     }
                     break;
 
@@ -548,7 +554,7 @@ namespace Nebulua
                     // User can decide what to do with this. They may be recoverable so use warn.
                     _loggerApp.Warn(e.Message);
                     _loggerApp.Debug(e.ToString());
-                    UpdateState(ExecState.Idle);
+                    UpdateState(ExecState.NoScript);
                     break;
                     
                 default: // other/unknon - assume fatal

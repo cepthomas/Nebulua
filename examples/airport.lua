@@ -5,8 +5,9 @@
 
 -- Import modules we need.
 local api = require("script_api")
-local mus = require("music_defs")
+-- local mus = require("music_defs")
 local mid = require("midi_defs")
+local def = require("defs_api")
 local mt  = require("music_time")
 local ut  = require('lbot_utils')
 
@@ -19,7 +20,7 @@ api.log_info('Loading airport.lua...')
 
 -- Specify midi channels.
 local midi_device_out = "VirtualMIDISynth #1"
-local chan_hnd = api.open_midi_output(midi_device_out, 1, "voices", mid.instruments.Pad2Warm)
+local chan_hnd = api.open_output_channel(midi_device_out, 1, "voices", mid.instruments.Pad2Warm)
 
 
 ------------------------- Variables -----------------------------------
@@ -75,7 +76,7 @@ function step(tick)
                 for _, note_num in ipairs(loop.notes) do
                     -- Send any note starts now.
                     -- print('on:'..step.note_num)
-                    api.send_midi_note(chan_hnd, note_num, volume, loop.duration)
+                    api.send_note(chan_hnd, note_num, volume, loop.duration)
                 end
                 -- Calculate next time.
                 loop.next_start = tick + loop.delay + loop.duration;
@@ -94,7 +95,7 @@ end
 --   duration: how long to play in ticks
 --   delay: wait before start in ticks
 add_loop = function(snote, duration, delay)
-    local notes, err = mus.get_notes_from_string(snote)
+    local notes, err = def.get_notes_from_string(snote)
 
     -- Check args.
     if notes == nil then

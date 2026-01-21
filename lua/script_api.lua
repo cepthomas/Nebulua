@@ -31,7 +31,7 @@ local _current_section = nil
 -- All the composition StepX. Key is tick aka when-to-play.
 local _steps = {}
 
--- Things that are executed once and disappear: NoteOffs, script send_midi_note(). Same structure as _steps.
+-- Things that are executed once and disappear: NoteOffs, script send_note(). Same structure as _steps.
 local _transients = {}
 
 -- Where we be.
@@ -88,9 +88,9 @@ end
 -- @param controller Specific controller 0 -> 127
 -- @param value Payload 0 -> 127
 -- @return status
-function M.send_midi_controller(chan_hnd, controller, value)
-    local ret = li.send_midi_controller(chan_hnd, controller, value)
-    -- if ret == -1 then log_warn(string.format("Invalid midi_controller %d %d %d", chan_hnd, controller, value), 2) end
+function M.send_controller(chan_hnd, controller, value)
+    local ret = li.send_controller(chan_hnd, controller, value)
+    -- if ret == -1 then log_warn(string.format("Invalid controller %d %d %d", chan_hnd, controller, value), 2) end
 end
 
 -----------------------------------------------------------------------------
@@ -99,9 +99,9 @@ end
 -- @param chan_num channel number
 -- @param chan_name optional readable name
 -- @return the new chan_hnd or 0 if invalid
-function M.open_midi_input(dev_name, chan_num, chan_name)
-    local chan_hnd = li.open_midi_input(dev_name, chan_num, chan_name)
-    if chan_hnd == -1 then error(string.format("Invalid midi input dev:%s num:%d name:%s", dev_name, chan_num, chan_name), 2) end
+function M.open_input_channel(dev_name, chan_num, chan_name)
+    local chan_hnd = li.open_input_channel(dev_name, chan_num, chan_name)
+    if chan_hnd == -1 then error(string.format("Invalid input dev:%s num:%d name:%s", dev_name, chan_num, chan_name), 2) end
     return chan_hnd
 end
 
@@ -110,13 +110,12 @@ end
 -- @param dev_name system name
 -- @param chan_num channel number
 -- @param chan_name optional readable name
--- @param patch send this patch name
--- @param alias_file optional instrument names file
+-- @param patch send this patch number
 -- @return the new chan_hnd
-function M.open_midi_output(dev_name, chan_num, chan_name, patch, alias_file)
-    local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch, alias_file)
+function M.open_output_channel(dev_name, chan_num, chan_name, patch)
+    local chan_hnd = li.open_output_channel(dev_name, chan_num, chan_name, patch)
     _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
-    if chan_hnd == -1 then error(string.format("Invalid midi output dev:%s num:%d name:%s patch:%s", dev_name, chan_num, chan_name, patch), 2) end
+    if chan_hnd == -1 then error(string.format("Invalid output dev:%s num:%d name:%s patch:%s", dev_name, chan_num, chan_name, patch), 2) end
     return chan_hnd
 end
 
@@ -156,9 +155,9 @@ function M.process_step(tick)
                end
 
                 -- now send
-                li.send_midi_note(step.chan_hnd, step.note_num, step.volume)
+                li.send_note(step.chan_hnd, step.note_num, step.volume)
             elseif step.step_type == "controller" then
-                li.send_midi_controller(step.chan_hnd, step.controller, step.value)
+                li.send_controller(step.chan_hnd, step.controller, step.value)
             elseif step.step_type == "function" then
                 step.func(_current_tick)
             end
@@ -170,7 +169,7 @@ function M.process_step(tick)
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
-               li.send_midi_note(step.chan_hnd, step.note_num, step.volume)
+               li.send_note(step.chan_hnd, step.note_num, step.volume)
             end
         end
         -- Disappear it from collection.
@@ -182,7 +181,7 @@ end
 
 -----------------------------------------------------------------------------
 -- Send note immediately. Manages corresponding note off.
-function M.send_midi_note(chan_hnd, note_num, volume, dur)
+function M.send_note(chan_hnd, note_num, volume, dur)
     if dur == nil then dur = 0 end
     -- M.log_debug(string.format("Send now hnd:%d note:%d vol:%f dur:%d", chan_hnd, note_num, volume, dur))
 
@@ -190,14 +189,14 @@ function M.send_midi_note(chan_hnd, note_num, volume, dur)
         -- adjust volume
         volume = volume * _channel_volumes[chan_hnd]
         -- send note_on now
-        li.send_midi_note(chan_hnd, note_num, volume)
+        li.send_note(chan_hnd, note_num, volume)
         if dur > 0 then
             -- chase with noteoff
             local noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
             _table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
-       li.send_midi_note(chan_hnd, note_num, 0)
+       li.send_note(chan_hnd, note_num, 0)
    end
 end
 
@@ -295,7 +294,9 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         return nil
     end
 
-    ---------- Actual start here ----------
+    -----------------------------------------------------------
+    -------------------- Actual start here --------------------
+    -----------------------------------------------------------
 
     -- Process the note descriptor first. Could be number, string, function.
     local what_to_play = chunk[2]
@@ -539,136 +540,6 @@ function M.dump_steps(fn, which)
         end
     end
     fp:close()
-end
-
------------------------------------------------------------------------------
-------------- Music definitions ---------------------------------------------
------------------------------------------------------------------------------
-
------------------------------------------------------------------------------
---- Parse note or notes from input value. Could look like:
---   F4 - named note
---   Bb2.dim7 - named key.chord
---   E#5.major - named key.scale
---   A3.MY_SCALE - user defined key.chord-or-scale
--- @param nstr string Standard string to parse.
--- @return List of note numbers or nil, error if invalid nstr.
-function M.get_notes_from_string(nstr)
-    local notes = nil
-    local serr = ""
-
-    -- Break it up.
-    local parts = sx.strsplit(nstr, ".", true)
-    local snote = parts[1]
-    local c_or_s = parts[2] -- chord-name or scale-name or nil
-    if snote ~= nil then
-        -- Capture root (0-based) and octave (1-based).
-        local soct = snote:sub(#snote, -1)
-        local octave = tonumber(soct)
-        if not octave then -- not specified
-            octave = M.DEFAULT_OCTAVE
-        else -- trim original note
-            snote = snote:sub(1, #snote - 1)
-        end
-
-        local note_num = M.note_name_to_number(snote)
-
-        if note_num ~= nil then
-            notes = {}
-
-            -- Transpose octave.
-            -- note_num = note_num + (octave - 1) * M.NOTES_PER_OCTAVE
-            local abs_note_num = note_num + M.MIDDLE_C - (M.DEFAULT_OCTAVE - octave) * M.NOTES_PER_OCTAVE
-
-            if c_or_s ~= nil then
-                -- It's a chord or scale.
-                local intervals = mus.definitions[c_or_s]
-                if intervals ~= nil then
-                    for _, cint in ipairs(intervals) do
-                        table.insert(notes, cint + abs_note_num)
-                    end
-                else
-                    serr = 'intervals error'
-                    notes = nil
-                end
-            else
-                -- Just the root.
-                table.insert(notes, abs_note_num)
-            end
-        end
-    end
-
-    return notes, serr
-end
-
------------------------------------------------------------------------------
---- Convert note name into note number offset from middle C.
---  Could be F4 Bb2+ E#5-
--- @param snote string The root of the note with optional +- octave shift. TODO multiple octaves?
--- @return The number or nil if invalid.
-function M.note_name_to_number(snote)
-    local inote = nil
-
-    if snote ~= nil then
-        local ch1 = snote:sub(1, 1)
-        local up = false
-        local dn = false
-        if ch1 == '+' then
-            up = true
-            snote = snote:sub(2)
-        elseif ch1 == '-' then
-            dn = true
-            snote = snote:sub(2)
-        end
-        inote = mus.notes[snote]
-        -- Adjust for octave shift.
-        if inote and up then inote = inote + M.NOTES_PER_OCTAVE end
-        if inote and dn then inote = inote - M.NOTES_PER_OCTAVE end
-    end
-
-    return inote
-end
-
------------------------------------------------------------------------------
---- Convert interval name into number.
--- @param sinterval string The interval name with optional +- octave shift. TODO multiple octaves?
--- @return The number or nil if invalid.
-function M.interval_name_to_number(sinterval)
-    local iinterval = nil
-
-    if sinterval ~= nil then
-        local ch1 = sinterval:sub(1, 1)
-        local up = false
-        local dn = false
-        if ch1 == '+' then
-            up = true
-            sinterval = sinterval:sub(2)
-        elseif ch1 == '-' then
-            dn = true
-            sinterval = sinterval:sub(2)
-        end
-        iinterval = mus.intervals[sinterval]
-        -- Adjust for octave shift.
-        if iinterval and up then iinterval = iinterval + M.NOTES_PER_OCTAVE end
-        if iinterval and dn then iinterval = iinterval - M.NOTES_PER_OCTAVE end
-    end
-
-    return iinterval
-end
-
-
------------------------------------------------------------------------------
---- Split a midi note number into root note and octave.
--- @param note_num Absolute note number.
--- @return ints of root, octave or nil if invalid
-function M.split_note_number(note_num)
-    local root = nil
-    local octave = nil
-    if note_num ~= nil then
-        root = note_num % M.NOTES_PER_OCTAVE
-        octave = (note_num // M.NOTES_PER_OCTAVE) + 1
-    end
-    return root, octave
 end
 
 

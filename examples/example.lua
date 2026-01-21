@@ -27,14 +27,14 @@ print('================')
 
 -- Midi channels. Adjust for your configuration.
 local midi_device_in  = "loopMIDI Port 1"
-local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "my input")
+local hnd_ccin  = api.open_input_channel(midi_device_in, 1, "my input")
 
 local midi_device_out = "Microsoft GS Wavetable Synth"  -- Default  or "VirtualMIDISynth #1"  -- VST host
-local hnd_keys    = api.open_midi_output(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
-local hnd_bass    = api.open_midi_output(midi_device_out, 2,  "bass",       inst.AcousticBass)
-local hnd_synth   = api.open_midi_output(midi_device_out, 3,  "synth",      inst.Lead1Square)
-local hnd_strings = api.open_midi_output(midi_device_out, 4,  "pan flute",  inst.StringEnsemble1)
-local hnd_drums   = api.open_midi_output(midi_device_out, 10, "drums",      inst.Jazz)
+local hnd_keys    = api.open_output_channel(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
+local hnd_bass    = api.open_output_channel(midi_device_out, 2,  "bass",       inst.AcousticBass)
+local hnd_synth   = api.open_output_channel(midi_device_out, 3,  "synth",      inst.Lead1Square)
+local hnd_strings = api.open_output_channel(midi_device_out, 4,  "pan flute",  inst.StringEnsemble1)
+local hnd_drums   = api.open_output_channel(midi_device_out, 10, "drums",      kit.Jazz)
 
 
 ------------------------- Variables -----------------------------------
@@ -104,7 +104,7 @@ function receive_midi_note(chan_hnd, note_num, volume)
     if chan_hnd == hnd_ccin then
         -- Play the note.
         -- api.log_debug(string.format("RCV hnd_ccin note:%d chan_hnd:%d volume:%f", note_num, chan_hnd, volume))
-        api.send_midi_note(hnd_strings, note_num, volume)--, 0)
+        api.send_note(hnd_strings, note_num, volume)--, 0)
     end
     return 0
 end
@@ -127,7 +127,7 @@ end
 _algo_func = function(tick)
     if my_scale ~= nil then
         local note_num = math.random(1, #my_scale)
-        api.send_midi_note(hnd_synth, my_scale[note_num], 0.8, 3)
+        api.send_note(hnd_synth, my_scale[note_num], 0.8, 3)
     end
 end
 
