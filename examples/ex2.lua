@@ -1,8 +1,9 @@
 
 --[[
 An example Nebulua file that:
-  - uses a DAW for host.
+  - uses a DAW for host
   - demonstrates alternate instrument definitions
+  - remote client
 
 Some  won't work unless you have the exact same HW/SW configuration.
 ]]
@@ -16,6 +17,27 @@ local def = require("defs_api")
 local mt  = require("music_time")
 local ut  = require("lbot_utils")
 local sx  = require("stringex")
+
+-- Debugger. Fix path to luarocks - depends on where yours is located.
+local adir = os.getenv('APPDATA')
+
+-- rem set LUA_PATH=?.lua;..\?.lua;%APPDATA%\luarocks\share\lua\5.4\?.lua;;
+-- rem set LUA_CPATH=%APPDATA%\luarocks\lib\lua\5.4\?.dll;;
+
+package.path = package.path .. ";" .. adir .. "\\luarocks\\share\\lua\\5.4\\?.lua"
+package.cpath = package.cpath .. ";" .. adir .. "\\luarocks\\lib\\lua\\5.4\\?.dll"
+-- ??? require 'luarocks.loader'
+
+api.log_info(package.path)
+api.log_info(package.cpath)
+
+-- INF C:\Dev\Apps\Nebulua\examples\?.lua;C:\Dev\Apps\Nebulua\LBOT\?.lua;C:\Dev\Apps\Nebulua\lua\?.lua;;;C:\Users\cepth\AppData\Roaming\luarocks\share\lua.4\?.lua
+-- INF C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\?.dll;C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\..\lib\lua\5.4\?.dll;C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\loadall.dll;.\?.dll;C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\?54.dll;.\?54.dll;C:\Users\cepth\AppData\Roaming\luarocks\lib\lua\5.4\?.dll
+
+
+local dbg = require("debugex")
+dbg.init(59120)
+
 
 
 -- Alternate instrument names - for Acoustica Expanded Instruments presets.
@@ -100,6 +122,7 @@ function step(tick)
         if beat == 2 and sub == 0 then
             -- api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
             api.log_info(string.format("step() do something"))
+dbg()                
         end
 
     return 0

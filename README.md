@@ -408,6 +408,8 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 - Windows 64 bit only. Build it with VS2022 and .NET8.
 - Uses 64 bit Lua 5.4.2 from [here](https://luabinaries.sourceforge.net/download.html).
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
+- The app is slow to start up in the VS debugger - some mysterious machinations under the hood. Running from the cmd line is fine.
+
 
 ## Architecture
 

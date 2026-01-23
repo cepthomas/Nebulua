@@ -14,9 +14,6 @@ using Ephemera.MidiLib;
 using Ephemera.MusicLib;
 
 
-// TODO1 kinda slow startup running in debugger.
-
-
 namespace Nebulua
 {
     public partial class MainForm : Form

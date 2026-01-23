@@ -3,8 +3,8 @@
     <PropertyGroup>
 
         <!-- Use Exe type to make console available. print() will appear there. -->
-        <!-- <OutputType>Exe</OutputType> -->
-        <OutputType>WinExe</OutputType>
+        <!-- <OutputType>WinExe</OutputType> -->
+        <OutputType>Exe</OutputType>
         <UseWindowsForms>true</UseWindowsForms>
         <OutputPath>bin\</OutputPath>
         <TargetFramework>net8.0-windows</TargetFramework>
