@@ -1,11 +1,9 @@
 
 --[[
 An example Nebulua file that:
-  - uses a DAW for host
+  - uses a DAW for host (hardware specific)
   - demonstrates alternate instrument definitions
-  - remote client
-
-Some  won't work unless you have the exact same HW/SW configuration.
+  - remote debug client
 ]]
 
 
@@ -18,41 +16,28 @@ local mt  = require("music_time")
 local ut  = require("lbot_utils")
 local sx  = require("stringex")
 
--- Debugger. Fix path to luarocks - depends on where yours is located.
+-- Remote debugger. Fix path to luarocks for luasocket module. Several ways to set LUA_PATH and LUA_CPath.
 local adir = os.getenv('APPDATA')
-
--- rem set LUA_PATH=?.lua;..\?.lua;%APPDATA%\luarocks\share\lua\5.4\?.lua;;
--- rem set LUA_CPATH=%APPDATA%\luarocks\lib\lua\5.4\?.dll;;
-
 package.path = package.path .. ";" .. adir .. "\\luarocks\\share\\lua\\5.4\\?.lua"
 package.cpath = package.cpath .. ";" .. adir .. "\\luarocks\\lib\\lua\\5.4\\?.dll"
--- ??? require 'luarocks.loader'
-
-api.log_info(package.path)
-api.log_info(package.cpath)
-
--- INF C:\Dev\Apps\Nebulua\examples\?.lua;C:\Dev\Apps\Nebulua\LBOT\?.lua;C:\Dev\Apps\Nebulua\lua\?.lua;;;C:\Users\cepth\AppData\Roaming\luarocks\share\lua.4\?.lua
--- INF C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\?.dll;C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\..\lib\lua\5.4\?.dll;C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\loadall.dll;.\?.dll;C:\Dev\Apps\Nebulua\bin\net8.0-windows\win-x64\?54.dll;.\?54.dll;C:\Users\cepth\AppData\Roaming\luarocks\lib\lua\5.4\?.dll
-
-
 local dbg = require("debugex")
 dbg.init(59120)
-
+-- dbg.init()
 
 
 -- Alternate instrument names - for Acoustica Expanded Instruments presets.
 exp_instruments =
 {
-    AmbientWind = 000, AmbientWind2 = 001, AmbientWind3 = 002, AmbientWind4 = 003, AmbientWind5 = 004, AmbientStrings = 005, EightiesCheezeSynth = 006, 
-    Jump = 007, FMChime = 008, FMBell = 009, StringPad = 010, GlassFlute = 011, SweetDreams = 012, RHString1 = 013, 
-    RHString2 = 014, Streak = 015, Boom = 016, Drips = 017, WaterWhistle1 = 018, WaterWhistle2 = 019, WaterWhistle3 = 020, 
-    BoyBand = 021, ShimmerVox = 022, StarChoir1 = 023, StarChoir2 = 024, SpacePiano = 025, GalaxyBell = 026, 
-    OctaveStringPad = 027, OctaveStringPad2 = 028, OctaveStringPad3 = 029, OctaveStringPad4 = 030, LowNoise1 = 031, LowNoise2 = 032, 
-    GreatNoise = 033, WineGlass = 034, WineGlassQ = 035, DrunkofftheVine = 036, DisorientingPad = 037, GlurbleVox = 038, 
-    EtherealVox = 039, SynthGuitar1 = 040, SynthGuitar2 = 041, MetallicPad = 042, PadoftheOrient = 043, CleanandSynthGt = 044, 
-    ShimmerBell = 045, MilkyWay = 046, WarmBells = 047, WarmBells2 = 048, CavernousStrings = 049, SlowElGuitar = 050, 
-    BrightVox = 051, BrightVox2 = 052, OrganVox1 = 053, OrganVox2 = 054, EightiesGirl = 055, EightiesGirl2 = 056, 
-    EightiesFretless = 057, EightiesFretless2 = 058, C64PulseBass = 059, C64BassandPerc = 060, C64PulseBass2 = 061, VoxPercussion = 062, 
+    AmbientWind = 000, AmbientWind2 = 001, AmbientWind3 = 002, AmbientWind4 = 003, AmbientWind5 = 004, AmbientStrings = 005, EightiesCheezeSynth = 006,
+    Jump = 007, FMChime = 008, FMBell = 009, StringPad = 010, GlassFlute = 011, SweetDreams = 012, RHString1 = 013,
+    RHString2 = 014, Streak = 015, Boom = 016, Drips = 017, WaterWhistle1 = 018, WaterWhistle2 = 019, WaterWhistle3 = 020,
+    BoyBand = 021, ShimmerVox = 022, StarChoir1 = 023, StarChoir2 = 024, SpacePiano = 025, GalaxyBell = 026,
+    OctaveStringPad = 027, OctaveStringPad2 = 028, OctaveStringPad3 = 029, OctaveStringPad4 = 030, LowNoise1 = 031, LowNoise2 = 032,
+    GreatNoise = 033, WineGlass = 034, WineGlassQ = 035, DrunkofftheVine = 036, DisorientingPad = 037, GlurbleVox = 038,
+    EtherealVox = 039, SynthGuitar1 = 040, SynthGuitar2 = 041, MetallicPad = 042, PadoftheOrient = 043, CleanandSynthGt = 044,
+    ShimmerBell = 045, MilkyWay = 046, WarmBells = 047, WarmBells2 = 048, CavernousStrings = 049, SlowElGuitar = 050,
+    BrightVox = 051, BrightVox2 = 052, OrganVox1 = 053, OrganVox2 = 054, EightiesGirl = 055, EightiesGirl2 = 056,
+    EightiesFretless = 057, EightiesFretless2 = 058, C64PulseBass = 059, C64BassandPerc = 060, C64PulseBass2 = 061, VoxPercussion = 062,
     HallStringsFast = 063, HallStringsSlow = 064, DreamyHallStrings = 065
 }
 
@@ -63,7 +48,7 @@ local ctrl = mid.controllers
 local expi  = exp_instruments
 
 -- Say hello.
-api.log_info('Loading daw_host.lua...')
+api.log_info('Loading ex2.lua...')
 
 
 
@@ -122,7 +107,7 @@ function step(tick)
         if beat == 2 and sub == 0 then
             -- api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
             api.log_info(string.format("step() do something"))
-dbg()                
+dbg()
         end
 
     return 0
