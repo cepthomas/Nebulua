@@ -16,7 +16,8 @@ local mt  = require("music_time")
 local ut  = require("lbot_utils")
 local sx  = require("stringex")
 
--- Remote debugger. Fix path to luarocks for luasocket module. Several ways to set LUA_PATH and LUA_CPath.
+-- Remote debugger. Fix path to luarocks for luasocket module.
+-- There are several ways to set LUA_PATH and LUA_CPATH - in env, in luaconf.h, from a start script, or like this:
 local adir = os.getenv('APPDATA')
 package.path = package.path .. ";" .. adir .. "\\luarocks\\share\\lua\\5.4\\?.lua"
 package.cpath = package.cpath .. ";" .. adir .. "\\luarocks\\lib\\lua\\5.4\\?.dll"
