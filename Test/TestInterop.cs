@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
-//using Nebulua;
 
 
 namespace Test
@@ -50,7 +49,7 @@ namespace Test
                 {
                     stat = interop.ReceiveMidiNote(0x0102, i, (double)i / 100);
                     UT_EQUAL(stat, 0);
-                    //C:\Dev\Apps\Nebulua\Test\Utils.cs:
+                    //Nebulua\Test\Utils.cs:
                     //Interop.SendMidiNote += CollectEvent;
                     //SendMidiNoteArgs ne => $"SendMidiNote chan_hnd:{ne.chan_hnd} note_num:{ne.note_num} volume:{ne.volume}",
                 }
