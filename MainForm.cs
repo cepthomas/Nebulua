@@ -194,6 +194,8 @@ namespace Nebulua
                 OpenScriptFile(_settings.RecentFiles[0]);
             }
 
+            MidiDefs.GenUserDeviceInfo().ForEach(l => traffic.AppendLine(l));
+
             base.OnLoad(e);
         }
 
@@ -969,35 +971,7 @@ namespace Nebulua
             List<string> ls = [];
 
             // Show them what they have.
-            var outs = MidiOutputDevice.GetAvailableDevices();
-            var ins = MidiInputDevice.GetAvailableDevices();
-
-            ls.Add($"# Your Midi Devices");
-
-            ls.Add($"");
-            ls.Add($"## Inputs");
-            ls.Add($"");
-
-            if (ins.Count == 0)
-            {
-                ls.Add($"- None");
-            }
-            else
-            {
-                ins.ForEach(d => ls.Add($"- [{d}]"));
-            }
-
-            ls.Add($"## Outputs");
-            if (outs.Count == 0)
-            {
-                ls.Add($"- None");
-            }
-            else
-            {
-                outs.ForEach(d => ls.Add($"- [{d}]"));
-            }
-
-            traffic.AppendLine(string.Join(Environment.NewLine, ls));
+            MidiDefs.GenUserDeviceInfo().ForEach(l => traffic.AppendLine(l));
         }
 
         /// <summary>
