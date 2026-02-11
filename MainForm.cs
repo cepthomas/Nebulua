@@ -148,14 +148,17 @@ namespace Nebulua
             sldTempo.DrawColor = _settings.DrawColor;
             sldTempo.ValueChanged += (_, __) => { SetTimer((int)sldTempo.Value); };
 
-            traffic.BackColor = BackColor;
-            traffic.MatchText.Add("ERR ", Color.LightPink);
-            traffic.MatchText.Add("WRN ", Color.Yellow);
-            traffic.MatchText.Add("SND ", Color.PaleGreen);
-            traffic.MatchText.Add("RCV ", Color.LightBlue);
-            traffic.Font = new("Cascadia Mono", 9);
-            traffic.Prompt = "";
-            traffic.WordWrap = _settings.WordWrap;
+            tvInfo.BackColor = BackColor;
+            tvInfo.Font = new("Cascadia Mono", 9);
+            tvInfo.Prompt = "";
+            tvInfo.WordWrap = _settings.WordWrap;
+            tvInfo.Matchers = 
+            [
+                new("ERR", Color.Red),
+                new("WRN", Color.Green),
+                new("SND ", Color.PaleGreen),
+                new("RCV ", Color.LightBlue),
+            ];
 
             timeBar.DrawColor = _settings.DrawColor;
             timeBar.SelectedColor = _settings.SelectedColor;
@@ -194,7 +197,7 @@ namespace Nebulua
                 OpenScriptFile(_settings.RecentFiles[0]);
             }
 
-            MidiDefs.GenUserDeviceInfo().ForEach(l => traffic.AppendLine(l));
+            MidiDefs.GenUserDeviceInfo().ForEach(l => tvInfo.Append(l));
 
             base.OnLoad(e);
         }
@@ -218,7 +221,7 @@ namespace Nebulua
                 Width = Width,
                 Height = Height
             };
-            _settings.WordWrap = traffic.WordWrap;
+            _settings.WordWrap = tvInfo.WordWrap;
             _settings.Save();
 
             LogManager.Stop();
@@ -908,11 +911,11 @@ namespace Nebulua
         {
             this.InvokeIfRequired(_ =>
             {
-                traffic.AppendLine(e.ShortMessage);
+                tvInfo.Append(e.ShortMessage);
 
                 if (e.Level == LogLevel.Error)
                 {
-                    traffic.AppendLine("Fatal error - please fix then reload or restart");
+                    tvInfo.Append("Fatal error - please fix then reload or restart");
                     UpdateState(ExecState.Dead);
                 }
             });
@@ -971,7 +974,7 @@ namespace Nebulua
             List<string> ls = [];
 
             // Show them what they have.
-            MidiDefs.GenUserDeviceInfo().ForEach(l => traffic.AppendLine(l));
+            MidiDefs.GenUserDeviceInfo().ForEach(l => tvInfo.Append(l));
         }
 
         /// <summary>

@@ -26,7 +26,7 @@ namespace Nebulua
             btnRewind = new Button();
             sldVolume = new Ephemera.NBagOfUis.Slider();
             sldTempo = new Ephemera.NBagOfUis.Slider();
-            traffic = new Ephemera.NBagOfUis.TextViewer();
+            tvInfo = new Ephemera.NBagOfUis.TextViewer();
             btnAbout = new Button();
             btnKill = new Button();
             chkMonRcv = new CheckBox();
@@ -94,18 +94,18 @@ namespace Nebulua
             sldTempo.TabIndex = 33;
             sldTempo.Value = 100D;
             // 
-            // traffic
+            // tvInfo
             // 
-            traffic.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            traffic.BorderStyle = BorderStyle.FixedSingle;
-            traffic.Location = new Point(13, 177);
-            traffic.Margin = new Padding(4, 5, 4, 5);
-            traffic.MaxText = 5000;
-            traffic.Name = "traffic";
-            traffic.Prompt = "";
-            traffic.Size = new Size(850, 291);
-            traffic.TabIndex = 41;
-            traffic.WordWrap = true;
+            tvInfo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tvInfo.BorderStyle = BorderStyle.FixedSingle;
+            tvInfo.Location = new Point(13, 177);
+            tvInfo.Margin = new Padding(4, 5, 4, 5);
+            tvInfo.MaxText = 5000;
+            tvInfo.Name = "tvInfo";
+            tvInfo.Prompt = "";
+            tvInfo.Size = new Size(850, 291);
+            tvInfo.TabIndex = 41;
+            tvInfo.WordWrap = true;
             // 
             // btnAbout
             // 
@@ -220,7 +220,7 @@ namespace Nebulua
             Controls.Add(chkPlay);
             Controls.Add(sldVolume);
             Controls.Add(sldTempo);
-            Controls.Add(traffic);
+            Controls.Add(tvInfo);
             Name = "MainForm";
             Text = "MainForm";
             ResumeLayout(false);
@@ -232,7 +232,7 @@ namespace Nebulua
         private Button btnRewind;
         private Ephemera.NBagOfUis.Slider sldVolume;
         private Ephemera.NBagOfUis.Slider sldTempo;
-        private Ephemera.NBagOfUis.TextViewer traffic;
+        private Ephemera.NBagOfUis.TextViewer tvInfo;
         private Button btnAbout;
         private Button btnKill;
         private CheckBox chkMonRcv;

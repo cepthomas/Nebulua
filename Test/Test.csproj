@@ -1,24 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-        <OutputType>WinExe</OutputType>
+        <OutputType>Exe</OutputType>
         <TargetFramework>net8.0-windows</TargetFramework>
         <UseWindowsForms>true</UseWindowsForms>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <OutputPath>bin\</OutputPath>
+
         <RootNamespace>Ephemera.Nebulua.Test</RootNamespace>
         <AssemblyName>Ephemera.Nebulua.Test</AssemblyName>
         <Deterministic>False</Deterministic>
         <Description>Nebulua tester</Description>
         <Copyright>MIT License</Copyright>
         <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
-        <OutputPath>bin\</OutputPath>
         <WarningLevel>4</WarningLevel>
         <NoWarn>CS1591;CA1822;IDE0130;IDE0060</NoWarn>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <!-- <StartupObject>Ephemera.Nebulua.Test.Program</StartupObject> -->
-        <NoWin32Manifest>true</NoWin32Manifest>
-        <IsPublishable>False</IsPublishable>
+        <!-- <NoWin32Manifest>true</NoWin32Manifest> -->
+        <!-- <IsPublishable>False</IsPublishable> -->
         <!-- en none -->
 
         <!-- <RuntimeIdentifier>win-x64</RuntimeIdentifier> -->
