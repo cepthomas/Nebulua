@@ -1,8 +1,9 @@
 
 --[[
 An example Nebulua file that:
-  - uses a DAW for host (hardware specific)
-  - demonstrates alternate instrument definitions
+  - dynamic, not composition
+  - uses a DAW for host (your hardware specific)
+  - demonstrates alternate VSTi and instrument names
   - uses debugger
 ]]
 
@@ -21,8 +22,7 @@ local dbg = require("debugex")
 dbg.init()
 
 
--- Alternate instrument names - for Acoustica Expanded Instruments presets.
--- APPDATA\REAPER\presets\vst-Acoustica Expanded Instruments-builtin.ini.
+-- Alternate instrument names - from vst-Acoustica Expanded Instruments-builtin.ini.
 exp_instruments =
 {
     AmbientWind = 000, AmbientWind2 = 001, AmbientWind3 = 002, AmbientWind4 = 003, AmbientWind5 = 004, AmbientStrings = 005, EightiesCheezeSynth = 006,
@@ -52,9 +52,10 @@ api.log_info('Loading ex2.lua...')
 ------------------------- Configuration -------------------------------
 
 -- Midi channels. Adjust for your configuration.
-local midi_device_in  = "loopMIDI Port 1"
+-- local midi_device_in  = "loopMIDI Port 1"
 -- local midi_device_in  = "MPK mini"
-local hnd_ccin  = api.open_input_channel(midi_device_in, 1, "my input")
+-- local hnd_ccin  = api.open_input_channel(midi_device_in, 1, "my input")
+local hnd_ccin  = -1
 
 -- local midi_device_out  = "loopMIDI Port 2"  -- DAW host
 local midi_device_out  = "VirtualMIDISynth #1"
@@ -84,7 +85,7 @@ local my_chord = def.get_notes_from_string("B4.MY_CHORD")
 function setup()
     api.log_info("example initialization")
 
-    print('Hello console')
+    api.log_info('Using midi output: '..midi_device_out)
 
     -- How fast?
     api.set_tempo(88)

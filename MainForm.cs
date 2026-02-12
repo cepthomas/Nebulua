@@ -26,7 +26,7 @@ namespace Nebulua
         enum ExecState
         {
             /// <summary>No script loaded.</summary>
-            NoScript,
+            Empty,
             /// <summary>Script loaded, not running.</summary>
             Idle,
             /// <summary>Script loaded, running.</summary>
@@ -47,7 +47,7 @@ namespace Nebulua
         readonly Logger _loggerMidi = LogManager.CreateLogger("MID");
 
         /// <summary>The current state.</summary>
-        ExecState _execState = ExecState.NoScript;
+        ExecState _execState = ExecState.Empty;
 
         /// <summary>The current settings.</summary>
         UserSettings _settings = new();
@@ -99,7 +99,7 @@ namespace Nebulua
             Location = _settings.FormGeometry.Location;
             Size = _settings.FormGeometry.Size;
             WindowState = FormWindowState.Normal;
-            Text = $"Nebulua {MiscUtils.GetVersionString()} - No script loaded";
+            SetTitle();
 
             #region Init the controls
             GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);
@@ -208,7 +208,7 @@ namespace Nebulua
         /// <param name="e"></param>
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            UpdateState(ExecState.NoScript);
+            UpdateState(ExecState.Empty);
 
             // Just in case.
             MidiManager.Instance.Kill();
@@ -295,7 +295,6 @@ namespace Nebulua
                 var scriptDir = Path.GetDirectoryName(_scriptFn);
                 var luaPath = $"{scriptDir}\\?.lua;{srcDir}\\LBOT\\?.lua;{srcDir}\\lua\\?.lua;;";
 
-                Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn}";
                 _settings.UpdateMru(_scriptFn!);
 
                 _interop.RunScript(_scriptFn, luaPath);
@@ -327,6 +326,7 @@ namespace Nebulua
             {
                 ProcessException(ex);
             }
+            SetTitle();
         }
 
         /// <summary>
@@ -396,11 +396,11 @@ namespace Nebulua
 
             switch (state)
             {
-                case ExecState.NoScript:
+                case ExecState.Empty:
                     _scriptFn = null;
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
-                    _execState = ExecState.NoScript;
+                    _execState = ExecState.Empty;
                     break;
 
                 case ExecState.Idle:
@@ -414,7 +414,7 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        _execState = ExecState.NoScript;
+                        _execState = ExecState.Empty;
                     }
                     break;
 
@@ -429,7 +429,7 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        _execState = ExecState.NoScript;
+                        _execState = ExecState.Empty;
                     }
                     break;
 
@@ -439,6 +439,7 @@ namespace Nebulua
                     _execState = ExecState.Dead;
                     break;
             }
+            SetTitle();
         }
         
         /// <summary>
@@ -547,7 +548,7 @@ namespace Nebulua
                     {
                         if (ex.Context != "") _loggerApp.Warn(ex.Context);
                         if (ex.Error != "") _loggerApp.Warn(ex.Error);
-                        UpdateState(ExecState.NoScript);
+                        UpdateState(ExecState.Empty);
                     }
                     break;
 
@@ -556,7 +557,7 @@ namespace Nebulua
                     // User can decide what to do with this. They may be recoverable so use warn.
                     _loggerApp.Warn(e.Message);
                     _loggerApp.Debug(e.ToString());
-                    UpdateState(ExecState.NoScript);
+                    UpdateState(ExecState.Empty);
                     break;
                     
                 default: // other/unknon - assume fatal
@@ -565,6 +566,7 @@ namespace Nebulua
                     UpdateState(ExecState.Dead);
                     break;
             }
+            SetTitle();
         }
         #endregion
 
@@ -903,6 +905,14 @@ namespace Nebulua
 
         #region Misc Stuff
         /// <summary>
+        /// General info.
+        /// </summary>
+        void SetTitle()
+        {
+            Text = $"Nebulua {MiscUtils.GetVersionString()} - {_scriptFn ?? "No file loaded"} - <<<{_execState}>>>";
+        }
+
+        /// <summary>
         /// Capture bad things and display them to the user.
         /// </summary>
         /// <param name="sender"></param>
@@ -911,7 +921,13 @@ namespace Nebulua
         {
             this.InvokeIfRequired(_ =>
             {
-                tvInfo.Append(e.ShortMessage);
+                var devs = MidiInputDevice.GetAvailableDevices();
+                for (int i = 0; i < NAudio.Midi.MidiIn.NumberOfDevices; i++)
+                {
+                    var s = NAudio.Midi.MidiIn.DeviceInfo(i).ProductName;
+                }
+
+                tvInfo.Append(e.Message);
 
                 if (e.Level == LogLevel.Error)
                 {
@@ -969,9 +985,6 @@ namespace Nebulua
         {
             // Main help.
             Tools.ShowReadme("Nebulua");
-
-            // Show the user devices.
-            List<string> ls = [];
 
             // Show them what they have.
             MidiDefs.GenUserDeviceInfo().ForEach(l => tvInfo.Append(l));
