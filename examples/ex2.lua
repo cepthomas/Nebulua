@@ -109,7 +109,7 @@ function step(tick)
         if beat == 2 and sub == 0 then
             -- api.send_midi_controller(hnd_synth, ctrl.Pan, 90)
             api.log_info(string.format("step() do something"))
-            dbg()
+            --dbg()
             api.send_note(hnd_strings, math.random(40, 70), 0.8, 10)
         end
 

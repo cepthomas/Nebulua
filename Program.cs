@@ -13,7 +13,7 @@ namespace Nebulua
         /// The entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
            ApplicationConfiguration.Initialize();
            Application.Run(new MainForm());

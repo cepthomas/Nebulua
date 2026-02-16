@@ -47,7 +47,7 @@ namespace Test // TODO1 useful?
                 // Inject some received midi events.
                 if (i % 20 == 0)
                 {
-                    stat = interop.ReceiveMidiNote(0x0102, i, (double)i / 100);
+                    stat = interop.ReceiveNote(0x0102, i, (double)i / 100);
                     Assert(stat == 0);
                     //Nebulua\Test\Utils.cs:
                     //Interop.SendMidiNote += CollectEvent;
@@ -56,7 +56,7 @@ namespace Test // TODO1 useful?
 
                 if (i % 20 == 5)
                 {
-                    stat = interop.ReceiveMidiController(0x0102, i, i);
+                    stat = interop.ReceiveController(0x0102, i, i);
                     Assert(stat == 0);
                 }
             }
@@ -97,10 +97,10 @@ namespace Test // TODO1 useful?
         {
             // Hook script callbacks.
             Interop.Log += CollectEvent;
-            Interop.OpenMidiInput += CollectEvent;
-            Interop.OpenMidiOutput += CollectEvent;
-            Interop.SendMidiNote += CollectEvent;
-            Interop.SendMidiController += CollectEvent;
+            Interop.OpenInputChannel += CollectEvent;
+            Interop.OpenOutputChannel += CollectEvent;
+            Interop.SendNote += CollectEvent;
+            Interop.SendController += CollectEvent;
             Interop.SetTempo += CollectEvent;
         }
 
@@ -112,10 +112,10 @@ namespace Test // TODO1 useful?
             switch (e)
             {
                 case LogArgs le: le.ret = Ret; break;
-                case OpenMidiInputArgs le: le.ret = Ret; break;
-                case OpenMidiOutputArgs le: le.ret = Ret; break;
-                case SendMidiNoteArgs le: le.ret = Ret; break;
-                case SendMidiControllerArgs le: le.ret = Ret; break;
+                case OpenInputChannelArgs le: le.ret = Ret; break;
+                case OpenOutputChannelArgs le: le.ret = Ret; break;
+                case SendNoteArgs le: le.ret = Ret; break;
+                case SendControllerArgs le: le.ret = Ret; break;
                 case SetTempoArgs le: le.ret = Ret; break;
                 default: break; // handle?
             }
@@ -129,10 +129,10 @@ namespace Test // TODO1 useful?
             return e switch
             {
                 LogArgs le => $"Log() level:{le.level} msg:{le.msg} ret:{le.ret}",
-                OpenMidiInputArgs ie => $"OpenMidiInput() dev_name:{ie.dev_name} chan_num:{ie.chan_num} ret:{ie.ret}",
-                OpenMidiOutputArgs oe => $"OpenMidiOutput() dev_name:{oe.dev_name} chan_num: {oe.chan_num} patch:{oe.patch} ret:{oe.ret}",
-                SendMidiNoteArgs ne => $"SendMidiNote() chan_hnd:{ne.chan_hnd} note_num:{ne.note_num} volume:{ne.volume} ret:{ne.ret}",
-                SendMidiControllerArgs ce => $"SendMidiController() chan_hnd:{ce.chan_hnd} controller:{ce.controller} value:{ce.value} ret:{ce.ret}",
+                OpenInputChannelArgs ie => $"OpenInputChannelArgs() dev_name:{ie.dev_name} chan_num:{ie.chan_num} ret:{ie.ret}",
+                OpenOutputChannelArgs oe => $"OpenOutputChannelArgs() dev_name:{oe.dev_name} chan_num: {oe.chan_num} patch:{oe.patch} ret:{oe.ret}",
+                SendNoteArgs ne => $"SendNoteArgs() chan_hnd:{ne.chan_hnd} note_num:{ne.note_num} volume:{ne.volume} ret:{ne.ret}",
+                SendControllerArgs ce => $"SendControllerArgs() chan_hnd:{ce.chan_hnd} controller:{ce.controller} value:{ce.value} ret:{ce.ret}",
                 SetTempoArgs te => $"SetTempo() bpm:{te.bpm} ret:{te.ret}",
                 _ => throw new Exception("???"),
             };
