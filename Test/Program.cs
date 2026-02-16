@@ -18,8 +18,8 @@ namespace Test // TODO useful?
         {
             TestRunner runner = new(OutputFormat.Readable);
             // "INTEROP"
-            var cases = new[] { "INTEROP" };
-            runner.RunSuites(cases);
+            var torun = new[] { "INTEROP" };
+            runner.RunSuites(torun);
             File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
     }

@@ -101,6 +101,9 @@ namespace Nebulua
             WindowState = FormWindowState.Normal;
             SetTitle();
 
+            // Console.
+            ConsoleUtils.Move(100, 750, 100, 400);
+
             #region Init the controls
             GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);
             chkPlay.BackColor = BackColor;

@@ -6,14 +6,14 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Test
+namespace Test // TODO1 useful?
 {
     /// <summary>Utility functions.</summary>
     public class INTEROP_INTERNALS : TestSuite
     {
         public override void RunSuite()
         {
-            UT_STOP_ON_FAIL(true);
+            StopOnFail(true);
 
             EventCollector ecoll = new();
             using Interop interop = new();
@@ -25,7 +25,7 @@ namespace Test
     {
         public override void RunSuite()
         {
-            UT_STOP_ON_FAIL(true);
+            StopOnFail(true);
 
             EventCollector ecoll = new();
             ecoll.AutoRet = true;
@@ -48,7 +48,7 @@ namespace Test
                 if (i % 20 == 0)
                 {
                     stat = interop.ReceiveMidiNote(0x0102, i, (double)i / 100);
-                    UT_EQUAL(stat, 0);
+                    Assert(stat == 0);
                     //Nebulua\Test\Utils.cs:
                     //Interop.SendMidiNote += CollectEvent;
                     //SendMidiNoteArgs ne => $"SendMidiNote chan_hnd:{ne.chan_hnd} note_num:{ne.note_num} volume:{ne.volume}",
@@ -57,7 +57,7 @@ namespace Test
                 if (i % 20 == 5)
                 {
                     stat = interop.ReceiveMidiController(0x0102, i, i);
-                    UT_EQUAL(stat, 0);
+                    Assert(stat == 0);
                 }
             }
 
