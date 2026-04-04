@@ -32,8 +32,8 @@ See [example](examples/example.lua) for how-to.
 Since the built-in Windows GM player sounds terrible, there are a couple of options for playing midi locally:
 - Replace it with [virtualmidisynth](https://coolsoft.altervista.org/en/virtualmidisynth) and your favorite soundfont.
   Note that this app has a significant delay handling realtime midi inputs. This will not be a problem if you are just playing a midi file.
-- If you are using a DAW for sound generation, you can use a virtual midi loopback like
-    [loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html) to connect to it.
+- If you are using a DAW for sound generation, you can connect to it with a virtual midi loopback like
+    ~~[loopMIDI](http://www.tobias-erichsen.de/software/loopmidi.html)~~  [Finally a real native service!](https://microsoft.github.io/MIDI/).
 
 
 ## Example Script Files

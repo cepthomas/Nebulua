@@ -26,10 +26,10 @@ print('================')
 ------------------------- Configuration -------------------------------
 
 -- Midi channels. Adjust for your configuration.
-local midi_device_in  = "loopMIDI Port 1"
+local midi_device_in  = "NebLoopback1"
 local hnd_ccin  = api.open_input_channel(midi_device_in, 1, "my input")
 
-local midi_device_out = "Microsoft GS Wavetable Synth"  -- Default  or "VirtualMIDISynth #1"  -- VST host
+local midi_device_out = "Microsoft GS Wavetable Synth"  -- or "VirtualMIDISynth #1" or "NebLoopback1" for VST host
 local hnd_keys    = api.open_output_channel(midi_device_out, 1,  "keys",       inst.AcousticGrandPiano)
 local hnd_bass    = api.open_output_channel(midi_device_out, 2,  "bass",       inst.AcousticBass)
 local hnd_synth   = api.open_output_channel(midi_device_out, 3,  "synth",      inst.Lead1Square)

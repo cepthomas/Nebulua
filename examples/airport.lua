@@ -20,6 +20,7 @@ api.log_info('Loading airport.lua...')
 
 -- Specify midi channels.
 local midi_device_out = "VirtualMIDISynth #1"
+-- local midi_device_out  = "NebLoopback1"  -- DAW host
 local chan_hnd = api.open_output_channel(midi_device_out, 1, "voices", mid.instruments.Pad2Warm)
 
 

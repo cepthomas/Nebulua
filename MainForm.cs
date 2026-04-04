@@ -12,6 +12,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 using Ephemera.MusicLib;
+using Ephemera.WinConsole;
 
 
 namespace Nebulua
@@ -101,8 +102,7 @@ namespace Nebulua
             WindowState = FormWindowState.Normal;
             SetTitle();
 
-            // Console.
-            ConsoleUtils.Move(100, 750, 100, 400);
+            Utils.Move(100, 750, 100, 400);
 
             #region Init the controls
             GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);
@@ -212,9 +212,6 @@ namespace Nebulua
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             UpdateState(ExecState.Empty);
-
-            // Just in case.
-            MidiManager.Instance.Kill();
 
             // Save user settings.
             _settings.FormGeometry = new()
@@ -403,6 +400,7 @@ namespace Nebulua
                     _scriptFn = null;
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
+                    MidiManager.Instance.Kill();
                     _execState = ExecState.Empty;
                     break;
 
@@ -411,12 +409,14 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = true;
+                        MidiManager.Instance.Kill();
                         _execState = ExecState.Idle;
                     }
                     else
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
+                        MidiManager.Instance.Kill();
                         _execState = ExecState.Empty;
                     }
                     break;
@@ -432,6 +432,7 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
+                        MidiManager.Instance.Kill();
                         _execState = ExecState.Empty;
                     }
                     break;
@@ -439,9 +440,11 @@ namespace Nebulua
                 case ExecState.Dead:
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
+                    MidiManager.Instance.Kill();
                     _execState = ExecState.Dead;
                     break;
             }
+
             SetTitle();
         }
         
@@ -606,7 +609,6 @@ namespace Nebulua
                             // Stop and rewind.
                             UpdateState(ExecState.Idle);
                             timeBar.Rewind();
-                            MidiManager.Instance.Kill(); // just in case
                         }
                     }
                 }

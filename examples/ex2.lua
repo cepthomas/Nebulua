@@ -57,9 +57,9 @@ api.log_info('Loading ex2.lua...')
 -- local hnd_ccin  = api.open_input_channel(midi_device_in, 1, "my input")
 local hnd_ccin  = -1
 
--- local midi_device_out  = "loopMIDI Port 2"  -- DAW host
 local midi_device_out  = "VirtualMIDISynth #1"
 -- local midi_device_out  = "Microsoft GS Wavetable Synth"
+-- local midi_device_out  = "NebLoopback1"  -- DAW host
 local hnd_keys    = api.open_output_channel(midi_device_out, 1,  "keys",     inst.Glockenspiel)
 local hnd_bass    = api.open_output_channel(midi_device_out, 2,  "bass",     inst.SynthBass1)
 local hnd_strings = api.open_output_channel(midi_device_out, 4,  "strings",  expi.BrightVox)
