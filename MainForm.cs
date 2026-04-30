@@ -12,7 +12,6 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 using Ephemera.MusicLib;
-using Ephemera.WinConsole;
 
 
 namespace Nebulua
@@ -102,7 +101,7 @@ namespace Nebulua
             WindowState = FormWindowState.Normal;
             SetTitle();
 
-            Utils.Move(100, 750, 100, 400);
+            // TODO Utils.Move(100, 750, 100, 400);
 
             #region Init the controls
             GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);

@@ -58,9 +58,6 @@
         <Reference Include="Ephemera.MusicLib">
             <HintPath>lib\Ephemera.MusicLib.dll</HintPath>
         </Reference>
-        <Reference Include="Ephemera.WinConsole">
-          <HintPath>lib\Ephemera.WinConsole.dll</HintPath>
-        </Reference>
     </ItemGroup>
 
     <ItemGroup>
