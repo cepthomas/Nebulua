@@ -42,10 +42,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Resources\app.ico" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Reference Include="Ephemera.NBagOfTricks">
             <HintPath>lib\Ephemera.NBagOfTricks.dll</HintPath>
         </Reference>
