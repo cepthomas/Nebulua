@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Test // TODO1 useful?
+namespace Test // TODO! useful?
 {
     /// <summary>Utility functions.</summary>
     public class INTEROP_INTERNALS : TestSuite
