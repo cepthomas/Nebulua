@@ -18,11 +18,7 @@
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <!-- <NoWin32Manifest>true</NoWin32Manifest> -->
-        <!-- <IsPublishable>False</IsPublishable> -->
         <!-- en none -->
-
-        <!-- <RuntimeIdentifier>win-x64</RuntimeIdentifier> -->
   </PropertyGroup>
 
   <ItemGroup>
