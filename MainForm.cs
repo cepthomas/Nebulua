@@ -14,6 +14,9 @@ using Ephemera.MidiLib;
 using Ephemera.MusicLib;
 
 
+// TODO1 remove? "x64": Apps\Nebulua, Libs\LuaInterop. Some breakage using py script.
+
+
 namespace Nebulua
 {
     public partial class MainForm : Form
