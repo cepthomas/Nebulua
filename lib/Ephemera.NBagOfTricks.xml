@@ -120,11 +120,6 @@
             <returns></returns>
             <exception cref="T:System.Exception"></exception>
         </member>
-        <member name="M:Ephemera.NBagOfTricks.ColorUtils.ToConsoleColor_simple(System.Drawing.Color)">
-            <summary>Simple binning approach.</summary>
-            <param name="sysclr"></param>
-            <returns></returns>
-        </member>
         <member name="M:Ephemera.NBagOfTricks.ColorUtils.ParseNullableConsoleColor(System.String)">
             <summary>Parse console color safely.</summary>
             <param name="value">Color name</param>

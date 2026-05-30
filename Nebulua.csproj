@@ -8,6 +8,7 @@
         <UseWindowsForms>true</UseWindowsForms>
         <OutputPath>bin\</OutputPath>
         <TargetFramework>net8.0-windows</TargetFramework>
+        <Platforms>AnyCPU;x64</Platforms>
 
         <ApplicationIcon>marks.ico</ApplicationIcon>
         <Version>2.0.0</Version>
