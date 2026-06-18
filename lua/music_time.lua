@@ -13,12 +13,12 @@ local M = {}
 M.BEATS_PER_BAR = 4
 
 -- Our resolution = 32nd note. aka midi DeltaTicksPerQuarterNote.
-M.SUBS_PER_BEAT = 8
-M.SUBS_PER_BAR = M.SUBS_PER_BEAT * M.BEATS_PER_BAR
+M.SUBBEATS_PER_BEAT = 8
+M.SUBBEATS_PER_BAR = M.SUBBEATS_PER_BEAT * M.BEATS_PER_BAR
 
 M.MAX_BAR = 1000
 M.MAX_BEAT = M.MAX_BAR * M.BEATS_PER_BAR
-M.MAX_TICK = M.MAX_BAR * M.SUBS_PER_BAR
+M.MAX_TICK = M.MAX_BAR * M.SUBBEATS_PER_BAR
 
 
 -----------------------------------------------------------------------------
@@ -27,9 +27,9 @@ M.MAX_TICK = M.MAX_BAR * M.SUBS_PER_BAR
 function M.mt_to_tick(bar, beat, sub)
     lt.val_integer(bar, 0, M.MAX_BAR)
     lt.val_integer(beat, 0, M.BEATS_PER_BAR-1)
-    lt.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
+    lt.val_integer(sub, 0, M.SUBBEATS_PER_BEAT-1)
 
-    local tick = bar * M.SUBS_PER_BAR + beat * M.SUBS_PER_BEAT + sub
+    local tick = bar * M.SUBBEATS_PER_BAR + beat * M.SUBBEATS_PER_BEAT + sub
     return tick
 end
 
@@ -38,9 +38,9 @@ end
 -- returns tick or raises
 function M.beats_to_tick(beats, sub)
     lt.val_integer(beats, 0, M.MAX_BEAT-1)
-    lt.val_integer(sub, 0, M.SUBS_PER_BEAT-1)
+    lt.val_integer(sub, 0, M.SUBBEATS_PER_BEAT-1)
 
-    local tick = beats * M.SUBS_PER_BEAT + sub
+    local tick = beats * M.SUBBEATS_PER_BEAT + sub
     return tick
 end
 
@@ -75,9 +75,9 @@ end
 -- returns bar,beat,sub or raises
 function M.tick_to_mt(tick)
     lt.val_integer(tick, 0, M.MAX_TICK)
-    local bar = math.floor(tick / M.SUBS_PER_BAR)
-    local beat = math.floor(tick / M.SUBS_PER_BEAT % M.BEATS_PER_BAR)
-    local sub = math.floor(tick % M.SUBS_PER_BEAT)
+    local bar = math.floor(tick / M.SUBBEATS_PER_BAR)
+    local beat = math.floor(tick / M.SUBBEATS_PER_BEAT % M.BEATS_PER_BAR)
+    local sub = math.floor(tick % M.SUBBEATS_PER_BEAT)
     return bar, beat, sub
 end
 
