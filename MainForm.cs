@@ -1003,7 +1003,7 @@ namespace Nebulua
             if (tempo > 0)
             {
                 double sec_per_beat = 60.0 / tempo;
-                double msec_per_sub = 1000 * sec_per_beat / MusicTime.TicksPerBeat;
+                double msec_per_sub = 1000 * sec_per_beat / MusicTime.SubbeatsPerBeat;
                 double period = msec_per_sub > 1.0 ? msec_per_sub : 1;
                 _mmTimer.SetTimer((int)Math.Round(period, 2), MmTimerCallback);
             }
