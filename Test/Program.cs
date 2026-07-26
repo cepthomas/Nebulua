@@ -5,7 +5,6 @@ using System.IO;
 using System.Drawing;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
-//using Nebulua;
 
 
 namespace Test // TODO useful?
@@ -20,7 +19,7 @@ namespace Test // TODO useful?
             // "INTEROP"
             var torun = new[] { "INTEROP" };
             runner.RunSuites(torun);
-            File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
+            // File.WriteAllLines(@"_test.txt", runner.Context.OutputLines);
         }
     }
 }

@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 
 
-namespace Test // TODO useful?
+namespace Test
 {
     /// <summary>Utility functions.</summary>
     public class INTEROP_INTERNALS : TestSuite
@@ -34,7 +34,7 @@ namespace Test // TODO useful?
             // Set up runtime lua environment.
             var testDir = MiscUtils.GetSourcePath();
             var luaPath = $"{testDir}\\?.lua;{testDir}\\..\\LBOT\\?.lua;{testDir}\\..\\lua\\?.lua;;";
-            var scriptFn = Path.Join(testDir, "lua", "script_happy.lua");
+            var scriptFn = Path.Join(testDir, "script_happy.lua");
 
             interop.RunScript(scriptFn, luaPath);
             var ret = interop.Setup();

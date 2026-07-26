@@ -101,7 +101,7 @@ namespace Nebulua
             WindowState = FormWindowState.Normal;
             SetTitle();
 
-            // TODO Utils.Move(100, 750, 100, 400);
+            // TODO1 Utils.Move(100, 750, 100, 400);
 
             #region Init the controls
             GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);

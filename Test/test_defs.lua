@@ -9,7 +9,9 @@ local def = require('defs_api')
 
 some_arg = 'abc123'
 local dbg = require("debugex")
+-- dbg.ansi_color = false
 dbg.init()
+
 
 -- dbg.print('test_defs: '..some_arg)
 

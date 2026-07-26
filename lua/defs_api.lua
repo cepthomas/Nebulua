@@ -100,9 +100,9 @@ function M.get_notes_from_string(nstr)
 end
 
 -----------------------------------------------------------------------------
---- Convert note name into note number offset from middle C.
+--- Convert note name to note number offset from middle C.
 --  Could be F4 Bb2+ E#5-
--- @param snote string The root of the note with optional +- octave shift. TODO multiple octaves?
+-- @param snote string The root of the note with optional +- octave shift. TODO multiple octaves (--, +++)?
 -- @return The number or nil if invalid.
 function M.note_name_to_number(snote)
     local inote = nil
@@ -128,8 +128,8 @@ function M.note_name_to_number(snote)
 end
 
 -----------------------------------------------------------------------------
---- Convert interval name into number.
--- @param sinterval string The interval name with optional +- octave shift. TODO multiple octaves?
+--- Convert interval name to number.
+-- @param sinterval string The interval name with optional +- octave shift. TODO multiple octaves (--, +++)?
 -- @return The number or nil if invalid.
 function M.interval_name_to_number(sinterval)
     local iinterval = nil

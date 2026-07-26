@@ -21,10 +21,10 @@ local dev_out2 = "loopMIDI Port"
 local dev_in1  = "loopMIDI Port"
 
 -- Channels
-local hnd_piano = api.open_midi_output(dev_out1, 1, 2)
-local hnd_synth = api.open_midi_output(dev_out1, 2, 90)
-local hnd_drums = api.open_midi_output(dev_out1, 10, 8)
-local hnd_input = api.open_midi_input(dev_in1, 3)
+local hnd_piano = api.open_output_channel(dev_out1, 1, "Piano", 2)
+local hnd_synth = api.open_output_channel(dev_out1, 2, "Synth", 90)
+local hnd_drums = api.open_output_channel(dev_out1, 10, "Drums", 8)
+local hnd_input = api.open_input_channel(dev_in1, 3, "Midi Input 3")
 
 
 ------------------------- Vars ----------------------------------------
@@ -57,11 +57,11 @@ function step(tick)
 
     local bar, beat, sub = mt.tick_to_mt(tick)
     if beat == 0 and sub == 0 then
-        api.send_midi_controller(hnd_synth, 50, 51)
+        api.send_controller(hnd_synth, 50, 51)
     end
 
     if beat == 1 and sub == 4 then
-        api.send_midi_controller(hnd_synth, 60, 61)
+        api.send_controller(hnd_synth, 60, 61)
     end
 
     return 0
@@ -69,19 +69,19 @@ end
 
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
-function receive_midi_note(chan_hnd, note_num, volume)
+function receive_note(chan_hnd, note_num, volume)
     local s = string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
     api.log_trace(s)
 
     if chan_hnd == hnd_input then
-        api.send_midi_note(hnd_synth, note_num + 1, volume * 0.5, 8)
+        api.send_note(hnd_synth, note_num + 1, volume * 0.5, 8)
     end
     return 0
 end
 
 -----------------------------------------------------------------------------
 -- Handler for input controller events. Optional.
-function receive_midi_controller(chan_hnd, controller, value)
+function receive_controller(chan_hnd, controller, value)
     local s = string.format("Script rcv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
     api.log_trace(s)
     return 0
@@ -93,7 +93,7 @@ end
 -- Called from sequence.
 local function my_seq_func(tick)
     local note_num = math.random(0, #alg_scale)
-    api.send_midi_note(hnd_synth, alg_scale[note_num], 0.7, 1)
+    api.send_note(hnd_synth, alg_scale[note_num], 0.7, 1)
 end
 
 -----------------------------------------------------------------------------
@@ -111,7 +111,7 @@ local function boing(note_num)
     if note_num == 0 then
         note_num = math.random(30, 80)
         boinged = true
-        api.send_midi_note(hnd_synth, note_num, 0.7, 8)
+        api.send_note(hnd_synth, note_num, 0.7, 8)
     end
     return boinged
 end

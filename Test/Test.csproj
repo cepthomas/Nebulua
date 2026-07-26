@@ -3,6 +3,7 @@
   <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0-windows</TargetFramework>
+        <Platforms>AnyCPU;x64</Platforms>
         <UseWindowsForms>true</UseWindowsForms>
         <OutputPath>bin\</OutputPath>
 

@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-
         <!-- Use Exe type to make console available. Lua print() will appear there. -->
         <OutputType>Exe</OutputType>
         <!-- <OutputType>WinExe</OutputType> -->
@@ -22,7 +21,6 @@
         <Product>Nebulua</Product>
         <Description>Play music with lua.</Description>
         <Copyright>MIT License</Copyright>
-
     </PropertyGroup>
 
     <ItemGroup>
