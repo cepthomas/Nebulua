@@ -13,35 +13,6 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 using Ephemera.MusicLib;
 
-    // "build_systems":
-    // [
-    //     {
-    //         "name": "Test - Lua",
-    //         "file_patterns": ["test_*.lua"],
-    //         "env": { "LUA_PATH": ".\\..\\lua\\?.lua;?.lua;;", },
-    //         "shell_cmd": "pushd ..\\LBOT & lua pnut_runner.lua \"$file\" & popd",
-    //         "file_regex": "^lua: (...*?):([0-9]*)():?(.*)$",
-    //     },
-
-    //     {
-    //         "name": "Run - Lua",
-    //         "file_patterns": ["*.lua"],
-    //         "env": { "LUA_PATH": ".\\..\\lua\\?.lua;?.lua;;", },
-    //         "shell_cmd": "lua \"$file\"",
-    //         "file_regex": "^lua: (...*?):([0-9]*)():?(.*)$",
-    //     },
-    // ],
-
-
-
-
-// TODO1 these
-// X  C:\Dev\Apps\Nebulua\nebulua.sublime-project ***** lua
-// X  C:\Dev\Libs\LuaBagOfTricks\lbot.sublime-project ***** lua
-// X  C:\Dev\Libs\PyBagOfTricks\pbot.sublime-project ***** py
-// X  C:\Users\cepth\AppData\Roaming\Sublime Text\Packages\sbot.sublime-project ***** py
-// X  C:\Users\cepth\AppData\Roaming\Sublime Text\Packages\SbotDev\sbot_dev.sublime-project ***** py - special
-
 
 namespace Nebulua
 {
@@ -125,9 +96,10 @@ namespace Nebulua
             LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
             // Main window.
+            WindowState = FormWindowState.Normal;
+            StartPosition = FormStartPosition.Manual;
             Location = _settings.FormGeometry.Location;
             Size = _settings.FormGeometry.Size;
-            WindowState = FormWindowState.Normal;
             SetTitle();
 
             // TODO1 Utils.Move(100, 750, 100, 400);

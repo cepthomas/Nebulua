@@ -1,4 +1,6 @@
 
+:: CLI test runner.
+
 echo off
 cls
 
