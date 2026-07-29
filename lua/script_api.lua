@@ -200,47 +200,48 @@ function M.send_note(chan_hnd, note_num, volume, dur)
    end
 end
 
------------------------------------------------------------------------------
--- Process the chunks in the sequence into a list of steps and return that.
-function M.parse_sequence_steps(chan_hnd, seq)
-    local steps = {}
-    for _, seq_chunk in ipairs(seq) do
-        -- Reset position to start of sequence.
-        local tick = 0
-        local seq_length, seq_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
-        for _, step in ipairs(seq_steps) do
-            table.insert(steps, step)
-        end
-    end
-    return steps
-end
+-- -----------------------------------------------------------------------------
+-- -- Process the chunks in the sequence into a list of steps and return that.
+-- ---------????? Create a dynamic object from a sequence. See [Composition](#markdown-header-composition).
+-- function M.parse_sequence_steps(chan_hnd, seq) --TODO1 useful?
+--     local steps = {}
+--     for _, seq_chunk in ipairs(seq) do
+--         -- Reset position to start of sequence.
+--         local tick = 0
+--         local seq_length, seq_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+--         for _, step in ipairs(seq_steps) do
+--             table.insert(steps, step)
+--         end
+--     end
+--     return steps
+-- end
 
------------------------------------------------------------------------------
--- Send a list of steps immediately.
-function M.send_sequence_steps(seq_steps, tick)
-    if seq_steps == nil then return end
+-- -----------------------------------------------------------------------------
+-- -- Send a list of steps immediately.
+-- function M.send_sequence_steps(seq_steps, tick) --TODO1 useful?--
+--     if seq_steps == nil then return end
 
-    for _, step in ipairs(seq_steps) do
-        if step.step_type == "note" then
+--     for _, step in ipairs(seq_steps) do
+--         if step.step_type == "note" then
 
-           if step.volume > 0 then -- is noteon
-               local dur = math.max(step.duration, 1) -- (min for drum/hit)
+--            if step.volume > 0 then -- is noteon
+--                local dur = math.max(step.duration, 1) -- (min for drum/hit)
 
-               local noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
-               _table_add(_transients, noteon.tick, noteon)
+--                local noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
+--                _table_add(_transients, noteon.tick, noteon)
 
-               -- chase with noteoff
-               local noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
-               _table_add(_transients, noteoff.tick, noteoff)
+--                -- chase with noteoff
+--                local noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
+--                _table_add(_transients, noteoff.tick, noteoff)
 
-           else -- note off
-               local noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
-               _table_add(_transients, noteoff.tick, noteoff)
-           end
+--            else -- note off
+--                local noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
+--                _table_add(_transients, noteoff.tick, noteoff)
+--            end
 
-        end
-    end
-end
+--         end
+--     end
+-- end
 
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern.
@@ -261,7 +262,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local event_offset = 0 -- offset in chunk pattern for the start of the current event
 
 
-    ---------- Local function to package an event. ------ ------
+    ---------- TODO1 Local function to package an event. ------ ------
     local function make_note_event(offset, notes_to_play)
         -- scale volume
         local vol = _volume_map[current_vol + 1] -- to lua index
@@ -274,7 +275,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
                 table.insert(steps, si)
             else
                 -- Syntax error
-            return si.err
+                return si.err
             end
         end
         return nil
@@ -312,6 +313,9 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         func = what_to_play
     elseif tn == "string" then
         notes_to_play = def.get_notes_from_string(what_to_play)
+        if notes_to_play == nil then
+            return 0, {string.format("Invalid note descriptor '%s'", tostring(chunk[2]))}
+        end
     else
         return 0, {string.format("Invalid note descriptor '%s'", tostring(chunk[2]))}
     end
@@ -425,6 +429,9 @@ end
 -- @param section target
 -- @param start_tick absolute start time 0-based
 function M.parse_section(section, start_tick)
+
+    -- print('parse_section ', section, start_tick)
+
     section.start = start_tick
     section.length = 0
 
@@ -461,7 +468,7 @@ function M.parse_section(section, start_tick)
                         end
                         seq_length_max = math.max(seq_length_max, seq_length)
                     else
-                        error(string.format("Couldn't parse sequence %d in section '%s'", i - 1, section.name), 1)
+                        error(string.format("Couldn't parse sequence %d in section '%s': %s", i, section.name, chunk_steps), 1)
                     end
                 end
 

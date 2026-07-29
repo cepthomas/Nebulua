@@ -257,7 +257,7 @@ Change the play tempo.
 ```lua
 function api.process_comp()
 ```
-If it's a static composition call this in setup().
+If it's a static composition call this in setup() to process all sections.
 
 - return: Meta info about the composition for internal use.
 
@@ -272,19 +272,19 @@ Call this in step(tick) to process internal things e.g. note offs.
 ```lua
 function api.parse_sequence_steps(chan_hnd, sequence)
 ```
-Create a dynamic object from a sequence. See [Composition](#markdown-header-composition).
+Create a steps table from a sequence dynamically. See [Composition](#markdown-header-composition).
 
 - chan_hnd: Specific channel.
 - sequence: The sequence to parse.
-- return: An object for use by `send_sequence_steps()`.
+- return: A table for use by `send_sequence_steps()`.
 
 
 ```lua
 function api.send_sequence_steps(seq_steps, tick)
 ```
-Send the object created in `parse_sequence_steps()`. See [Composition](#markdown-header-composition).
+Send the steps table created in `parse_sequence_steps()`. See [Composition](#markdown-header-composition).
 
-- seq_steps: when to send it, usually current tick.
+- seq_steps: the steps table.
 - tick: when to send it, usually current tick.
 
 ## Script Callbacks
