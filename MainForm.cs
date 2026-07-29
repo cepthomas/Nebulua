@@ -102,8 +102,6 @@ namespace Nebulua
             Size = _settings.FormGeometry.Size;
             SetTitle();
 
-            // TODO1 Utils.Move(100, 750, 100, 400);
-
             #region Init the controls
             GraphicsUtils.ColorizeControl(chkPlay, _settings.IconColor);
             chkPlay.BackColor = BackColor;
@@ -550,10 +548,15 @@ namespace Nebulua
                         _loggerApp.Exception(e);
                         UpdateState(ExecState.Dead);
                     }
+                    else if(ex.Message.StartsWith("COMP")) // Special for composition errors
+                    {
+                        _loggerApp.Warn(ex.Message.Replace("COMP", "").Trim());
+                        UpdateState(ExecState.Empty);
+                    }
                     else // Just warn w/context.
                     {
-                        if (ex.Context != "") _loggerApp.Warn(ex.Context);
                         if (ex.Error != "") _loggerApp.Warn(ex.Error);
+                        if (ex.Context != "") _loggerApp.Warn(ex.Context);
                         UpdateState(ExecState.Empty);
                     }
                     break;

@@ -270,7 +270,7 @@ Call this in step(tick) to process internal things e.g. note offs.
 - tick: current tick.
 
 ```lua
-function api.parse_sequence_steps(chan_hnd, sequence)
+function api.parse_sequence_steps(chan_hnd, sequence) -- TODO1 useful?
 ```
 Create a steps table from a sequence dynamically. See [Composition](#markdown-header-composition).
 
@@ -280,7 +280,7 @@ Create a steps table from a sequence dynamically. See [Composition](#markdown-he
 
 
 ```lua
-function api.send_sequence_steps(seq_steps, tick)
+function api.send_sequence_steps(seq_steps, tick) -- TODO1 useful?
 ```
 Send the steps table created in `parse_sequence_steps()`. See [Composition](#markdown-header-composition).
 

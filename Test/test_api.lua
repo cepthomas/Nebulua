@@ -82,12 +82,14 @@ function M.suite_parse_chunk(pn)
     seq_length, steps = api.parse_chunk(chunk, 0x0A06, 1555 )
     pn.UT_EQUAL(#steps, 8)
     pn.UT_EQUAL(seq_length, 64)
+end
 
-    -- Bad syntax.
+-----------------------------------------------------------------------------
+function M.suite_script_error(pn)
+    -- Bad syntax. Causes lua error which is fatal.
     chunk = { "|   ---  |     8 8|        |     8 8|        |     8 8|        |     8 8|", 99 }
-    seq_length, steps = api.parse_chunk(chunk, 0x0A07, 678 )
-    pn.UT_EQUAL(seq_length, 0)
-    pn.UT_STR_CONTAINS(tx.dump_table(steps, 'xxxx', 1), "Invalid '-' in pattern string")
+    pn.exp_error_text = "Invalid '-' in pattern string"
+    -- seq_length, steps = api.parse_chunk(chunk, 0x0A07, 678 )
 end
 
 -----------------------------------------------------------------------------
