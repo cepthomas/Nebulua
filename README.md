@@ -269,24 +269,6 @@ Call this in step(tick) to process internal things e.g. note offs.
 
 - tick: current tick.
 
-```lua
-function api.parse_sequence_steps(chan_hnd, sequence) -- TODO1 useful?
-```
-Create a steps table from a sequence dynamically. See [Composition](#markdown-header-composition).
-
-- chan_hnd: Specific channel.
-- sequence: The sequence to parse.
-- return: A table for use by `send_sequence_steps()`.
-
-
-```lua
-function api.send_sequence_steps(seq_steps, tick) -- TODO1 useful?
-```
-Send the steps table created in `parse_sequence_steps()`. See [Composition](#markdown-header-composition).
-
-- seq_steps: the steps table.
-- tick: when to send it, usually current tick.
-
 ## Script Callbacks
 
 These are called by the system for implementing in the script.

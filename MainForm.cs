@@ -171,6 +171,8 @@ namespace Nebulua
             ddbtnFile.Enabled = true;
             ddbtnFile.Opening += (_, _) => PopulateFileMenu();
             ddbtnFile.Selected += File_Selected;
+            // Init file picker.
+            PopulateFileMenu();
             #endregion
 
             // Hook script callbacks.

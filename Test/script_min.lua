@@ -8,7 +8,7 @@ local ut = require("lbot_utils")
 
 
 -- info = 2
-li.log(2, "======== script_happy.lua is a beautiful thing ==========")
+li.log(2, "======== script_min.lua is a beautiful thing ==========")
 
 
 ------------------------- Config ----------------------------------------

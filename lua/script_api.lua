@@ -163,7 +163,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Process notes due now.
-----------  Call this in step(tick) to process internal things e.g. note offs. TODO1 automatically??
+--  Call this in step(tick) to process internal things e.g. note offs.
 -- @param tick Current tick
 -- @return status
 function M.process_step(tick)
@@ -484,15 +484,23 @@ function M.process_comp()
     return sx.strjoin('|', res)
 end
 
+-----------------------------------------------------------------------------
+----------------------- Main ------------------------------------------------
+-----------------------------------------------------------------------------
+M.log_info('Loading script_api.lua...')
+return M
+
 
 -----------------------------------------------------------------------------
------------------------ TODO1 these????? ------------------
+----------------------- Leftovers -------------------------------------------
 -----------------------------------------------------------------------------
 
--- -----------------------------------------------------------------------------
--- -- Process the chunks in the sequence into a list of steps and return that.
--- ---------????? Create a dynamic object from a sequence. See [Composition](#markdown-header-composition).
--- function M.parse_sequence_steps(chan_hnd, seq) --TODO1 useful?
+-----------------------------------------------------------------------------
+-- Create a steps table from a sequence dynamically. See [Composition](#markdown-header-composition).
+-- - chan_hnd: Specific channel.
+-- - sequence: The sequence to parse.
+-- - return: A table for use by `send_sequence_steps()`.
+-- function M.parse_sequence_steps(chan_hnd, seq)
 --     local steps = {}
 --     for _, seq_chunk in ipairs(seq) do
 --         -- Reset position to start of sequence.
@@ -505,9 +513,11 @@ end
 --     return steps
 -- end
 
--- -----------------------------------------------------------------------------
--- -- Send a list of steps immediately.
--- function M.send_sequence_steps(seq_steps, tick) --TODO1 useful?--
+-----------------------------------------------------------------------------
+-- Send the steps table created in `parse_sequence_steps()`. See [Composition](#markdown-header-composition).
+-- - seq_steps: the steps table.
+-- - tick: when to send it, usually current tick/immediately.
+-- function M.send_sequence_steps(seq_steps, tick)
 --     if seq_steps == nil then return end
 
 --     for _, step in ipairs(seq_steps) do
@@ -531,9 +541,3 @@ end
 --         end
 --     end
 -- end
-
------------------------------------------------------------------------------
------------------------ Main ------------------------------------------------
------------------------------------------------------------------------------
-M.log_info('Loading script_api.lua...')
-return M
