@@ -70,7 +70,7 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
 function receive_note(chan_hnd, note_num, volume)
-    local s = string.format("Script rcv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
+    local s = string.format("Script recv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
     api.log_trace(s)
 
     if chan_hnd == hnd_input then
@@ -82,7 +82,7 @@ end
 -----------------------------------------------------------------------------
 -- Handler for input controller events. Optional.
 function receive_controller(chan_hnd, controller, value)
-    local s = string.format("Script rcv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
+    local s = string.format("Script recv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
     api.log_trace(s)
     return 0
 end

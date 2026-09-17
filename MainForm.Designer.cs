@@ -29,8 +29,8 @@ namespace Nebulua
             tvInfo = new Ephemera.NBagOfUis.TextViewer();
             btnAbout = new Button();
             btnKill = new Button();
-            chkMonRcv = new CheckBox();
-            chkMonSnd = new CheckBox();
+            chkMonRecv = new CheckBox();
+            chkMonSend = new CheckBox();
             chkLoop = new CheckBox();
             btnSettings = new Button();
             timeBar = new TimeBar();
@@ -129,31 +129,31 @@ namespace Nebulua
             toolTip.SetToolTip(btnKill, "Kill all outputs");
             btnKill.UseVisualStyleBackColor = false;
             // 
-            // chkMonRcv
+            // chkMonRecv
             // 
-            chkMonRcv.Appearance = Appearance.Button;
-            chkMonRcv.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
-            chkMonRcv.FlatStyle = FlatStyle.Flat;
-            chkMonRcv.Image = Properties.Resources.glyphicons_213_arrow_down;
-            chkMonRcv.Location = new Point(458, 10);
-            chkMonRcv.Name = "chkMonRcv";
-            chkMonRcv.Size = new Size(40, 38);
-            chkMonRcv.TabIndex = 48;
-            toolTip.SetToolTip(chkMonRcv, "Monitor receive events");
-            chkMonRcv.UseVisualStyleBackColor = false;
+            chkMonRecv.Appearance = Appearance.Button;
+            chkMonRecv.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
+            chkMonRecv.FlatStyle = FlatStyle.Flat;
+            chkMonRecv.Image = Properties.Resources.glyphicons_213_arrow_down;
+            chkMonRecv.Location = new Point(458, 10);
+            chkMonRecv.Name = "chkMonRecv";
+            chkMonRecv.Size = new Size(40, 38);
+            chkMonRecv.TabIndex = 48;
+            toolTip.SetToolTip(chkMonRecv, "Monitor receive events");
+            chkMonRecv.UseVisualStyleBackColor = false;
             // 
-            // chkMonSnd
+            // chkMonSend
             // 
-            chkMonSnd.Appearance = Appearance.Button;
-            chkMonSnd.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
-            chkMonSnd.FlatStyle = FlatStyle.Flat;
-            chkMonSnd.Image = Properties.Resources.glyphicons_214_arrow_up;
-            chkMonSnd.Location = new Point(504, 10);
-            chkMonSnd.Name = "chkMonSnd";
-            chkMonSnd.Size = new Size(40, 38);
-            chkMonSnd.TabIndex = 49;
-            toolTip.SetToolTip(chkMonSnd, "Monitor send events");
-            chkMonSnd.UseVisualStyleBackColor = false;
+            chkMonSend.Appearance = Appearance.Button;
+            chkMonSend.FlatAppearance.CheckedBackColor = Color.PapayaWhip;
+            chkMonSend.FlatStyle = FlatStyle.Flat;
+            chkMonSend.Image = Properties.Resources.glyphicons_214_arrow_up;
+            chkMonSend.Location = new Point(504, 10);
+            chkMonSend.Name = "chkMonSend";
+            chkMonSend.Size = new Size(40, 38);
+            chkMonSend.TabIndex = 49;
+            toolTip.SetToolTip(chkMonSend, "Monitor send events");
+            chkMonSend.UseVisualStyleBackColor = false;
             // 
             // chkLoop
             // 
@@ -212,8 +212,8 @@ namespace Nebulua
             Controls.Add(btnSettings);
             Controls.Add(timeBar);
             Controls.Add(chkLoop);
-            Controls.Add(chkMonSnd);
-            Controls.Add(chkMonRcv);
+            Controls.Add(chkMonSend);
+            Controls.Add(chkMonRecv);
             Controls.Add(btnKill);
             Controls.Add(btnAbout);
             Controls.Add(btnRewind);
@@ -235,8 +235,8 @@ namespace Nebulua
         private Ephemera.NBagOfUis.TextViewer tvInfo;
         private Button btnAbout;
         private Button btnKill;
-        private CheckBox chkMonRcv;
-        private CheckBox chkMonSnd;
+        private CheckBox chkMonRecv;
+        private CheckBox chkMonSend;
         private CheckBox chkLoop;
         private TimeBar timeBar;
         private Button btnSettings;

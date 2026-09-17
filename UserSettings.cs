@@ -66,10 +66,10 @@ namespace Nebulua
         public bool WordWrap { get; set; } = false;
 
         [Browsable(false)]
-        public bool MonitorRcv { get; set; } = false;
+        public bool MonitorRecv { get; set; } = false;
 
         [Browsable(false)]
-        public bool MonitorSnd { get; set; } = false;
+        public bool MonitorSend { get; set; } = false;
         #endregion
     }
 }

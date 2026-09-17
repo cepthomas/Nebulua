@@ -113,17 +113,17 @@ namespace Nebulua
             chkLoop.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
             chkLoop.Click += (_, __) => timeBar.DoLoop = chkLoop.Checked;
 
-            chkMonRcv.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(chkMonRcv, _settings.IconColor);
-            chkMonRcv.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
-            chkMonRcv.Checked = _settings.MonitorRcv;
-            chkMonRcv.Click += (_, __) => _settings.MonitorRcv = chkMonRcv.Checked;
+            chkMonRecv.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(chkMonRecv, _settings.IconColor);
+            chkMonRecv.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
+            chkMonRecv.Checked = _settings.MonitorRecv;
+            chkMonRecv.Click += (_, __) => _settings.MonitorRecv = chkMonRecv.Checked;
 
-            chkMonSnd.BackColor = BackColor;
-            GraphicsUtils.ColorizeControl(chkMonSnd, _settings.IconColor);
-            chkMonSnd.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
-            chkMonSnd.Checked = _settings.MonitorSnd;
-            chkMonSnd.Click += (_, __) => _settings.MonitorSnd = chkMonSnd.Checked;
+            chkMonSend.BackColor = BackColor;
+            GraphicsUtils.ColorizeControl(chkMonSend, _settings.IconColor);
+            chkMonSend.FlatAppearance.CheckedBackColor = _settings.SelectedColor;
+            chkMonSend.Checked = _settings.MonitorSend;
+            chkMonSend.Click += (_, __) => _settings.MonitorSend = chkMonSend.Checked;
 
             btnRewind.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnRewind, _settings.IconColor);
@@ -157,8 +157,8 @@ namespace Nebulua
             [
                 new("ERR", Color.Red),
                 new("WRN", Color.Green),
-                new("SND ", Color.PaleGreen),
-                new("RCV ", Color.LightBlue),
+                new("Send ", Color.PaleGreen),
+                new("ReCV ", Color.LightBlue),
             ];
 
             timeBar.DrawColor = _settings.DrawColor;
@@ -656,7 +656,7 @@ namespace Nebulua
                         break;
                 }
 
-                if (logit && _settings.MonitorRcv)
+                if (logit && _settings.MonitorRecv)
                 {
                     _loggerMidi.Trace($"<<< {e}");
                 }
@@ -775,7 +775,7 @@ namespace Nebulua
             var se = new Controller(channel.ChannelNumber, e.controller, e.value);
             channel.Send(se);
 
-            if (_settings.MonitorSnd)
+            if (_settings.MonitorSend)
             {
                 // Intended sent.
                 _loggerMidi.Trace($">>> {e}");
