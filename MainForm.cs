@@ -93,7 +93,6 @@ namespace Nebulua
             LogManager.MinLevelFile = _settings.FileLogLevel;
             LogManager.MinLevelNotif = _settings.NotifLogLevel;
             LogManager.LogMessage += LogManager_LogMessage;
-            LogManager.Run(Path.Combine(appDir, "log.txt"), 50000);
 
             // Main window.
             WindowState = FormWindowState.Normal;

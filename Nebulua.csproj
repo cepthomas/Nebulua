@@ -6,7 +6,7 @@
         <!-- <OutputType>WinExe</OutputType> -->
         <UseWindowsForms>true</UseWindowsForms>
         <OutputPath>bin\</OutputPath>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows</TargetFramework>
         <Platforms>AnyCPU;x64</Platforms>
 
         <ApplicationIcon>marks.ico</ApplicationIcon>
@@ -36,6 +36,10 @@
         <None Remove="lib\**" />
         <None Remove="Interop\**" />
         <None Remove="Test\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NAudio" Version="3.1.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -70,12 +74,6 @@
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>
         </EmbeddedResource>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="NAudio.Midi" Version="2.2.1" />
-        <PackageReference Include="System.Drawing.Common" Version="9.0.0-preview.3.24172.9" />
-        <PackageReference Include="System.Resources.Extensions" Version="9.0.0-preview.3.24172.9" />
     </ItemGroup>
 
 </Project>
