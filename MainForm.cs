@@ -13,6 +13,8 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 using Ephemera.MusicLib;
 
+// <!--TODO This makes a weird warning go away - not fixable via configuration manager.-->
+// <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
 
 namespace Nebulua
 {
