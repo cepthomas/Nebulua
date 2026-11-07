@@ -4,7 +4,7 @@
 A simplified version of [Nebulator](https://github.com/cepthomas/Nebulator.git) using Lua as the script flavor.
 While the primary intent is to generate music-by-code, runtime interaction is also supported using midi inputs.
 
-Windows only. Requires VS2022, .NET8, Lua 5.4.
+Windows only. Requires VS2026, .NET10, Lua 5.4.
 
 It's called Nebulator/Nebulua after a MarkS C++ noisemaker called Nebula which manipulated synth parameters via code.
 
@@ -387,7 +387,7 @@ Define a group of notes for use as a chord or scale. Then it can be used by get_
 
 # Tech Notes
 
-- Windows 64 bit only. Build it with VS2022 and .NET8.
+- Windows 64 bit only. Build it with VS2026 and .NET10.
 - Uses 64 bit Lua 5.4.2 from [here](https://luabinaries.sourceforge.net/download.html).
 - Uses [C code conventions](https://github.com/cepthomas/c_bag_of_tricks/blob/master/conventions.md).
 - The app is slow to start up in the VS debugger - some mysterious machinations under the hood. Running from the cmd line is fine.

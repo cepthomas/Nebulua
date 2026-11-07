@@ -701,7 +701,7 @@ namespace Nebulua
                         cc.State == ChannelState.Solo :
                         cc.State != ChannelState.Mute;
 
-                    channel.Enable = enable;
+                    channel.EnableSound = enable;
                     if (!enable)
                     {
                         MidiManager.Instance.Kill(channel);
@@ -903,7 +903,7 @@ namespace Nebulua
                 {
                     bool enable = anySolo ? cciter.State == ChannelState.Solo : cciter.State != ChannelState.Mute;
 
-                    channel.Enable = enable;
+                    channel.EnableSound = enable;
                     if (!enable)
                     {
                         // Kill just in case.
