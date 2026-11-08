@@ -183,7 +183,7 @@ Call these from your script.
 
 
 ```lua
-function api.open_output_channel(dev_name, chan_num, chan_name, patch)
+function api.open_channel(dev_name, chan_num, chan_name, patch)
 ```
 Register an output channel.
 
@@ -195,7 +195,7 @@ Register an output channel.
 
 
 ```lua
-function api.open_input_channel(dev_name, chan_num, chan_name)
+function api.open_input(dev_name, chan_num, chan_name)
 ```
 Register an input midi channel.
 

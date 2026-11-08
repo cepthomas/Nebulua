@@ -13,8 +13,6 @@ using Ephemera.NBagOfUis;
 using Ephemera.MidiLib;
 using Ephemera.MusicLib;
 
-// <!--TODO This makes a weird warning go away - not fixable via configuration manager.-->
-// <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
 
 namespace Nebulua
 {
@@ -66,14 +64,11 @@ namespace Nebulua
         /// <summary>Test for edited.</summary>
         DateTime _scriptTouch;
 
-        /// <summary>All midi devices to use for send.</summary>
-        readonly List<MidiOutputDevice> _outputDevices = [];
+        /// <summary>Midi boss.</summary>
+        readonly ChannelManager CM;
 
-        /// <summary>All midi devices to use for receive.</summary>
-        readonly List<MidiInputDevice> _inputDevices = [];
-
-        /// <summary>All channel play controls.</summary>
-        readonly List<ChannelControl> _channelControls = [];
+        /// <summary>Midi boss.</summary>
+        readonly InputManager IM;
         #endregion
 
         #region Lifecycle
@@ -88,6 +83,9 @@ namespace Nebulua
             Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
 
             KeyPreview = true; // for routing kbd strokes properly
+
+            CM = new(Controls);
+            IM = new();
 
             // Settings.
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
@@ -136,19 +134,27 @@ namespace Nebulua
 
             btnKill.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
-            btnKill.Click += (_, __) => { MidiManager.Instance.Kill(); };
+            btnKill.Click += (_, __) => { CM.KillAll(); };
 
             btnSettings.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
             btnSettings.Click += Settings_Click;
 
-            sldVolume.BackColor = BackColor;
-            sldVolume.DrawColor = _settings.DrawColor;
-            //sldVolume.ValueChanged += (_, __) => _volume = sldVolume.Value;
-
-            sldTempo.BackColor = BackColor;
             sldTempo.DrawColor = _settings.DrawColor;
+            sldTempo.Minimum = 50;
+            sldTempo.Maximum = 200;
+            sldTempo.Resolution = 5;
+            sldTempo.Value = 100;
             sldTempo.ValueChanged += (_, __) => { SetTimer((int)sldTempo.Value); };
+            //sldTempo.Invalidate();
+
+            sldVolume.DrawColor = _settings.DrawColor;
+            sldVolume.Minimum = 0.0;
+            sldVolume.Maximum = 2.0;
+            sldVolume.Resolution = 0.05;
+            sldVolume.Value = 0.8;
+            //sldVolume.ValueChanged += (_, __) => _volume = sldVolume.Value;
+            //sldVolume.Invalidate();
 
             tvInfo.BackColor = BackColor;
             tvInfo.Font = new("Cascadia Mono", 9);
@@ -178,14 +184,14 @@ namespace Nebulua
 
             // Hook script callbacks.
             Interop.Log += Interop_Log;
-            Interop.OpenInputChannel += Interop_OpenInputChannel;
-            Interop.OpenOutputChannel += Interop_OpenOutputChannel;
+            Interop.OpenInput += Interop_OpenInput;
+            Interop.OpenChannel += Interop_OpenChannel;
             Interop.SendNote += Interop_SendNote;
             Interop.SendController += Interop_SendController;
             Interop.SetTempo += Interop_SetTempo;
 
-            MidiManager.Instance.MessageReceived += Mgr_MessageReceived;
-            MidiManager.Instance.MessageSent += Mgr_MessageSent;
+            IM.MessageReceived += Mgr_MessageReceived;
+            //CM.MessageSent += Mgr_MessageSent;
 
             Thread.CurrentThread.Name = "MAIN";
         }
@@ -236,9 +242,8 @@ namespace Nebulua
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            DestroyControls();
-            MidiManager.Instance.DestroyChannels();
-            MidiManager.Instance.DestroyDevices();
+            CM.Dispose();
+            IM.Dispose();
 
             if (disposing)
             {
@@ -267,11 +272,10 @@ namespace Nebulua
             try
             {
                 // Clean up first.
-                MidiManager.Instance.Kill();
+                CM.KillAll();
                 _mmTimer.Stop();
-                DestroyControls();
-                MidiManager.Instance.DestroyChannels();
-                MidiManager.Instance.DestroyDevices();
+                CM.Reset();
+                IM.Reset();
 
                 // Determine file to load. Null means reload current.
                 if (openScriptFn is not null)
@@ -302,18 +306,45 @@ namespace Nebulua
                 string smeta = _interop.Setup();
 
                 // Get info about the script.
-                Dictionary<int, string> sectInfo = [];
+                Dictionary<MusicTime, string> sectInfo = [];
                 var chunks = smeta.SplitByToken("|");
 
                 chunks.ForEach(ch =>
                 {
                     var elems = ch.SplitByToken(",");
-                    sectInfo[int.Parse(elems[1])] = elems[0];
+                    sectInfo[new(int.Parse(elems[1]))] = elems[0];
                 });
 
                 timeBar.InitSectionInfo(sectInfo);
 
-                CreateControls();
+                // was CreateControls();
+
+                // DestroyControls();
+
+                /// create a control for each channel and bind object
+                int x = timeBar.Left;
+                int y = timeBar.Bottom + 5;
+
+                // Get all script-defined channels and make corresponding UI element.
+                var channels = CM.GetChannels().Select(ch => ch.chan).ToList();
+
+                channels.ForEach(chan =>
+                {
+                    var ctrl = new ChannelControl()
+                    {
+                        Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}",
+                        Info2 = $"{chan.PatchName} ({chan.Patch}){Environment.NewLine}{chan}",
+                        Location = new(x, y),
+                        BorderStyle = BorderStyle.FixedSingle,
+                        DrawColor = _settings.DrawColor,
+                        SelectedColor = _settings.SelectedColor,
+                        Volume = VolumeDefs.DEFAULT_VOLUME,
+                    };
+                    //ctrl.InfoClick += ChannelControl_InfoClick;
+                    CM.Bind(chan, ctrl);
+
+                    x += ctrl.Width + 4; // Width is not valid until after previous statement.
+                });
 
                 // Start timer.
                 sldTempo.Value = 100;
@@ -401,7 +432,7 @@ namespace Nebulua
                     _scriptFn = null;
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
-                    MidiManager.Instance.Kill();
+                    CM.KillAll();
                     _execState = ExecState.Empty;
                     break;
 
@@ -410,14 +441,14 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = true;
-                        MidiManager.Instance.Kill();
+                        CM.KillAll();
                         _execState = ExecState.Idle;
                     }
                     else
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        MidiManager.Instance.Kill();
+                        CM.KillAll();
                         _execState = ExecState.Empty;
                     }
                     break;
@@ -433,7 +464,7 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        MidiManager.Instance.Kill();
+                        CM.KillAll();
                         _execState = ExecState.Empty;
                     }
                     break;
@@ -441,7 +472,7 @@ namespace Nebulua
                 case ExecState.Dead:
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
-                    MidiManager.Instance.Kill();
+                    CM.KillAll();
                     _execState = ExecState.Dead;
                     break;
             }
@@ -487,14 +518,6 @@ namespace Nebulua
             {
                 timeBar.Invalidate();
             }
-
-            //this.InvokeIfRequired(_ =>
-            //{
-            //    if (e.CurrentTimeChange)
-            //    {
-            //        timeBar.Invalidate();
-            //    }
-            //});
         }
 
         /// <summary>
@@ -635,21 +658,22 @@ namespace Nebulua
             try
             {
                 var indev = (MidiInputDevice)sender!;
-                var chnd = HandleOps.Create(indev.Id, e.ChannelNumber, false);
+                //var chnd = HandleOps.Create(indev.Id, e.ChannelNumber, false);
+                var chnd = new ChannelHandle(indev.Id, e.ChannelNumber, false);
                 bool logit = true;
 
                 switch (e)
                 {
                     case NoteOn evt:
-                        _interop.ReceiveNote(chnd, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
+                        _interop.ReceiveNote(chnd.Raw, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
                         break;
 
                     case NoteOff evt:
-                        _interop.ReceiveNote(chnd, evt.Note, 0);
+                        _interop.ReceiveNote(chnd.Raw, evt.Note, 0);
                         break;
 
                     case Controller evt:
-                        _interop.ReceiveController(chnd, (int)evt.Id, evt.Value);
+                        _interop.ReceiveController(chnd.Raw, evt.Id, evt.Value);
                         break;
 
                     default: // Ignore others for now.
@@ -676,38 +700,9 @@ namespace Nebulua
         void Mgr_MessageSent(object? sender, BaseEvent e)
         {
             // Actual sent.
-            var indev = (MidiOutputDevice)sender!;
-            var chnd = HandleOps.Create(indev.Id, e.ChannelNumber, false);
-            _loggerMidi.Trace($">>> ! {e}");
-        }
-
-        /// <summary>
-        /// Process UI change.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControlEvent(object? sender, ChannelChangeEventArgs e)
-        {
-            var channel = (sender as ChannelControl)!.BoundChannel!;
-
-            if (e.State)
-            {
-                // Update all channels.
-                bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
-
-                foreach (var cc in _channelControls)
-                {
-                    bool enable = anySolo ?
-                        cc.State == ChannelState.Solo :
-                        cc.State != ChannelState.Mute;
-
-                    channel.EnableSound = enable;
-                    if (!enable)
-                    {
-                        MidiManager.Instance.Kill(channel);
-                    }
-                }
-            }
+            var outdev = (MidiOutputDevice)sender!;
+            var chnd = new ChannelHandle(outdev.Id, e.ChannelNumber, false);
+            _loggerMidi.Trace($">>> ! {chnd}");
         }
         #endregion
 
@@ -718,10 +713,11 @@ namespace Nebulua
         /// <param name="_"></param>
         /// <param name="e"></param>
         /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenInputChannel(object? _, OpenInputChannelArgs e)
+        void Interop_OpenInput(object? _, OpenInputArgs e)
         {
-            var chan_in = MidiManager.Instance.OpenInputChannel(e.dev_name, e.chan_num, e.chan_name);
-            e.ret = chan_in.Handle;
+            var min = IM.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
+            //var chnd = min.Handle;
+            //_loggerMidi.Trace($">>> ! {chnd}");
         }
 
         /// <summary>
@@ -730,11 +726,11 @@ namespace Nebulua
         /// <param name="_"></param>
         /// <param name="e"></param>
         /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenOutputChannel(object? _, OpenOutputChannelArgs e)
+        void Interop_OpenChannel(object? _, OpenChannelArgs e)
         {
             // Create channels and initialize controls.
-            var chan_out = MidiManager.Instance.OpenOutputChannel(e.dev_name, e.chan_num, e.chan_name, e.patch);
-            e.ret = chan_out.Handle;
+            var chan_out = CM.OpenChannel(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO1 last arg is isdrums
+            e.ret = chan_out.Handle.Raw;
         }
 
         /// <summary>
@@ -747,7 +743,8 @@ namespace Nebulua
             e.ret = 0; // not used
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}"); }
-            var channel = MidiManager.Instance.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            var chnd = new ChannelHandle(e.chan_hnd);
+            var channel = CM.GetChannel(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             if (e.volume == 0.0)
             {
@@ -771,7 +768,8 @@ namespace Nebulua
 
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
-            var channel = MidiManager.Instance.GetOutputChannel(e.chan_hnd) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            var chnd = new ChannelHandle(e.chan_hnd);
+            var channel = CM.GetChannel(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             var se = new Controller(channel.ChannelNumber, e.controller, e.value);
             channel.Send(se);
@@ -835,83 +833,8 @@ namespace Nebulua
         }
         #endregion
 
-        #region Channel Controls
-        /// <summary>
-        /// Destroy controls.
-        /// </summary>
-        void DestroyControls()
-        {
-            MidiManager.Instance.Kill();
-
-            // Clean out our current elements.
-            _channelControls.ForEach(c =>
-            {
-                Controls.Remove(c);
-                c.Dispose();
-            });
-            _channelControls.Clear();
-        }
-
-        /// <summary>
-        /// Create controls.
-        /// </summary>
-        void CreateControls()
-        {
-            DestroyControls();
-
-            /// create a control for each channel and bind object
-            int x = timeBar.Left;
-            int y = timeBar.Bottom + 5;
-
-            MidiManager.Instance.OutputChannels.ForEach(chan =>
-            {
-                var ctrl = new ChannelControl()
-                {
-                    BoundChannel = chan,
-                    Options = DisplayOptions.SoloMute,
-                    Location = new(x, y),
-                    BorderStyle = BorderStyle.FixedSingle,
-                    DrawColor = _settings.DrawColor,
-                    SelectedColor = _settings.SelectedColor,
-                    Volume = VolumeDefs.DEFAULT_VOLUME,
-                };
-                ctrl.ChannelChange += ChannelControl_ChannelChange;
-
-                Controls.Add(ctrl);
-                x += ctrl.Width + 4; // Width is not valid until after previous statement.
-            });
-        }
-        #endregion
-
         #region Events
-        /// <summary>
-        /// UI clicked something -> configure channel.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void ChannelControl_ChannelChange(object? sender, ChannelChangeEventArgs e)
-        {
-            var cc = sender as ChannelControl;
-            var channel = cc!.BoundChannel!;
 
-            if (e.State)
-            {
-                // Update all channels.
-                bool anySolo = _channelControls.Where(c => c.State == ChannelState.Solo).Any();
-
-                foreach (var cciter in _channelControls)
-                {
-                    bool enable = anySolo ? cciter.State == ChannelState.Solo : cciter.State != ChannelState.Mute;
-
-                    channel.EnableSound = enable;
-                    if (!enable)
-                    {
-                        // Kill just in case.
-                        MidiManager.Instance.Kill(channel);
-                    }
-                }
-            }
-        }
         #endregion
 
         #region Misc Stuff

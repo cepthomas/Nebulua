@@ -9,7 +9,7 @@ using namespace System::Collections::Generic;
 //============= C/Lua => Cpp/CLI payloads =============//
 
 //--------------------------------------------------------//
-public ref class OpenOutputChannelArgs : public EventArgs
+public ref class OpenChannelArgs : public EventArgs
 {
 public:
     /// <summary>Device name</summary>
@@ -23,7 +23,7 @@ public:
     /// <summary>Channel handle or -1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    OpenOutputChannelArgs(const char* dev_name, int chan_num, const char* chan_name, int patch)
+    OpenChannelArgs(const char* dev_name, int chan_num, const char* chan_name, int patch)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
@@ -33,7 +33,7 @@ public:
 };
 
 //--------------------------------------------------------//
-public ref class OpenInputChannelArgs : public EventArgs
+public ref class OpenInputArgs : public EventArgs
 {
 public:
     /// <summary>Device name</summary>
@@ -45,7 +45,7 @@ public:
     /// <summary>Channel handle or -1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    OpenInputChannelArgs(const char* dev_name, int chan_num, const char* chan_name)
+    OpenInputArgs(const char* dev_name, int chan_num, const char* chan_name)
     {
         this->dev_name = gcnew String(dev_name);
         this->chan_num = chan_num;
@@ -161,11 +161,11 @@ public:
 
 //============= C/Lua => Cpp/CLI functions =============//
 public:
-    static event EventHandler<OpenOutputChannelArgs^>^ OpenOutputChannel;
-    static void Notify(OpenOutputChannelArgs^ args) { OpenOutputChannel(nullptr, args); }
+    static event EventHandler<OpenChannelArgs^>^ OpenChannel;
+    static void Notify(OpenChannelArgs^ args) { OpenChannel(nullptr, args); }
 
-    static event EventHandler<OpenInputChannelArgs^>^ OpenInputChannel;
-    static void Notify(OpenInputChannelArgs^ args) { OpenInputChannel(nullptr, args); }
+    static event EventHandler<OpenInputArgs^>^ OpenInput;
+    static void Notify(OpenInputArgs^ args) { OpenInput(nullptr, args); }
 
     static event EventHandler<SendNoteArgs^>^ SendNote;
     static void Notify(SendNoteArgs^ args) { SendNote(nullptr, args); }

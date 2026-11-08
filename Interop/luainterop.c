@@ -192,7 +192,7 @@ int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int
 // Lua arg: chan_name User channel name
 // Lua arg: patch Patch number
 // Lua return: int Channel handle or -1 if error
-static int luainterop_OpenOutputChannel(lua_State* l)
+static int luainterop_OpenChannel(lua_State* l)
 {
     // Get arguments
     const char* dev_name;
@@ -209,7 +209,7 @@ static int luainterop_OpenOutputChannel(lua_State* l)
     else { luaL_error(l, "Invalid arg type for patch"); }
 
     // Do the work. One result.
-    int ret = luainterop_cb_OpenOutputChannel(l, dev_name, chan_num, chan_name, patch);
+    int ret = luainterop_cb_OpenChannel(l, dev_name, chan_num, chan_name, patch);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -222,7 +222,7 @@ static int luainterop_OpenOutputChannel(lua_State* l)
 // Lua arg: chan_num Channel number 1 => 16
 // Lua arg: chan_name User channel name
 // Lua return: int Channel handle or -1 if error
-static int luainterop_OpenInputChannel(lua_State* l)
+static int luainterop_OpenInput(lua_State* l)
 {
     // Get arguments
     const char* dev_name;
@@ -236,7 +236,7 @@ static int luainterop_OpenInputChannel(lua_State* l)
     else { luaL_error(l, "Invalid arg type for chan_name"); }
 
     // Do the work. One result.
-    int ret = luainterop_cb_OpenInputChannel(l, dev_name, chan_num, chan_name);
+    int ret = luainterop_cb_OpenInput(l, dev_name, chan_num, chan_name);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -342,8 +342,8 @@ static int luainterop_SetTempo(lua_State* l)
 
 static const luaL_Reg function_map[] =
 {
-    { "open_output_channel", luainterop_OpenOutputChannel },
-    { "open_input_channel", luainterop_OpenInputChannel },
+    { "open_channel", luainterop_OpenChannel },
+    { "open_input", luainterop_OpenInput },
     { "send_note", luainterop_SendNote },
     { "send_controller", luainterop_SendController },
     { "log", luainterop_Log },

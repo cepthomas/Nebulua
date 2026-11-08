@@ -21,10 +21,10 @@ local dev_out2 = "loopMIDI Port"
 local dev_in1  = "loopMIDI Port"
 
 -- Channels
-local hnd_piano = api.open_output_channel(dev_out1, 1, "Piano", 2)
-local hnd_synth = api.open_output_channel(dev_out1, 2, "Synth", 90)
-local hnd_drums = api.open_output_channel(dev_out1, 10, "Drums", 8)
-local hnd_input = api.open_input_channel(dev_in1, 3, "Midi Input 3")
+local hnd_piano = api.open_channel(dev_out1, 1, "Piano", 2)
+local hnd_synth = api.open_channel(dev_out1, 2, "Synth", 90)
+local hnd_drums = api.open_channel(dev_out1, 10, "Drums", 8)
+local hnd_input = api.open_input(dev_in1, 3, "Midi Input 3")
 
 
 ------------------------- Vars ----------------------------------------

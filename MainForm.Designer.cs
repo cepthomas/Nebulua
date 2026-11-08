@@ -65,47 +65,30 @@ namespace Nebulua
             // sldVolume
             // 
             sldVolume.BorderStyle = BorderStyle.FixedSingle;
-            sldVolume.DrawColor = Color.Red;
-            sldVolume.Label = "vol";
             sldVolume.Location = new Point(348, 8);
             sldVolume.Margin = new Padding(4, 5, 4, 5);
-            sldVolume.Maximum = 1D;
-            sldVolume.Minimum = 0D;
             sldVolume.Name = "sldVolume";
-            sldVolume.Orientation = Orientation.Horizontal;
-            sldVolume.Resolution = 0.05D;
             sldVolume.Size = new Size(88, 40);
             sldVolume.TabIndex = 36;
-            sldVolume.Value = 0.8D;
             // 
             // sldTempo
             // 
             sldTempo.BorderStyle = BorderStyle.FixedSingle;
-            sldTempo.DrawColor = Color.IndianRed;
-            sldTempo.Label = "bpm";
             sldTempo.Location = new Point(238, 8);
             sldTempo.Margin = new Padding(5, 6, 5, 6);
-            sldTempo.Maximum = 240D;
-            sldTempo.Minimum = 60D;
             sldTempo.Name = "sldTempo";
-            sldTempo.Orientation = Orientation.Horizontal;
-            sldTempo.Resolution = 1D;
             sldTempo.Size = new Size(88, 40);
             sldTempo.TabIndex = 33;
-            sldTempo.Value = 100D;
             // 
             // tvInfo
             // 
             tvInfo.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tvInfo.BorderStyle = BorderStyle.FixedSingle;
-            tvInfo.Location = new Point(13, 177);
+            tvInfo.Location = new Point(13, 205);
             tvInfo.Margin = new Padding(4, 5, 4, 5);
-            tvInfo.MaxText = 5000;
             tvInfo.Name = "tvInfo";
-            tvInfo.Prompt = "";
-            tvInfo.Size = new Size(850, 291);
+            tvInfo.Size = new Size(850, 263);
             tvInfo.TabIndex = 41;
-            tvInfo.WordWrap = true;
             // 
             // btnAbout
             // 
@@ -184,12 +167,9 @@ namespace Nebulua
             timeBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             timeBar.BackColor = Color.LightYellow;
             timeBar.BorderStyle = BorderStyle.FixedSingle;
-            timeBar.FontLarge = new Font("Microsoft Sans Serif", 20F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            timeBar.FontSmall = new Font("Microsoft Sans Serif", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
             timeBar.Location = new Point(13, 66);
             timeBar.Name = "timeBar";
             timeBar.Size = new Size(850, 49);
-            timeBar.Snap = SnapType.Bar;
             timeBar.TabIndex = 52;
             // 
             // ddbtnFile
