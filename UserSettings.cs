@@ -11,7 +11,7 @@ using Ephemera.NBagOfTricks;
 namespace Nebulua
 {
     [Serializable]
-    public sealed class UserSettings : SettingsCore
+    public sealed class UserSettings : SettingsCore // TODO-M also persist channel volume/state1, master volume/???, ...  Open_Click remember/guess last dir
     {
         #region Properties - persisted editable
         [DisplayName("Script Path")]

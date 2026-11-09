@@ -150,9 +150,9 @@ namespace Nebulua
 
             sldVolume.DrawColor = _settings.DrawColor;
             sldVolume.Minimum = 0.0;
-            sldVolume.Maximum = 2.0;
-            sldVolume.Resolution = 0.05;
-            sldVolume.Value = 0.8;
+            sldVolume.Maximum = MidiLibDefs.MAX_VOLUME;
+            sldVolume.Resolution = MidiLibDefs.RES_VOLUME;
+            sldVolume.Value = MidiLibDefs.DEFAULT_VOLUME;
             //sldVolume.ValueChanged += (_, __) => _volume = sldVolume.Value;
             //sldVolume.Invalidate();
 
@@ -338,7 +338,7 @@ namespace Nebulua
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,
                         SelectedColor = _settings.SelectedColor,
-                        Volume = VolumeDefs.DEFAULT_VOLUME,
+                        Volume = MidiLibDefs.DEFAULT_VOLUME,
                     };
                     //ctrl.InfoClick += ChannelControl_InfoClick;
                     CM.Bind(chan, ctrl);
@@ -729,7 +729,7 @@ namespace Nebulua
         void Interop_OpenChannel(object? _, OpenChannelArgs e)
         {
             // Create channels and initialize controls.
-            var chan_out = CM.OpenChannel(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO1 last arg is isdrums
+            var chan_out = CM.OpenChannel(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO-M last arg is isdrums
             e.ret = chan_out.Handle.Raw;
         }
 
