@@ -729,7 +729,7 @@ namespace Nebulua
         void Interop_OpenChannel(object? _, OpenChannelArgs e)
         {
             // Create channels and initialize controls.
-            var chan_out = CM.OpenChannel(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO-M last arg is isdrums
+            var chan_out = CM.OpenChannel(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO2 last arg is isdrums
             e.ret = chan_out.Handle.Raw;
         }
 
