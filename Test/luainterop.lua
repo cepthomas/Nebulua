@@ -32,15 +32,15 @@ function M.log(level, msg)
 end
 
 
-function M.open_input(dev_name, chan_num, chan_name)
-    capture(string.format("open_input: dev_name:%s chan_num:%d chan_name:%s", dev_name, chan_num, chan_name))
+function M.open_midi_input(dev_name, chan_num, chan_name)
+    capture(string.format("open_midi_input: dev_name:%s chan_num:%d chan_name:%s", dev_name, chan_num, chan_name))
     local dev_index = 1 -- lower half
     return ((dev_index << 8) | (chan_num))
 end
 
 
-function M.open_channel(dev_name, chan_num, chan_name, patch)
-    capture(string.format("open_channel: dev_name:%s chan_num:%d chan_name:%s patch:%d", dev_name, chan_num, chan_name, patch))
+function M.open_midi_output(dev_name, chan_num, chan_name, patch)
+    capture(string.format("open_midi_output: dev_name:%s chan_num:%d chan_name:%s patch:%d", dev_name, chan_num, chan_name, patch))
     local dev_index = 7 -- upper half
     return ((dev_index << 8) | (chan_num))
 end

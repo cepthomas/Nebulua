@@ -50,7 +50,7 @@ namespace Nebulua
         ExecState _execState = ExecState.Empty;
 
         /// <summary>The current settings.</summary>
-        UserSettings _settings = new();
+        readonly UserSettings _settings = new();
 
         /// <summary>The interop.</summary>
         readonly Interop _interop = new();
@@ -66,9 +66,6 @@ namespace Nebulua
 
         /// <summary>Midi boss.</summary>
         readonly ChannelManager CM;
-
-        /// <summary>Midi boss.</summary>
-        readonly InputManager IM;
         #endregion
 
         #region Lifecycle
@@ -85,7 +82,6 @@ namespace Nebulua
             KeyPreview = true; // for routing kbd strokes properly
 
             CM = new(Controls);
-            IM = new();
 
             // Settings.
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
@@ -184,13 +180,13 @@ namespace Nebulua
 
             // Hook script callbacks.
             Interop.Log += Interop_Log;
-            Interop.OpenInput += Interop_OpenInput;
-            Interop.OpenChannel += Interop_OpenChannel;
+            Interop.OpenMidiInput += Interop_OpenMidiInput;
+            Interop.OpenMidiOutput += Interop_OpenMidiOutput;
             Interop.SendNote += Interop_SendNote;
             Interop.SendController += Interop_SendController;
             Interop.SetTempo += Interop_SetTempo;
 
-            IM.MessageReceived += Mgr_MessageReceived;
+            CM.MessageReceived += Mgr_MessageReceived;
             //CM.MessageSent += Mgr_MessageSent;
 
             Thread.CurrentThread.Name = "MAIN";
@@ -243,7 +239,6 @@ namespace Nebulua
         protected override void Dispose(bool disposing)
         {
             CM.Dispose();
-            IM.Dispose();
 
             if (disposing)
             {
@@ -275,7 +270,6 @@ namespace Nebulua
                 CM.KillAll();
                 _mmTimer.Stop();
                 CM.Reset();
-                IM.Reset();
 
                 // Determine file to load. Null means reload current.
                 if (openScriptFn is not null)
@@ -713,11 +707,10 @@ namespace Nebulua
         /// <param name="_"></param>
         /// <param name="e"></param>
         /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenInput(object? _, OpenInputArgs e)
+        void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
-            var min = IM.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
-            //var chnd = min.Handle;
-            //_loggerMidi.Trace($">>> ! {chnd}");
+            var min = CM.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
+            _loggerMidi.Trace($">>> ! {min.Handle}");
         }
 
         /// <summary>
@@ -726,11 +719,11 @@ namespace Nebulua
         /// <param name="_"></param>
         /// <param name="e"></param>
         /// <exception cref="AppException">From called functions</exception>
-        void Interop_OpenChannel(object? _, OpenChannelArgs e)
+        void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
             // Create channels and initialize controls.
-            var chan_out = CM.OpenChannel(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO2 last arg is isdrums
-            e.ret = chan_out.Handle.Raw;
+            var mout = CM.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO2 last arg is isdrums
+            e.ret = mout.Handle.Raw;
         }
 
         /// <summary>
@@ -744,16 +737,16 @@ namespace Nebulua
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}"); }
             var chnd = new ChannelHandle(e.chan_hnd);
-            var channel = CM.GetChannel(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            var mout = CM.GetMidiOutput(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             if (e.volume == 0.0)
             {
-                channel.Send(new NoteOff(channel.ChannelNumber, e.note_num));
+                mout.Send(new NoteOff(mout.ChannelNumber, e.note_num));
             }
             else
             {
                 var vel = (int)MathUtils.Constrain(e.volume * sldVolume.Value * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                channel.Send(new NoteOn(channel.ChannelNumber, e.note_num, vel));
+                mout.Send(new NoteOn(mout.ChannelNumber, e.note_num, vel));
             }
         }
 
@@ -769,10 +762,10 @@ namespace Nebulua
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
             var chnd = new ChannelHandle(e.chan_hnd);
-            var channel = CM.GetChannel(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            var mout = CM.GetMidiOutput(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
-            var se = new Controller(channel.ChannelNumber, e.controller, e.value);
-            channel.Send(se);
+            var se = new Controller(mout.ChannelNumber, e.controller, e.value);
+            mout.Send(se);
 
             if (_settings.MonitorSend)
             {

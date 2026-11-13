@@ -52,9 +52,9 @@ int Interop::ReceiveController(int chan_hnd, int controller, int value)
 
 //--------------------------------------------------------//
 
-int luainterop_cb_OpenChannel(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch)
+int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch)
 {
-    OpenChannelArgs^ args = gcnew OpenChannelArgs(dev_name, chan_num, chan_name, patch);
+    OpenMidiOutputArgs^ args = gcnew OpenMidiOutputArgs(dev_name, chan_num, chan_name, patch);
     Interop::Notify(args);
     return args->ret;
 }
@@ -62,9 +62,9 @@ int luainterop_cb_OpenChannel(lua_State* l, const char* dev_name, int chan_num, 
 
 //--------------------------------------------------------//
 
-int luainterop_cb_OpenInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name)
+int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name)
 {
-    OpenInputArgs^ args = gcnew OpenInputArgs(dev_name, chan_num, chan_name);
+    OpenMidiInputArgs^ args = gcnew OpenMidiInputArgs(dev_name, chan_num, chan_name);
     Interop::Notify(args);
     return args->ret;
 }

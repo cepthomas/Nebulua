@@ -61,8 +61,8 @@ M.script_funcs =
 M.host_funcs =
 {
     {
-        lua_func_name = "open_channel",
-        host_func_name = "OpenChannel",
+        lua_func_name = "open_midi_output",
+        host_func_name = "OpenMidiOutput",
         description = "Open a midi channel.",
         args =
         {
@@ -75,8 +75,8 @@ M.host_funcs =
     },
 
     {
-        lua_func_name = "open_input",
-        host_func_name = "OpenInput",
+        lua_func_name = "open_midi_input",
+        host_func_name = "OpenMidiInput",
         description = "Open a midi input.",
         args =
         {

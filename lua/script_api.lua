@@ -94,8 +94,8 @@ end
 -- @param chan_num channel number
 -- @param chan_name optional readable name
 -- @return the new chan_hnd or 0 if invalid
-function M.open_input(dev_name, chan_num, chan_name)
-    local chan_hnd = li.open_input(dev_name, chan_num, chan_name)
+function M.open_midi_input(dev_name, chan_num, chan_name)
+    local chan_hnd = li.open_midi_input(dev_name, chan_num, chan_name)
     if chan_hnd < 0 then error(string.format("Invalid input dev:%s num:%d name:%s", dev_name, chan_num, chan_name), 2) end
     return chan_hnd
 end
@@ -107,8 +107,8 @@ end
 -- @param chan_name optional readable name
 -- @param patch send this patch number
 -- @return the new chan_hnd
-function M.open_channel(dev_name, chan_num, chan_name, patch)
-    local chan_hnd = li.open_channel(dev_name, chan_num, chan_name, patch)
+function M.open_midi_output(dev_name, chan_num, chan_name, patch)
+    local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch)
     _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
     if chan_hnd < 0 then error(string.format("Invalid output dev:%s num:%d name:%s patch:%s", dev_name, chan_num, chan_name, patch), 2) end
     return chan_hnd

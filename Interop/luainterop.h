@@ -53,7 +53,7 @@ int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int
 // @param[in] chan_name User channel name
 // @param[in] patch Patch number
 // @return Channel handle or -1 if error
-int luainterop_cb_OpenChannel(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch);
+int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch);
 
 // Open an input.
 // @param[in] l Internal lua state.
@@ -61,7 +61,7 @@ int luainterop_cb_OpenChannel(lua_State* l, const char* dev_name, int chan_num, 
 // @param[in] chan_num Channel number 1 => 16
 // @param[in] chan_name User channel name
 // @return Channel handle or -1 if error
-int luainterop_cb_OpenInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name);
+int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name);
 
 // If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 // @param[in] l Internal lua state.
