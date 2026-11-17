@@ -184,14 +184,14 @@ int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int
 //============= C/Lua => App functions =============//
 
 //--------------------------------------------------------//
-// Open an output channel.
+// Open a midi output.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Device name
-// Lua arg: chan_num Channel number 1 => 16
-// Lua arg: chan_name User channel name
+// Lua arg: chan_num Midi channel 1 => 16
+// Lua arg: chan_name User name
 // Lua arg: patch Patch number
-// Lua return: int Channel handle or -1 if error
+// Lua return: int handle or -1 if error
 static int luainterop_OpenMidiOutput(lua_State* l)
 {
     // Get arguments
@@ -215,13 +215,13 @@ static int luainterop_OpenMidiOutput(lua_State* l)
 }
 
 //--------------------------------------------------------//
-// Open an input channel.
+// Open a midi input.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Device name
-// Lua arg: chan_num Channel number 1 => 16
-// Lua arg: chan_name User channel name
-// Lua return: int Channel handle or -1 if error
+// Lua arg: chan_num Midi channel 1 => 16
+// Lua arg: chan_name User name
+// Lua return: int handle or -1 if error
 static int luainterop_OpenMidiInput(lua_State* l)
 {
     // Get arguments
@@ -272,7 +272,7 @@ static int luainterop_SendNote(lua_State* l)
 // Send a controller immediately.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: chan_hnd Output channel handle
+// Lua arg: chan_hnd Output handle
 // Lua arg: controller Specific controller 0 => 127
 // Lua arg: value Payload 0 => 127
 // Lua return: int -1 if error

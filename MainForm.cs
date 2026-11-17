@@ -315,19 +315,19 @@ namespace Nebulua
 
                 // DestroyControls();
 
-                /// create a control for each channel and bind object
+                /// create a control for each midi output and bind object
                 int x = timeBar.Left;
                 int y = timeBar.Bottom + 5;
 
-                // Get all script-defined channels and make corresponding UI element.
-                var channels = CM.GetChannels().Select(ch => ch.chan).ToList();
+                // Get all script-defined midi outputs and make corresponding UI element.
+                var midiOutputs = CM.GetChannels().Select(ch => ch.mout).ToList();
 
-                channels.ForEach(chan =>
+                midiOutputs.ForEach(mout =>
                 {
                     var ctrl = new ChannelControl()
                     {
-                        Info1 = $"M{chan.ChannelNumber} {chan.ChannelName}",
-                        Info2 = $"{chan.PatchName} ({chan.Patch}){Environment.NewLine}{chan}",
+                        Info1 = $"M{mout.MidiChannel} {mout.Name}",
+                        Info2 = $"{mout.PatchName} ({mout.Patch}){Environment.NewLine}{mout}",
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,
@@ -335,7 +335,7 @@ namespace Nebulua
                         Volume = MidiLibDefs.DEFAULT_VOLUME,
                     };
                     //ctrl.InfoClick += ChannelControl_InfoClick;
-                    CM.Bind(chan, ctrl);
+                    CM.Bind(mout, ctrl);
 
                     x += ctrl.Width + 4; // Width is not valid until after previous statement.
                 });
@@ -652,8 +652,8 @@ namespace Nebulua
             try
             {
                 var indev = (MidiInputDevice)sender!;
-                //var chnd = HandleOps.Create(indev.Id, e.ChannelNumber, false);
-                var chnd = new ChannelHandle(indev.Id, e.ChannelNumber, false);
+                //var chnd = HandleOps.Create(indev.Id, e.MidiChannel, false);
+                var chnd = new ChannelHandle(indev.Id, e.MidiChannel, false);
                 bool logit = true;
 
                 switch (e)
@@ -695,14 +695,14 @@ namespace Nebulua
         {
             // Actual sent.
             var outdev = (MidiOutputDevice)sender!;
-            var chnd = new ChannelHandle(outdev.Id, e.ChannelNumber, false);
+            var chnd = new ChannelHandle(outdev.Id, e.MidiChannel, false);
             _loggerMidi.Trace($">>> ! {chnd}");
         }
         #endregion
 
         #region Script ==> Host Functions
         /// <summary>
-        /// Script creates an input channel.
+        /// Script creates a midi input.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
@@ -714,14 +714,14 @@ namespace Nebulua
         }
 
         /// <summary>
-        /// Script creates an output channel.
+        /// Script creates a midi output.
         /// </summary>
         /// <param name="_"></param>
         /// <param name="e"></param>
         /// <exception cref="AppException">From called functions</exception>
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
-            // Create channels and initialize controls.
+            // Create output and initialize control.
 //TODO1 cache            var mout = CM.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO2 last arg is isdrums
             e.ret = mout.Handle.Raw;
         }
@@ -737,16 +737,16 @@ namespace Nebulua
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}"); }
 //            var chnd = new ChannelHandle(e.chan_hnd);
-//            var mout = CM.GetMidiOutput(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+//            var mout = CM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             if (e.volume == 0.0)
             {
-                mout.Send(new NoteOff(mout.ChannelNumber, e.note_num));
+                mout.Send(new NoteOff(mout.MidiChannel, e.note_num));
             }
             else
             {
                 var vel = (int)MathUtils.Constrain(e.volume * sldVolume.Value * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                mout.Send(new NoteOn(mout.ChannelNumber, e.note_num, vel));
+                mout.Send(new NoteOn(mout.MidiChannel, e.note_num, vel));
             }
         }
 
@@ -762,9 +762,9 @@ namespace Nebulua
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
 //            var chnd = new ChannelHandle(e.chan_hnd);
-//            var mout = CM.GetMidiOutput(chnd.ChannelNumber) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+//            var mout = CM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
-            var se = new Controller(mout.ChannelNumber, e.controller, e.value);
+            var se = new Controller(mout.MidiChannel, e.controller, e.value);
             mout.Send(se);
 
             if (_settings.MonitorSend)

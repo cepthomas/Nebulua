@@ -16,7 +16,7 @@ public:
     property String^ dev_name;
     /// <summary>Channel number 1 => 16</summary>
     property int chan_num;
-    /// <summary>User channel name</summary>
+    /// <summary>User output name</summary>
     property String^ chan_name;
     /// <summary>Patch number</summary>
     property int patch;
@@ -40,7 +40,7 @@ public:
     property String^ dev_name;
     /// <summary>Channel number 1 => 16</summary>
     property int chan_num;
-    /// <summary>User channel name</summary>
+    /// <summary>User input name</summary>
     property String^ chan_name;
     /// <summary>Channel handle or -1 if error</summary>
     property int ret;
@@ -57,7 +57,7 @@ public:
 public ref class SendNoteArgs : public EventArgs
 {
 public:
-    /// <summary>Output channel handle</summary>
+    /// <summary>Output handle</summary>
     property int chan_hnd;
     /// <summary>Note number</summary>
     property int note_num;
@@ -78,7 +78,7 @@ public:
 public ref class SendControllerArgs : public EventArgs
 {
 public:
-    /// <summary>Output channel handle</summary>
+    /// <summary>Output handle</summary>
     property int chan_hnd;
     /// <summary>Specific controller 0 => 127</summary>
     property int controller;
@@ -146,14 +146,14 @@ public:
     int Step(int tick);
 
     /// <summary>ReceiveNote</summary>
-    /// <param name="chan_hnd">Input channel handle</param>
+    /// <param name="chan_hnd">Input handle</param>
     /// <param name="note_num">Note number 0 => 127</param>
     /// <param name="volume">Volume 0.0 => 1.0</param>
     /// <returns>Script return</returns>
     int ReceiveNote(int chan_hnd, int note_num, double volume);
 
     /// <summary>ReceiveController</summary>
-    /// <param name="chan_hnd">Input channel handle</param>
+    /// <param name="chan_hnd">Input handle</param>
     /// <param name="controller">Specific controller 0 => 127</param>
     /// <param name="value">Payload 0 => 127</param>
     /// <returns>Script return</returns>

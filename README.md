@@ -59,7 +59,7 @@ chan_num   | int    | midi channel number                       | 1 -> 16       
 chan_name  | char*  | name for ui                               |                                 |
 dev_index  | int    | index into windows midi device table      | 0 -> N                          |
 dev_name   | char*  | from windows midi device table            |                                 |
-chan_hnd   | int    | internal opaque handle for channel id     |                                 |
+chan_hnd   | int    | internal opaque handle for midi IO        |                                 |
 controller | int    | midi standard from midi_defs.lua          | 0 -> 127                        |
 value      | int    | controller payload                        | 0 -> 127                        |
 note_num   | int    | midi standard                             | 0 -> 127                        |
@@ -185,24 +185,24 @@ Call these from your script.
 ```lua
 function api.open_midi_output(dev_name, chan_num, chan_name, patch)
 ```
-Register an output channel.
+Register a midi output.
 
 - dev_name: The system name.
-- chan_num: Specific channel number.
-- chan_name: Name for channel.
+- chan_num: Specific midi channel.
+- chan_name: Name for output.
 - patch: Send this patch number.
-- return: A channel handle to use in subsequent functions.
+- return: A handle to use in subsequent functions.
 
 
 ```lua
 function api.open_midi_input(dev_name, chan_num, chan_name)
 ```
-Register an input midi channel.
+Register a midi input.
 
 - dev_name: The system name.
-- chan_num: Specific channel number.
-- chan_name: Name for channel.
-- return: A channel handle to use in subsequent functions.
+- chan_num: Specific midi channel.
+- chan_name: Name for input.
+- return: A handle to use in subsequent functions.
 
 
 ```lua
@@ -210,7 +210,7 @@ function api.send_note(chan_hnd, note_num, volume, dur)
 ```
 Send a note on/off immediately. Adds a note off if dur is specified and tick clock is running.
 
-- chan_hnd: The channel handle to send it on.
+- chan_hnd: The handle to send it on.
 - note_num: Which.
 - volume: Note volume. 0.0 -> 1.0. 0.0 means note off.
 - dur: How long it lasts in music time. Optional for e.g drums.
@@ -221,7 +221,7 @@ function api.send_controller(chan_hnd, controller, value)
 ```
 Send a controller immediately. Useful for things like panning and bank select.
 
-- chan_hnd: The channel handle to send it on.
+- chan_hnd: The handle to send it on.
 - controller: Which.
 - value: What.
 
@@ -229,9 +229,9 @@ Send a controller immediately. Useful for things like panning and bank select.
 ```lua
 function api.set_volume(chan_hnd, volume)
 ```
-Set volume for the channel.
+Set volume for the output.
 
-- chan_hnd: The channel handle to set.
+- chan_hnd: The handle to set.
 - volume: Channel volume. 0.0 -> 1.0.
 
 
@@ -292,7 +292,7 @@ function receive_note(chan_hnd, note_num, volume)
 ```
 Called when input note arrives. Optional.
 
-- chan_hnd: Input channel handle.
+- chan_hnd: Input handle.
 - note_num: Note number 0 -> 127.
 - volume: Volume 0.0 -> 1.0.
 - return: Nebulua status.
@@ -303,7 +303,7 @@ function receive_control(chan_hnd, controller, value)
 ```
 Called when input controller arrives.
 
-- chan_hnd: Input channel handle.
+- chan_hnd: Input handle.
 - controller: Specific controller id 0 -> 127.
 - value: Payload 0 -> 127.
 - return: Nebulua status.

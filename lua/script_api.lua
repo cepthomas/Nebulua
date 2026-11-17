@@ -36,7 +36,7 @@ local _transients = {}
 local _current_tick = 0
 
 -- Key is chan_hnd, value is volume 0.0 -> 1.0.
-local _channel_volumes = {}
+local _output_volumes = {}
 
 -- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
 local _volume_map = { 0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 } -- modified linear
@@ -89,9 +89,9 @@ function M.set_tempo(bpm)
 end
 
 -----------------------------------------------------------------------------
---- Create an input channel.
+--- Create a midi input.
 -- @param dev_name system name
--- @param chan_num channel number
+-- @param chan_num midi channel number
 -- @param chan_name optional readable name
 -- @return the new chan_hnd or 0 if invalid
 function M.open_midi_input(dev_name, chan_num, chan_name)
@@ -101,30 +101,30 @@ function M.open_midi_input(dev_name, chan_num, chan_name)
 end
 
 -----------------------------------------------------------------------------
---- Create an output channel.
+--- Create a midi output.
 -- @param dev_name system name
--- @param chan_num channel number
+-- @param chan_num midi channel number
 -- @param chan_name optional readable name
 -- @param patch send this patch number
 -- @return the new chan_hnd
 function M.open_midi_output(dev_name, chan_num, chan_name, patch)
     local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch)
-    _channel_volumes[chan_hnd] = 1.0 -- default to passthrough.
+    _output_volumes[chan_hnd] = 1.0 -- default to passthrough.
     if chan_hnd < 0 then error(string.format("Invalid output dev:%s num:%d name:%s patch:%s", dev_name, chan_num, chan_name, patch), 2) end
     return chan_hnd
 end
 
 -----------------------------------------------------------------------------
---- Set volume for the channel.
--- @param chan_hnd the channel
+--- Set volume for the output.
+-- @param chan_hnd the handle
 -- @param volume volume
 -- @return status
 function M.set_volume(chan_hnd, volume)
     if volume < 0.1 or volume > 2.0 then
-        error(string.format("Invalid channel volume %f", volume), 2)
-        -- M.log_warn(string.format("Invalid channel volume %f", volume))
+        error(string.format("Invalid volume %f", volume), 2)
+        -- M.log_warn(string.format("Invalid volume %f", volume))
     end
-    _channel_volumes[chan_hnd] = volume
+    _output_volumes[chan_hnd] = volume
 
     return 0
 end
@@ -137,7 +137,7 @@ function M.send_note(chan_hnd, note_num, volume, dur)
 
     if volume > 0 then -- noteon
         -- adjust volume
-        volume = volume * _channel_volumes[chan_hnd]
+        volume = volume * _output_volumes[chan_hnd]
         -- send note_on now
         li.send_note(chan_hnd, note_num, volume)
         if dur > 0 then
@@ -152,7 +152,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Send a control message now.
--- @param chan_hnd channel handle
+-- @param chan_hnd handle
 -- @param controller Specific controller 0 -> 127
 -- @param value Payload 0 -> 127
 -- @return status
@@ -241,7 +241,7 @@ end
 
 -----------------------------------------------------------------------------
 --- Composition function: add sequences to the current section.
--- @param chan_hnd the channel
+-- @param chan_hnd handle
 -- @param ... the sequences
 function M.sect_chan(chan_hnd, ...)
     if _current_section ~= nil then
@@ -272,7 +272,7 @@ end
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern. Note - only public for testing
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
--- @param chan_hnd the channel
+-- @param chan_hnd handle
 -- @param start_tick absolute start time 0-based
 -- @return length, list of StepXs
 function M.parse_chunk(chunk, chan_hnd, start_tick)
@@ -422,9 +422,9 @@ function M.process_comp()
 
         -- Iterate through the section contents.
         for _, sect_chan in ipairs(section) do
-            -- Process section channel.
+            -- Process section.
             if #sect_chan >= 2 and type(sect_chan[1]) == "number" then
-                -- Specific channel
+                -- Specific output
                 local chan_hnd = sect_chan[1]
 
                 -- Reset.
@@ -458,7 +458,7 @@ function M.process_comp()
                     seq_start = tick
                 end
             else
-                error_comp(string.format("Invalid channel in section '%s'", section.name))
+                error_comp(string.format("Invalid output in section '%s'", section.name))
             end
         end
 
@@ -497,7 +497,7 @@ return M
 
 -----------------------------------------------------------------------------
 -- Create a steps table from a sequence dynamically. See [Composition](#markdown-header-composition).
--- - chan_hnd: Specific channel.
+-- - chan_hnd: Specific handle.
 -- - sequence: The sequence to parse.
 -- - return: A table for use by `send_sequence_steps()`.
 -- function M.parse_sequence_steps(chan_hnd, seq)

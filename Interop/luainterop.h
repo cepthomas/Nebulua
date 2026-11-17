@@ -28,7 +28,7 @@ int luainterop_Step(lua_State* l, int tick);
 
 // Called when midi input arrives.
 // @param[in] l Internal lua state.
-// @param[in] chan_hnd Input channel handle
+// @param[in] chan_hnd Input handle
 // @param[in] note_num Note number 0 => 127
 // @param[in] volume Volume 0.0 => 1.0
 // @return int Unused
@@ -36,7 +36,7 @@ int luainterop_ReceiveNote(lua_State* l, int chan_hnd, int note_num, double volu
 
 // Called when midi input arrives.
 // @param[in] l Internal lua state.
-// @param[in] chan_hnd Input channel handle
+// @param[in] chan_hnd Input handle
 // @param[in] controller Specific controller 0 => 127
 // @param[in] value Payload 0 => 127
 // @return int Unused
@@ -46,11 +46,11 @@ int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int
 //============= C/Lua => App functions =============//
 
 
-// Open a channel.
+// Open a midi output.
 // @param[in] l Internal lua state.
 // @param[in] dev_name Device name
-// @param[in] chan_num Channel number 1 => 16
-// @param[in] chan_name User channel name
+// @param[in] chan_num Midi channel 1 => 16
+// @param[in] chan_name User name
 // @param[in] patch Patch number
 // @return Channel handle or -1 if error
 int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name, int patch);
@@ -58,14 +58,14 @@ int luainterop_cb_OpenMidiOutput(lua_State* l, const char* dev_name, int chan_nu
 // Open an input.
 // @param[in] l Internal lua state.
 // @param[in] dev_name Device name
-// @param[in] chan_num Channel number 1 => 16
-// @param[in] chan_name User channel name
+// @param[in] chan_num Midi channel 1 => 16
+// @param[in] chan_name User name
 // @return Channel handle or -1 if error
 int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num, const char* chan_name);
 
 // If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 // @param[in] l Internal lua state.
-// @param[in] chan_hnd Output channel handle
+// @param[in] chan_hnd Output handle
 // @param[in] note_num Note number
 // @param[in] volume Volume 0.0 => 1.0
 // @return -1 if error
@@ -73,7 +73,7 @@ int luainterop_cb_SendNote(lua_State* l, int chan_hnd, int note_num, double volu
 
 // Send a controller immediately.
 // @param[in] l Internal lua state.
-// @param[in] chan_hnd Output channel handle
+// @param[in] chan_hnd Output handle
 // @param[in] controller Specific controller 0 => 127
 // @param[in] value Payload 0 => 127
 // @return -1 if error

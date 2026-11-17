@@ -36,7 +36,7 @@ M.script_funcs =
         description = "Called when midi input arrives.",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Input channel handle" },
+            { name = "chan_hnd", type = "I", description = "Input handle" },
             { name = "note_num", type = "I", description = "Note number 0 => 127" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
@@ -49,7 +49,7 @@ M.script_funcs =
         description = "Called when midi input arrives.",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Input channel handle" },
+            { name = "chan_hnd", type = "I", description = "Input handle" },
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
@@ -63,12 +63,12 @@ M.host_funcs =
     {
         lua_func_name = "open_midi_output",
         host_func_name = "OpenMidiOutput",
-        description = "Open a midi channel.",
+        description = "Open a midi output.",
         args =
         {
             { name = "dev_name",   type = "S", description = "Device name" },
-            { name = "chan_num",   type = "I", description = "Channel number 1 => 16" },
-            { name = "chan_name",  type = "S", description = "User channel name" },
+            { name = "chan_num",   type = "I", description = "Midi channel 1 => 16" },
+            { name = "chan_name",  type = "S", description = "User output name" },
             { name = "patch",      type = "I", description = "Patch number" },
         },
         ret = { type = "I", description = "Channel handle or -1 if error" }
@@ -82,7 +82,7 @@ M.host_funcs =
         {
             { name = "dev_name",  type = "S", description = "Device name" },
             { name = "chan_num",  type = "I", description = "Channel number 1 => 16" },
-            { name = "chan_name", type = "S", description = "User channel name" },
+            { name = "chan_name", type = "S", description = "User input name" },
         },
         ret = { type = "I", description = "Channel handle or -1 if error" }
     },
@@ -93,7 +93,7 @@ M.host_funcs =
         description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Output channel handle" },
+            { name = "chan_hnd", type = "I", description = "Output handle" },
             { name = "note_num", type = "I", description = "Note number" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
@@ -106,7 +106,7 @@ M.host_funcs =
         description = "Send a controller immediately.",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Output channel handle" },
+            { name = "chan_hnd", type = "I", description = "Output handle" },
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },

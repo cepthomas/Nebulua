@@ -51,7 +51,7 @@ api.log_info('Loading ex2.lua...')
 
 ------------------------- Configuration -------------------------------
 
--- Midi channels. Adjust for your configuration.
+-- Midi IO. Adjust for your configuration.
 -- local midi_device_in  = "loopMIDI Port 1"
 -- local midi_device_in  = "MPK mini"
 -- local hnd_ccin  = api.open_midi_input(midi_device_in, 1, "my input")

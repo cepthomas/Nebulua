@@ -25,7 +25,7 @@ print('================')
 
 ------------------------- Configuration -------------------------------
 
--- Midi channels. Adjust for your configuration.
+-- Midi IO. Adjust for your configuration.
 local midi_device_in  = "NebLoopback1"
 local midi_device_out = "Microsoft GS Wavetable Synth"  -- or "VirtualMIDISynth #1" or "NebLoopback1" for VST host
 
