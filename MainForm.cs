@@ -65,7 +65,7 @@ namespace Nebulua
         DateTime _scriptTouch;
 
         /// <summary>Midi boss.</summary>
-        readonly ChannelManager CM;
+        readonly MidiManager MM;
         #endregion
 
         #region Lifecycle
@@ -81,7 +81,7 @@ namespace Nebulua
 
             KeyPreview = true; // for routing kbd strokes properly
 
-            CM = new(Controls);
+            MM = new(Controls);
 
             // Settings.
             string appDir = MiscUtils.GetAppDataDir("Nebulua", "Ephemera");
@@ -130,7 +130,7 @@ namespace Nebulua
 
             btnKill.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnKill, _settings.IconColor);
-            btnKill.Click += (_, __) => { CM.KillAll(); };
+            btnKill.Click += (_, __) => { MM.KillAll(); };
 
             btnSettings.BackColor = BackColor;
             GraphicsUtils.ColorizeControl(btnSettings, _settings.IconColor);
@@ -186,8 +186,8 @@ namespace Nebulua
             Interop.SendController += Interop_SendController;
             Interop.SetTempo += Interop_SetTempo;
 
-            CM.MessageReceived += Mgr_MessageReceived;
-            //CM.MessageSent += Mgr_MessageSent;
+            MM.MessageReceived += Mgr_MessageReceived;
+            //MM.MessageSent += Mgr_MessageSent;
 
             Thread.CurrentThread.Name = "MAIN";
         }
@@ -238,7 +238,7 @@ namespace Nebulua
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            CM.Dispose();
+            MM.Dispose();
 
             if (disposing)
             {
@@ -267,9 +267,9 @@ namespace Nebulua
             try
             {
                 // Clean up first.
-                CM.KillAll();
+                MM.KillAll();
                 _mmTimer.Stop();
-                CM.Reset();
+                MM.Reset();
 
                 // Determine file to load. Null means reload current.
                 if (openScriptFn is not null)
@@ -320,7 +320,7 @@ namespace Nebulua
                 int y = timeBar.Bottom + 5;
 
                 // Get all script-defined midi outputs and make corresponding UI element.
-                var midiOutputs = CM.GetChannels().Select(ch => ch.mout).ToList();
+                var midiOutputs = MM.GetChannels().Select(ch => ch.mout).ToList();
 
                 midiOutputs.ForEach(mout =>
                 {
@@ -335,7 +335,7 @@ namespace Nebulua
                         Volume = MidiLibDefs.DEFAULT_VOLUME,
                     };
                     //ctrl.InfoClick += ChannelControl_InfoClick;
-                    CM.Bind(mout, ctrl);
+                    MM.Bind(mout, ctrl);
 
                     x += ctrl.Width + 4; // Width is not valid until after previous statement.
                 });
@@ -426,7 +426,7 @@ namespace Nebulua
                     _scriptFn = null;
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
-                    CM.KillAll();
+                    MM.KillAll();
                     _execState = ExecState.Empty;
                     break;
 
@@ -435,14 +435,14 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = true;
-                        CM.KillAll();
+                        MM.KillAll();
                         _execState = ExecState.Idle;
                     }
                     else
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        CM.KillAll();
+                        MM.KillAll();
                         _execState = ExecState.Empty;
                     }
                     break;
@@ -458,7 +458,7 @@ namespace Nebulua
                     {
                         chkPlay.Checked = false;
                         chkPlay.Enabled = false;
-                        CM.KillAll();
+                        MM.KillAll();
                         _execState = ExecState.Empty;
                     }
                     break;
@@ -466,7 +466,7 @@ namespace Nebulua
                 case ExecState.Dead:
                     chkPlay.Checked = false;
                     chkPlay.Enabled = false;
-                    CM.KillAll();
+                    MM.KillAll();
                     _execState = ExecState.Dead;
                     break;
             }
@@ -709,7 +709,7 @@ namespace Nebulua
         /// <exception cref="AppException">From called functions</exception>
         void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
-            var min = CM.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
+            var min = MM.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
             _loggerMidi.Trace($">>> ! {min.Handle}");
         }
 
@@ -722,7 +722,7 @@ namespace Nebulua
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
             // Create output and initialize control.
-//TODO1 cache            var mout = CM.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO2 last arg is isdrums
+//TODO1 cache            var mout = MM.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO2 last arg is isdrums
             e.ret = mout.Handle.Raw;
         }
 
@@ -737,7 +737,7 @@ namespace Nebulua
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}"); }
 //            var chnd = new ChannelHandle(e.chan_hnd);
-//            var mout = CM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+//            var mout = MM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             if (e.volume == 0.0)
             {
@@ -762,7 +762,7 @@ namespace Nebulua
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
 //            var chnd = new ChannelHandle(e.chan_hnd);
-//            var mout = CM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+//            var mout = MM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             var se = new Controller(mout.MidiChannel, e.controller, e.value);
             mout.Send(se);
