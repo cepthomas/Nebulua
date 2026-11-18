@@ -652,22 +652,22 @@ namespace Nebulua
             try
             {
                 var indev = (MidiInputDevice)sender!;
-                //var chnd = HandleOps.Create(indev.Id, e.MidiChannel, false);
-                var chnd = new ChannelHandle(indev.Id, e.MidiChannel, false);
+                //var nid = HandleOps.Create(indev.Id, e.MidiChannel, false);
+                var nid = new NebId(indev.Id, e.MidiChannel, false);
                 bool logit = true;
 
                 switch (e)
                 {
                     case NoteOn evt:
-                        _interop.ReceiveNote(chnd.Raw, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
+                        _interop.ReceiveNote(nid.Raw, evt.Note, (double)evt.Velocity / MidiDefs.MAX_MIDI);
                         break;
 
                     case NoteOff evt:
-                        _interop.ReceiveNote(chnd.Raw, evt.Note, 0);
+                        _interop.ReceiveNote(nid.Raw, evt.Note, 0);
                         break;
 
                     case Controller evt:
-                        _interop.ReceiveController(chnd.Raw, evt.Id, evt.Value);
+                        _interop.ReceiveController(nid.Raw, evt.Id, evt.Value);
                         break;
 
                     default: // Ignore others for now.
@@ -695,8 +695,8 @@ namespace Nebulua
         {
             // Actual sent.
             var outdev = (MidiOutputDevice)sender!;
-            var chnd = new ChannelHandle(outdev.Id, e.MidiChannel, false);
-            _loggerMidi.Trace($">>> ! {chnd}");
+            var nid = new NebId(outdev.Id, e.MidiChannel, false);
+            _loggerMidi.Trace($">>> ! {nid}");
         }
         #endregion
 
@@ -736,8 +736,8 @@ namespace Nebulua
             e.ret = 0; // not used
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}"); }
-//            var chnd = new ChannelHandle(e.chan_hnd);
-//            var mout = MM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+//            var nid = new NebId(e.chan_hnd);
+//            var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             if (e.volume == 0.0)
             {
@@ -761,8 +761,8 @@ namespace Nebulua
 
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
-//            var chnd = new ChannelHandle(e.chan_hnd);
-//            var mout = MM.GetMidiOutput(chnd.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+//            var nid = new NebId(e.chan_hnd);
+//            var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
 
             var se = new Controller(mout.MidiChannel, e.controller, e.value);
             mout.Send(se);

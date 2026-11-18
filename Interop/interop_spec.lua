@@ -1,4 +1,5 @@
 -- Specifies the generated interop code for Nebulua.
+-- TODO1 all chan_hnd => nid
 
 local M = {}
 
