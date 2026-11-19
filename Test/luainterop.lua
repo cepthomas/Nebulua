@@ -16,9 +16,9 @@ local function capture(msg)
     -- M.current_tick = M.current_tick + 1
 end
 
-local function format_chan_hnd(chan_hnd)
-    local s = string.format("%02X-%02X", (chan_hnd >> 4) & 0x0F, chan_hnd & 0x0F)
-    -- local s = string.format("%02X-%02X", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+local function format_nid(nid)
+    local s = string.format("%02X-%02X", (nid >> 4) & 0x0F, nid & 0x0F)
+    -- local s = string.format("%02X-%02X", (nid >> 8) & 0xFF, nid & 0xFF)
     return s
 end
 
@@ -52,15 +52,15 @@ function M.set_tempo(bpm)
 end
 
 
-function M.send_note(chan_hnd, note_num, volume)
+function M.send_note(nid, note_num, volume)
     -- If volume is 0 note_off else note_on.
-    capture(string.format("send_note: chan_hnd:%s note_num:%d volume:%0.1f", format_chan_hnd(chan_hnd), note_num, volume))
+    capture(string.format("send_note: nid:%s note_num:%d volume:%0.1f", format_nid(nid), note_num, volume))
     return 0
 end
 
 
-function M.send_controller(chan_hnd, controller, value)
-    capture(string.format("send_controller: chan_hnd:%s controller:%d value:%d", format_chan_hnd(chan_hnd), controller, value))
+function M.send_controller(nid, controller, value)
+    capture(string.format("send_controller: nid:%s controller:%d value:%d", format_nid(nid), controller, value))
     return 0
 end
 

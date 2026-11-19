@@ -14,7 +14,7 @@ public ref class OpenMidiOutputArgs : public EventArgs
 public:
     /// <summary>Device name</summary>
     property String^ dev_name;
-    /// <summary>Channel number 1 => 16</summary>
+    /// <summary>Midi channel 1 => 16</summary>
     property int chan_num;
     /// <summary>User output name</summary>
     property String^ chan_name;
@@ -58,7 +58,7 @@ public ref class SendNoteArgs : public EventArgs
 {
 public:
     /// <summary>Output handle</summary>
-    property int chan_hnd;
+    property int nid;
     /// <summary>Note number</summary>
     property int note_num;
     /// <summary>Volume 0.0 => 1.0</summary>
@@ -66,9 +66,9 @@ public:
     /// <summary>-1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    SendNoteArgs(int chan_hnd, int note_num, double volume)
+    SendNoteArgs(int nid, int note_num, double volume)
     {
-        this->chan_hnd = chan_hnd;
+        this->nid = nid;
         this->note_num = note_num;
         this->volume = volume;
     }
@@ -79,7 +79,7 @@ public ref class SendControllerArgs : public EventArgs
 {
 public:
     /// <summary>Output handle</summary>
-    property int chan_hnd;
+    property int nid;
     /// <summary>Specific controller 0 => 127</summary>
     property int controller;
     /// <summary>Payload 0 => 127</summary>
@@ -87,9 +87,9 @@ public:
     /// <summary>-1 if error</summary>
     property int ret;
     /// <summary>Constructor.</summary>
-    SendControllerArgs(int chan_hnd, int controller, int value)
+    SendControllerArgs(int nid, int controller, int value)
     {
-        this->chan_hnd = chan_hnd;
+        this->nid = nid;
         this->controller = controller;
         this->value = value;
     }
@@ -146,18 +146,18 @@ public:
     int Step(int tick);
 
     /// <summary>ReceiveNote</summary>
-    /// <param name="chan_hnd">Input handle</param>
+    /// <param name="nid">Input handle</param>
     /// <param name="note_num">Note number 0 => 127</param>
     /// <param name="volume">Volume 0.0 => 1.0</param>
     /// <returns>Script return</returns>
-    int ReceiveNote(int chan_hnd, int note_num, double volume);
+    int ReceiveNote(int nid, int note_num, double volume);
 
     /// <summary>ReceiveController</summary>
-    /// <param name="chan_hnd">Input handle</param>
+    /// <param name="nid">Input handle</param>
     /// <param name="controller">Specific controller 0 => 127</param>
     /// <param name="value">Payload 0 => 127</param>
     /// <returns>Script return</returns>
-    int ReceiveController(int chan_hnd, int controller, int value);
+    int ReceiveController(int nid, int controller, int value);
 
 //============= C/Lua => Cpp/CLI functions =============//
 public:

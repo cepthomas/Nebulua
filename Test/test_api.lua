@@ -59,7 +59,7 @@ function M.suite_parse_chunk(pn)
     local step = steps[6] -- pick one
     pn.UT_STR_EQUAL(step.step_type, "note")
     pn.UT_EQUAL(step.tick, 1024)
-    pn.UT_EQUAL(step.chan_hnd, 0x030E)
+    pn.UT_EQUAL(step.nid, 0x030E)
     pn.UT_EQUAL(step.note_num, 89)
     pn.UT_CLOSE(step.volume, 0.5, 0.001)
     pn.UT_EQUAL(step.duration, 1)

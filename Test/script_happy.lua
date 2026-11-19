@@ -69,11 +69,11 @@ end
 
 -----------------------------------------------------------------------------
 -- Handler for input note events. Optional.
-function receive_note(chan_hnd, note_num, volume)
-    local s = string.format("Script recv note:%d hnd:%d vol:%f", note_num, chan_hnd, volume)
+function receive_note(nid, note_num, volume)
+    local s = string.format("Script recv note:%d hnd:%d vol:%f", note_num, nid, volume)
     api.log_trace(s)
 
-    if chan_hnd == hnd_input then
+    if nid == hnd_input then
         api.send_note(hnd_synth, note_num + 1, volume * 0.5, 8)
     end
     return 0
@@ -81,8 +81,8 @@ end
 
 -----------------------------------------------------------------------------
 -- Handler for input controller events. Optional.
-function receive_controller(chan_hnd, controller, value)
-    local s = string.format("Script recv controller:%d hnd:%d val:%f", controller, chan_hnd, value)
+function receive_controller(nid, controller, value)
+    local s = string.format("Script recv controller:%d hnd:%d val:%f", controller, nid, value)
     api.log_trace(s)
     return 0
 end

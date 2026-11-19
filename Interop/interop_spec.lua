@@ -1,5 +1,4 @@
 -- Specifies the generated interop code for Nebulua.
--- TODO1 all chan_hnd => nid
 
 local M = {}
 
@@ -37,7 +36,7 @@ M.script_funcs =
         description = "Called when midi input arrives.",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Input handle" },
+            { name = "nid", type = "I", description = "Input handle" },
             { name = "note_num", type = "I", description = "Note number 0 => 127" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
@@ -50,7 +49,7 @@ M.script_funcs =
         description = "Called when midi input arrives.",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Input handle" },
+            { name = "nid", type = "I", description = "Input handle" },
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },
@@ -94,7 +93,7 @@ M.host_funcs =
         description = "If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Output handle" },
+            { name = "nid", type = "I", description = "Output handle" },
             { name = "note_num", type = "I", description = "Note number" },
             { name = "volume", type = "N", description = "Volume 0.0 => 1.0" },
         },
@@ -107,7 +106,7 @@ M.host_funcs =
         description = "Send a controller immediately.",
         args =
         {
-            { name = "chan_hnd", type = "I", description = "Output handle" },
+            { name = "nid", type = "I", description = "Output handle" },
             { name = "controller", type = "I", description = "Specific controller 0 => 127" },
             { name = "value", type = "I", description = "Payload 0 => 127" },
         },

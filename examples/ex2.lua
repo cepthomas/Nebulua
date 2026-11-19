@@ -118,10 +118,10 @@ end
 
 ---------------------------------------------------------------------------
 -- Handler for input note events. Optional.
-function receive_midi_note(chan_hnd, note_num, volume)
-    if chan_hnd == hnd_ccin then
+function receive_midi_note(nid, note_num, volume)
+    if nid == hnd_ccin then
         -- Play the note.
-        -- api.log_debug(string.format("RCV hnd_ccin note:%d chan_hnd:%d volume:%f", note_num, chan_hnd, volume))
+        -- api.log_debug(string.format("RCV hnd_ccin note:%d nid:%d volume:%f", note_num, nid, volume))
         api.send_note(hnd_strings, note_num, volume)--, 0)
     end
     return 0

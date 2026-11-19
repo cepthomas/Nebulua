@@ -29,18 +29,18 @@ int Interop::Step(int tick)
 }
 
 //--------------------------------------------------------//
-int Interop::ReceiveNote(int chan_hnd, int note_num, double volume)
+int Interop::ReceiveNote(int nid, int note_num, double volume)
 {
-    int ret = luainterop_ReceiveNote(_l, chan_hnd, note_num, volume);
+    int ret = luainterop_ReceiveNote(_l, nid, note_num, volume);
     if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     Collect();
     return ret; 
 }
 
 //--------------------------------------------------------//
-int Interop::ReceiveController(int chan_hnd, int controller, int value)
+int Interop::ReceiveController(int nid, int controller, int value)
 {
-    int ret = luainterop_ReceiveController(_l, chan_hnd, controller, value);
+    int ret = luainterop_ReceiveController(_l, nid, controller, value);
     if (luainterop_Error() != NULL) { throw(gcnew LuaException(gcnew String(luainterop_Error()), luainterop_Context() == NULL ? "" : gcnew String(luainterop_Context()))); }
     Collect();
     return ret; 
@@ -72,9 +72,9 @@ int luainterop_cb_OpenMidiInput(lua_State* l, const char* dev_name, int chan_num
 
 //--------------------------------------------------------//
 
-int luainterop_cb_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainterop_cb_SendNote(lua_State* l, int nid, int note_num, double volume)
 {
-    SendNoteArgs^ args = gcnew SendNoteArgs(chan_hnd, note_num, volume);
+    SendNoteArgs^ args = gcnew SendNoteArgs(nid, note_num, volume);
     Interop::Notify(args);
     return args->ret;
 }
@@ -82,9 +82,9 @@ int luainterop_cb_SendNote(lua_State* l, int chan_hnd, int note_num, double volu
 
 //--------------------------------------------------------//
 
-int luainterop_cb_SendController(lua_State* l, int chan_hnd, int controller, int value)
+int luainterop_cb_SendController(lua_State* l, int nid, int controller, int value)
 {
-    SendControllerArgs^ args = gcnew SendControllerArgs(chan_hnd, controller, value);
+    SendControllerArgs^ args = gcnew SendControllerArgs(nid, controller, value);
     Interop::Notify(args);
     return args->ret;
 }

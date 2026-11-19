@@ -59,7 +59,7 @@ chan_num   | int    | midi channel number                       | 1 -> 16       
 chan_name  | char*  | name for ui                               |                                 |
 dev_index  | int    | index into windows midi device table      | 0 -> N                          |
 dev_name   | char*  | from windows midi device table            |                                 |
-chan_hnd   | int    | internal opaque handle for midi IO        |                                 |
+nid        | int    | internal opaque handle for midi IO        |                                 |
 controller | int    | midi standard from midi_defs.lua          | 0 -> 127                        |
 value      | int    | controller payload                        | 0 -> 127                        |
 note_num   | int    | midi standard                             | 0 -> 127                        |
@@ -206,32 +206,32 @@ Register a midi input.
 
 
 ```lua
-function api.send_note(chan_hnd, note_num, volume, dur)
+function api.send_note(nid, note_num, volume, dur)
 ```
 Send a note on/off immediately. Adds a note off if dur is specified and tick clock is running.
 
-- chan_hnd: The handle to send it on.
+- nid: The handle to send it on.
 - note_num: Which.
 - volume: Note volume. 0.0 -> 1.0. 0.0 means note off.
 - dur: How long it lasts in music time. Optional for e.g drums.
 
 
 ```lua
-function api.send_controller(chan_hnd, controller, value)
+function api.send_controller(nid, controller, value)
 ```
 Send a controller immediately. Useful for things like panning and bank select.
 
-- chan_hnd: The handle to send it on.
+- nid: The handle to send it on.
 - controller: Which.
 - value: What.
 
 
 ```lua
-function api.set_volume(chan_hnd, volume)
+function api.set_volume(nid, volume)
 ```
 Set volume for the output.
 
-- chan_hnd: The handle to set.
+- nid: The handle to set.
 - volume: Channel volume. 0.0 -> 1.0.
 
 
@@ -288,22 +288,22 @@ Called every subbeat/tick. Required.
 
 
 ```lua
-function receive_note(chan_hnd, note_num, volume)
+function receive_note(nid, note_num, volume)
 ```
 Called when input note arrives. Optional.
 
-- chan_hnd: Input handle.
+- nid: Input handle.
 - note_num: Note number 0 -> 127.
 - volume: Volume 0.0 -> 1.0.
 - return: Nebulua status.
 
 
 ```lua
-function receive_control(chan_hnd, controller, value)
+function receive_control(nid, controller, value)
 ```
 Called when input controller arrives.
 
-- chan_hnd: Input handle.
+- nid: Input handle.
 - controller: Specific controller id 0 -> 127.
 - value: Payload 0 -> 127.
 - return: Nebulua status.
@@ -416,7 +416,7 @@ MmTimer_Callback(double totalElapsed, double periodElapsed)  [in App\Core.cs]
 Lua -> host
 ```
 neb.send_note(hnd_synth, note_num, volume)  [in my_lua_script.lua]
-    luainterop_SendNote(lua_State* l, int chan_hnd, int note_num, double volume)  [in interop\luainterop.c]
+    luainterop_SendNote(lua_State* l, int nid, int note_num, double volume)  [in interop\luainterop.c]
         Interop::Notify(args)  [in interop\Interop.cpp]
             calls driver...
 ```

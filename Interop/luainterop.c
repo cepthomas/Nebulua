@@ -93,7 +93,7 @@ int luainterop_Step(lua_State* l, int tick)
 }
 
 //--------------------------------------------------------//
-int luainterop_ReceiveNote(lua_State* l, int chan_hnd, int note_num, double volume)
+int luainterop_ReceiveNote(lua_State* l, int nid, int note_num, double volume)
 {
     _error = NULL;
     _context = NULL;
@@ -111,7 +111,7 @@ int luainterop_ReceiveNote(lua_State* l, int chan_hnd, int note_num, double volu
     }
 
     // Push arguments. No error checking required.
-    lua_pushinteger(l, chan_hnd);
+    lua_pushinteger(l, nid);
     num_args++;
     lua_pushinteger(l, note_num);
     num_args++;
@@ -137,7 +137,7 @@ int luainterop_ReceiveNote(lua_State* l, int chan_hnd, int note_num, double volu
 }
 
 //--------------------------------------------------------//
-int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int value)
+int luainterop_ReceiveController(lua_State* l, int nid, int controller, int value)
 {
     _error = NULL;
     _context = NULL;
@@ -155,7 +155,7 @@ int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int
     }
 
     // Push arguments. No error checking required.
-    lua_pushinteger(l, chan_hnd);
+    lua_pushinteger(l, nid);
     num_args++;
     lua_pushinteger(l, controller);
     num_args++;
@@ -189,9 +189,9 @@ int luainterop_ReceiveController(lua_State* l, int chan_hnd, int controller, int
 // @return Number of lua return values.
 // Lua arg: dev_name Device name
 // Lua arg: chan_num Midi channel 1 => 16
-// Lua arg: chan_name User name
+// Lua arg: chan_name User output name
 // Lua arg: patch Patch number
-// Lua return: int handle or -1 if error
+// Lua return: int Channel handle or -1 if error
 static int luainterop_OpenMidiOutput(lua_State* l)
 {
     // Get arguments
@@ -219,9 +219,9 @@ static int luainterop_OpenMidiOutput(lua_State* l)
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
 // Lua arg: dev_name Device name
-// Lua arg: chan_num Midi channel 1 => 16
-// Lua arg: chan_name User name
-// Lua return: int handle or -1 if error
+// Lua arg: chan_num Channel number 1 => 16
+// Lua arg: chan_name User input name
+// Lua return: int Channel handle or -1 if error
 static int luainterop_OpenMidiInput(lua_State* l)
 {
     // Get arguments
@@ -245,16 +245,16 @@ static int luainterop_OpenMidiInput(lua_State* l)
 // If volume is 0 note_off else note_on. If dur is 0 send note_on with dur = 1 (min for drum/hit).
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: chan_hnd Output channel handle
+// Lua arg: nid Output handle
 // Lua arg: note_num Note number
 // Lua arg: volume Volume 0.0 => 1.0
 // Lua return: int -1 if error
 static int luainterop_SendNote(lua_State* l)
 {
     // Get arguments
-    int chan_hnd;
-    if (lua_isinteger(l, 1)) { chan_hnd = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Invalid arg type for chan_hnd"); }
+    int nid;
+    if (lua_isinteger(l, 1)) { nid = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Invalid arg type for nid"); }
     int note_num;
     if (lua_isinteger(l, 2)) { note_num = lua_tointeger(l, 2); }
     else { luaL_error(l, "Invalid arg type for note_num"); }
@@ -263,7 +263,7 @@ static int luainterop_SendNote(lua_State* l)
     else { luaL_error(l, "Invalid arg type for volume"); }
 
     // Do the work. One result.
-    int ret = luainterop_cb_SendNote(l, chan_hnd, note_num, volume);
+    int ret = luainterop_cb_SendNote(l, nid, note_num, volume);
     lua_pushinteger(l, ret);
     return 1;
 }
@@ -272,16 +272,16 @@ static int luainterop_SendNote(lua_State* l)
 // Send a controller immediately.
 // @param[in] l Internal lua state.
 // @return Number of lua return values.
-// Lua arg: chan_hnd Output handle
+// Lua arg: nid Output handle
 // Lua arg: controller Specific controller 0 => 127
 // Lua arg: value Payload 0 => 127
 // Lua return: int -1 if error
 static int luainterop_SendController(lua_State* l)
 {
     // Get arguments
-    int chan_hnd;
-    if (lua_isinteger(l, 1)) { chan_hnd = lua_tointeger(l, 1); }
-    else { luaL_error(l, "Invalid arg type for chan_hnd"); }
+    int nid;
+    if (lua_isinteger(l, 1)) { nid = lua_tointeger(l, 1); }
+    else { luaL_error(l, "Invalid arg type for nid"); }
     int controller;
     if (lua_isinteger(l, 2)) { controller = lua_tointeger(l, 2); }
     else { luaL_error(l, "Invalid arg type for controller"); }
@@ -290,7 +290,7 @@ static int luainterop_SendController(lua_State* l)
     else { luaL_error(l, "Invalid arg type for value"); }
 
     // Do the work. One result.
-    int ret = luainterop_cb_SendController(l, chan_hnd, controller, value);
+    int ret = luainterop_cb_SendController(l, nid, controller, value);
     lua_pushinteger(l, ret);
     return 1;
 }

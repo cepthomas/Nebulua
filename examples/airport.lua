@@ -20,7 +20,7 @@ api.log_info('Loading airport.lua...')
 
 -- Specify midi outputs.
 local midi_device_out = "VirtualMIDISynth #1"  -- "NebLoopback1" for DAW host
-local chan_hnd = api.open_midi_output(midi_device_out, 1, "voices", mid.instruments.Pad2Warm)
+local nid = api.open_midi_output(midi_device_out, 1, "voices", mid.instruments.Pad2Warm)
 
 
 ------------------------- Variables -----------------------------------
@@ -76,7 +76,7 @@ function step(tick)
                 for _, note_num in ipairs(loop.notes) do
                     -- Send any note starts now.
                     -- print('on:'..step.note_num)
-                    api.send_note(chan_hnd, note_num, volume, loop.duration)
+                    api.send_note(nid, note_num, volume, loop.duration)
                 end
                 -- Calculate next time.
                 loop.next_start = tick + loop.delay + loop.duration;

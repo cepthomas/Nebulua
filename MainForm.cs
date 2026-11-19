@@ -66,6 +66,9 @@ namespace Nebulua
 
         /// <summary>Midi boss.</summary>
         readonly MidiManager MM;
+
+        ///// <summary>Local cache.</summary>
+        //readonly Dictionary<int, MidiOutput> _outputs = [];
         #endregion
 
         #region Lifecycle
@@ -267,9 +270,10 @@ namespace Nebulua
             try
             {
                 // Clean up first.
-                MM.KillAll();
                 _mmTimer.Stop();
+                MM.KillAll();
                 MM.Reset();
+                //_outputs.Clear();
 
                 // Determine file to load. Null means reload current.
                 if (openScriptFn is not null)
@@ -311,18 +315,13 @@ namespace Nebulua
 
                 timeBar.InitSectionInfo(sectInfo);
 
-                // was CreateControls();
-
-                // DestroyControls();
-
                 /// create a control for each midi output and bind object
                 int x = timeBar.Left;
                 int y = timeBar.Bottom + 5;
 
                 // Get all script-defined midi outputs and make corresponding UI element.
-                var midiOutputs = MM.GetChannels().Select(ch => ch.mout).ToList();
-
-                midiOutputs.ForEach(mout =>
+                var mouts = MM.GetOutputs().ToList(); // TODO prefer IEnumerable but this loop alters source collection.
+                mouts.ForEach(mout =>
                 {
                     var ctrl = new ChannelControl()
                     {
@@ -332,10 +331,11 @@ namespace Nebulua
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,
                         SelectedColor = _settings.SelectedColor,
-                        Volume = MidiLibDefs.DEFAULT_VOLUME,
+                        Volume = MidiLibDefs.DEFAULT_VOLUME // TODO1 should persist + midi IO vals etc
                     };
                     //ctrl.InfoClick += ChannelControl_InfoClick;
                     MM.Bind(mout, ctrl);
+                    //_outputs.Add(mout.Id.Raw, mout);
 
                     x += ctrl.Width + 4; // Width is not valid until after previous statement.
                 });
@@ -652,7 +652,6 @@ namespace Nebulua
             try
             {
                 var indev = (MidiInputDevice)sender!;
-                //var nid = HandleOps.Create(indev.Id, e.MidiChannel, false);
                 var nid = new NebId(indev.Id, e.MidiChannel, false);
                 bool logit = true;
 
@@ -667,7 +666,7 @@ namespace Nebulua
                         break;
 
                     case Controller evt:
-                        _interop.ReceiveController(nid.Raw, evt.Id, evt.Value);
+                        _interop.ReceiveController(nid.Raw, Convert.ToInt32(evt.Id), evt.Value);
                         break;
 
                     default: // Ignore others for now.
@@ -710,7 +709,7 @@ namespace Nebulua
         void Interop_OpenMidiInput(object? _, OpenMidiInputArgs e)
         {
             var min = MM.OpenMidiInput(e.dev_name, e.chan_num, e.chan_name);
-            _loggerMidi.Trace($">>> ! {min.Handle}");
+            _loggerMidi.Trace($">>> ! {min.Id}");
         }
 
         /// <summary>
@@ -722,8 +721,10 @@ namespace Nebulua
         void Interop_OpenMidiOutput(object? _, OpenMidiOutputArgs e)
         {
             // Create output and initialize control.
-//TODO1 cache            var mout = MM.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name, e.patch, false); //TODO2 last arg is isdrums
-            e.ret = mout.Handle.Raw;
+            var mout = MM.OpenMidiOutput(e.dev_name, e.chan_num, e.chan_name);
+            var id = (MidiDefs.InstrumentId)Enum.ToObject(typeof(MidiDefs.InstrumentId), e.patch);
+            MM.SetPatch(mout, id);
+            e.ret = mout.Id.Raw;
         }
 
         /// <summary>
@@ -736,17 +737,33 @@ namespace Nebulua
             e.ret = 0; // not used
 
             if (e.note_num is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"note_num:{e.note_num}"); }
-//            var nid = new NebId(e.chan_hnd);
-//            var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            //var nid = new NebId(e.nid);
+            //var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"nid:{e.nid}");
+            //var mout = _outputs[e.nid];
 
-            if (e.volume == 0.0)
+            var mouts = MM.GetOutputs().Where(o => o.Id.Raw == e.nid); // TODO1 cache these - _outputs? measure.
+            if (mouts.Any())
             {
-                mout.Send(new NoteOff(mout.MidiChannel, e.note_num));
+                var mout = mouts.First();
+                if (e.volume == 0.0)
+                {
+                    mout.Send(new NoteOff(mout.MidiChannel, e.note_num));
+                }
+                else
+                {
+                    var vel = (int)MathUtils.Constrain(e.volume * mout.VolumeDelta * sldVolume.Value * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
+                    mout.Send(new NoteOn(mout.MidiChannel, e.note_num, vel));
+                }
+
+                if (_settings.MonitorSend)
+                {
+                    // Intended sent.
+                    _loggerMidi.Trace($">>> {e}");
+                }
             }
             else
             {
-                var vel = (int)MathUtils.Constrain(e.volume * sldVolume.Value * MidiDefs.MAX_MIDI, 0, MidiDefs.MAX_MIDI);
-                mout.Send(new NoteOn(mout.MidiChannel, e.note_num, vel));
+                //error?
             }
         }
 
@@ -761,17 +778,28 @@ namespace Nebulua
 
             if (e.controller is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"controller:{e.controller}"); }
             if (e.value is < 0 or > MidiDefs.MAX_MIDI) { throw new ArgumentException($"value:{e.value}"); }
-//            var nid = new NebId(e.chan_hnd);
-//            var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"chan_hnd:{e.chan_hnd}");
+            //var nid = new NebId(e.nid);
+            //var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"nid:{e.nid}");
 
-            var se = new Controller(mout.MidiChannel, e.controller, e.value);
-            mout.Send(se);
-
-            if (_settings.MonitorSend)
+            var mouts = MM.GetOutputs().Where(o => o.Id.Raw == e.nid); // TODO1 cache these - _outputs? measure.
+            if (mouts.Any())
             {
-                // Intended sent.
-                _loggerMidi.Trace($">>> {e}");
+                var mout = mouts.First();
+                var cid = (MidiDefs.ControllerId)Enum.ToObject(typeof(MidiDefs.ControllerId), e.controller);
+                var se = new Controller(mout.MidiChannel, cid, e.value);
+                mout.Send(se);
+
+                if (_settings.MonitorSend)
+                {
+                    // Intended sent.
+                    _loggerMidi.Trace($">>> {e}");
+                }
             }
+            else
+            {
+                //error?
+            }
+
         }
 
         /// <summary>

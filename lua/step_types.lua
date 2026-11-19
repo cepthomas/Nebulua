@@ -10,24 +10,24 @@ local M = {}
 
 
 -- Forward refs.
-local _format_chan_hnd
+local _format_nid
 local _format_tick
 
 
 
 -----------------------------------------------------------------------------
-function M.note(tick, chan_hnd, note_num, volume, duration)
+function M.note(tick, nid, note_num, volume, duration)
     local d = {}
     d.step_type = "note"
     d.tick = tick
-    d.chan_hnd = chan_hnd
+    d.nid = nid
     d.note_num = note_num
     d.volume = volume
     d.duration = duration
 
     -- Validate.
     lt.val_integer(d.tick, 0, bt.MAX_TICK)
-    lt.val_integer(d.chan_hnd, 0, 0xFFFF)
+    lt.val_integer(d.nid, 0, 0xFFFF)
     lt.val_integer(d.note_num, 0, mid.MAX_MIDI)
     lt.val_number(d.volume, 0.0, 1.0)
     lt.val_integer(d.duration, 0, bt.MAX_TICK)
@@ -36,7 +36,7 @@ function M.note(tick, chan_hnd, note_num, volume, duration)
     {
         __tostring = function(self)
             return string.format('%s %s NOTE:%d VOL:%.1f DUR:%d',
-                _format_tick(self.tick), _format_chan_hnd(self.chan_hnd), self.note_num, self.volume, self.duration)
+                _format_tick(self.tick), _format_nid(self.nid), self.note_num, self.volume, self.duration)
         end
     })
 
@@ -45,18 +45,18 @@ end
 
 
 -----------------------------------------------------------------------------
-function M.controller(tick, chan_hnd, controller, value)
+function M.controller(tick, nid, controller, value)
 
     local d = {}
     d.step_type = "controller"
     d.tick = tick
-    d.chan_hnd = chan_hnd
+    d.nid = nid
     d.controller = controller
     d.value = value
 
     -- Validate.
     lt.val_integer(d.tick, 0, bt.MAX_TICK)
-    lt.val_integer(d.chan_hnd, 0, 0xFFFF)
+    lt.val_integer(d.nid, 0, 0xFFFF)
     lt.val_integer(d.controller, 0, mid.MAX_MIDI)
     lt.val_integer(d.value, 0, mid.MAX_MIDI)
 
@@ -64,7 +64,7 @@ function M.controller(tick, chan_hnd, controller, value)
     {
         __tostring = function(self)
             return string.format('%s %s CTRL:%d VAL:%d',
-                _format_tick(self.tick), _format_chan_hnd(self.chan_hnd), self.controller, self.value)
+                _format_tick(self.tick), _format_nid(self.nid), self.controller, self.value)
         end
     })
 
@@ -72,18 +72,18 @@ function M.controller(tick, chan_hnd, controller, value)
 end
 
 -----------------------------------------------------------------------------
-function M.func(tick, chan_hnd, func, volume)
+function M.func(tick, nid, func, volume)
 
     local d = {}
     d.step_type = "function"
     d.tick = tick
-    d.chan_hnd = chan_hnd
+    d.nid = nid
     d.func = func
     d.volume = volume
 
     -- Validate.
     lt.val_integer(d.tick, 0, bt.MAX_TICK)
-    lt.val_integer(d.chan_hnd, 0, 0xFFFF)
+    lt.val_integer(d.nid, 0, 0xFFFF)
     lt.val_number(d.volume, 0.0, 1.0)
     lt.val_function(func)
 
@@ -91,7 +91,7 @@ function M.func(tick, chan_hnd, func, volume)
     {
         __tostring = function(self)
             return string.format('%s %s FUNC:? VOL:%.1f',
-                _format_tick(self.tick), _format_chan_hnd(self.chan_hnd), self.volume)
+                _format_tick(self.tick), _format_nid(self.nid), self.volume)
         end
     })
 
@@ -100,8 +100,8 @@ end
 
 
 -----------------------------------------------------------------------------
-_format_chan_hnd = function(chan_hnd)
-    return string.format("DEV:%02d CH:%02d", (chan_hnd >> 8) & 0xFF, chan_hnd & 0xFF)
+_format_nid = function(nid)
+    return string.format("DEV:%02d CH:%02d", (nid >> 8) & 0xFF, nid & 0xFF)
 end
 
 -----------------------------------------------------------------------------

@@ -35,7 +35,7 @@ local _transients = {}
 -- Where we be.
 local _current_tick = 0
 
--- Key is chan_hnd, value is volume 0.0 -> 1.0.
+-- Key is nid, value is volume 0.0 -> 1.0.
 local _output_volumes = {}
 
 -- Map the 0-9 script volume levels to actual volumes. Give it a bit of a curve.
@@ -93,11 +93,11 @@ end
 -- @param dev_name system name
 -- @param chan_num midi channel number
 -- @param chan_name optional readable name
--- @return the new chan_hnd or 0 if invalid
+-- @return the new nid or 0 if invalid
 function M.open_midi_input(dev_name, chan_num, chan_name)
-    local chan_hnd = li.open_midi_input(dev_name, chan_num, chan_name)
-    if chan_hnd < 0 then error(string.format("Invalid input dev:%s num:%d name:%s", dev_name, chan_num, chan_name), 2) end
-    return chan_hnd
+    local nid = li.open_midi_input(dev_name, chan_num, chan_name)
+    if nid < 0 then error(string.format("Invalid input dev:%s num:%d name:%s", dev_name, chan_num, chan_name), 2) end
+    return nid
 end
 
 -----------------------------------------------------------------------------
@@ -106,59 +106,59 @@ end
 -- @param chan_num midi channel number
 -- @param chan_name optional readable name
 -- @param patch send this patch number
--- @return the new chan_hnd
+-- @return the new nid
 function M.open_midi_output(dev_name, chan_num, chan_name, patch)
-    local chan_hnd = li.open_midi_output(dev_name, chan_num, chan_name, patch)
-    _output_volumes[chan_hnd] = 1.0 -- default to passthrough.
-    if chan_hnd < 0 then error(string.format("Invalid output dev:%s num:%d name:%s patch:%s", dev_name, chan_num, chan_name, patch), 2) end
-    return chan_hnd
+    local nid = li.open_midi_output(dev_name, chan_num, chan_name, patch)
+    _output_volumes[nid] = 1.0 -- default to passthrough.
+    if nid < 0 then error(string.format("Invalid output dev:%s num:%d name:%s patch:%s", dev_name, chan_num, chan_name, patch), 2) end
+    return nid
 end
 
 -----------------------------------------------------------------------------
 --- Set volume for the output.
--- @param chan_hnd the handle
+-- @param nid the handle
 -- @param volume volume
 -- @return status
-function M.set_volume(chan_hnd, volume)
+function M.set_volume(nid, volume)
     if volume < 0.1 or volume > 2.0 then
         error(string.format("Invalid volume %f", volume), 2)
         -- M.log_warn(string.format("Invalid volume %f", volume))
     end
-    _output_volumes[chan_hnd] = volume
+    _output_volumes[nid] = volume
 
     return 0
 end
 
 -----------------------------------------------------------------------------
 -- Send note immediately. Creates corresponding note off.
-function M.send_note(chan_hnd, note_num, volume, dur)
+function M.send_note(nid, note_num, volume, dur)
     if dur == nil then dur = 0 end
-    -- M.log_debug(string.format("Send now hnd:%d note:%d vol:%f dur:%d", chan_hnd, note_num, volume, dur))
+    -- M.log_debug(string.format("Send now hnd:%d note:%d vol:%f dur:%d", nid, note_num, volume, dur))
 
     if volume > 0 then -- noteon
         -- adjust volume
-        volume = volume * _output_volumes[chan_hnd]
+        volume = volume * _output_volumes[nid]
         -- send note_on now
-        li.send_note(chan_hnd, note_num, volume)
+        li.send_note(nid, note_num, volume)
         if dur > 0 then
             -- chase with noteoff
-            local noteoff = st.note(_current_tick + dur, chan_hnd, note_num, 0, 0)
+            local noteoff = st.note(_current_tick + dur, nid, note_num, 0, 0)
             _table_add(_transients, noteoff.tick, noteoff)
         end
     else -- send note_off now
-       li.send_note(chan_hnd, note_num, 0)
+       li.send_note(nid, note_num, 0)
    end
 end
 
 -----------------------------------------------------------------------------
 --- Send a control message now.
--- @param chan_hnd handle
+-- @param nid handle
 -- @param controller Specific controller 0 -> 127
 -- @param value Payload 0 -> 127
 -- @return status
-function M.send_controller(chan_hnd, controller, value)
-    local ret = li.send_controller(chan_hnd, controller, value)
-    if ret < 0 then M.log_warn(string.format("Invalid controller %d %d %d", chan_hnd, controller, value)) end
+function M.send_controller(nid, controller, value)
+    local ret = li.send_controller(nid, controller, value)
+    if ret < 0 then M.log_warn(string.format("Invalid controller %d %d %d", nid, controller, value)) end
 end
 
 -----------------------------------------------------------------------------
@@ -178,14 +178,14 @@ function M.process_step(tick)
                if step.volume > 0 then -- noteon - add note off chase
                    local dur = math.max(step.duration, 1) -- (min for drum/hit)
                    -- chase with noteoff
-                   local noteoff = st.note(_current_tick + dur, step.chan_hnd, step.note_num, 0, 0)
+                   local noteoff = st.note(_current_tick + dur, step.nid, step.note_num, 0, 0)
                    _table_add(_transients, noteoff.tick, noteoff)
                end
 
                 -- send it
-                li.send_note(step.chan_hnd, step.note_num, step.volume)
+                li.send_note(step.nid, step.note_num, step.volume)
             elseif step.step_type == "controller" then
-                li.send_controller(step.chan_hnd, step.controller, step.value)
+                li.send_controller(step.nid, step.controller, step.value)
             elseif step.step_type == "function" then
                 step.func(_current_tick)
             end
@@ -197,7 +197,7 @@ function M.process_step(tick)
     if steps_now ~= nil then
         for _, step in ipairs(steps_now) do
             if step.step_type == "note" then
-               li.send_note(step.chan_hnd, step.note_num, step.volume)
+               li.send_note(step.nid, step.note_num, step.volume)
             end
         end
         -- Disappear it from collection.
@@ -241,17 +241,17 @@ end
 
 -----------------------------------------------------------------------------
 --- Composition function: add sequences to the current section.
--- @param chan_hnd handle
+-- @param nid handle
 -- @param ... the sequences
-function M.sect_chan(chan_hnd, ...)
+function M.sect_chan(nid, ...)
     if _current_section ~= nil then
         local elems = {}
-        tp.val_integer(chan_hnd) -- should check for valid/known handle
-        table.insert(elems, chan_hnd)
+        tp.val_integer(nid) -- should check for valid/known handle
+        table.insert(elems, nid)
 
         local num_args = select('#', ...)
         if num_args < 1 then
-            error_comp(string.format("No sequences for %d", chan_hnd))
+            error_comp(string.format("No sequences for %d", nid))
         end
 
         for i = 1, num_args do
@@ -265,17 +265,17 @@ function M.sect_chan(chan_hnd, ...)
 
         table.insert(_current_section, elems)
     else
-        error_comp(string.format("No section name for %d", chan_hnd))
+        error_comp(string.format("No section name for %d", nid))
     end
 end
 
 -----------------------------------------------------------------------------
 --- Parse a chunk pattern. Note - only public for testing
 -- @param chunk like: { "|5-------|--      |        |        |7-------|--      |        |        |", "G4.m7" }
--- @param chan_hnd handle
+-- @param nid handle
 -- @param start_tick absolute start time 0-based
 -- @return length, list of StepXs
-function M.parse_chunk(chunk, chan_hnd, start_tick)
+function M.parse_chunk(chunk, nid, start_tick)
     if chunk[1] == nil or chunk[2] == nil then
         error_comp("Improperly formed chunk.")
     end
@@ -299,7 +299,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
         local dur = math.max(offset - event_offset, 1) -- (min for drum/hit)
 
         for _, nt in ipairs(notes) do
-            local si = st.note(start_tick + event_offset, chan_hnd, nt, vol, dur)
+            local si = st.note(start_tick + event_offset, nid, nt, vol, dur)
             if si.err == nil then
                 table.insert(steps, si)
             else -- Syntax error
@@ -312,7 +312,7 @@ function M.parse_chunk(chunk, chan_hnd, start_tick)
     local function make_func_event(offset, fn, vol_num)
         -- scale volume
         local vol = _volume_map[vol_num]
-        local si = st.func(start_tick + event_offset, chan_hnd, fn, vol)
+        local si = st.func(start_tick + event_offset, nid, fn, vol)
         if si.err == nil then
             table.insert(steps, si)
         else -- Syntax error
@@ -425,7 +425,7 @@ function M.process_comp()
             -- Process section.
             if #sect_chan >= 2 and type(sect_chan[1]) == "number" then
                 -- Specific output
-                local chan_hnd = sect_chan[1]
+                local nid = sect_chan[1]
 
                 -- Reset.
                 seq_start = section.start
@@ -442,7 +442,7 @@ function M.process_comp()
                         -- Reset position to start of sequence.
                         tick = seq_start
 
-                        local seq_length, chunk_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+                        local seq_length, chunk_steps = M.parse_chunk(seq_chunk, nid, tick)
                         if seq_length ~= 0 then -- save the steps to master table
                             for _, step in ipairs(chunk_steps) do
                                 _table_add(_steps, step.tick, step)
@@ -497,15 +497,15 @@ return M
 
 -----------------------------------------------------------------------------
 -- Create a steps table from a sequence dynamically. See [Composition](#markdown-header-composition).
--- - chan_hnd: Specific handle.
+-- - nid: Specific handle.
 -- - sequence: The sequence to parse.
 -- - return: A table for use by `send_sequence_steps()`.
--- function M.parse_sequence_steps(chan_hnd, seq)
+-- function M.parse_sequence_steps(nid, seq)
 --     local steps = {}
 --     for _, seq_chunk in ipairs(seq) do
 --         -- Reset position to start of sequence.
 --         local tick = 0
---         local seq_length, seq_steps = M.parse_chunk(seq_chunk, chan_hnd, tick)
+--         local seq_length, seq_steps = M.parse_chunk(seq_chunk, nid, tick)
 --         for _, step in ipairs(seq_steps) do
 --             table.insert(steps, step)
 --         end
@@ -526,15 +526,15 @@ return M
 --            if step.volume > 0 then -- is noteon
 --                local dur = math.max(step.duration, 1) -- (min for drum/hit)
 
---                local noteon = st.note(tick + step.tick, step.chan_hnd, step.note_num, step.volume, dur)
+--                local noteon = st.note(tick + step.tick, step.nid, step.note_num, step.volume, dur)
 --                _table_add(_transients, noteon.tick, noteon)
 
 --                -- chase with noteoff
---                local noteoff = st.note(tick + step.tick + dur, step.chan_hnd, step.note_num, 0, 0)
+--                local noteoff = st.note(tick + step.tick + dur, step.nid, step.note_num, 0, 0)
 --                _table_add(_transients, noteoff.tick, noteoff)
 
 --            else -- note off
---                local noteoff = st.note(tick + step.tick, step.chan_hnd, step.note_num, 0, 0)
+--                local noteoff = st.note(tick + step.tick, step.nid, step.note_num, 0, 0)
 --                _table_add(_transients, noteoff.tick, noteoff)
 --            end
 
