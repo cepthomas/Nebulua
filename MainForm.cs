@@ -326,7 +326,7 @@ namespace Nebulua
                     var ctrl = new ChannelControl()
                     {
                         Info1 = $"M{mout.MidiChannel} {mout.Name}",
-                        Info2 = $"{mout.PatchName} ({mout.Patch}){Environment.NewLine}{mout}",
+                        Info2 = $"{mout.CurrentPatch} ({Convert.ToInt32(mout.CurrentPatch)}){Environment.NewLine}{mout}",
                         Location = new(x, y),
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,

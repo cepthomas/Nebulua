@@ -226,6 +226,9 @@
         <member name="M:Ephemera.MidiLib.Controller.#ctor(System.Int32,System.Enum,System.Int32,Ephemera.MidiLib.MusicTime)">
             <summary>Normal constructor.</summary>
         </member>
+        <member name="M:Ephemera.MidiLib.Controller.#ctor(System.Int32,System.Int32,System.Int32,Ephemera.MidiLib.MusicTime)">
+            <summary>Constructor from integer id.</summary>
+        </member>
         <member name="M:Ephemera.MidiLib.Controller.#ctor(NAudio.Midi.ControlChangeEvent)">
             <summary>Constructor from NAudio type.</summary>
         </member>
@@ -237,6 +240,9 @@
         </member>
         <member name="M:Ephemera.MidiLib.Patch.#ctor(System.Int32,System.Enum,Ephemera.MidiLib.MusicTime)">
             <summary>Normal constructor.</summary>
+        </member>
+        <member name="M:Ephemera.MidiLib.Patch.#ctor(System.Int32,System.Int32,Ephemera.MidiLib.MusicTime)">
+            <summary>Constructor from integer id.</summary>
         </member>
         <member name="M:Ephemera.MidiLib.Patch.#ctor(NAudio.Midi.PatchChangeEvent)">
             <summary>Constructor from NAudio type.</summary>
@@ -451,7 +457,7 @@
         <member name="F:Ephemera.MidiLib.MidiManager._midiOutputs">
             <summary>All the outputs with associated controls.</summary>
         </member>
-        <member name="F:Ephemera.MidiLib.MidiManager._controls">
+        <member name="F:Ephemera.MidiLib.MidiManager._winControls">
             <summary>Add/remove dynamically generated controls to WinForms collection.</summary>
         </member>
         <member name="F:Ephemera.MidiLib.MidiManager._inputDevices">
@@ -585,7 +591,10 @@
             <summary>True if not muted.</summary>
         </member>
         <member name="P:Ephemera.MidiLib.MidiOutput.VolumeDelta">
-            <summary>Volume adjustment e.g. control slider.</summary>
+            <summary>Volume adjustment e.g. from control slider.</summary>
+        </member>
+        <member name="P:Ephemera.MidiLib.MidiOutput.CurrentPatch">
+            <summary>Flavor of the day.</summary>
         </member>
         <member name="M:Ephemera.MidiLib.MidiOutput.#ctor(Ephemera.MidiLib.IOutputDevice,System.Int32,System.String)">
             <summary>
