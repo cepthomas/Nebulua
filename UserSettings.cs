@@ -11,7 +11,7 @@ using Ephemera.NBagOfTricks;
 namespace Nebulua
 {
     [Serializable]
-    public sealed class UserSettings : SettingsCore // TODO1 also persist outputs volume/state, master volume/??. Backfill MidiLib. Open_Click remember/guess last dir
+    public sealed class UserSettings : SettingsCore
     {
         #region Properties - persisted editable
         [DisplayName("Script Path")]
