@@ -331,7 +331,7 @@ namespace Nebulua
                         BorderStyle = BorderStyle.FixedSingle,
                         DrawColor = _settings.DrawColor,
                         SelectedColor = _settings.SelectedColor,
-                        Volume = MidiLibDefs.DEFAULT_VOLUME // TODO1 persist volume, midi IO vals etc. Use Bag or a lua script. Some in UserSettings??
+                        Volume = MidiLibDefs.DEFAULT_VOLUME // TODO1 persist volume, midi IO vals etc. Use Bag or a lua script. Some in UserSettings?? also nebulator.
                     };
                     //ctrl.InfoClick += ChannelControl_InfoClick;
                     MM.Bind(mout, ctrl);
@@ -366,7 +366,7 @@ namespace Nebulua
             {
                 case "Open...":
                     {
-                        using OpenFileDialog openDlg = new() // TODO2 remember/guess last dir
+                        using OpenFileDialog openDlg = new() // TODO1 remember/guess last dir
                         {
                             Filter = "Nebulua files | *.lua",
                             Title = "Select a Nebulua file",
@@ -741,7 +741,7 @@ namespace Nebulua
             //var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"nid:{e.nid}");
             //var mout = _outputs[e.nid];
 
-            var mouts = MM.GetOutputs().Where(o => o.Id.Raw == e.nid); // TODO2 cache these - _outputs? measure.
+            var mouts = MM.GetOutputs().Where(o => o.Id.Raw == e.nid); // TODO1 cache these - _outputs? measure.
             if (mouts.Any())
             {
                 var mout = mouts.First();
@@ -781,7 +781,7 @@ namespace Nebulua
             //var nid = new NebId(e.nid);
             //var mout = MM.GetMidiOutput(nid.MidiChannel) ?? throw new ArgumentException($"nid:{e.nid}");
 
-            var mouts = MM.GetOutputs().Where(o => o.Id.Raw == e.nid); // TODO2 cache these - _outputs? measure.
+            var mouts = MM.GetOutputs().Where(o => o.Id.Raw == e.nid); // TODO1 cache these - _outputs? measure.
             if (mouts.Any())
             {
                 var mout = mouts.First();

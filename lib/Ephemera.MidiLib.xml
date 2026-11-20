@@ -391,7 +391,7 @@
             <summary>NAudio midi output device.</summary>
         </member>
         <member name="E:Ephemera.MidiLib.MidiOutputDevice.MessageSent">
-            <summary>Client needs to deal with this.</summary>
+            <summary>Client optional.</summary>
         </member>
         <member name="P:Ephemera.MidiLib.MidiOutputDevice.DeviceName">
             <inheritdoc />
@@ -468,6 +468,9 @@
         </member>
         <member name="E:Ephemera.MidiLib.MidiManager.MessageReceived">
             <summary>Handler for midi message arrived.</summary>
+        </member>
+        <member name="E:Ephemera.MidiLib.MidiManager.MessageSent">
+            <summary>Client optional.</summary>
         </member>
         <member name="M:Ephemera.MidiLib.MidiManager.#ctor(System.Windows.Forms.Control.ControlCollection)">
             <summary>
@@ -624,20 +627,20 @@
         <member name="T:Ephemera.MidiLib.MusicTime">
             <summary>Sort of like DateTime but for musical terminology in midi.</summary>
         </member>
+        <member name="F:Ephemera.MidiLib.MusicTime.TICK_RES">
+            <summary>Tick resolution - per beat. Default is (8) which gives 32nd note resolution.</summary>
+        </member>
         <member name="F:Ephemera.MidiLib.MusicTime._beatsPerBar">
-            <summary>Only 4/4 time supported currently.</summary>
+            <summary>Only 4/4 time supported currently. TODO support others.</summary>
         </member>
         <member name="F:Ephemera.MidiLib.MusicTime._subbeatsPerBeat">
-            <summary>Tick resolution.
-            A quarter note gets one beat in standard time signatures like 4/4 or 3/4.
-            This internal resolution (8) gives 32nd note resolution (per subbbeat).
-            </summary>
+            <summary>Same as tick resolution.</summary>
         </member>
         <member name="F:Ephemera.MidiLib.MusicTime._subbeatsPerBar">
             <summary>Convenience.</summary>
         </member>
         <member name="F:Ephemera.MidiLib.MusicTime._id">
-            <summary>For hashing comparable.</summary>
+            <summary>For comparable hashing.</summary>
         </member>
         <member name="F:Ephemera.MidiLib.MusicTime._nextId">
             <summary>Increment for unique value.</summary>
